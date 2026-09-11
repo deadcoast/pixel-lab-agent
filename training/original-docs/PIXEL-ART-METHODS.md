@@ -354,6 +354,7 @@ Each node stores:
 
 The world transform is the ordinary parent-child transform:
 
+```TeX
 \[
 M_i^{world}
 =
@@ -363,6 +364,7 @@ M_{parent}^{world}
 \,S(s_{xi},s_{yi})
 \,M_i^{attachment}
 \]
+```
 
 This is more general than saying “parts use coordinate offsets.” Coordinate offsets are only the translation component. High-quality rigs also require pivots, rotations, draw ordering, attachment swaps, visibility, and sometimes scale.
 
@@ -384,29 +386,35 @@ For strict pixel art, mesh deformation creates a fundamental problem. Pixel art 
 
 Consider a hypothetical boss rendered as a unique 500×500 RGBA8 image for every frame:
 
+```TeX
 \[
 500 \times 500 \times 4
 =
 1{,}000{,}000\text{ bytes/frame}
 \]
+```
 
 At sixty unique frames:
 
+```TeX
 \[
 60{,}000{,}000\text{ bytes}
 \approx57.2\text{ MiB}
 \]
+```
 
 before texture compression, packing, mipmaps, metadata, or platform-specific representation.
 
 Suppose instead it contains twenty 64×64 components, each requiring eight unique raster states:
 
+```TeX
 \[
 20\times64\times64\times8\times4
 =
 2{,}621{,}440\text{ bytes}
 \approx2.5\text{ MiB}.
 \]
+```
 
 That is only an **illustrative storage comparison**, not data about *Metal Slug*. The key reason for the reduction is that rigid transformation data substitutes for repeated copies of unchanged pixels.
 
@@ -497,17 +505,21 @@ Do **not** force all internal bone transforms to integers. Interpolation, easing
 
 Instead:
 
+```TeX
 \[
 p_{anim}\in\mathbb{R}^2
 \]
+```
 
 during animation, then quantize the final rendered position:
 
+```TeX
 \[
 p_{pixel}
 =
 \operatorname{round}(p_{screen}/s)\,s
 \]
+```
 
 where \(s\) is the number of physical display pixels per logical art pixel.
 
@@ -594,20 +606,24 @@ No mathematical “half pixel” exists in the final raster. But the intermediat
 
 A useful computational model is fractional coverage. Let an ideal high-resolution edge cover fraction \(\alpha\) of a logical cell. A conventional filtered representation would produce
 
+```TeX
 \[
 C(\alpha)
 =
 (1-\alpha)C_{bg}+\alpha C_{object}.
 \]
+```
 
 Strict pixel art normally should **not** blindly use that RGB result. Instead, choose an approved palette color:
 
+```TeX
 \[
 C_{pixel}
 =
 \underset{c\in P_{edge}}{\arg\min}
 \ d\!\left(c,C(\alpha)\right),
 \]
+```
 
 where \(P_{edge}\) is the artist-approved edge ramp and \(d\) is a perceptual color-distance function.
 
@@ -681,6 +697,7 @@ The silhouette barely changes, but the highlight migrates. Human vision interpre
 
 This gives your agent a useful hierarchy:
 
+```TeX
 \[
 \text{perceived motion}
 =
@@ -692,6 +709,7 @@ w_c\Delta\text{color/value}
 +
 w_t\Delta\text{timing}.
 \]
+```
 
 A visible movement does **not** require every term to change.
 
@@ -761,11 +779,13 @@ Represent ramps explicitly:
 
 Then an animated micro-shift can operate on indices:
 
+```TeX
 \[
 i_{t+1}
 =
 \operatorname{clamp}(i_t+\Delta i, i_{min}, i_{max})
 \]
+```
 
 instead of performing an unconstrained RGB blend.
 
@@ -1010,29 +1030,37 @@ Move one point light clockwise around it. Incorrect green-channel orientation be
 
 For fragment position
 
+```TeX
 \[
 P=(p_x,p_y,p_z)
 \]
+```
 
 and light position
 
+```TeX
 \[
 L=(l_x,l_y,l_z),
 \]
+```
 
 calculate:
 
+```TeX
 \[
 \vec{\ell}
 =
 \frac{L-P}{\|L-P\|}.
 \]
+```
 
 For purely 2D screen-space objects, \(p_z\) may be a constant. A 2.5D system should instead derive it from layer elevation or a height map:
 
+```TeX
 \[
 p_z=z_{layer}+\lambda H(u,v).
 \]
+```
 
 This is precisely where *Eastward*'s 3D reconstruction approach becomes important: a light can respond to meaningful scene depth rather than treating every roof, wall, floor, and character as lying on exactly the same plane. The developer explicitly describes rebuilding separated assets into a 3D environment before processing their bump-light response. citeturn19view3turn19view5
 
@@ -1040,38 +1068,46 @@ This is precisely where *Eastward*'s 3D reconstruction approach becomes importan
 
 The basic Lambertian term is:
 
+```TeX
 \[
 L_d=
 \max(0,N\cdot\vec{\ell}).
 \]
+```
 
 Add distance attenuation:
 
+```TeX
 \[
 a(d)=
 \left[
 \max\left(0,1-\frac dR\right)
 \right]^p
 \]
+```
 
 for a stylized finite-radius light, where \(R\) is radius and \(p\) controls falloff.
 
 Then:
 
+```TeX
 \[
 I =
 I_{ambient}
 +
 C_L\,S_L\,L_d\,a(d)\,M
 \]
+```
 
 where \(C_L\) is light color, \(S_L\) its strength, and \(M\) a material/light-response mask.
 
 Finally:
 
+```TeX
 \[
 C_{out}=D\cdot I+E.
 \]
+```
 
 That produces ordinary smooth dynamic lighting—but ordinary smooth lighting often looks wrong on intentionally quantized pixel art.
 
@@ -1079,6 +1115,7 @@ That produces ordinary smooth dynamic lighting—but ordinary smooth lighting of
 
 A very effective pixel-art shader constrains the lighting scalar:
 
+```TeX
 \[
 Q(I)=
 \frac{
@@ -1087,14 +1124,17 @@ Q(I)=
 K-1
 }.
 \]
+```
 
 With \(K=4\), for example, continuously changing illumination becomes four discrete light bands.
 
 Then:
 
+```TeX
 \[
 C_{out}=D\cdot Q(I)+E.
 \]
+```
 
 An even stronger art-directed method is **palette-ramp lighting**:
 
@@ -1112,6 +1152,7 @@ An even stronger art-directed method is **palette-ramp lighting**:
 
 Instead of multiplying `brick_red` by arbitrary light values, calculate a lighting band:
 
+```TeX
 \[
 b=
 \operatorname{clamp}
@@ -1120,6 +1161,7 @@ b=
 0,K-1
 \right)
 \]
+```
 
 and select `brick_red[b]`.
 
@@ -1147,6 +1189,7 @@ HYBRID:
 
 For `AUTHORED_SHADE`:
 
+```TeX
 \[
 C =
 D\left[
@@ -1154,6 +1197,7 @@ D\left[
 k(L_d-\bar L)
 \right]
 \]
+```
 
 with a deliberately small \(k\), rather than completely replacing the image's original light structure.
 
@@ -1165,9 +1209,11 @@ This is the single most important technical correction to the original normal-ma
 
 The normal term:
 
+```TeX
 \[
 \max(0,N\cdot L)
 \]
+```
 
 answers:
 
@@ -1179,6 +1225,7 @@ It does **not** answer:
 
 That second question requires a visibility term \(V\):
 
+```TeX
 \[
 C_{lit}
 =
@@ -1188,9 +1235,11 @@ A+
 V\,L_d\,a(d)
 \right).
 \]
+```
 
 where:
 
+```TeX
 \[
 V=
 \begin{cases}
@@ -1198,6 +1247,7 @@ V=
 1 & \text{visible}
 \end{cases}
 \]
+```
 
 or a filtered fractional value.
 
@@ -1645,3 +1695,9 @@ references:
 That distinction will keep an AI-generated development pipeline from propagating attractive but unsupported reverse-engineering claims as fact.
 
 The deepest common principle across these techniques is **controlled discretization**. *Noita* discretizes physical matter into cells and gets continuous-looking material phenomena from local rules. Modular rigs discretize a giant character into reusable independently transformable parts. Sub-pixelling discretizes fractional perceptual motion into carefully chosen temporal changes in pixel clusters and palette values. Normal-mapped pixel lighting discretizes surface orientation and, when art-directed correctly, can re-quantize continuous illumination back into authored pixel-light bands. The games and tools differ, but the engineering pattern is the same: **maintain richer information behind the image, then decide deliberately how that information is projected onto the pixel grid.** citeturn16search0turn20view4turn18view3turn19view0turn19view3
+
+---
+
+M I V I M .spec development
+
+---
