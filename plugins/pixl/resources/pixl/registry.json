@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "types": {
+    "str": "UTF-8 byte-framed literal", "sha": "lowercase 64-digit SHA-256 literal",
+    "int": "signed 64-bit integer", "bool": "boolean + or -", "strings": "list of literals", "ints": "list of integers",
+    "symbols": "list of symbols", "map": "map payload", "value": "any wire value",
+    "sym:X|Y": "closed symbol enum", "ref:K": "reference to kind K, * means any",
+    "refs:K": "list of typed references"
+  },
+  "common": {"tg": {"type": "strings", "optional": true, "meaning": "retrieval tags"}},
+  "kinds": {
+    "A": {"meaning": "actor", "fields": {"nm": "str", "rl": "sym:agent|tool|system"}},
+    "P": {"meaning": "project", "fields": {"nm": "str", "ow": "ref:A", "ct": "ref:C", "sc": "refs:S", "rt": {"type": "refs:R", "optional": true}}},
+    "S": {"meaning": "source", "fields": {"ur": "str", "dg": "sha", "ln": "ints", "at": "str", "au": "sym:local|official|study"}},
+    "R": {"meaning": "runtime dependency", "fields": {"nm": "str", "ur": "str", "vr": "str", "so": "refs:S"}},
+    "C": {"meaning": "visual contract", "fields": {"nm": "str", "px": "ints", "pl": "strings", "vw": "sym:side|low_topdown|high_topdown|isometric|oblique|ui", "sa": "sym:nearest|custom", "al": "sym:binary|full", "li": "str"}},
+    "K": {"meaning": "knowledge method", "fields": {"nm": "str", "ap": "symbols", "op": "strings", "ck": "strings", "so": "refs:S", "pc": {"type": "refs:E", "optional": true}}},
+    "D": {"meaning": "design decision", "fields": {"wh": "ref:A", "wt": "str", "wr": "refs:*", "wy": "str", "rs": "refs:S", "pc": "refs:E"}},
+    "T": {"meaning": "task", "fields": {"nm": "str", "ow": "ref:A", "pr": "ref:P", "dp": "refs:T", "dc": "refs:D", "kn": "refs:K", "io": "refs:X", "st": "sym:open|active|blocked|done|dropped", "ev": "refs:E"}},
+    "X": {"meaning": "artifact", "fields": {"nm": "str", "ur": "str", "dg": "sha", "ct": "ref:C", "kd": "sym:sprite|tileset|animation|atlas|normal|material|code|report|reference", "mt": {"type": "map", "optional": true}}},
+    "E": {"meaning": "evidence", "fields": {"nm": "str", "ur": "str", "dg": "sha", "rs": "sym:pass|fail", "md": "sym:local|live|visual", "at": "str", "bs": "value", "ob": {"type": "bool", "optional": true}}},
+    "J": {"meaning": "provider job", "fields": {"tk": "ref:T", "tl": "str", "ah": "sha", "si": "sym:prepared|submitted|running|succeeded|failed|unknown", "ri": "str", "ev": "refs:E"}},
+    "N": {"meaning": "handoff", "fields": {"wh": "ref:A", "fo": "refs:*", "nx": "refs:T", "bl": "refs:T", "rv": "int"}}
+  },
+  "field_meanings": {
+    "A": {"nm": "name", "rl": "role"},
+    "P": {"nm": "name", "ow": "owner", "ct": "contract", "sc": "sources", "rt": "runtime dependencies"},
+    "S": {"ur": "URI or root-relative file", "dg": "source snapshot hash", "ln": "inclusive line range; [] for remote", "at": "retrieval ISO-8601 date/time", "au": "authority category"},
+    "R": {"nm": "component", "ur": "exact locator", "vr": "version or explicitly unverified", "so": "research sources"},
+    "C": {"nm": "contract name", "px": "width,height pixels", "pl": "exact allowed RGB/RGBA hex colors, [] unconstrained", "vw": "projection", "sa": "sampling", "al": "alpha policy", "li": "lighting and aesthetic intent"},
+    "K": {"nm": "method name", "ap": "applicability", "op": "procedure", "ck": "acceptance checks", "so": "sources", "pc": "executed proofs if present"},
+    "D": {"wh": "who", "wt": "what", "wr": "where", "wy": "why", "rs": "research", "pc": "proof receipts"},
+    "T": {"nm": "outcome", "ow": "owner", "pr": "project", "dp": "prerequisite tasks", "dc": "decisions", "kn": "methods", "io": "input/output artifacts", "st": "state", "ev": "evidence"},
+    "X": {"nm": "asset name", "ur": "root-relative file", "dg": "file hash", "ct": "contract", "kd": "artifact kind", "mt": "kind-specific metadata; units must be declared"},
+    "E": {"nm": "check", "ur": "receipt file", "dg": "receipt hash", "rs": "observed result", "md": "execution/review mode", "at": "ISO-8601 date/time", "bs": "list of {rf: reference, dg: full record SHA256} bindings", "ob": "superseded when true; default false; preserved historical receipt cannot support current proof/completion"},
+    "J": {"tk": "task", "tl": "exact provider tool", "ah": "intent hash", "si": "observed state", "ri": "real provider ID or empty before receipt/unknown", "ev": "observations"},
+    "N": {"wh": "resuming actor", "fo": "focus records", "nx": "next tasks", "bl": "blocked tasks", "rv": "snapshot revision at handoff"}
+  }
+}

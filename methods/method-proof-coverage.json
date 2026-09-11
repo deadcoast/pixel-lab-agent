@@ -1,0 +1,796 @@
+{
+  "version": 1,
+  "kind": "method-proof-capability-inventory",
+  "execution_status": "This file is not an execution report. Run pixl.poc.run_all and inspect poc-report.json for observed results.",
+  "runner": "pixl.poc.run_all",
+  "registry": "knowledge/pixel-art.json",
+  "methods": [
+    {
+      "method_id": "representation-owner",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "contract-fixture",
+        "procedure": [
+          "Classify a sand pile, hinged cannon, blinking eye, breathing highlight, normal map and wall shadow.",
+          "Expect cell, attachment, frame, cluster, surface-channel and occlusion owners respectively."
+        ],
+        "acceptance": [
+          "All six owners match.",
+          "The shadow cannot be satisfied by the normal map alone."
+        ]
+      }
+    },
+    {
+      "method_id": "palette-contract",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "palette-membership"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use a 4x4 opaque image whose entries cycle through #101820, #406050, #90B070, #E0D890.",
+          "Replace one pixel with #406051 and run membership validation."
+        ],
+        "acceptance": [
+          "Original has zero palette violations.",
+          "Mutant reports exactly one violating coordinate."
+        ]
+      }
+    },
+    {
+      "method_id": "semantic-clusters",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "cluster-connectivity"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Create an 8x8 image with a 2x2 body, two diagonal pixels and one isolated protected eye.",
+          "Run 4- and 8-neighbor component extraction; then delete the protected eye in a mutant."
+        ],
+        "acceptance": [
+          "The diagonal pair is separate under 4-connectivity and joined under 8-connectivity.",
+          "Only the mutant fails feature preservation."
+        ]
+      }
+    },
+    {
+      "method_id": "silhouette-readability",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "visual-review-fixture",
+        "procedure": [
+          "Draw a 16x16 key with a ring hole, shaft and two teeth; render mask and colored views on three backgrounds.",
+          "Create a negative example by filling the hole and merging the teeth."
+        ],
+        "acceptance": [
+          "Record native-scale contact sheets and explicit pass/fail for hole, shaft and both teeth.",
+          "Negative example fails the landmark checklist; aesthetic review remains separate."
+        ]
+      }
+    },
+    {
+      "method_id": "edge-rhythm",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use an 8x8 45-degree one-pixel staircase and record its unit step sequence.",
+          "Add a one-cell horizontal detour at the midpoint; mark it first accidental, then intentional."
+        ],
+        "acceptance": [
+          "Detour is reported in both cases with its location.",
+          "Only the accidental case is eligible for correction."
+        ]
+      }
+    },
+    {
+      "method_id": "material-ramps",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "palette-band-bounds"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Assign three ordered slots to a 3x3 metal sample.",
+          "Remap those slots to a three-color warm metal ramp without changing indices or alpha."
+        ],
+        "acceptance": [
+          "All nine index assignments and alpha values are unchanged.",
+          "Only the three designated output colors occur."
+        ]
+      }
+    },
+    {
+      "method_id": "selective-edge-aa",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Render a 5x5 diagonal using dark, mid and bright colors with an explicit two-pixel AA mask.",
+          "Apply AA, then repeat with a forbidden interior pixel included by a buggy implementation."
+        ],
+        "acceptance": [
+          "Valid output changes only the two selected pixels.",
+          "The mutant reports the out-of-mask change."
+        ]
+      }
+    },
+    {
+      "method_id": "dither-coverage",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "dither-coverage-4x4"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Threshold the specified 4x4 matrix at 4, 8 and 12.",
+          "Tile each result 3x3 and inspect coverage and boundary continuation."
+        ],
+        "acceptance": [
+          "Selected populations are exactly 4, 8 and 12 of 16.",
+          "Each 12x12 result retains 25%, 50% or 75% coverage."
+        ]
+      }
+    },
+    {
+      "method_id": "tile-repeat",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Build an 8x8 tile with identical opposite borders and a central 2x2 mark.",
+          "Repeat it 3x3; mutate one right-edge pixel."
+        ],
+        "acceptance": [
+          "Original passes exact-border checks.",
+          "Mutant identifies the right/left mismatch; visual review still assesses repeated motifs."
+        ]
+      }
+    },
+    {
+      "method_id": "terrain-topology",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "corner-topology-pairs"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "For binary edge labels use N=1,E=2,S=4,W=8 and generate all masks 0..15.",
+          "Join mask 2 to mask 8 horizontally and mask 4 to mask 1 vertically; also test incompatible pairs."
+        ],
+        "acceptance": [
+          "All 16 masks exist exactly once.",
+          "Both valid joins pass and both mismatched-label joins fail."
+        ]
+      }
+    },
+    {
+      "method_id": "tile-variants",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "Make three 8x8 tiles sharing the same border and distinct 2x2 interior marks.",
+          "Select 64 placements using a fixed documented PRNG seed; include one mutant with a changed border."
+        ],
+        "acceptance": [
+          "Repeated runs produce identical variant IDs.",
+          "All originals preserve edge compatibility; the mutant fails."
+        ]
+      }
+    },
+    {
+      "method_id": "sheet-metadata",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "sheet-offset-spacing"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "import-fixture",
+        "procedure": [
+          "Pack four distinct 3x3 frames into a 2x2 sheet with margin 1 and spacing 1; total dimensions are 9x9.",
+          "Extract at (1,1),(5,1),(1,5),(5,5); test a wrong spacing of 0."
+        ],
+        "acceptance": [
+          "All four correct extractions match their source pixel arrays exactly.",
+          "Wrong-spacing extraction fails the expected image comparison."
+        ]
+      }
+    },
+    {
+      "method_id": "asset-provenance",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "manifest-fixture",
+        "procedure": [
+          "Create a manifest for an original 8x8 folder icon and a second entry citing the archive's Dusan Cezek attribution.",
+          "Mark the second entry's reuse basis unresolved; attempt release-manifest validation."
+        ],
+        "acceptance": [
+          "The original asset is eligible under its declared original authorship.",
+          "The sourced unresolved entry is identified before redistribution; no external code is executed."
+        ]
+      }
+    },
+    {
+      "method_id": "crop-and-anchor",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "crop-anchor-roundtrip"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "On a transparent 16x16 canvas place a 4x5 block at (6,7) and anchor (8,11).",
+          "Crop to origin (6,7), store new anchor (2,4), then reconstruct."
+        ],
+        "acceptance": [
+          "Crop is 4x5, trim offset is (6,7), local anchor is (2,4).",
+          "Reconstructed 16x16 pixels and anchor exactly match the original."
+        ]
+      }
+    },
+    {
+      "method_id": "integer-presentation",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "integer-nearest-upscale"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Scale a 2x2 image of four opaque distinct colors by 3 to 6x6.",
+          "Inspect every 3x3 quadrant and compare palette membership."
+        ],
+        "acceptance": [
+          "Each quadrant is exactly uniform and matches its source pixel.",
+          "The final image contains exactly four colors."
+        ]
+      }
+    },
+    {
+      "method_id": "alpha-contract",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "compositing-fixture",
+        "procedure": [
+          "For straight alpha composite red (255,0,0,0.5) over blue (0,0,255) in a declared linear numeric fixture.",
+          "Separately validate binary-alpha pixels [0,255,127]."
+        ],
+        "acceptance": [
+          "Unrounded linear result is (127.5,0,127.5).",
+          "Binary-alpha validation reports only the 127 entry; display color-space conversion is a separate step."
+        ]
+      }
+    },
+    {
+      "method_id": "frame-timing",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "frame-boundaries"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Use frames A,B,C with durations 80,40,120 milliseconds and a looping total of 240.",
+          "Sample t=0,79,80,119,120,239,240 using half-open intervals."
+        ],
+        "acceptance": [
+          "Frame IDs are A,A,B,B,C,C,A.",
+          "An impact event at 120 fires once per loop crossing."
+        ]
+      }
+    },
+    {
+      "method_id": "animation-anchors",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "shading-drift-mask"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Create three 16x16 frames with a foot anchor at (8,14), varying only a body highlight.",
+          "Mutate the final frame's anchor to (9,14) and inspect last-to-first displacement."
+        ],
+        "acceptance": [
+          "Original has zero foot displacement on every transition.",
+          "Mutant reports a one-pixel contact jump."
+        ]
+      }
+    },
+    {
+      "method_id": "edge-color-migration",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "edge-coverage-centroid"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use two cells and coverage arrays [1,0], [0.75,0.25], [0.5,0.5], [0.25,0.75], [0,1].",
+          "Map 0,0.25,0.5,0.75,1 to five approved grayscale ramp entries."
+        ],
+        "acceptance": [
+          "Total coverage is 1 in each frame.",
+          "Coverage centroids are 0,0.25,0.5,0.75,1; palette membership holds."
+        ]
+      }
+    },
+    {
+      "method_id": "cluster-handoff",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "cluster-handoff-centroid"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use one-row masks .##.., .###., ..##. with x starting at zero.",
+          "Count cells and compute unweighted centroids."
+        ],
+        "acceptance": [
+          "Areas are 2,3,2; centroids are 1.5,2,2.5.",
+          "Each feature is connected and moves right without disappearing."
+        ]
+      }
+    },
+    {
+      "method_id": "shading-drift",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "shading-drift-mask"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Fill an 8x8 body mask at x=1..6,y=1..6 and add a two-pixel highlight at (2,3),(3,3).",
+          "Move the highlight to (3,3),(4,3) while restoring base color behind it."
+        ],
+        "acceptance": [
+          "Opaque masks are identical and exactly two color samples change.",
+          "Highlight area remains 2 and its centroid moves right by 1."
+        ]
+      }
+    },
+    {
+      "method_id": "dither-phase-motion",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "dither-phase-cycle"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Take the 4x4 50% threshold mask from dither-coverage.",
+          "Shift x phase by 0,1,2,3,4 using modulo 4."
+        ],
+        "acceptance": [
+          "Every frame has exactly 8 selected samples.",
+          "Phase 4 exactly equals phase 0; no outside-region pixel changes."
+        ]
+      }
+    },
+    {
+      "method_id": "coverage-candidates",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "supersampled-coverage"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use a single filled cell inside an otherwise empty 5x5 image; replicate at scale 4.",
+          "Shift the high-resolution mask right by 1 sample and average 4x4 blocks."
+        ],
+        "acceptance": [
+          "Coverage splits into 0.75 and 0.25 in adjacent logical cells.",
+          "Total coverage is 1 and no nonapproved ramp color appears after mapping."
+        ]
+      }
+    },
+    {
+      "method_id": "rig-cutout",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "rig-pivot-hierarchy"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "rig-fixture",
+        "procedure": [
+          "Create a 16x8 chassis, 8x4 turret and two distinct 4x4 jaw states.",
+          "Compose a four-pose sequence by translating the turret and swapping jaw state."
+        ],
+        "acceptance": [
+          "Chassis and turret source pixels stay byte-identical across poses.",
+          "Jaw changes only by the selected attachment ID."
+        ]
+      }
+    },
+    {
+      "method_id": "rig-sockets",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "rig-pivot-hierarchy"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "rig-fixture",
+        "procedure": [
+          "Use parent socket (12,7). Attachment A has local pivot (2,3), B has pivot (5,1).",
+          "With no rotation, place A at (10,4) and B at (7,6)."
+        ],
+        "acceptance": [
+          "Both transformed pivots equal (12,7).",
+          "A mutant B translation of (8,6) reports a one-pixel mismatch."
+        ]
+      }
+    },
+    {
+      "method_id": "continuous-state-final-snap",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "final-snap-state"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "transform-fixture",
+        "procedure": [
+          "Advance x by 0.25 for eight updates from 0; use round-half-up via floor(x+0.5) for nonnegative positions.",
+          "Record continuous x and independently snapped render x."
+        ],
+        "acceptance": [
+          "Continuous positions are 0.25,0.5,0.75,1,1.25,1.5,1.75,2.",
+          "Rendered positions are 0,1,1,1,1,2,2,2 and continuous state ends at 2."
+        ]
+      }
+    },
+    {
+      "method_id": "rotation-policy",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "quarter-turn-topology"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "transform-fixture",
+        "procedure": [
+          "Use an asymmetric 3x3 binary L mask and rotate clockwise by exact quarter-turn coordinate mapping.",
+          "Apply four quarter turns; separately inspect a 45-degree candidate."
+        ],
+        "acceptance": [
+          "Four quarter turns reconstruct the original array exactly.",
+          "The 45-degree result is treated as a new raster requiring review."
+        ]
+      }
+    },
+    {
+      "method_id": "composed-animation",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Run a four-state tread loop and apply a recoil x offset [0,-2,-1,0] at tick 3.",
+          "Toggle an armor attachment at tick 5 while the tread loop continues."
+        ],
+        "acceptance": [
+          "Tread indices remain 0,1,2,3 repeating without resets.",
+          "Only recoil translation and armor attachment change from the baseline."
+        ]
+      }
+    },
+    {
+      "method_id": "atlas-reuse-budget",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "storage-fixture",
+        "procedure": [
+          "Compare sixty uncompressed 500x500 RGBA8 frames with twenty 64x64 parts each having eight states.",
+          "State that padding, compression, mipmaps and metadata are excluded."
+        ],
+        "acceptance": [
+          "Raw estimates are 60000000 bytes and 2621440 bytes.",
+          "The result is labeled arithmetic only; runtime batching requires a separate measured scene."
+        ]
+      }
+    },
+    {
+      "method_id": "normal-direction",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "normal-orientation"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use exact float normals Nflat=(0,0,1), Nright=normalize(1,0,1), Nup=normalize(0,1,1).",
+          "Evaluate max(0,N dot L) for matching and opposite slope lights; round-trip encode C=(N+1)/2."
+        ],
+        "acceptance": [
+          "Matching slope/light response equals 1; opposing slope response equals 0 within floating tolerance.",
+          "Float encoding round-trips each vector; an 8-bit implementation reports its actual angular error."
+        ]
+      }
+    },
+    {
+      "method_id": "companion-alignment",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "import-fixture",
+        "procedure": [
+          "Create paired 8x8 diffuse and normal arrays with a calibration feature at (2,5).",
+          "Shift the normal feature to (3,5) while keeping dimensions identical."
+        ],
+        "acceptance": [
+          "Metadata checks pass dimensions in both cases.",
+          "Pixel correspondence detects the shifted mutant; matching dimensions are not reported as sufficient proof."
+        ]
+      }
+    },
+    {
+      "method_id": "palette-lighting",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "palette-band-bounds"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "For K=4 use b=floor(clamp(I,0,1)*3+0.5).",
+          "Evaluate I=-1,0,0.2,0.5,0.8,1,2 and select four distinct ramp entries."
+        ],
+        "acceptance": [
+          "Band indices are 0,0,1,2,2,3,3.",
+          "Every output equals one of the four entries; NaN is rejected rather than converted silently."
+        ]
+      }
+    },
+    {
+      "method_id": "preserve-authored-shading",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "authored-shade-baseline"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use scalar diffuse values [0.2,0.5,0.8] and modulation D*(1+k*(L-0.5)).",
+          "Test k=0 at L=0,0.5,1; then inspect k=0.2 on the same strip."
+        ],
+        "acceptance": [
+          "All k=0 outputs exactly equal diffuse values.",
+          "The k=0.2 outputs are finite and bounded by 0.9D and 1.1D before any explicit clamping."
+        ]
+      }
+    },
+    {
+      "method_id": "shadow-visibility",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "shadow-occlusion"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "visibility-fixture",
+        "procedure": [
+          "Use light (0,0), receiver (4,0), and an opaque vertical segment from (2,-1) to (2,1).",
+          "Trace the light-to-receiver segment with and without the occluder; keep the receiver normal fixed."
+        ],
+        "acceptance": [
+          "Visibility is 0 with the intersection and 1 without it.",
+          "The fixed normal term is identical in both cases."
+        ]
+      }
+    },
+    {
+      "method_id": "material-channel-budget",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "material-channel-isolation"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use C=D*(A+M*L)+E with scalar D=0.5,A=0.2,L=0.8,E=0.1.",
+          "Evaluate masks M=0 and M=1, then disable emission."
+        ],
+        "acceptance": [
+          "Outputs are 0.2 and 0.6 with emission, 0.1 and 0.5 without.",
+          "Channel declarations remain separate from this illustrative shader's availability."
+        ]
+      }
+    },
+    {
+      "method_id": "cell-materials",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "cell-conservation-determinism"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Create material IDs 0=empty,1=sand,2=water and a 4x4 cell array.",
+          "Change sand's display color without changing the ID grid; introduce an unknown ID in a mutant."
+        ],
+        "acceptance": [
+          "The original material and physics state remain identical after recoloring.",
+          "The unknown material ID is rejected with its cell coordinate."
+        ]
+      }
+    },
+    {
+      "method_id": "deterministic-cell-update",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "cell-conservation-determinism"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Use an 8x8 world with a solid floor at y=7 and sand at (3,1),(3,2),(4,1).",
+          "Permit one-cell downward or diagonal movement per tick, assign stable particle IDs, and simulate 20 ticks twice from identical state and seed."
+        ],
+        "acceptance": [
+          "All three sand IDs remain present after every tick.",
+          "No ID moves more than one permitted step per tick and both final states match."
+        ]
+      }
+    },
+    {
+      "method_id": "dirty-region-wakeup",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Split a 16x8 grid into two 8x8 chunks and place movable material at x=7 next to the boundary.",
+          "Run the same rule ordering in full-scan and dirty-region modes until stable."
+        ],
+        "acceptance": [
+          "State hashes match after each tick.",
+          "An event crossing x=7 to x=8 wakes the right chunk, and stable regions eventually stop scanning."
+        ]
+      }
+    },
+    {
+      "method_id": "phased-write-ownership",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "phase-write-domains"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "scheduler-fixture",
+        "procedure": [
+          "For 8x8 chunks at origins (0,0),(8,0),(16,0), use a one-cell halo and half-open write rectangles [-1,9)x[-1,9),[7,17)x[-1,9),[15,25)x[-1,9).",
+          "Check pairwise intersections and group only first and third together."
+        ],
+        "acceptance": [
+          "Adjacent chunk pairs conflict.",
+          "First and third are disjoint and may share a phase under this fixture's bound."
+        ]
+      }
+    },
+    {
+      "method_id": "reaction-tables",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Define water -> steam when temperature >=100, with probability 1 and one-cell replacement.",
+          "Run isolated cells at temperatures 99,100,101; add a mutant rule with probability 1.2."
+        ],
+        "acceptance": [
+          "Only 100 and 101 become steam and total cell occupancy is unchanged.",
+          "Probability 1.2 is rejected before simulation."
+        ]
+      }
+    },
+    {
+      "method_id": "destruction-topology",
+      "status": "bounded_reference_fixture_available",
+      "reference_check_ids": [
+        "destruction-components"
+      ],
+      "remaining_evidence": "Use each check's limitations; target-project, visual and provider behavior are not certified by a reference fixture.",
+      "recipe": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "On a 7x3 mask fill x=0..2 and x=4..6 on every row, plus bridge cell (3,1).",
+          "Use 4-connectivity; remove the bridge and extract components."
+        ],
+        "acceptance": [
+          "Before damage there is one 19-cell component; afterward there are two 9-cell components.",
+          "The two components partition exactly the 18 remaining cells; no solver performance claim is made."
+        ]
+      }
+    },
+    {
+      "method_id": "pipeline-order",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "dependency-fixture",
+        "procedure": [
+          "Create dependencies animation->snap->light->upscale and cells->components->physics.",
+          "Validate a topological ordering and a mutant ordering with upscale before light."
+        ],
+        "acceptance": [
+          "A valid ordering passes all dependency edges.",
+          "The mutant reports the light->upscale violation and cannot claim completed rendering."
+        ]
+      }
+    },
+    {
+      "method_id": "state-driven-pixel-ui",
+      "status": "recipe_unexecuted",
+      "reference_check_ids": [],
+      "remaining_evidence": "Execute the attached recipe in a suitable local/project/provider context and preserve actual observations; there is no passing execution claim.",
+      "recipe": {
+        "kind": "state-fixture",
+        "procedure": [
+          "For an original 8x8 interaction icon define idle, pressed and disabled masks.",
+          "Feed enabled/down/up/disabled/down events and record selected state."
+        ],
+        "acceptance": [
+          "States are idle,pressed,idle,disabled,disabled.",
+          "Disabled input does not produce a pressed-success visual; source styling is not globally imposed."
+        ]
+      }
+    }
+  ]
+}

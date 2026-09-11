@@ -1,0 +1,44 @@
+# Verification and limits
+
+Run `python scripts/verify.py` from the checkout. It checks original-source hashes and all curated line ranges, rebuilds the catalog/example/plugin, executes the full test suite and method POCs, measures representation size, and records runtime hashes. See [`evidence/test-results.json`](../evidence/test-results.json), [`test-log.txt`](../evidence/test-log.txt), [`art-methods/poc-report.json`](../evidence/art-methods/poc-report.json) and [`representation-benchmark.json`](../evidence/representation-benchmark.json) for actual results.
+
+The local engine is tested through real filesystem operations, image files, compiler round trips, competing writers, and stdio MCP subprocesses. PixelLab responses in unit tests are explicitly supplied fixtures. Those tests do not impersonate a live service.
+
+## Evidence design
+
+| WHO | WHAT | WHERE | WHY / research | Observable proof |
+|---|---|---|---|---|
+| Language evaluator | Preserve type distinctions and reject ambiguous encodings | `tests/test_language.py` | Proprietary notation must remain deterministic; density alone says nothing about inference. | UTF-8 byte framing, duplicate rejection, limits, canonical hashes. |
+| State evaluator | Detect stale facts and rejected work | `tests/test_graph.py`, `tests/test_store.py` | Persistent agent context is useful only when its relationships remain current; [context-engineering research](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) motivates retrieval and note persistence. | Exact evidence/decision/method bindings, supersession, completion gates, stale/concurrent writers and reopening. |
+| Art evaluator | Measure the actual file and reference algorithms | `tests/test_assets.py`, `tests/test_poc.py` | Research procedures in the knowledge registry require concrete tests with known results. | Real PNG/GIF/TIFF measurements, mutation injection, 512 oriented tile-neighbor pairs and independent numeric oracles. |
+| Adapter evaluator | Keep provider arguments and observation history accurate | `tests/test_platform.py`, `tests/test_mcp.py` | Official PixelLab/MCP interfaces distinguish creation, observation and completion. | Exact supplied-schema validation, mode constraints, immutable remote identity, unknown outcomes and surviving malformed requests. |
+| Distribution evaluator | Make the kit work outside this repository | `tests/test_packaging.py`, `docs/AGENT-KIT.md` | Installed plugins run from caches and other projects. | Relocated runner, copied-resource hashes, host discovery and real MCP handshake. |
+
+## Failed attempts retained separately
+
+These are pre-fix observations, not final verification results:
+
+1. Initial parser/graph/store/catalog/assets test invocations failed because their modules were not implemented. The initial platform suite had 22 explicit missing-adapter failures; the POC suite had 15 explicit missing-runner failures. Implementation followed those baselines.
+2. A new graph regression showed an asset receipt could omit its visual contract. Binding coverage was added and the regression passed.
+3. Independent review reproduced a method borrowing an unrelated passing asset proof. Method and decision receipts now bind their own definitions and semantic sources; unrelated and stale proofs fail.
+4. Independent review replaced a red image during inspection. The old code returned red measurements with the replacement blue file's hash. Inspection now hashes and measures one in-memory byte snapshot; the regression checks both the original receipt and a failing reinspection of the replacement.
+5. A multi-frame TIFF bypassed limits using a tiny first frame and an oversized second frame. Every actual frame and cumulative pixel total are now checked before conversion. The first fix wrapped its own `image_limit` error; that exception handling was corrected and retested.
+6. An escaped lone surrogate in an MCP tool name terminated the server before a subsequent ping. Escaped JSON response encoding preserves the structured error and the following request.
+7. Evidence validation rebuilt adjacency for every asset binding. Independent review measured 1,000 X/E pairs at 2.316 seconds. Computing adjacency once reduced the same fixture to 0.0563 seconds in that review environment. These are local probe timings, not a cross-machine performance guarantee.
+8. A completed task could remain completed after its contract and proof changed. Commits now require reopening on any change in the task's reference closure. Existing E receipt content cannot be rewritten; supersede it and add a new ID.
+9. Exact source-slice testing initially expected LF while its Windows fixture wrote CRLF. The fixture now explicitly writes LF; the reader continues to preserve actual source newlines.
+10. A strict POC run exposed deprecated Pillow `getdata` usage. It was replaced with a supported operation and verified with deprecation warnings treated as errors.
+11. The root interpreter's `-I` mode hid user-site Pillow during bundle testing. The automated relocation harness now supplies only dependency site directories while excluding source/cwd paths. The independent agent exercise used a separate venv with dependencies and no PIXL installation, providing a second portability check.
+12. The first wheel probe disabled build isolation on an interpreter without setuptools, so pip could not import the build backend. The probe now uses the project's declared isolated build dependencies. `python scripts/check_wheel.py` then built and installed the wheel in a temporary target and exercised knowledge, capabilities, initialization and validation without source imports. Results are in [`wheel-check.json`](../evidence/wheel-check.json).
+
+The independent code reviewer re-ran all five original findings after their fixes and found them resolved. It also exercised method changes, source changes, receipt supersession, rejected receipt reactivation and preserved historical bindings. Subsequent exact runtime hashes are in the final test report; the narrative timings above describe the reviewed snapshot.
+
+## What the results establish
+
+The reference runner covers 28 of 43 knowledge methods with 24 bounded checks. The remaining 15 recipes require project-specific, provider, visual or engine evidence and have no fabricated passing result. Even covered methods retain limitations: connected masks do not establish appealing silhouettes; corner compatibility does not establish attractive joins; material conservation does not establish a production physics implementation.
+
+`prepare` uses a caller-supplied input schema and never discovers or contacts a server. `job` records caller-supplied observations and never submits or polls. Receipts validate identity, freshness and local relationships; they are not remote attestations. PixelLab authentication, actual generation, account pricing, output quality and target-engine integration require real subsequent evidence.
+
+The representation comparison uses the same records, values and explicit reference/symbol distinctions. It reports compact and pretty JSON baselines, two tokenizer encodings when available, and the separate specification/registry bootstrap cost. It does not measure model accuracy, artistic output, end-to-end latency or long-horizon recovery success rates. A controlled multi-model experiment would need fixed task instances, identical evidence, multiple trials and outcome scoring; none was silently substituted with byte counts.
+
+On this Windows machine the symlink-publication test is skipped when symlink creation privilege is unavailable. The report lists that skip explicitly. The ordinary path-confinement and writer tests still execute. All store guarantees assume local cooperative writers and a functioning filesystem; no distributed consensus, hostile filesystem protection or power-loss guarantee beyond the stated publication mechanism is claimed.
