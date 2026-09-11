@@ -1,9 +1,9 @@
 import json
-from pathlib import Path
 import subprocess
 import sys
-from tempfile import TemporaryDirectory
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 class MCPTests(unittest.TestCase):

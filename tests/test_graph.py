@@ -1,10 +1,10 @@
+import unittest
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
-from pixl.codec import PixlError, Ref, Record, Symbol, record_hash
 from pixl import graph
+from pixl.codec import PixlError, Record, Ref, Symbol
 from tests.support import sample
 
 

@@ -68,7 +68,12 @@ def dispatch(request, root):
             result = {"content": [{"type": "text", "text": json.dumps(output, ensure_ascii=False, separators=(",", ":"))}],
                       "structuredContent": output, "isError": False}
         except ValidationError as error:
-            result = {"content": [{"type": "text", "text": "arguments: " + error.message}], "isError": True}
+            result = {
+                "content": [
+                    {"type": "text", "text": f"arguments: {error.message}"}
+                ],
+                "isError": True,
+            }
         except (PixlError, OSError, ValueError, KeyError, TypeError, RecursionError) as error:
             result = {"content": [{"type": "text", "text": str(error)}], "isError": True}
     else:
@@ -88,9 +93,12 @@ def serve(root):
             response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": "Request exceeds 16 MiB"}}
         else:
             try:
-                request = json.loads(line, parse_constant=lambda v: (_ for _ in ()).throw(ValueError(v)))
+                request = json.loads(
+                    line,
+                    parse_constant=lambda v: iter(()).throw(ValueError(v)),
+                )
                 response = dispatch(request, root)
-            except (ValueError, UnicodeError, RecursionError):
+            except (ValueError, RecursionError):
                 response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
         if response is not None:
             data = json.dumps(response, ensure_ascii=True, separators=(",", ":")).encode("utf-8") + b"\n"

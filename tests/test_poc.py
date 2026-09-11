@@ -1,9 +1,13 @@
-from importlib import import_module, util
-from hashlib import sha256
 import json
+import os
+import sys
+import unittest
+from datetime import UTC
+from hashlib import sha256
+from importlib import import_module, util
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
+from types import CodeType, FunctionType
 from unittest.mock import patch
 
 from PIL import Image
@@ -118,9 +122,13 @@ class PocTests(unittest.TestCase):
             self.assertEqual(image.getpixel((5, 5)), (255, 255, 0, 255))
 
     def test_repeated_runs_are_deterministic_and_accept_string_paths(self):
+        from datetime import datetime
         first = self.poc.run_all(str(self.root / 'first'))
         second = self.poc.run_all(self.root / 'second')
-        self.assertEqual(first, second)
+        for report in (first, second):
+            self.assertEqual(datetime.fromisoformat(report['observed_at']).tzinfo, UTC)
+        self.assertEqual({k: v for k, v in first.items() if k != 'observed_at'},
+                         {k: v for k, v in second.items() if k != 'observed_at'})
 
     def test_broken_algorithm_is_a_failed_report_not_a_fabricated_pass(self):
         with patch.object(self.poc, '_dither_mask', return_value=[[False] * 4 for _ in range(4)]):
@@ -234,6 +242,190 @@ class PocTests(unittest.TestCase):
         self.assertEqual(checks['dirty-region-boundary-parity']['status'], 'fail')
         self.assertFalse(checks['dirty-region-boundary-parity']['observed']['states_match_each_tick'])
         self.assertEqual(checks['destruction-components']['status'], 'pass')
+
+    def test_report_binds_resolved_knowledge_bytes(self):
+        from pixl.service import resource_root
+        report, _ = self.run_checks()
+        self.assertTrue('knowledge_sha256' in report, 'Report lacks source-authority binding')
+        expected = sha256((resource_root() / 'knowledge' / 'pixel-art.json').read_bytes()).hexdigest()
+        self.assertEqual(report['knowledge_sha256'], expected)
+
+    def test_report_binds_every_unique_cited_source(self):
+        from pixl.service import resource_root
+        report, _ = self.run_checks()
+        self.assertTrue('source_sha256' in report, 'Report lacks cited-source byte bindings')
+        resources = resource_root()
+        registry = json.loads((resources / 'knowledge' / 'pixel-art.json').read_text(encoding='utf-8'))
+        paths = {source['path'] for method in registry['methods'] for source in method['sources']}
+        self.assertEqual(report['source_sha256'], {path: sha256((resources / path).read_bytes()).hexdigest() for path in paths})
+
+    def test_bundle_binding_works_outside_checkout_and_detects_knowledge_change(self):
+        from pixl.service import resource_root
+        original = (resource_root() / 'knowledge' / 'pixel-art.json').read_bytes()
+        bundle = self.root / 'plugin'
+        knowledge = bundle / 'resources' / 'knowledge' / 'pixel-art.json'
+        knowledge.parent.mkdir(parents=True)
+        knowledge.write_bytes(original)
+        resources = resource_root()
+        source_paths = {source['path'] for method in json.loads(original)['methods'] for source in method['sources']}
+        for relative in source_paths:
+            destination = bundle / 'resources' / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes((resources / relative).read_bytes())
+        previous = Path.cwd()
+        try:
+            os.chdir(self.root)
+            with patch.dict(os.environ, {'PIXL_PLUGIN_ROOT': str(bundle)}):
+                first = self.poc.run_all(self.root / 'one')
+                self.assertTrue('knowledge_sha256' in first, 'Bundle report lacks knowledge binding')
+                knowledge.write_bytes(original + b'\n')
+                second = self.poc.run_all(self.root / 'two')
+                self.assertTrue('source_sha256' in second, 'Bundle report lacks cited-source bindings')
+                changed_path = sorted(source_paths)[0]
+                changed_source = bundle / 'resources' / changed_path
+                changed_source.write_bytes(changed_source.read_bytes() + b'\n')
+                third = self.poc.run_all(self.root / 'three')
+        finally:
+            os.chdir(previous)
+        self.assertEqual(first['knowledge_sha256'], sha256(original).hexdigest())
+        self.assertEqual(second['knowledge_sha256'], sha256(original + b'\n').hexdigest())
+        self.assertNotEqual(first['knowledge_sha256'], second['knowledge_sha256'])
+        self.assertEqual(second['knowledge_sha256'], third['knowledge_sha256'])
+        self.assertNotEqual(second['source_sha256'][changed_path], third['source_sha256'][changed_path])
+        self.assertEqual(third['source_sha256'][changed_path], sha256(changed_source.read_bytes()).hexdigest())
+
+    def test_missing_resolved_knowledge_cannot_create_an_unbound_pass(self):
+        with patch.dict(os.environ, {'PIXL_PLUGIN_ROOT': str(self.root / 'missing-plugin')}):
+            with self.assertRaises(FileNotFoundError):
+                self.poc.run_all(self.root / 'unbound')
+        self.assertFalse((self.root / 'unbound' / 'poc-report.json').exists())
+
+    def test_missing_cited_source_cannot_create_an_unbound_pass(self):
+        from pixl.service import resource_root
+        original = (resource_root() / 'knowledge' / 'pixel-art.json').read_bytes()
+        bundle = self.root / 'incomplete-plugin'
+        knowledge = bundle / 'resources' / 'knowledge' / 'pixel-art.json'
+        knowledge.parent.mkdir(parents=True)
+        knowledge.write_bytes(original)
+        with patch.dict(os.environ, {'PIXL_PLUGIN_ROOT': str(bundle)}):
+            with self.assertRaises(FileNotFoundError):
+                self.poc.run_all(self.root / 'unbound-source')
+        self.assertFalse((self.root / 'unbound-source' / 'poc-report.json').exists())
+
+    def load_temporary_runner(self):
+        source = Path(self.poc.__file__).read_bytes()
+        path = self.root / 'temporary_poc.py'
+        path.write_bytes(source)
+        spec = util.spec_from_file_location('pixl._temporary_poc_fixture', path)
+        module = util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module, path, source
+
+    def test_loaded_runner_rejects_changed_unexecuted_source_bytes(self):
+        module, path, original = self.load_temporary_runner()
+        baseline = module.run_all(self.root / 'before-change')
+        self.assertEqual(baseline['status'], 'pass')
+        self.assertEqual(baseline['implementation_sha256'], sha256(original).hexdigest())
+        changed = original.replace(
+            b'return [[rank < threshold for rank in row] for row in _BAYER]',
+            b'return [[False] * 4 for _ in range(4)]')
+        self.assertNotEqual(changed, original)
+        path.write_bytes(changed)
+        # Demonstrate the relevant difference: the loaded function still
+        # computes correct coverage, while freshly loaded changed code fails.
+        self.assertEqual(sum(map(sum, module._dither_mask(4))), 4)
+        fresh_spec = util.spec_from_file_location('pixl._changed_poc_fixture', path)
+        fresh = util.module_from_spec(fresh_spec)
+        fresh_spec.loader.exec_module(fresh)
+        self.assertEqual(sum(map(sum, fresh._dither_mask(4))), 0)
+        with self.assertRaisesRegex(RuntimeError, 'runner_source_changed'):
+            module.run_all(self.root / 'after-change')
+        self.assertFalse((self.root / 'after-change' / 'poc-report.json').exists())
+
+    def test_fresh_import_rejects_stale_timestamp_cache(self):
+        # Force only this temporary module to create its ordinary timestamp
+        # cache, even when the test process was launched with -B.
+        with patch.object(sys, 'dont_write_bytecode', False):
+            module, path, original = self.load_temporary_runner()
+        cached_path = Path(module.__cached__)
+        self.assertTrue(cached_path.is_file())
+        cache_bytes = cached_path.read_bytes()
+        stamp = path.stat()
+        changed = original.replace(b'rank < threshold', b'rank > threshold')
+        self.assertNotEqual(changed, original)
+        self.assertEqual(len(changed), len(original))
+        path.write_bytes(changed)
+        os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+        self.assertEqual(path.stat().st_mtime_ns, stamp.st_mtime_ns)
+
+        spec = util.spec_from_file_location('pixl._cached_poc_fixture', path)
+        cached_code = spec.loader.get_code(spec.name)
+        source_code = compile(changed, str(path), 'exec', dont_inherit=True,
+                              optimize=sys.flags.optimize)
+        def dither(code):
+            return next(value for value in code.co_consts
+                        if isinstance(value, CodeType) and value.co_name == '_dither_mask')
+        # The loader really did reuse the old cache. Fresh source selects the
+        # eleven ranks greater than four, instead of the four ranks below it.
+        self.assertEqual(cached_path.read_bytes(), cache_bytes)
+        self.assertEqual(sum(map(sum, FunctionType(dither(cached_code), module.__dict__)(4))), 4)
+        self.assertEqual(sum(map(sum, FunctionType(dither(source_code), module.__dict__)(4))), 11)
+        self.assertEqual(cached_code.co_code, source_code.co_code)
+        fresh = util.module_from_spec(spec)
+        with self.assertRaisesRegex(RuntimeError, 'runner_source_mismatch'):
+            spec.loader.exec_module(fresh)
+        self.assertFalse(hasattr(fresh, '_IMPORTED_SOURCE_SHA256'))
+
+    def test_fresh_import_rejects_stale_nested_constant(self):
+        with patch.object(sys, 'dont_write_bytecode', False):
+            module, path, original = self.load_temporary_runner()
+        self.assertTrue(Path(module.__cached__).is_file())
+        stamp = path.stat()
+        changed = original.replace(b'Unknown material', b'Invalid material')
+        self.assertNotEqual(changed, original)
+        self.assertEqual(len(changed), len(original))
+        path.write_bytes(changed)
+        os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+        spec = util.spec_from_file_location('pixl._constant_poc_fixture', path)
+        cached_code = spec.loader.get_code(spec.name)
+        source_code = compile(changed, str(path), 'exec', dont_inherit=True,
+                              optimize=sys.flags.optimize)
+        def reaction(code):
+            runner = next(value for value in code.co_consts
+                          if isinstance(value, CodeType) and value.co_name == 'run_all')
+            table = next(value for value in runner.co_consts
+                         if isinstance(value, CodeType) and value.co_name == 'reaction_table')
+            return next(value for value in table.co_consts
+                        if isinstance(value, CodeType) and value.co_name == 'apply')
+        # The nested function's instructions are identical; the changed
+        # error message is exclusively in its constants, three levels down.
+        self.assertEqual(reaction(cached_code).co_code, reaction(source_code).co_code)
+        self.assertIn('Unknown material', reaction(cached_code).co_consts)
+        self.assertIn('Invalid material', reaction(source_code).co_consts)
+        fresh = util.module_from_spec(spec)
+        with self.assertRaisesRegex(RuntimeError, 'runner_source_mismatch'):
+            spec.loader.exec_module(fresh)
+        self.assertFalse(hasattr(fresh, '_IMPORTED_SOURCE_SHA256'))
+
+    def test_runner_rejects_source_changed_during_fixture_execution(self):
+        module, path, original = self.load_temporary_runner()
+        actual_dither = module._dither_mask
+        def mutate_source(threshold):
+            path.write_bytes(original + b'\n# changed while fixtures were executing\n')
+            return actual_dither(threshold)
+        with patch.object(module, '_dither_mask', side_effect=mutate_source):
+            with self.assertRaisesRegex(RuntimeError, 'runner_source_changed'):
+                module.run_all(self.root / 'during-change')
+        self.assertFalse((self.root / 'during-change' / 'poc-report.json').exists())
+
+    def test_loaded_runner_rejects_missing_source_file(self):
+        module, path, _ = self.load_temporary_runner()
+        path.unlink()
+        with self.assertRaises(Exception) as failure:
+            module.run_all(self.root / 'missing-runner')
+        self.assertIsInstance(failure.exception, RuntimeError)
+        self.assertIn('runner_source_changed', str(failure.exception))
+        self.assertFalse((self.root / 'missing-runner' / 'poc-report.json').exists())
 
 
 if __name__ == '__main__':

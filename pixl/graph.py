@@ -1,10 +1,10 @@
 """Closed-schema validation, evidence integrity and deterministic graph queries."""
 
-from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
 import re
+from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from .codec import Document, PixlError, Ref, Symbol, encode, record_hash
@@ -43,8 +43,15 @@ def proof_scope(doc, seeds, adjacency=None):
     """Bind design/method/art semantics, excluding mutable workflow and proof nodes."""
     adjacency = edges(doc) if adjacency is None else adjacency
     semantic = {id_: targets for id_, targets in adjacency.items() if doc.records[id_].kind not in "EPTJN"}
-    return {id_ for id_ in closure({id_: targets & semantic.keys() for id_, targets in semantic.items()},
-                                  set(seeds) & semantic.keys())}
+    return set(
+        closure(
+            {
+                id_: targets & semantic.keys()
+                for id_, targets in semantic.items()
+            },
+            set(seeds) & semantic.keys(),
+        )
+    )
 
 
 def confined(root, name):
@@ -85,7 +92,9 @@ def _type(value, type_, doc):
     if type_.startswith("sym:"):
         return isinstance(value, Symbol) and value.value in type_[4:].split("|")
     if type_.startswith("refs:"):
-        return isinstance(value, list) and all(_type(v, "ref:" + type_[5:], doc) for v in value)
+        return isinstance(value, list) and all(
+            _type(v, f"ref:{type_[5:]}", doc) for v in value
+        )
     if type_.startswith("ref:"):
         return (isinstance(value, Ref) and value.id in doc.records and
                 (type_[4:] == "*" or doc.records[value.id].kind == type_[4:]))
@@ -140,6 +149,7 @@ def validate(doc, root=None):
         if id_ not in scope_cache:
             scope_cache[id_] = closure(proof_edges, [id_]) if id_ in semantic else set()
         return scope_cache[id_]
+
     def bound(evidence, passing=False):
         result = set()
         for reference in evidence:
@@ -149,6 +159,7 @@ def validate(doc, root=None):
             if not passing or proof.fields["rs"].value == "pass":
                 result.update(refs(proof.fields["bs"]))
         return result
+
     for id_, record in doc.records.items():
         f = record.fields
         if record.kind == "D":
@@ -166,7 +177,12 @@ def validate(doc, root=None):
             _require(len(f["px"]) == 2 and all(0 < n <= 65536 for n in f["px"]), "dimensions", id_)
             _require(all(re.fullmatch(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?", c) for c in f["pl"]), "palette", id_)
         if record.kind == "S":
-            _require(len(f["ln"]) in (0, 2) and (not f["ln"] or 1 <= f["ln"][0] <= f["ln"][1]), "source_range", id_)
+            _require(
+                len(f["ln"]) in {0, 2}
+                and (not f["ln"] or 1 <= f["ln"][0] <= f["ln"][1]),
+                "source_range",
+                id_,
+            )
             _require(bool(f["ur"]), "source_uri", id_)
         if record.kind in ("S", "E"):
             try:

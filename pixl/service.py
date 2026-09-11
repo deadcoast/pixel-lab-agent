@@ -1,7 +1,7 @@
 """Shared local operation surface used by CLI and MCP."""
 
-import json
 import hashlib
+import json
 import os
 from pathlib import Path
 
@@ -10,8 +10,7 @@ from .codec import PixlError
 
 
 def resource_root():
-    plugin = os.environ.get("PIXL_PLUGIN_ROOT")
-    if plugin:
+    if plugin := os.environ.get("PIXL_PLUGIN_ROOT"):
         return Path(plugin).resolve() / "resources"
     packaged = Path(__file__).with_name("resources")
     if packaged.is_dir():
@@ -49,7 +48,12 @@ def load_document(path):
 
 def read_json(path):
     try:
-        return json.loads(Path(path).read_text(encoding="utf-8"), parse_constant=lambda v: (_ for _ in ()).throw(PixlError("json", "nonfinite number")))
+        return json.loads(
+            Path(path).read_text(encoding="utf-8"),
+            parse_constant=lambda v: iter(()).throw(
+                PixlError("json", "nonfinite number")
+            ),
+        )
     except (OSError, ValueError) as error:
         raise PixlError("json_read", str(path)) from error
 
@@ -57,10 +61,10 @@ def read_json(path):
 def knowledge(method=None):
     data = read_json(resource_root() / "knowledge" / "pixel-art.json")
     if method:
-        matches = [m for m in data["methods"] if m["id"] == method]
-        if not matches:
+        if matches := [m for m in data["methods"] if m["id"] == method]:
+            return matches[0]
+        else:
             raise PixlError("unknown_method", method)
-        return matches[0]
     return {"version": data["version"], "methods": [{"id": m["id"], "title": m["title"],
                                                       "applies_to": m["applies_to"]} for m in data["methods"]]}
 

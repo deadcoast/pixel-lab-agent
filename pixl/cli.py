@@ -2,8 +2,8 @@
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from . import codec, graph, service, store
 from .codec import PixlError
@@ -89,6 +89,6 @@ def main(argv=None):
         else:
             sys.stdout.buffer.write(data)
         return 1 if isinstance(output, dict) and (output.get("pass") is False or output.get("status") == "fail") else 0
-    except (PixlError, OSError, ValueError, KeyError, TypeError, RecursionError) as error:
+    except (PixlError, OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
         print(json.dumps({"error": getattr(error, "code", "operation"), "detail": str(error)}), file=sys.stderr)
         return 2

@@ -1,14 +1,13 @@
 """Offline request and journal contracts; all response records are test fixtures."""
 
 import base64
-import copy
 import hashlib
 import io
 import json
 import os
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 from unittest.mock import patch
 
 from PIL import Image

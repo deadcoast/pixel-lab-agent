@@ -1,8 +1,8 @@
 """Equal-semantics representation size comparison; no LLM reasoning claim."""
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -29,7 +29,7 @@ def run():
             for name, text in forms.items():
                 sizes[name][encoding_name] = len(encoder.encode(text, disallowed_special=()))
             bootstrap_counts[encoding_name] = len(encoder.encode(bootstrap, disallowed_special=()))
-        token_status = "measured with tiktoken " + tiktoken.__version__
+        token_status = f"measured with tiktoken {tiktoken.__version__}"
     except ImportError:
         pass
     packet = encode(context(doc, "produce"))

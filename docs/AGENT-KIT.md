@@ -193,7 +193,7 @@ The exercise copied `resources/examples` and `resources/docs` into the fresh pro
 | MCP `tools/list` | 13 local tools with input schemas |
 | MCP `tools/call` → `pixl_validate` | `isError: false`, valid 13-record example, `files_verified: true`; structured result matched the text result |
 
-The recorded workflow comprised **16 CLI invocations: 13 successful operations and three intended rejections**. The negative checks are successful failure-handling proofs, not production failures hidden by a final pass. No runtime or runner defect was found in this exercise. The documentation was clarified to expose the current 13-tool inventory, tagged JSON adapter commands, generated requirements file, and consistent project-root arguments.
+The recorded workflow comprised **16 CLI invocations: 13 successful operations and three intended rejections**. The negative checks are successful failure-handling proofs, not production failures hidden by a final pass. No runtime or runner defect was found in this exercise. That snapshot had 13 MCP tools; the final inventory has 14 after adding exact source-slice retrieval. Current runtime, POC, packaging and protocol results are recorded in [verification](VERIFICATION.md), separately from this earlier exercise.
 
 With `$pixlPython` set to the isolated interpreter and `$pixlRunner` set to the copied runner's absolute path, the key commands were:
 

@@ -2,9 +2,9 @@
 
 import hashlib
 import json
-from pathlib import Path
 import shutil
 import tomllib
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "pixl"
@@ -31,6 +31,7 @@ def build():
         add(ROOT / name, Path("resources") / name)
     add(ROOT / "pixl/registry.json", Path("resources/pixl/registry.json"))
     add(ROOT / "pixl/poc.py", Path("resources/pixl/poc.py"))
+    add(ROOT / "NOTICE.md", Path("NOTICE.md"))
     entries = []
     for target, source in sorted(plan.items()):
         target.parent.mkdir(parents=True, exist_ok=True)

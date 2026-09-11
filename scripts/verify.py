@@ -2,11 +2,12 @@
 
 import io
 import json
-from pathlib import Path
 import platform
 import sys
 import unittest
+from datetime import UTC, datetime
 from importlib.metadata import version
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -16,10 +17,10 @@ from pixl.codec import digest
 from pixl.graph import file_hash, validate
 from pixl.poc import run_all
 from pixl.service import load_document
-from scripts.build_examples import build as examples
-from scripts.build_plugin import build as bundle
 from scripts.benchmark import run as benchmark
+from scripts.build_examples import build as examples
 from scripts.build_knowledge import build as knowledge_library
+from scripts.build_plugin import build as bundle
 
 ORIGINAL_HASHES = {
     "links.md": "8d25924d3085fa0307f3cc698c252fb9195555885def82951bf070da770b37b8",
@@ -38,7 +39,7 @@ def write(name, data):
 def verify():
     source_check = {name: file_hash(ROOT / name) == expected for name, expected in ORIGINAL_HASHES.items()}
     if not all(source_check.values()):
-        raise RuntimeError("supplied source changed: " + repr(source_check))
+        raise RuntimeError(f"supplied source changed: {source_check!r}")
     index = catalog(ROOT)
     write("knowledge/source-catalog.json", index)
     methods = json.loads((ROOT / "knowledge/pixel-art.json").read_text(encoding="utf-8"))
@@ -60,6 +61,7 @@ def verify():
     measured = benchmark()
     write("evidence/representation-benchmark.json", measured)
     summary = {"status": "pass" if result.wasSuccessful() and art["status"] == "pass" else "fail",
+               "observed_at": datetime.now(UTC).isoformat(),
                "python": platform.python_version(), "Pillow": version("Pillow"), "jsonschema": version("jsonschema"),
                "tests": {"run": result.testsRun, "passed": result.testsRun - len(result.failures) - len(result.errors) - len(result.skipped),
                          "failures": len(result.failures), "errors": len(result.errors),

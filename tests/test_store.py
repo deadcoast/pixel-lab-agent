@@ -1,11 +1,11 @@
+import unittest
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
-from pixl.codec import PixlError, Symbol, Ref, digest, record_hash
 from pixl import store
+from pixl.codec import PixlError, Ref, Symbol, digest, record_hash
 from tests.support import sample
 
 
@@ -29,7 +29,7 @@ class StoreTests(unittest.TestCase):
         receipt = store.commit(self.folder, next_, digest(self.doc), root=self.root)
         self.assertEqual(receipt["hash"], digest(next_))
         self.assertEqual(store.load(self.folder), next_)
-        self.assertTrue((self.folder / "history" / (digest(self.doc) + ".px")).is_file())
+        self.assertTrue((self.folder / "history" / f"{digest(self.doc)}.px").is_file())
         self.assertFalse((self.folder / ".lock").exists())
 
     def test_stale_writer_rejected_without_changing_state(self):
@@ -105,3 +105,24 @@ class StoreTests(unittest.TestCase):
         with self.assertRaisesRegex(PixlError, "store_path"):
             store.initialize(another, self.doc, root=self.root)
         self.assertEqual(list(outside.iterdir()), [])
+
+    def test_supersession_preserves_old_receipt_and_reactivation_is_rejected(self):
+        from pixl.graph import proof_scope
+        next_ = deepcopy(self.doc)
+        next_.revision = 1
+        old_bindings = deepcopy(next_.records["proof"].fields["bs"])
+        next_.records["proof"].fields["ob"] = True
+        replacement = deepcopy(self.doc.records["proof"])
+        replacement.id = "proof2"
+        next_.records["proof2"] = replacement
+        next_.records["decision"].fields["pc"] = [Ref("proof2")]
+        replacement.fields["bs"] = [{"rf": Ref(id_), "dg": record_hash(next_.records[id_])}
+                                     for id_ in sorted(proof_scope(next_, ["decision"]))]
+        store.commit(self.folder, next_, digest(self.doc), root=self.root)
+        saved = store.load(self.folder)
+        self.assertEqual(saved.records["proof"].fields["bs"], old_bindings)
+        reactivated = deepcopy(saved)
+        reactivated.revision += 1
+        reactivated.records["proof"].fields["ob"] = False
+        with self.assertRaisesRegex(PixlError, "evidence_immutable"):
+            store.commit(self.folder, reactivated, digest(saved), root=self.root)

@@ -9,23 +9,22 @@ authenticated locally. The returned journal records those claims explicitly.
 import base64
 import binascii
 import copy
-from datetime import datetime, timezone
 import hashlib
 import io
 import json
 import math
 import os
-from pathlib import Path
 import re
+from datetime import UTC, datetime
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from jsonschema import Draft202012Validator
+from PIL import Image
 from referencing import Registry
 from referencing.exceptions import NoSuchResource
-from PIL import Image
 
 from .codec import PixlError
-
 
 _SECRET_KEYS = {"apikey", "apitoken", "authorization", "auth", "accesstoken",
                 "refreshtoken", "bearertoken", "password", "secret", "clientsecret",
@@ -55,17 +54,16 @@ def _json_bytes(value):
         elif isinstance(item, list):
             for child in item:
                 visit(child, depth + 1)
-        elif item is None or type(item) in (str, bool, int):
-            return
-        elif type(item) is float and math.isfinite(item):
+        elif item is None or type(item) in (str, bool, int) or type(item) is float and math.isfinite(item):
             return
         else:
             _fail("expected finite JSON values", "platform_json")
+
     try:
         visit(value)
         data = json.dumps(value, sort_keys=True, separators=(",", ":"),
                           ensure_ascii=False, allow_nan=False).encode("utf-8")
-    except (UnicodeError, RecursionError, ValueError, TypeError) as error:
+    except (RecursionError, ValueError, TypeError) as error:
         if isinstance(error, PixlError):
             raise
         _fail("invalid JSON encoding", "platform_json")
@@ -100,7 +98,7 @@ def capabilities(name=None):
         catalog = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(catalog, dict) or not isinstance(catalog.get("tools"), list):
             raise ValueError("invalid catalog")
-    except (OSError, ValueError, UnicodeError) as error:
+    except (OSError, ValueError) as error:
         raise PixlError("platform_catalog", "cannot read the PixelLab capability catalog") from error
     if name is None:
         return catalog
@@ -187,7 +185,7 @@ def _images(tool, arguments):
     sizes = {}
     for field in arguments:
         if field.endswith("_base64"):
-            _exclusive(arguments, field, field[:-7] + "_url")
+            _exclusive(arguments, field, f"{field[:-7]}_url")
     _exclusive(arguments, "images_base64", "image_urls")
     if tool == "create_portrait_character":
         _exclusive(arguments, "image", "image_url", required=True)
@@ -225,6 +223,7 @@ def _images(tool, arguments):
         elif isinstance(value, list):
             for i, child in enumerate(value):
                 walk(child, f"{path}.{i}")
+
     walk(arguments)
     return sizes
 
@@ -288,7 +287,7 @@ def _rules(tool, a, schema, authorization, entry):
         if mode == "template":
             _require(a, "template_animation_id")
             reject_fields("frame_count")
-        elif not (not character and a.get("animation_group_id")):
+        elif character or not a.get("animation_group_id"):
             _require(a, "action_description" if character else "animation_description")
         if mode == "v3":
             frames = value("frame_count", 8)
@@ -305,9 +304,8 @@ def _rules(tool, a, schema, authorization, entry):
                 _fail("custom poses require v3 mode")
             # Object direction cardinality depends on the source; no source lookup is performed.
             directions = a.get("directions")
-            if character or directions is not None:
-                if not isinstance(directions, list) or len(directions) != 1 or directions[0] not in _DIRECTIONS:
-                    _fail("a custom character pose requires one explicit direction")
+            if (character or directions is not None) and (not isinstance(directions, list) or len(directions) != 1 or directions[0] not in _DIRECTIONS):
+                _fail("a custom character pose requires one explicit direction")
             poses = [dim for key, dim in sizes.items() if any(key.startswith(p) for p in pose_keys)]
             if any(max(dim) > 256 for dim in poses) or len(set(poses)) > 1:
                 _fail("custom start/end canvases must match and be at most 256x256")
@@ -554,7 +552,7 @@ def job_update(job: dict, event: str, remote_id: str | None = None, evidence: di
     identity = job["remote_id"] if remote_id is None else remote_id
     if job["remote_id"] is not None and identity != job["remote_id"]:
         _fail("remote identity is immutable once recorded", "platform_journal")
-    if event in ("submitted", "running", "succeeded") and identity is None:
+    if event in {"submitted", "running", "succeeded"} and identity is None:
         _fail("accepted outcomes require a real identifier from the remote response", "platform_journal")
     _evidence_required(event, evidence)
     result = copy.deepcopy(job)
@@ -563,6 +561,6 @@ def job_update(job: dict, event: str, remote_id: str | None = None, evidence: di
                                    "intent_sha256": job["intent_sha256"], "tool": job["tool"],
                                    "remote_id": identity, "evidence": copy.deepcopy(evidence),
                                    "evidence_origin": "caller_supplied",
-                                   "recorded_at": datetime.now(timezone.utc).isoformat()})
+                                   "recorded_at": datetime.now(UTC).isoformat()})
     result.update(state=event, remote_id=identity, remote_executed=False)
     return result

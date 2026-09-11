@@ -1,13 +1,14 @@
 """Measured image properties. Artistic quality remains a separate inspection."""
 
-from collections import Counter
-from pathlib import Path
 import hashlib
+from collections import Counter
 from io import BytesIO
+from pathlib import Path
 
 from PIL import Image, ImageColor, UnidentifiedImageError
 
 from .codec import PixlError
+
 MAX_FRAME_PIXELS = 16_777_216
 MAX_TOTAL_PIXELS = 67_108_864
 MAX_IMAGE_BYTES = 256 * 1024 * 1024
@@ -62,7 +63,8 @@ def inspect(path, width=None, height=None, palette=None, alpha="binary"):
                 colors = Counter(p for p in pixels if p[3])
                 points = {(index % frame.width, index // frame.width) for index, p in enumerate(pixels) if p[3]}
                 bad_colors = sorted(color for color in colors if allowed and color not in allowed)
-                fractional = sum(1 for p in pixels if 0 < p[3] < 255)
+                fractional = sum(bool(0 < p[3] < 255)
+                             for p in pixels)
                 if (width is not None and frame.width != width) or (height is not None and frame.height != height):
                     failures.add("dimensions")
                 if bad_colors:

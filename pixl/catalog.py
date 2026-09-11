@@ -1,9 +1,9 @@
 """Source-preserving Markdown/asset index. Source bytes are never executed."""
 
-from collections import defaultdict
 import hashlib
-from pathlib import Path
 import re
+from collections import defaultdict
+from pathlib import Path
 
 from .codec import PixlError
 from .graph import confined
@@ -15,9 +15,7 @@ SUPPLIED = ("links.md", "AGENT-PIXELART-TRAINING.md", "PIXEL-ART-ASSETS.md",
 def build(root, paths=None):
     root = Path(root).resolve()
     if paths is None:
-        paths = [name for name in SUPPLIED if (root / name).is_file()]
-        if not paths:
-            paths = sorted(p.name for p in root.glob("*.md"))
+        paths = [name for name in SUPPLIED if (root / name).is_file()] or sorted(p.name for p in root.glob("*.md"))
     documents, hashes = [], defaultdict(list)
     for name in sorted(set(paths)):
         path = confined(root, name)
@@ -30,8 +28,7 @@ def build(root, paths=None):
         sections, fence = [], None
         fenced_blocks = []
         for number, line in enumerate(lines, 1):
-            match = re.match(r"^\s{0,3}(`{3,}|~{3,})(.*)$", line)
-            if match:
+            if match := re.match(r"^\s{0,3}(`{3,}|~{3,})(.*)$", line):
                 marker = match[1]
                 if fence is None:
                     fence = (marker[0], len(marker), number)
@@ -44,7 +41,7 @@ def build(root, paths=None):
             if heading and fence is None:
                 if sections:
                     sections[-1]["end"] = number - 1
-                sid = "s" + hashlib.sha256(f"{hash_}:{number}".encode()).hexdigest()[:20]
+                sid = f's{hashlib.sha256(f"{hash_}:{number}".encode()).hexdigest()[:20]}'
                 sections.append({"id": sid, "title": heading[2], "level": len(heading[1]),
                                  "start": number, "end": len(lines)})
         hashes[hash_].append(name)

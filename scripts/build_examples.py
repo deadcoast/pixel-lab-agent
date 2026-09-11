@@ -1,8 +1,9 @@
 """Reproducible local example. All artwork is a measurement fixture, not PixelLab output."""
 
 import json
-from pathlib import Path
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -11,7 +12,7 @@ from PIL import Image
 
 from pixl.assets import inspect
 from pixl.codec import Document, Record, Ref, Symbol, encode, record_hash
-from pixl.graph import file_hash, validate, proof_scope
+from pixl.graph import file_hash, proof_scope, validate
 
 
 def build():
@@ -25,6 +26,7 @@ def build():
             image.putpixel((x, y), colors[(x - 3) // 4])
     image.save(path)
     result = inspect(path, 16, 16, ["#202840", "#486880", "#88b8a8"])
+    result["observed_at"] = datetime.now(UTC).isoformat()
     (folder / "measurement.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     def rel(p):
         return p.relative_to(ROOT).as_posix()
@@ -46,7 +48,7 @@ def build():
     asset = add("swatch", "X", nm="local measurement fixture", ur=rel(path), dg=file_hash(path), ct=Ref("style"), kd=Symbol("sprite"),
                 mt={"origin": Symbol("local_fixture"), "anchor_px": [8, 12], "frame_ms": 100}, tg=["fixture", "palette-contract"])
     proof = add("proof", "E", nm="PNG measurements only", ur=rel(folder / "measurement.json"), dg=file_hash(folder / "measurement.json"),
-                rs=Symbol("pass" if result["pass"] else "fail"), md=Symbol("local"), at="2026-09-10",
+                rs=Symbol("pass" if result["pass"] else "fail"), md=Symbol("local"), at=result["observed_at"],
                 bs=[{"rf": Ref(r.id), "dg": record_hash(r)} for r in (asset, contract)])
     add("method", "K", nm="palette-contract", ap=[Symbol("sprite")],
         op=["Inspect actual RGBA pixels against the project palette and alpha policy."],

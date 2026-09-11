@@ -1,9 +1,9 @@
 """Run the PIXL package bundled inside this plugin, independent of the caller's cwd."""
 
-from pathlib import Path
 import os
 import runpy
 import sys
+from pathlib import Path
 
 
 def main() -> None:

@@ -1,8 +1,8 @@
 """Bounded parser and canonical encoder for the proprietary PIXL/1 wire form."""
 
-from dataclasses import dataclass, field
 import hashlib
 import re
+from dataclasses import dataclass, field
 
 
 class PixlError(ValueError):
@@ -120,7 +120,7 @@ class Parser:
                     self.i += 1
                     return result
                 self.take(b",")
-        if ch == b"{":
+        elif ch == b"{":
             result = {}
             self.skip()
             if self.data[self.i:self.i + 1] == b"}":

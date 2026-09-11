@@ -1,13 +1,13 @@
 """Local compare-and-swap snapshot store. No remote actions or implicit recovery."""
 
-from contextlib import contextmanager
 import json
 import os
-from pathlib import Path
 import tempfile
+from contextlib import contextmanager
+from pathlib import Path
 
 from .codec import Document, PixlError, Record, Ref, Symbol, digest, encode, parse
-from .graph import validate, closure, edges
+from .graph import closure, edges, validate
 
 TRANSITIONS = {"open": {"active", "blocked", "dropped"},
                "active": {"blocked", "done", "dropped"},
@@ -58,7 +58,7 @@ def _publish(folder, doc):
     if history.is_symlink() or not history.resolve().is_relative_to(folder):
         raise PixlError("store_path", "history must remain inside the store")
     history.mkdir(exist_ok=True)
-    snapshot = history / (hash_ + ".px")
+    snapshot = history / f"{hash_}.px"
     if snapshot.is_symlink() or not snapshot.resolve().is_relative_to(folder):
         raise PixlError("store_path", "snapshot must remain inside the store")
     if snapshot.exists():

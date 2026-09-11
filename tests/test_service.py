@@ -1,9 +1,9 @@
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
-from pixl.codec import PixlError, encode, to_data
 from pixl import service
+from pixl.codec import PixlError, encode, to_data
 from tests.support import sample
 
 

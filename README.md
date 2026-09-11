@@ -22,7 +22,7 @@ On POSIX, use `.venv/bin/python`. Invoke `$pixl` in Codex from this repository, 
 
 - **PIXL/1:** 13 typed record kinds for actors, projects, sources, runtime dependencies, visual contracts, knowledge, decisions, tasks, assets, evidence, remote jobs and handoff context. Deterministic grammar, canonical hashes, closed schemas, dependency ordering and complete context selection.
 - **State runtime:** revision-checked commits, local writer exclusion, immutable snapshots, immutable proof receipts with explicit supersession, source/artifact drift checks and mandatory reopening of affected completed tasks.
-- **Pixel-art knowledge:** 43 scoped methods with 93 exact local source ranges, research decisions, concrete POC recipes, and 24 executable reference checks spanning 28 methods. Coverage and unexecuted project-specific recipes are explicit in [`methods/method-proof-coverage.json`](methods/method-proof-coverage.json).
+- **Pixel-art knowledge:** 43 scoped methods with 93 exact local source ranges, research decisions, and 39 executable reference checks covering all 43 methods. The operational [PIXL library](knowledge/library.px) retains prerequisites, procedures, checks, pitfalls, sources and bound proof receipts. [Coverage](methods/method-proof-coverage.json) states each reference proof's limits.
 - **PixelLab preparation:** 100 documented MCP tools and 454 parameters, a dated official documentation snapshot, exact caller-supplied schema validation, cross-field rules, deterministic intent identity and observation-based job journaling.
 - **Agent kit:** one shared PIXL expert profile, Claude/Codex adapters, a portable runtime, and 14 local MCP tools. The actual authenticated PixelLab connection remains with the host harness.
 
