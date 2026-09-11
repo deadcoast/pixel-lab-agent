@@ -3,6 +3,7 @@
 import hashlib
 import re
 from dataclasses import dataclass, field
+from typing import Never
 
 
 class PixlError(ValueError):
@@ -47,7 +48,7 @@ class Parser:
             raise PixlError("input_size", "expected bytes, at most 16 MiB")
         self.data, self.i = data, 0
 
-    def error(self, detail):
+    def error(self, detail) -> Never:
         raise PixlError("syntax", f"byte {self.i}: {detail}")
 
     def skip(self):
@@ -74,7 +75,7 @@ class Parser:
             self.i += 1
         if start == self.i or self.i - start > 19:
             self.error("invalid integer")
-        value = int(self.data[start:self.i])
+        value = int(self.data[start : self.i])
         if value > MAX_INT:
             self.error("integer exceeds signed 64-bit range")
         return value
@@ -85,11 +86,11 @@ class Parser:
         self.skip()
         if self.i >= len(self.data):
             self.error("missing value")
-        ch = self.data[self.i:self.i + 1]
+        ch = self.data[self.i : self.i + 1]
         self.i += 1
         if ch == b"~":
             count = self.unsigned()
-            if self.data[self.i:self.i + 1] != b":":
+            if self.data[self.i : self.i + 1] != b":":
                 self.error("missing literal length separator")
             self.i += 1
             end = self.i + count
@@ -97,7 +98,7 @@ class Parser:
                 self.error("truncated literal")
             value = ""
             try:
-                value = self.data[self.i:end].decode("utf-8", errors="strict")
+                value = self.data[self.i : end].decode("utf-8", errors="strict")
             except UnicodeError:
                 self.error("literal length splits UTF-8 or invalid UTF-8")
             self.i = end
@@ -106,25 +107,27 @@ class Parser:
             return Ref(self.ident())
         if ch in (b"+", b"?"):
             return True if ch == b"+" else None
-        if ch == b"-" and (self.i == len(self.data) or not 48 <= self.data[self.i] <= 57):
+        if ch == b"-" and (
+            self.i == len(self.data) or not 48 <= self.data[self.i] <= 57
+        ):
             return False
         if ch == b"[":
             result = []
             self.skip()
-            if self.data[self.i:self.i + 1] == b"]":
+            if self.data[self.i : self.i + 1] == b"]":
                 self.i += 1
                 return result
             while True:
                 result.append(self.value(depth + 1))
                 self.skip()
-                if self.data[self.i:self.i + 1] == b"]":
+                if self.data[self.i : self.i + 1] == b"]":
                     self.i += 1
                     return result
                 self.take(b",")
         elif ch == b"{":
             result = {}
             self.skip()
-            if self.data[self.i:self.i + 1] == b"}":
+            if self.data[self.i : self.i + 1] == b"}":
                 self.i += 1
                 return result
             while True:
@@ -134,7 +137,7 @@ class Parser:
                 self.take(b"=")
                 result[key] = self.value(depth + 1)
                 self.skip()
-                if self.data[self.i:self.i + 1] == b"}":
+                if self.data[self.i : self.i + 1] == b"}":
                     self.i += 1
                     return result
                 self.take(b";")
@@ -147,15 +150,17 @@ class Parser:
                 self.i += 1
             if self.i - start > 19:
                 self.error("integer exceeds signed 64-bit range")
-            number = int(self.data[start:self.i]) * (-1 if ch == b"-" else 1)
-            if not -2**63 <= number <= MAX_INT:
+            number = int(self.data[start : self.i]) * (-1 if ch == b"-" else 1)
+            if not -(2**63) <= number <= MAX_INT:
                 self.error("integer exceeds signed 64-bit range")
             return number
         self.i -= 1
         return Symbol(self.ident())
 
     def document(self):
-        if not self.data.startswith(b"PX1") or self.data[3:4] not in [bytes([w]) for w in WS]:
+        if not self.data.startswith(b"PX1") or self.data[3:4] not in [
+            bytes([w]) for w in WS
+        ]:
             self.error("expected PX1 header and whitespace")
         self.i = 3
         self.skip()
@@ -214,20 +219,32 @@ def encode_value(value, depth=0):
         return b"-"
     if value is None:
         return b"?"
-    if type(value) is int and -2**63 <= value <= MAX_INT:
+    if type(value) is int and -(2**63) <= value <= MAX_INT:
         return str(value).encode()
     if isinstance(value, list):
         return b"[" + b",".join(encode_value(v, depth + 1) for v in value) + b"]"
     if isinstance(value, dict):
-        return b"{" + b";".join(identifier(k) + b"=" + encode_value(value[k], depth + 1)
-                                 for k in sorted(value)) + b"}"
+        return (
+            b"{"
+            + b";".join(
+                identifier(k) + b"=" + encode_value(value[k], depth + 1)
+                for k in sorted(value)
+            )
+            + b"}"
+        )
     raise PixlError("value_type", repr(type(value)))
 
 
 def encode_record(record):
     if not isinstance(record.kind, str) or not re.fullmatch("[A-Z]", record.kind):
         raise PixlError("kind", repr(record.kind))
-    return b"@" + identifier(record.id) + b":" + record.kind.encode() + encode_value(record.fields)
+    return (
+        b"@"
+        + identifier(record.id)
+        + b":"
+        + record.kind.encode()
+        + encode_value(record.fields)
+    )
 
 
 def encode(doc):
@@ -235,8 +252,12 @@ def encode(doc):
         raise PixlError("revision", str(doc.revision))
     if any(id_ != rec.id for id_, rec in doc.records.items()):
         raise PixlError("record_id", "map key differs from record ID")
-    data = (b"PX1 " + str(doc.revision).encode() + b"\n" +
-            b"".join(encode_record(doc.records[k]) + b"\n" for k in sorted(doc.records)))
+    data = (
+        b"PX1 "
+        + str(doc.revision).encode()
+        + b"\n"
+        + b"".join(encode_record(doc.records[k]) + b"\n" for k in sorted(doc.records))
+    )
     if len(data) > MAX_BYTES or len(doc.records) > 100_000:
         raise PixlError("input_size", "document exceeds limits")
     return data

@@ -50,38 +50,83 @@ def inspect(path, width=None, height=None, palette=None, alpha="binary"):
         snapshot_hash = hashlib.sha256(snapshot).hexdigest()
         with Image.open(BytesIO(snapshot)) as image:
             if getattr(image, "n_frames", 1) > 1024:
-                raise PixlError("image_limit", "maximum 16M pixels/frame and 1024 frames")
+                raise PixlError(
+                    "image_limit", "maximum 16M pixels/frame and 1024 frames"
+                )
             total_pixels = 0
             for i in range(getattr(image, "n_frames", 1)):
                 image.seek(i)
                 count = image.width * image.height
                 total_pixels += count
                 if count > MAX_FRAME_PIXELS or total_pixels > MAX_TOTAL_PIXELS:
-                    raise PixlError("image_limit", "maximum 16M pixels/frame and 64M actual pixels total")
+                    raise PixlError(
+                        "image_limit",
+                        "maximum 16M pixels/frame and 64M actual pixels total",
+                    )
                 frame = image.convert("RGBA")
-                pixels = list(frame.get_flattened_data()) if hasattr(frame, "get_flattened_data") else list(frame.getdata())
-                colors = Counter(p for p in pixels if p[3])
-                points = {(index % frame.width, index // frame.width) for index, p in enumerate(pixels) if p[3]}
-                bad_colors = sorted(color for color in colors if allowed and color not in allowed)
-                fractional = sum(bool(0 < p[3] < 255)
-                             for p in pixels)
-                if (width is not None and frame.width != width) or (height is not None and frame.height != height):
+                # RGBA band bytes guarantee integer channels without mode-dependent pixel types.
+                pixels = list(
+                    zip(*(band.tobytes() for band in frame.split()), strict=True)
+                )
+                colors = Counter(
+                    pixel for pixel in pixels if len(pixel) > 3 and pixel[3]
+                )
+                points = {
+                    (index % frame.width, index // frame.width)
+                    for index, pixel in enumerate(pixels)
+                    if len(pixel) > 3 and pixel[3]
+                }
+                bad_colors = sorted(
+                    color for color in colors if allowed and color not in allowed
+                )
+                fractional = sum(
+                    bool(0 < pixel[3] < 255) for pixel in pixels if len(pixel) > 3
+                )
+                if (width is not None and frame.width != width) or (
+                    height is not None and frame.height != height
+                ):
                     failures.add("dimensions")
                 if bad_colors:
                     failures.add("palette")
                 if alpha == "binary" and fractional:
                     failures.add("alpha")
-                frames.append({"index": i, "width": frame.width, "height": frame.height,
-                               "duration_ms": image.info.get("duration"), "visible_pixels": len(points),
-                               "visible_colors": len(colors), "fractional_alpha_pixels": fractional,
-                               "outside_palette": ["#" + "".join(f"{v:02x}" for v in c) for c in bad_colors[:64]],
-                               "outside_palette_count": len(bad_colors), "opaque_components": components(points),
-                               "visible_bbox": list(frame.getbbox()) if frame.getbbox() else None})
+                bbox = frame.getbbox()
+                frames.append(
+                    {
+                        "index": i,
+                        "width": frame.width,
+                        "height": frame.height,
+                        "duration_ms": image.info.get("duration"),
+                        "visible_pixels": len(points),
+                        "visible_colors": len(colors),
+                        "fractional_alpha_pixels": fractional,
+                        "outside_palette": [
+                            "#" + "".join(f"{v:02x}" for v in c)
+                            for c in bad_colors[:64]
+                        ],
+                        "outside_palette_count": len(bad_colors),
+                        "opaque_components": components(points),
+                        "visible_bbox": list(bbox) if bbox else None,
+                    }
+                )
     except PixlError:
         raise
-    except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError) as error:
-        raise PixlError("image_read", f"{Path(path).name}: {type(error).__name__}") from error
-    return {"pass": not failures, "sha256": snapshot_hash, "frame_count": len(frames),
-            "frames": frames, "failures": sorted(failures), "visual_quality_verified": False,
-            "engine_import_verified": False,
-            "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure."}
+    except (
+        OSError,
+        ValueError,
+        UnidentifiedImageError,
+        Image.DecompressionBombError,
+    ) as error:
+        raise PixlError(
+            "image_read", f"{Path(path).name}: {type(error).__name__}"
+        ) from error
+    return {
+        "pass": not failures,
+        "sha256": snapshot_hash,
+        "frame_count": len(frames),
+        "frames": frames,
+        "failures": sorted(failures),
+        "visual_quality_verified": False,
+        "engine_import_verified": False,
+        "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure.",
+    }

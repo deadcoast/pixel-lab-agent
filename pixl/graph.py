@@ -9,7 +9,9 @@ from urllib.parse import urlsplit
 
 from .codec import Document, PixlError, Ref, Symbol, encode, record_hash
 
-REGISTRY = json.loads(Path(__file__).with_name("registry.json").read_text(encoding="utf-8"))
+REGISTRY = json.loads(
+    Path(__file__).with_name("registry.json").read_text(encoding="utf-8")
+)
 SHA = re.compile(r"[0-9a-f]{64}")
 
 
@@ -42,13 +44,14 @@ def closure(adjacency, seeds):
 def proof_scope(doc, seeds, adjacency=None):
     """Bind design/method/art semantics, excluding mutable workflow and proof nodes."""
     adjacency = edges(doc) if adjacency is None else adjacency
-    semantic = {id_: targets for id_, targets in adjacency.items() if doc.records[id_].kind not in "EPTJN"}
+    semantic = {
+        id_: targets
+        for id_, targets in adjacency.items()
+        if doc.records[id_].kind not in "EPTJN"
+    }
     return set(
         closure(
-            {
-                id_: targets & semantic.keys()
-                for id_, targets in semantic.items()
-            },
+            {id_: targets & semantic.keys() for id_, targets in semantic.items()},
             set(seeds) & semantic.keys(),
         )
     )
@@ -96,8 +99,11 @@ def _type(value, type_, doc):
             _type(v, f"ref:{type_[5:]}", doc) for v in value
         )
     if type_.startswith("ref:"):
-        return (isinstance(value, Ref) and value.id in doc.records and
-                (type_[4:] == "*" or doc.records[value.id].kind == type_[4:]))
+        return (
+            isinstance(value, Ref)
+            and value.id in doc.records
+            and (type_[4:] == "*" or doc.records[value.id].kind == type_[4:])
+        )
     raise PixlError("registry_type", type_)
 
 
@@ -107,7 +113,11 @@ def _require(condition, code, detail):
 
 
 def _dag(doc):
-    tasks = {id_: set(refs(r.fields["dp"])) for id_, r in doc.records.items() if r.kind == "T"}
+    tasks = {
+        id_: set(refs(r.fields["dp"]))
+        for id_, r in doc.records.items()
+        if r.kind == "T"
+    }
     # Kahn traversal avoids recursion limits for deep, otherwise valid plans.
     dependents = {id_: set() for id_ in tasks}
     for id_, needs in tasks.items():
@@ -122,11 +132,15 @@ def _dag(doc):
             tasks[other].remove(id_)
             if not tasks[other]:
                 pending.append(other)
-    _require(seen == len(tasks), "dependency_cycle", "task prerequisites must form a DAG")
+    _require(
+        seen == len(tasks), "dependency_cycle", "task prerequisites must form a DAG"
+    )
 
 
 def validate(doc, root=None):
-    encode(doc)  # Check wire-representable values and resource bounds, even for programmatic input.
+    encode(
+        doc
+    )  # Check wire-representable values and resource bounds, even for programmatic input.
     for id_, record in doc.records.items():
         _require(record.kind in REGISTRY["kinds"], "unknown_kind", record.kind)
         fields = dict(REGISTRY["common"], **REGISTRY["kinds"][record.kind]["fields"])
@@ -137,14 +151,23 @@ def validate(doc, root=None):
             if name not in record.fields:
                 _require(spec.get("optional", False), "missing_field", f"{id_}.{name}")
                 continue
-            _require(_type(record.fields[name], spec["type"], doc), "field_type", f"{id_}.{name}: {spec['type']}")
+            _require(
+                _type(record.fields[name], spec["type"], doc),
+                "field_type",
+                f"{id_}.{name}: {spec['type']}",
+            )
         for target in refs(record.fields):
             _require(target in doc.records, "unresolved_ref", f"{id_} -> {target}")
     _dag(doc)
     adjacency = edges(doc)
-    semantic = {id_ for id_, record in doc.records.items() if record.kind not in "EPTJN"}
-    proof_edges = {id_: targets & semantic for id_, targets in adjacency.items() if id_ in semantic}
+    semantic = {
+        id_ for id_, record in doc.records.items() if record.kind not in "EPTJN"
+    }
+    proof_edges = {
+        id_: targets & semantic for id_, targets in adjacency.items() if id_ in semantic
+    }
     scope_cache = {}
+
     def scope(id_):
         if id_ not in scope_cache:
             scope_cache[id_] = closure(proof_edges, [id_]) if id_ in semantic else set()
@@ -164,18 +187,42 @@ def validate(doc, root=None):
         f = record.fields
         if record.kind == "D":
             for key in ("wt", "wr", "wy", "rs", "pc"):
-                _require(bool(f[key]) and (not isinstance(f[key], str) or bool(f[key].strip())), "decision_evidence", f"{id_}.{key} is empty")
-            _require(scope(id_) <= bound(f["pc"]), "decision_proof", f"{id_}: proof must bind the decision, sources and semantic targets")
+                _require(
+                    bool(f[key])
+                    and (not isinstance(f[key], str) or bool(f[key].strip())),
+                    "decision_evidence",
+                    f"{id_}.{key} is empty",
+                )
+            _require(
+                scope(id_) <= bound(f["pc"]),
+                "decision_proof",
+                f"{id_}: proof must bind the decision, sources and semantic targets",
+            )
         if record.kind == "K":
             for key in ("ap", "op", "ck", "so"):
                 _require(bool(f[key]), "knowledge", f"{id_}.{key} is empty")
             if f.get("pc"):
-                _require(scope(id_) <= bound(f["pc"]), "method_poc", f"{id_}: proof must bind this method and its sources")
+                _require(
+                    scope(id_) <= bound(f["pc"]),
+                    "method_poc",
+                    f"{id_}: proof must bind this method and its sources",
+                )
         if record.kind == "R":
             _require(bool(f["so"]) and bool(f["vr"]), "runtime_source", id_)
         if record.kind == "C":
-            _require(len(f["px"]) == 2 and all(0 < n <= 65536 for n in f["px"]), "dimensions", id_)
-            _require(all(re.fullmatch(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?", c) for c in f["pl"]), "palette", id_)
+            _require(
+                len(f["px"]) == 2 and all(0 < n <= 65536 for n in f["px"]),
+                "dimensions",
+                id_,
+            )
+            _require(
+                all(
+                    re.fullmatch(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?", c)
+                    for c in f["pl"]
+                ),
+                "palette",
+                id_,
+            )
         if record.kind == "S":
             _require(
                 len(f["ln"]) in {0, 2}
@@ -186,36 +233,83 @@ def validate(doc, root=None):
             _require(bool(f["ur"]), "source_uri", id_)
         if record.kind in ("S", "E"):
             try:
-                datetime.fromisoformat(f["at"].replace("Z", "+00:00"))
+                datetime.fromisoformat(f["at"])
             except ValueError as error:
                 raise PixlError("date", id_) from error
         if record.kind == "E":
-            _require(isinstance(f["bs"], list) and bool(f["bs"]), "evidence_binding", id_)
+            _require(
+                isinstance(f["bs"], list) and bool(f["bs"]), "evidence_binding", id_
+            )
             targets = set()
             for binding in f["bs"]:
-                _require(isinstance(binding, dict) and set(binding) == {"rf", "dg"}, "evidence_binding", id_)
-                _require(_type(binding["rf"], "ref:*", doc) and _type(binding["dg"], "sha", doc), "evidence_binding", id_)
+                _require(
+                    isinstance(binding, dict) and set(binding) == {"rf", "dg"},
+                    "evidence_binding",
+                    id_,
+                )
+                _require(
+                    _type(binding["rf"], "ref:*", doc)
+                    and _type(binding["dg"], "sha", doc),
+                    "evidence_binding",
+                    id_,
+                )
                 target = binding["rf"].id
-                _require(target not in targets and doc.records[target].kind != "E", "evidence_binding", f"{id_}: duplicate or recursive proof")
+                _require(
+                    target not in targets and doc.records[target].kind != "E",
+                    "evidence_binding",
+                    f"{id_}: duplicate or recursive proof",
+                )
                 targets.add(target)
                 if not f.get("ob", False):
-                    _require(record_hash(doc.records[target]) == binding["dg"], "stale_evidence", f"{id_} binds outdated {target}")
+                    _require(
+                        record_hash(doc.records[target]) == binding["dg"],
+                        "stale_evidence",
+                        f"{id_} binds outdated {target}",
+                    )
             for target in targets:
                 if doc.records[target].kind == "X" and not f.get("ob", False):
                     dependencies = scope(target)
-                    _require(dependencies <= targets, "evidence_context", f"{id_}: bind artifact {target} and its full contract/reference closure")
+                    _require(
+                        dependencies <= targets,
+                        "evidence_context",
+                        f"{id_}: bind artifact {target} and its full contract/reference closure",
+                    )
         if record.kind == "T":
             _require(bool(f["dc"]), "task_decision", id_)
             if f["st"].value in ("active", "done"):
                 for method in f["kn"]:
                     proofs = doc.records[method.id].fields.get("pc", [])
-                    _require(scope(method.id) <= bound(proofs, passing=True), "method_poc", method.id)
+                    _require(
+                        scope(method.id) <= bound(proofs, passing=True),
+                        "method_poc",
+                        method.id,
+                    )
             if f["st"].value == "done":
-                _require(bool(f["io"]) and all(doc.records[d.id].fields["st"].value == "done" for d in f["dp"]), "completion", f"{id_}: artifacts/prerequisites")
-                passing = [doc.records[e.id] for e in f["ev"] if doc.records[e.id].fields["rs"].value == "pass" and not doc.records[e.id].fields.get("ob", False)]
+                _require(
+                    bool(f["io"])
+                    and all(
+                        doc.records[d.id].fields["st"].value == "done" for d in f["dp"]
+                    ),
+                    "completion",
+                    f"{id_}: artifacts/prerequisites",
+                )
+                passing = [
+                    doc.records[e.id]
+                    for e in f["ev"]
+                    if doc.records[e.id].fields["rs"].value == "pass"
+                    and not doc.records[e.id].fields.get("ob", False)
+                ]
                 needed = set(refs(f["io"]))
-                covered = set().union(*(set(refs(e.fields["bs"])) for e in passing)) if passing else set()
-                _require(needed <= covered, "completion", f"{id_}: evidence must bind all artifacts")
+                covered = (
+                    set().union(*(set(refs(e.fields["bs"])) for e in passing))
+                    if passing
+                    else set()
+                )
+                _require(
+                    needed <= covered,
+                    "completion",
+                    f"{id_}: evidence must bind all artifacts",
+                )
         if record.kind == "J":
             if f["si"].value in ("submitted", "running", "succeeded"):
                 _require(bool(f["ri"]), "job_identity", id_)
@@ -240,8 +334,13 @@ def validate(doc, root=None):
 
 def ready(doc):
     validate(doc)
-    return sorted(id_ for id_, r in doc.records.items() if r.kind == "T" and r.fields["st"].value == "open"
-                  and all(doc.records[d.id].fields["st"].value == "done" for d in r.fields["dp"]))
+    return sorted(
+        id_
+        for id_, r in doc.records.items()
+        if r.kind == "T"
+        and r.fields["st"].value == "open"
+        and all(doc.records[d.id].fields["st"].value == "done" for d in r.fields["dp"])
+    )
 
 
 def impact(doc, id_):
@@ -265,6 +364,14 @@ def context(doc, focus, budget=None):
     packet = Document(doc.revision, {id_: doc.records[id_] for id_ in sorted(selected)})
     required = len(encode(packet))
     if budget is not None:
-        _require(type(budget) is int and budget > 0, "context_budget", "budget must be a positive byte count")
-        _require(required <= budget, "context_budget", f"required={required}, budget={budget}; required closure was not truncated")
+        _require(
+            type(budget) is int and budget > 0,
+            "context_budget",
+            "budget must be a positive byte count",
+        )
+        _require(
+            required <= budget,
+            "context_budget",
+            f"required={required}, budget={budget}; required closure was not truncated",
+        )
     return packet

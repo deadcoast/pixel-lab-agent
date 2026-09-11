@@ -11,8 +11,27 @@ class ServiceTests(unittest.TestCase):
     def test_host_json_bridge_preserves_types_and_bytes(self):
         with TemporaryDirectory() as tmp:
             doc = sample(Path(tmp))
-            data = {"revision": doc.revision, "records": [{"id": r.id, "kind": r.kind, "fields": to_data(r.fields)} for r in doc.records.values()]}
+            data = {
+                "revision": doc.revision,
+                "records": [
+                    {"id": r.id, "kind": r.kind, "fields": to_data(r.fields)}
+                    for r in doc.records.values()
+                ],
+            }
             self.assertEqual(encode(service.from_json(data)), encode(doc))
+
+    def test_record_fields_cannot_decode_to_a_reference_or_symbol(self):
+        for fields in ({"$ref": "actor"}, {"$symbol": "agent"}):
+            with (
+                self.subTest(fields=fields),
+                self.assertRaisesRegex(PixlError, "record_shape"),
+            ):
+                service.from_json(
+                    {
+                        "revision": 0,
+                        "records": [{"id": "actor", "kind": "A", "fields": fields}],
+                    }
+                )
 
     def test_source_slice_is_hash_grounded_and_never_silently_truncated(self):
         with TemporaryDirectory() as tmp:
@@ -31,5 +50,10 @@ class ServiceTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             doc = sample(Path(tmp))
             for start, end in [(0, 1), (2, 1), (1, 2)]:
-                with self.subTest(start=start,end=end), self.assertRaises(PixlError):
-                    service.source_slice(Path(tmp) / "source.txt", doc.records["source"].fields["dg"], start, end)
+                with self.subTest(start=start, end=end), self.assertRaises(PixlError):
+                    service.source_slice(
+                        Path(tmp) / "source.txt",
+                        doc.records["source"].fields["dg"],
+                        start,
+                        end,
+                    )
