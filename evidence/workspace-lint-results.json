@@ -1,0 +1,71 @@
+{
+  "observed_at": "2026-09-11T10:37:12.807929+00:00",
+  "status": "pass",
+  "environment": "uv-managed .venv",
+  "inputs": [
+    "python-lint-error.json",
+    "ruff-lint-output.txt"
+  ],
+  "ruff_before": 13,
+  "ruff_after": 0,
+  "checks": [
+    {
+      "command": "uv run --no-sync ruff check . --output-format json",
+      "exit_code": 0,
+      "output": "[]"
+    },
+    {
+      "command": "uv run --no-sync mypy pixl --cache-dir build/mypy-source",
+      "exit_code": 0,
+      "output": "Success: no issues found in 12 source files"
+    },
+    {
+      "command": "uv run --no-sync mypy plugins/pixl/runtime/pixl --cache-dir build/mypy-runtime",
+      "exit_code": 0,
+      "output": "Success: no issues found in 12 source files"
+    },
+    {
+      "command": "uv run --no-sync mypy plugins/pixl/resources/pixl --cache-dir build/mypy-resources",
+      "exit_code": 0,
+      "output": "Success: no issues found in 12 source files"
+    },
+    {
+      "command": "uv run --no-sync ruff format --check scripts/build_plugin.py scripts/check_wheel.py setup.py plugins/pixl/scripts/pixl.py tests/test_assets.py tests/test_mcp.py tests/test_packaging.py tests/test_poc.py --quiet",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "pyright": {
+    "filesAnalyzed": 36,
+    "errorCount": 0,
+    "warningCount": 0,
+    "informationCount": 0,
+    "timeInSec": 1.578
+  },
+  "tests": {
+    "run": 123,
+    "passed": 122,
+    "failures": 0,
+    "errors": 0,
+    "skipped": [
+      {
+        "test": "test_history_symlink_cannot_redirect_publication (tests.test_store.StoreTests.test_history_symlink_cannot_redirect_publication)",
+        "reason": "symlink privilege unavailable"
+      }
+    ]
+  },
+  "art_pocs": {
+    "total": 39,
+    "passed": 39,
+    "methods_with_reference_checks": 43
+  },
+  "preservation": {
+    "existing_python_files": 47,
+    "existing_definitions": 539,
+    "existing_assets": 18,
+    "removed_definitions": [],
+    "changed_or_removed_assets": [],
+    "bundle_files_verified": 55
+  },
+  "intentional_rule_exception": "UP036 remains disabled only on the portable launcher version guard; its old-Python rejection behavior has a regression test."
+}

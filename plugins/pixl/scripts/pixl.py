@@ -16,7 +16,7 @@ def main() -> None:
             file=sys.stderr,
         )
         raise SystemExit(2)
-    if sys.version_info < (3, 11):
+    if sys.version_info < (3, 11):  # noqa: UP036 - Copied launcher must reject old Python before importing the runtime.
         print("PIXL requires Python 3.11 or newer.", file=sys.stderr)
         raise SystemExit(2)
     sys.path.insert(0, str(runtime))

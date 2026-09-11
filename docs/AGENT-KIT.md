@@ -65,6 +65,8 @@ python -m venv .venv
 
 The complete `plugins/pixl` directory is the portable unit after building; copying only `skills/pixl` loses its runtime and resources. Rebuild after changing the source package, profile, specification, knowledge, or examples. Keep project stores and generated assets outside the installed plugin directory. The runner sets `PIXL_PLUGIN_ROOT` for bundled resource discovery. Bundling the PIXL source does not bundle a Python interpreter, third-party wheels, or PixelLab credentials.
 
+`resources/pixl/` preserves the complete Python source package used by proof receipts, including `__init__.py` and every sibling import. The active launcher loads `runtime/pixl/`; both copies are byte-checked against source by the bundle manifest. The resource package is also exercised independently after relocation, so its POC can resolve its own service and knowledge resources. Wheels retain the same complete source package. Verify a wheel with `uv run python scripts/check_wheel.py`; the script uses `uv build` and `uv pip install --target` in a temporary directory.
+
 ## Use from this repository
 
 Codex can discover the checked-in repository wrapper. Launch it from the repository, then invoke `$pixl` in the prompt:
