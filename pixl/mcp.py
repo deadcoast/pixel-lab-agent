@@ -5,6 +5,10 @@ import sys
 
 from jsonschema import Draft202012Validator, ValidationError
 
+
+def _reject_constant(value):
+    raise ValueError(value)
+
 from .codec import PixlError
 from .service import call
 
@@ -95,7 +99,7 @@ def serve(root):
             try:
                 request = json.loads(
                     line,
-                    parse_constant=lambda v: iter(()).throw(ValueError(v)),
+                    parse_constant=_reject_constant,
                 )
                 response = dispatch(request, root)
             except (ValueError, RecursionError):

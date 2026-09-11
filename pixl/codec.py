@@ -63,7 +63,7 @@ class Parser:
     def ident(self):
         self.skip()
         match = IDENT.match(self.data, self.i)
-        if not match:
+        if match is None:
             self.error("expected identifier")
         self.i = match.end()
         return match[0].decode("ascii")
@@ -95,6 +95,7 @@ class Parser:
             end = self.i + count
             if end > len(self.data):
                 self.error("truncated literal")
+            value = ""
             try:
                 value = self.data[self.i:end].decode("utf-8", errors="strict")
             except UnicodeError:

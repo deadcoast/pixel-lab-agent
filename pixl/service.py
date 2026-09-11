@@ -46,13 +46,15 @@ def load_document(path):
         raise PixlError("file_read", str(path)) from error
 
 
+def _reject_constant(value):
+    raise PixlError("json", "nonfinite number")
+
+
 def read_json(path):
     try:
         return json.loads(
             Path(path).read_text(encoding="utf-8"),
-            parse_constant=lambda v: iter(()).throw(
-                PixlError("json", "nonfinite number")
-            ),
+            parse_constant=_reject_constant,
         )
     except (OSError, ValueError) as error:
         raise PixlError("json_read", str(path)) from error
@@ -86,6 +88,8 @@ def capability_index(name=None):
     data = capabilities(name)
     if name is not None:
         return data
+    if not isinstance(data, dict):
+        raise PixlError("platform_catalog", "capability catalog must be an object")
     return {"version": data.get("version"), "retrieved_at": data.get("retrieved_at"),
             "source": data.get("source"), "live_discovery": False,
             "tools": [{k: row.get(k) for k in ("name", "category", "effect", "required", "poll_tool")} for row in data["tools"]]}
@@ -96,9 +100,16 @@ def from_json(data):
         raise PixlError("document_shape", "expected {revision, records:[{id,kind,fields}]}")
     doc = codec.Document(data["revision"])
     for row in data["records"]:
-        if not isinstance(row, dict) or set(row) != {"id", "kind", "fields"} or row["id"] in doc.records:
+        if not isinstance(row, dict) or set(row) != {"id", "kind", "fields"}:
             raise PixlError("record_shape", "exact id/kind/fields required; duplicate IDs forbidden")
-        doc.records[row["id"]] = codec.Record(row["id"], row["kind"], from_data(row["fields"]))
+        row_id = row["id"]
+        row_kind = row["kind"]
+        row_fields = row["fields"]
+        if not isinstance(row_id, str) or not isinstance(row_kind, str) or row_id in doc.records:
+            raise PixlError("record_shape", "exact id/kind/fields required; duplicate IDs forbidden")
+        if not isinstance(row_fields, dict):
+            raise PixlError("record_shape", "record fields must be a map")
+        doc.records[row_id] = codec.Record(row_id, row_kind, from_data(row_fields))
     graph.validate(doc)
     return doc
 
