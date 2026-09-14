@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scout + Medic · Reference study</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#122330;color:#edf3eb;font:16px/1.55 system-ui,sans-serif}main{max-width:1020px;margin:auto;padding:44px 24px}h1{font-size:clamp(30px,5vw,52px);line-height:1.1;margin:12px 0 20px}h2{font-size:21px;margin:0 0 12px}p{max-width:760px;color:#c6d4d6}.eyebrow{color:#82d5d1;font-size:13px;letter-spacing:.15em;text-transform:uppercase}.controls{display:flex;gap:20px;flex-wrap:wrap;margin:28px 0}label{display:flex;gap:10px;align-items:center}select{font:inherit;background:#253a49;color:#fff;border:1px solid #65828a;border-radius:6px;padding:7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:#1b303d;padding:22px;border:1px solid #34505b;border-radius:12px}.stage{height:300px;display:flex;align-items:center;justify-content:center;background:#e8e6de;border-radius:6px;margin:16px 0;overflow:auto}.stage img{width:256px;height:256px;image-rendering:pixelated;flex:none}.native{display:flex;align-items:center;gap:16px;color:#bed0d4}.native img{width:32px;height:32px;image-rendering:pixelated;background:#e8e6de}.swatches{display:flex;gap:14px;flex-wrap:wrap;margin:20px 0 30px}.swatch{display:flex;align-items:center;gap:8px}.swatch span{width:22px;height:22px;display:inline-block;border:1px solid #93a8ab;border-radius:3px}.tag{color:#f4dda2;font-size:13px}a{color:#8edbd8}.note{padding:18px;border-left:3px solid #56b5bc;margin:28px 0;background:#1b303d}.role{margin-top:20px}footer{margin-top:28px;color:#adc1c6;font-size:14px}@media(max-width:650px){.grid{grid-template-columns:1fr}main{padding:28px 16px}}
+</style>
+<main>
+<div class="eyebrow">Character family / reference study</div>
+<h1>Scout + Medic</h1>
+<p>A shared turquoise body, pale facial marks, and a compact geometric shape. The outline is still an open design choice. These are the two supplied references; character sprites have not been produced.</p>
+<div class="controls">
+<label>Inspection zoom <select id="zoom"><option value="1">1× · native</option><option value="2">2×</option><option value="4">4×</option><option value="8" selected>8×</option></select></label>
+<label>Test background <select id="background"><option value="light">Warm light</option><option value="dark">Deep dark</option><option value="busy">Patterned</option></select></label>
+</div>
+<div class="grid">
+<article class="card"><h2>A · Dark contour</h2><span class="tag">reference.png</span><div class="stage"><img src="reference.png" alt="Supplied turquoise geometric character with a thick dark contour and two pale face marks"></div><div class="native"><img src="reference.png" alt="Reference A at native resolution"><span>32 × 32 source · 3 visible colors</span></div><p>The dark contour separates the body from the background and fills the two upper projections.</p></article>
+<article class="card"><h2>B · Body-colored edge</h2><span class="tag">reference-b.png</span><div class="stage"><img src="reference-b.png" alt="Supplied geometric character with turquoise edges and two pale face marks"></div><div class="native"><img src="reference-b.png" alt="Reference B at native resolution"><span>32 × 32 source · 2 visible colors</span></div><p>The same outer shape uses turquoise throughout, with no separate dark contour.</p></article>
+</div>
+<div class="swatches"><div class="swatch"><span style="background:#25354a"></span>#25354A · A only</div><div class="swatch"><span style="background:#56b5bc"></span>#56B5BC</div><div class="swatch"><span style="background:#f4dda2"></span>#F4DDA2</div></div>
+<p>Both references have the same transparency mask and 18 × 25 occupied bounds. All 180 changed pixels switch from dark blue to turquoise. Source dimensions and colors are observations, not a final output specification.</p>
+<div class="note">Final canvas: undecided. Outline: conflicting references retained. Backgrounds here are inspection aids; gameplay backgrounds and display scale are still unknown. Controls change only this preview.</div>
+<div class="grid role"><article class="card"><span class="tag">Proposed role direction</span><h2>Scout</h2><p>Compact forward hood or visor, a slim rear utility pack, and a clear face-to-equipment gap. Preserve the turquoise body and pale feature language. Prove one side-view idle pose first.</p></article><article class="card"><span class="tag">Proposed role direction</span><h2>Medic</h2><p>Match the scout's body scale and feature placement. Use a broader medical satchel plus a pale band or badge for a distinct role cue. Develop from the accepted scout sample.</p></article></div>
+<footer><a href="START-HERE.md">Project status and continuation</a> · <a href="docs/reference-analysis.md">Inspection notes</a> · <a href="docs/method-research.md">Method research and proof plan</a></footer>
+</main>
+<script>
+const zoom=document.querySelector('#zoom');const background=document.querySelector('#background');
+function render(){document.querySelectorAll('.stage img').forEach(img=>{img.style.width=img.style.height=(32*Number(zoom.value))+'px'});document.querySelectorAll('.stage').forEach(stage=>{stage.style.background=background.value==='dark'?'#15212d':background.value==='busy'?'repeating-conic-gradient(#769799 0% 25%,#bac6b6 0% 50%) 0 0 / 16px 16px':'#e8e6de'})}
+zoom.addEventListener('change',render);background.addEventListener('change',render);render();
+</script>
+</html>

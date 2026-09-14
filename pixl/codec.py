@@ -1,4 +1,4 @@
-"""Bounded parser and canonical encoder for the proprietary PIXL/1 wire form."""
+"""Bounded parser and canonical encoder for the proprietary PIXL wire formats."""
 
 import hashlib
 import re
@@ -34,6 +34,7 @@ class Record:
 class Document:
     revision: int = 0
     records: dict[str, Record] = field(default_factory=dict)
+    format: int = 1
 
 
 IDENT = re.compile(rb"[A-Za-z][A-Za-z0-9_.-]{0,95}")
@@ -158,16 +159,16 @@ class Parser:
         return Symbol(self.ident())
 
     def document(self):
-        if not self.data.startswith(b"PX1") or self.data[3:4] not in [
+        if self.data[:3] not in (b"PX1", b"PX2") or self.data[3:4] not in [
             bytes([w]) for w in WS
         ]:
-            self.error("expected PX1 header and whitespace")
+            self.error("expected PX1 or PX2 header and whitespace")
         self.i = 3
         self.skip()
         revision = self.unsigned()
         if self.i == len(self.data) or self.data[self.i] not in WS:
             self.error("revision must be followed by whitespace")
-        doc = Document(revision)
+        doc = Document(revision, format=int(self.data[2:3]))
         self.skip()
         while self.i < len(self.data):
             self.take(b"@")
@@ -250,10 +251,14 @@ def encode_record(record):
 def encode(doc):
     if type(doc.revision) is not int or not 0 <= doc.revision <= MAX_INT:
         raise PixlError("revision", str(doc.revision))
+    if type(doc.format) is not int or doc.format not in (1, 2):
+        raise PixlError("format", "expected integer 1 or 2")
     if any(id_ != rec.id for id_, rec in doc.records.items()):
         raise PixlError("record_id", "map key differs from record ID")
     data = (
-        b"PX1 "
+        b"PX"
+        + str(doc.format).encode()
+        + b" "
         + str(doc.revision).encode()
         + b"\n"
         + b"".join(encode_record(doc.records[k]) + b"\n" for k in sorted(doc.records))

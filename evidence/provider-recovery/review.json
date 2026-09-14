@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-09-11T16:43:00.347459+00:00",
+  "status": "pass_scoped_review",
+  "scope": "Independent request/history/store integration and CLI/MCP review, with regression fixes and scoped re-reviews.",
+  "reviewer": "provider_core_review",
+  "findings": [
+    {
+      "id": "PR-1",
+      "problem": "Generic publication allowed working-file journal and imported candidate paths outside immutable store storage.",
+      "fix": "Store publication now enforces exact content-addressed journal/candidate paths under its explicit store folder.",
+      "tests": [
+        "test_direct_commit_cannot_publish_a_journal_outside_immutable_storage",
+        "test_direct_commit_cannot_import_an_unretained_working_file"
+      ],
+      "review": "fixed; nested custom stores and no-extension/bin/PNG cases also passed"
+    },
+    {
+      "id": "PR-2",
+      "problem": "History replay accepted backward event instants.",
+      "fix": "Compare timezone-aware event instants with preparation and preceding events.",
+      "tests": [
+        "test_replay_rejects_backward_instants_including_before_preparation"
+      ],
+      "review": "fixed"
+    },
+    {
+      "id": "PR-3",
+      "problem": "Credential defaults hidden in schema applicators or fragment references escaped exclusion.",
+      "fix": "Carry credential context through schema applicators and local references using a network-disabled resolver.",
+      "tests": [
+        "test_credential_defaults_cannot_hide_in_applicators_or_local_references"
+      ],
+      "review": "fixed; anchor, chained reference, recursive optional credential and root-id probes also passed"
+    },
+    {
+      "id": "PR-4",
+      "problem": "Timestamp parsing discarded precision beyond microseconds and could conceal backward time.",
+      "fix": "Reject more than six fractional digits; document supported precision.",
+      "tests": [
+        "test_timestamp_precision_cannot_hide_backwards_time"
+      ],
+      "review": "fixed"
+    },
+    {
+      "id": "PR-5",
+      "problem": "MCP schema validation errors echoed malformed authorization values before request validation.",
+      "fix": "Return only the schema validation keyword, without instance data.",
+      "tests": [
+        "test_mcp_schema_errors_do_not_echo_credential_values"
+      ],
+      "review": "fixed; 10 job-operation/MCP tests passed in final scoped review"
+    }
+  ],
+  "additional_development_regressions": [
+    "Imported candidate was absent from job context; J.xs now preserves typed closure.",
+    "Import initially checked only F hash; complete output semantic scope is now required."
+  ],
+  "remaining_findings": [],
+  "current_runtime_matches_final_integrated_test_receipt": true,
+  "verified_bundle_files": 84,
+  "verified_prior_milestone_files": 11,
+  "source_and_px1_bytes_unchanged": true,
+  "limitations": [
+    "Review is bounded to this local operation.",
+    "No real provider, visual or target-engine execution.",
+    "Final formatting changes were followed by the integrated test suite; review findings and their corrections were checked separately."
+  ]
+}

@@ -9,6 +9,13 @@ import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+if __package__:
+    from .family_probe import run_family_probe
+    from .provider_probe import run_provider_probe
+else:
+    from family_probe import run_family_probe
+    from provider_probe import run_provider_probe
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -43,13 +50,31 @@ def run():
             names = archive.namelist()
             for needed in (
                 "pixl/registry.json",
+                "pixl/registry-v2.json",
+                "pixl/resources/spec/PIXL-2.md",
                 "pixl/resources/knowledge/pixel-art.json",
                 "pixl/resources/knowledge/pixellab-capabilities.json",
                 "pixl/resources/pixl/__init__.py",
                 "pixl/resources/pixl/service.py",
+                "pixl/resources/training/source-inventory.json",
+                "pixl/resources/training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+                "pixl/resources/evidence/source-migration/range-review.json",
             ):
                 if needed not in names:
                     raise RuntimeError(f"wheel missing {needed}")
+            inventory = json.loads(
+                archive.read("pixl/resources/training/source-inventory.json")
+            )
+            for row in inventory["documents"]:
+                previous = row.get("previous")
+                if (
+                    previous
+                    and previous["path"] != row["path"]
+                    and "pixl/resources/" + previous["path"] in names
+                ):
+                    raise RuntimeError(
+                        f"wheel retained obsolete source {previous['path']}"
+                    )
         installed = subprocess.run(
             [
                 uv,
@@ -76,7 +101,30 @@ def run():
         env.pop("PYTHONPATH", None)
         checks = []
         resource_root = target / "pixl/resources"
+
+        def cli(args):
+            result = subprocess.run(
+                [sys.executable, "-I", "-c", launch, *args],
+                cwd=cwd,
+                env=env,
+                capture_output=True,
+                check=False,
+                timeout=20,
+            )
+            if result.returncode:
+                raise RuntimeError(result.stderr.decode("utf-8"))
+            return json.loads(result.stdout) if result.stdout else None
+
         for args in (
+            ["sources"],
+            ["intake", ".px2", "--root", str(cwd), "--brief", "Canvas unresolved"],
+            ["workflow", ".px2/state.px", "--root", str(cwd)],
+            [
+                "workflow",
+                str(resource_root / "examples/intake/project.px"),
+                "--root",
+                str(resource_root),
+            ],
             ["knowledge", "palette-contract"],
             ["capabilities", "create_character"],
             ["init", ".pixl", "--root", str(cwd)],
@@ -89,17 +137,13 @@ def run():
             ],
             ["poc", "--out", str(cwd / "proof")],
         ):
-            result = subprocess.run(
-                [sys.executable, "-I", "-c", launch, *args],
-                cwd=cwd,
-                env=env,
-                capture_output=True,
-                check=False,
-                timeout=20,
-            )
-            if result.returncode:
-                raise RuntimeError(result.stderr.decode("utf-8"))
-            data = json.loads(result.stdout)
+            data = cli(args)
+            if args[0] == "sources" and (
+                not data["files_verified"] or Path(data["root"]) != resource_root
+            ):
+                raise RuntimeError(
+                    "wheel source discovery did not use installed resources"
+                )
             if args[0] == "poc":
                 from hashlib import sha256
 
@@ -112,11 +156,17 @@ def run():
                         "wheel proof failed or identified a different runner"
                     )
             checks.append({"command": args[0], "status": "pass"})
+        provider = run_provider_probe(cli, cwd)
+        checks.extend(provider["checks"])
+        family = run_family_probe(cli, cwd)
+        checks.extend(family["checks"])
         return {
             "status": "pass",
             "wheel": wheel.name,
             "wheel_files": len(names),
             "checks": checks,
+            "provider_probe": provider,
+            "family_probe": family,
             "scope": "temporary wheel installation; runtime dependencies reused; no global installation or source import",
         }
 

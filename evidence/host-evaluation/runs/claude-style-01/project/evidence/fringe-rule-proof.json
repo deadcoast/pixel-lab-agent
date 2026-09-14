@@ -1,0 +1,19 @@
+{
+  "proof": "fringe-rule-rederivation",
+  "question": "Is the reference partial transparency a deterministic rule that can be reauthored, or hand-placed texture?",
+  "procedure": [
+    "Clear all 30 fractional-alpha pixels from translucent-reference.png.",
+    "Re-derive the fringe with tools/apply_glow_fringe.py using left_alpha=96, right_alpha=160, glass #56b5bc, trigger rows containing glass.",
+    "Compare pixels and file bytes with the original."
+  ],
+  "result": {
+    "stripped_fractional_pixels": 30,
+    "pixel_identical": true,
+    "original_sha256": "bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132",
+    "rederived_sha256": "bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132"
+  },
+  "outcome": "pass",
+  "mode": "local",
+  "at": "2026-09-11T20:53:39+00:00",
+  "limits": "Proves the fringe geometry and alpha levels are reproducible for this one 32x32 reference. It does not prove the same rule suits a different silhouette, nor that a generator will return a conforming opaque body."
+}

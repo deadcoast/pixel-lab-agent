@@ -1,0 +1,55 @@
+Command: uv run --no-sync python -m unittest tests.test_inspection_views.InspectionViewTests.test_rejects_aggregate_decode_limit_before_converting_next_frame tests.test_inspection_views.InspectionViewTests.test_rejects_visible_color_limit_without_truncating_measurement tests.test_inspection_views.InspectionViewTests.test_rejects_oversized_frame_strip_before_allocating_it tests.test_inspection_views.InspectionViewTests.test_frame_comparison_preserves_transparent_rgb_exactly tests.test_inspection_views.InspectionViewTests.test_tile_neighborhood_preserves_transparent_rgb_exactly -v
+Exit code: 1
+
+test_rejects_aggregate_decode_limit_before_converting_next_frame (tests.test_inspection_views.InspectionViewTests.test_rejects_aggregate_decode_limit_before_converting_next_frame) ... FAIL
+test_rejects_visible_color_limit_without_truncating_measurement (tests.test_inspection_views.InspectionViewTests.test_rejects_visible_color_limit_without_truncating_measurement) ... FAIL
+test_rejects_oversized_frame_strip_before_allocating_it (tests.test_inspection_views.InspectionViewTests.test_rejects_oversized_frame_strip_before_allocating_it) ... FAIL
+test_frame_comparison_preserves_transparent_rgb_exactly (tests.test_inspection_views.InspectionViewTests.test_frame_comparison_preserves_transparent_rgb_exactly) ... FAIL
+test_tile_neighborhood_preserves_transparent_rgb_exactly (tests.test_inspection_views.InspectionViewTests.test_tile_neighborhood_preserves_transparent_rgb_exactly) ... FAIL
+
+======================================================================
+FAIL: test_rejects_aggregate_decode_limit_before_converting_next_frame (tests.test_inspection_views.InspectionViewTests.test_rejects_aggregate_decode_limit_before_converting_next_frame)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection_views.py", line 417, in test_rejects_aggregate_decode_limit_before_converting_next_frame
+    self.assertEqual(converted, [0])
+AssertionError: Lists differ: [0, 1, 2] != [0]
+
+======================================================================
+FAIL: test_rejects_visible_color_limit_without_truncating_measurement (tests.test_inspection_views.InspectionViewTests.test_rejects_visible_color_limit_without_truncating_measurement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection_views.py", line 426, in test_rejects_visible_color_limit_without_truncating_measurement
+    self.assertRaisesRegex(PixlError, "inspection_limit"),
+AssertionError: PixlError not raised
+
+======================================================================
+FAIL: test_rejects_oversized_frame_strip_before_allocating_it (tests.test_inspection_views.InspectionViewTests.test_rejects_oversized_frame_strip_before_allocating_it)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection_views.py", line 464, in bounded_new
+    raise AssertionError("oversized strip allocated before validation")
+AssertionError: oversized strip allocated before validation
+
+======================================================================
+FAIL: test_frame_comparison_preserves_transparent_rgb_exactly (tests.test_inspection_views.InspectionViewTests.test_frame_comparison_preserves_transparent_rgb_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection_views.py", line 503, in test_frame_comparison_preserves_transparent_rgb_exactly
+    self.assertEqual(...)
+AssertionError: Lists differ: [(0, 0, 0, 0), (12, 34, 56, 128)] != [(123, 45, 67, 0), (12, 34, 56, 128)]
+
+======================================================================
+FAIL: test_tile_neighborhood_preserves_transparent_rgb_exactly (tests.test_inspection_views.InspectionViewTests.test_tile_neighborhood_preserves_transparent_rgb_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection_views.py", line 531, in test_tile_neighborhood_preserves_transparent_rgb_exactly
+    self.assertEqual(...)
+AssertionError: Lists differ: [(0, 0, 0, 0), (12, 34, 56, 128)] != [(123, 45, 67, 0), (12, 34, 56, 128)]
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.018s
+
+FAILED (failures=5)
+
+Note: Repeated unittest assertion rendering was shortened only at the two `self.assertEqual(...)` call sites. The complete observed pixel differences and every failure class are retained above; the original tool transcript remains in the task session.

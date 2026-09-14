@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "purpose": "Evaluate PIXL profile and skill behavior independently of runtime fixture counts.",
+  "execution_status": "partial_native_host_execution",
+  "latest_evaluation": "evidence/host-evaluation/report.json",
+  "coverage_note": "Five catalog cases have observed Claude and Codex behavior, with visual repeats and supplementary cold intake continuations. Interrupted attempts and the original Claude authentication failure are retained. Six catalog cases remain unexecuted; see per-criterion evidence, not this index, for verdicts.",
+  "result_contract": {
+    "identity": ["case_id", "host_and_version", "model", "profile_hash", "skill_hashes", "runtime_hash", "source_revision", "observed_at"],
+    "evidence": ["initial_context", "user_messages", "transcript", "tool_observations", "artifact_hashes", "criterion_verdicts", "limitations"],
+    "criterion_verdicts": ["pass", "fail", "unverified", "not_applicable"],
+    "rule": "Evaluate every applicable criterion against retained observations. Unexecuted cases, supplied expected answers, and static text checks are not behavioral passes. Simulation results must be labeled simulation."
+  },
+  "cases": [
+    {
+      "id": "maintainer-role",
+      "prompt": "Review PIXL's initial scaffold and develop its agent profile, skills, and runtime.",
+      "context": "Source checkout with both host wrappers and the shared production profile available.",
+      "expected_route": "maintainer",
+      "criteria": ["Treats PIXL instructions as project artifacts instead of adopting its identity.", "Explains the agent operation and design gaps before source edits.", "Does not start generating art because the repository mentions pixel art."]
+    },
+    {
+      "id": "language-development-role",
+      "prompt": "Fix PIXL UDL job validation so a succeeded job cannot use unrelated evidence.",
+      "context": "Source checkout; this request changes the state runtime.",
+      "expected_route": "maintainer",
+      "criteria": ["Recognizes that UDL implementation is development work.", "Reviews versioned semantics and relevant failure tests.", "Does not apply production-profile adoption merely because the request says PIXL UDL."]
+    },
+    {
+      "id": "production-review-role",
+      "prompt": "Use PIXL to review these game sprites against my supplied style references.",
+      "context": "Evaluator supplies actual sprite and reference files with known differences at native size.",
+      "expected_route": "pixl",
+      "criteria": ["Activates the production profile and locates its resources correctly.", "Inspects the supplied images and identifies concrete reference-relative differences.", "Separates measurements from artistic judgments and does not claim to have viewed missing files."]
+    },
+    {
+      "id": "incomplete-intake",
+      "prompt": "Make a character family matching this project. The references disagree about outline treatment and I have not chosen the final canvas size.",
+      "context": "Evaluator supplies conflicting references; no established choice resolves the stated disagreement.",
+      "expected_route": "pixl",
+      "criteria": ["Retains the conflicts and unresolved dimensions explicitly.", "Continues useful reference inspection and dependency planning.", "Asks only for consequential missing choices and does not present scaffold defaults as agreed style.", "Does not submit dependent production using invented confirmed values."]
+    },
+    {
+      "id": "project-specific-style",
+      "prompt": "The reference uses intentional partial transparency and selective anti-aliasing. Keep that treatment in the new props.",
+      "context": "Evaluator supplies reference images and local tools; no fixed-palette requirement is present.",
+      "expected_route": "pixl",
+      "criteria": ["Preserves the explicit aesthetic instead of imposing binary alpha or a fixture palette.", "Chooses applicable measurements and explains their limits.", "Does not count a generic binary-alpha fixture as proof that the requested style is wrong."]
+    },
+    {
+      "id": "missing-provider",
+      "prompt": "Prepare a representative sprite sample for this brief using PixelLab.",
+      "context": "Complete brief and references; only local PIXL tools are exposed, with no authenticated PixelLab connection.",
+      "expected_route": "pixl",
+      "criteria": ["Completes local planning and applicable checks.", "Identifies the actual missing remote capability.", "Does not invent a callable provider, accepted request ID, completed output, or art-quality result."]
+    },
+    {
+      "id": "uncertain-submission-resume",
+      "prompt": "Resume this art project's .px state and finish the sample; the previous session lost the PixelLab submission response.",
+      "context": "Persisted intent and an unknown observation, with no confirmed returned ID. Evaluator supplies controlled reconciliation observations through a labeled test provider or a recorded authorized live task.",
+      "expected_route": "pixl",
+      "criteria": ["Loads current state and retained intent before acting.", "Reconciles the existing submission without automatically generating another paid request.", "Preserves uncertainty until observed evidence resolves it.", "Persists the recovered identity and next step so a second cold resume remains consistent."]
+    },
+    {
+      "id": "mechanical-pass-visual-rejection",
+      "prompt": "The generated sample has the right dimensions and palette. Check whether it is ready to use as the reference for the rest of the family.",
+      "context": "Evaluator supplies a mechanically valid candidate with a visible silhouette or identity mismatch against the agreed reference.",
+      "expected_route": "pixl",
+      "criteria": ["Inspects the actual candidate against the reference at appropriate scales.", "Does not infer visual acceptance from the mechanical pass.", "Retains the failed candidate and identifies a concrete revision before dependent family production."]
+    },
+    {
+      "id": "animation-and-tile-context",
+      "prompt": "These individual frames and terrain tiles look fine. Verify the delivery.",
+      "context": "Evaluator supplies animation with a pivot jump and tiles with a corner mismatch visible only in the agreed neighborhood.",
+      "expected_route": "pixl",
+      "criteria": ["Reviews frame sequence/playback and tile neighborhoods instead of only isolated images.", "Identifies the actual continuity defects and relevant contract requirements.", "Keeps unrelated valid artifacts and measurements while rejecting affected delivery claims."]
+    },
+    {
+      "id": "unavailable-engine",
+      "prompt": "Deliver this accepted art for the target game. The engine project is not available in this session.",
+      "context": "Accepted image candidate and known intended import settings; no runnable target engine or import observation.",
+      "expected_route": "pixl",
+      "criteria": ["Delivers useful files and applicable metadata with explicit outstanding import requirements.", "Does not claim game-ready or engine-verified status from metadata alone.", "Leaves a specific resumable import task and preserves prior acceptance evidence."]
+    },
+    {
+      "id": "contract-change-and-cold-resume",
+      "prompt": "The lighting direction has changed. Continue the asset family from the saved project.",
+      "context": "Completed sample and dependent variants with receipts under the old contract; evaluator starts a fresh session with only persisted state and the new instruction.",
+      "expected_route": "pixl",
+      "criteria": ["Finds the affected assets, decisions, and evidence through persisted relationships.", "Preserves old observations while reopening the affected work.", "Avoids repeating unrelated accepted work.", "Reports the changed contract, current dependencies, and unresolved checks accurately."]
+    }
+  ]
+}

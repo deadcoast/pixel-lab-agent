@@ -1,6 +1,13 @@
 # PIXL agent kit
 
-PIXL is a reusable pixel-art production profile, workflow skill, and local UDL runtime for Claude and Codex. Its job is to turn a brief into a source-specific style contract, researched production choices, representative proofs of concept, actual PixelLab tool execution, inspected artifacts, and durable production state. The [profile](../agent/PROFILE.md) is the shared behavioral authority. [PIXL-1](../spec/PIXL-1.md) and the [registry](../pixl/registry.json) define the custom agent-only UDL.
+The [native host evaluation](../evaluations/README.md) now records the exact packaged
+instructions in authenticated Claude and Codex trials, including repeated visual
+rejection and cold intake continuation. The original Claude login failure is preserved
+alongside subsequent model activity and interrupted attempts. See the [criterion review](../evidence/host-evaluation/criterion-review.json)
+for observed passes, failures and unverified requirements. Earlier scripted kit checks below
+remain distinct from these model sessions and from actual provider/engine outcomes.
+
+PIXL is a reusable pixel-art production profile, workflow skill, and local UDL runtime for Claude and Codex. Its job is to turn a brief into a source-specific style contract, researched production choices, representative proofs of concept, actual PixelLab tool execution, inspected artifacts, and durable production state. The [profile](../agent/PROFILE.md) is the shared behavioral authority. [PIXL-1](../spec/PIXL-1.md) / [registry](../pixl/registry.json) preserve existing state; [PIXL-2](../spec/PIXL-2.md) / [registry](../pixl/registry-v2.json) define the new intake and candidate-acceptance lifecycle.
 
 Markdown instructions, JSON plugin manifests, MCP JSON arguments, and TOML configuration translate this system into each harness. They are not the UDL. The local runtime performs deterministic state and artifact checks. PixelLab's remote service performs generation through separately authenticated tools. The harness model remains responsible for interpreting a brief, making supported artistic judgments, using available tools, and reporting evidence.
 
@@ -40,7 +47,7 @@ plugins/pixl/
   scripts/pixl.py                      Portable runtime entrypoint
   config/                             Inactive MCP templates
   runtime/pixl/                        Generated package copy
-  resources/{agent,spec,knowledge,examples,docs}/  Generated references and provenance
+  resources/{agent,spec,knowledge,examples,docs,training}/  Generated references and provenance
   resources/pixl/registry.json          Companion for the copied specification link
   requirements.txt                     Generated runtime dependency declaration
   bundle-manifest.json                 Generated source/copy hash inventory
@@ -121,13 +128,17 @@ PixelLab authentication remains a separate harness connection. Consult [PixelLab
 
 ## Local operations and handoff
 
-The CLI is available as `python -m pixl`, as `pixl` after package installation, or through the bundled runner. Run `--help` for exact arguments. Typical local work begins with `init STORE --name NAME --root ROOT`; its state file is `state.px`. The initialized style is explicitly unconfirmed intake data. Validate production state, use `context FILE FOCUS --budget BYTES` to load the relevant dependency closure, use `ready FILE` and `impact FILE ID` to reason over recorded prerequisites, and commit with `commit STORE CANDIDATE --expect SHA256 --root ROOT` after reconciling against the current canonical store hash. Use the same project root for file checks and commits when the store sits in a subdirectory.
+The CLI is available as `python -m pixl`, as `pixl` after package installation, or through the bundled runner. Run `--help` for exact arguments. New lifecycle work begins with `intake STORE --name NAME --brief TEXT --root ROOT`; its PX2 `state.px` has no invented style contract. Follow the [intake/sample skill](../plugins/pixl/skills/pixl/references/intake-sample.md) to retain choices and save planned outputs/criteria before verdicts. `workflow FILE --root ROOT` reports candidate-specific checks and blockers. Legacy `init` remains a PX1 initializer with scaffold defaults; existing stores are never silently upgraded. Use `context FILE FOCUS --budget BYTES`, `ready FILE` and `impact FILE ID` for focused work, and `commit STORE CANDIDATE --expect SHA256 --root ROOT` after reconciling the current hash. Use the same project root for file checks and commits when the store sits in a subdirectory.
+
+For a method question, follow the [knowledge operation](../plugins/pixl/skills/pixl/references/knowledge.md). `sources` discovers the selected runtime's verified supplied-source inventory; `sources --root ROOT` explicitly checks a source tree. Use `knowledge METHOD_ID`, then retrieve the method's dependency closure from `knowledge/library.px` with the resource root returned by discovery. `source PATH --expect SHA256 --start N --end N` retrieves exact cited text. Through MCP, `pixl_sources` discovers library sources and `pixl_source` with `scope: "library"` resolves their paths within those installed resources; the default `scope: "project"` continues to resolve project files. Current identities never fall back to old bundled filenames.
 
 To edit through the supplied interfaces, `decode FILE` returns a tagged JSON adapter; edit the intended semantic values and revision, then run `encode ADAPTER_JSON --out CANDIDATE`. Validate and commit the resulting UDL candidate. The tagged JSON is interchange, not the authoritative production-state format.
 
 Context budgets are **strict byte budgets**, not model-token estimates. They do not prove token savings. `ready` establishes readiness only under the declared local rules; it does not establish credentials, credit, remote capacity, visual acceptance, or successful game import.
 
-The local MCP tools are `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_commit`, `pixl_catalog`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, and `pixl_job`. Fetch `tools/list` from the connected server for their actual input schemas. `pixl_prepare` records local intent and `pixl_job` handles local journal state. They never submit or poll PixelLab. A remote result recorded in the journal remains an observation supplied by the caller, not independent service verification.
+The 27 local MCP tools include `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_intake`, `pixl_workflow`, `pixl_commit`, `pixl_catalog`, `pixl_sources`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, `pixl_job`, `pixl_job_prepare`, `pixl_job_dispatch`, `pixl_job_observe`, `pixl_job_import`, `pixl_jobs`, `pixl_family`, `pixl_family_snapshot`, `pixl_inspection`, `pixl_inspection_prepare` and `pixl_inspection_review`. Fetch actual schemas through `tools/list`. The [inspection operation](../plugins/pixl/skills/pixl/references/inspection.md) prepares saved views and retains explicit reviews; actual viewing happens through the host. The [provider recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md) saves plan-bound requests, claims dispatch before a host call, retains observations and imports local candidates. Legacy `pixl_prepare`/`pixl_job` remain stateless. No local tool submits or polls PixelLab; remote observations are caller-supplied, and imported candidates still require acceptance.
+
+The [family operation](../plugins/pixl/skills/pixl/references/family-delivery.md) binds production members to the exact approved sample, plans collective continuity and destination requirements, and retains selected bytes in an immutable package. `family FILE [OUTPUT] --root ROOT` reports acceptance, pending jobs and historical snapshot drift; `family-snapshot STORE OUTPUT CANDIDATE --expect HASH --root ROOT` copies accepted member bytes and publishes only an unaccepted report candidate. A useful package can retain unavailable engine requirements and a concrete handoff. Copying does not nominate, evaluate or complete delivery.
 
 ## Proofs and honest limits
 
@@ -195,7 +206,7 @@ The exercise copied `resources/examples` and `resources/docs` into the fresh pro
 | MCP `tools/list` | 13 local tools with input schemas |
 | MCP `tools/call` → `pixl_validate` | `isError: false`, valid 13-record example, `files_verified: true`; structured result matched the text result |
 
-The recorded workflow comprised **16 CLI invocations: 13 successful operations and three intended rejections**. The negative checks are successful failure-handling proofs, not production failures hidden by a final pass. No runtime or runner defect was found in this exercise. That snapshot had 13 MCP tools; the final inventory has 14 after adding exact source-slice retrieval. Current runtime, POC, packaging and protocol results are recorded in [verification](VERIFICATION.md), separately from this earlier exercise.
+The recorded workflow comprised **16 CLI invocations: 13 successful operations and three intended rejections**. The negative checks are successful failure-handling proofs, not production failures hidden by a final pass. No runtime or runner defect was found in this exercise. That snapshot had 13 MCP tools; source-slice retrieval brought it to 14, source discovery to 15, intake/workflow to 17, durable provider operations to 22, and family operations to the current 24. Current runtime, POC, packaging and protocol results are recorded in [verification](VERIFICATION.md), separately from this earlier exercise.
 
 With `$pixlPython` set to the isolated interpreter and `$pixlRunner` set to the copied runner's absolute path, the key commands were:
 

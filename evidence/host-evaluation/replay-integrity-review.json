@@ -1,0 +1,17 @@
+{
+  "review_kind": "independent checker review with retained failing regression",
+  "finding": "The replay copier accepted unrecorded project additions because recorded-path verification did not establish an exact inventory.",
+  "severity": "P2",
+  "current_attempt_impact": "All 16 current project inventories match their records; the original 39 successful replay results were not affected.",
+  "pre_fix_evidence": {
+    "path": "replay-inventory-before.txt",
+    "sha256": "c6eaf2cc235874a7e0313788a29ee4d8eea403b1c653e0301e98e41b4917b7d2"
+  },
+  "correction": "Require complete project inventory equality before replay; classify any mismatch as evidence corruption and skip all CLI operations.",
+  "regression": "test_unrecorded_project_dependency_blocks_replay executes a real sentinel CLI on the failing path; the corrected path records an evidence error and performs no replay.",
+  "independent_rereview": "Finding closed; regression passed and no sentinel file was created.",
+  "final_checker_sha256": "f6da4e228b46db3d6dad0087ac4782af71b7e9b4b6f0c134fd225a5f5963b688",
+  "test_source_sha256": "bc626fd5363929cb5ec3d4757a3ba85c56aea01a0d82543c790740c1f51e6224",
+  "final_integrity_sha256": "127541b65bd47922066f68f2195b4c9405fafd95ca797bcb78b446f96cb1b309",
+  "scope": "Evaluation tooling only; frozen profile/runtime and every prior raw attempt are unchanged."
+}

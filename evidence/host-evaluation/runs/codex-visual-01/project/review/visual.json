@@ -1,0 +1,31 @@
+{
+  "reviewer": "PIXL acting agent",
+  "at": "2026-09-11T19:59:19.881606+00:00",
+  "question": "Can candidate.png become the family baseline for the agreed reference.png identity?",
+  "artifacts": {
+    "reference.png": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "candidate.png": "d28f90f619400f8a770741b23bb5c1da995e6b6dd017ebab30eac934892c8d8d",
+    "review/candidates/candidate-v1.png": "d28f90f619400f8a770741b23bb5c1da995e6b6dd017ebab30eac934892c8d8d",
+    "review/comparison.png": "65b920edcff79146ae7fcf13a0c2030881cc00591dbf6667148a346c968c0d9a",
+    "review/pixel-diff.json": "c9db09993d36be9bde7fae755729750f63ac724e8b362db36abfb99614626d38",
+    "review/pixel-observations.json": "12f1c37c35f304ca6a327a45a0c6c859577efc080d386482dbebd33165b016cd"
+  },
+  "inspection": "Viewed both actual images at native 32x32, comparison board at original resolution with 12x nearest colored views and 8x alpha masks, and native sprites on light, dark and synthetic busy grounds.",
+  "identity_verdict": "fail",
+  "findings": [
+    "Viewer-left antenna is absent: the reference dark block at inclusive x=7..10, y=3..8 is transparent in the candidate. The mask loses one of the two prongs and the bounded U-shaped top gap.",
+    "Viewer-right eye is absent: the reference pale block at inclusive x=18..20, y=14..17 is cyan in the candidate. The face now has one pale eye instead of the agreed pair.",
+    "The losses are apparent at native size and enlarged, across the diagnostic grounds. The candidate reads as a one-pronged, one-eyed variation; no such identity change was authorized.",
+    "The surviving body proportions, dark enclosing frame, flat cyan interior and remaining pale eye are clean broad clusters. No scattered accent noise, extra shading colors or resampling blur is visible. Color-role and cluster-quality criterion passes; missing landmark completeness fails identity separately.",
+    "The two sprites have the same visible bounding box and one opaque connected component. These measurements do not capture the missing landmarks."
+  ],
+  "cluster_verdict": "pass",
+  "coordinate_convention": "zero-based x,y; origin top-left; inclusive ranges",
+  "decision": "Reject candidate-v1 as a family baseline; reference.png remains the identity authority.",
+  "next_step": "Restore the left antenna and right eye in a separate candidate-v2.png using the reference placements and colors; register a new X for f.revised and run all four criteria again before any family production.",
+  "limitations": [
+    "Diagnostic grounds are synthetic; actual game-background readability is unverified.",
+    "No engine, animation, direction family or final display route was supplied or tested. These are not additional gates for this static identity rejection.",
+    "The bundled key fixture is method context only, not this candidate visual evidence."
+  ]
+}

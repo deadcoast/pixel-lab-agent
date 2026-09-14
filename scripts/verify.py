@@ -17,17 +17,12 @@ from pixl.codec import digest
 from pixl.graph import file_hash, validate
 from pixl.poc import run_all
 from pixl.service import load_document
+from pixl.sources import load_inventory
 from scripts.benchmark import run as benchmark
 from scripts.build_examples import build as examples
+from scripts.build_intake_example import build as intake_example
 from scripts.build_knowledge import build as knowledge_library
 from scripts.build_plugin import build as bundle
-
-ORIGINAL_HASHES = {
-    "links.md": "8d25924d3085fa0307f3cc698c252fb9195555885def82951bf070da770b37b8",
-    "AGENT-PIXELART-TRAINING.md": "bb21cee0a39b504f7f4e56f61f13750b57178fe2b6230f27e79b28b40934a050",
-    "pixel-art-deep-research-report.md": "3edf15db8c02eb3cc7225769416ef6924ef0ebe613cd3430a315389534434727",
-    "research-pixel-art-systems.md": "3edf15db8c02eb3cc7225769416ef6924ef0ebe613cd3430a315389534434727",
-    "PIXEL-ART-ASSETS.md": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900"}
 
 
 def write(name, data):
@@ -37,9 +32,8 @@ def write(name, data):
 
 
 def verify():
-    source_check = {name: file_hash(ROOT / name) == expected for name, expected in ORIGINAL_HASHES.items()}
-    if not all(source_check.values()):
-        raise RuntimeError(f"supplied source changed: {source_check!r}")
+    inventory = load_inventory(ROOT)
+    source_check = {row["path"]: True for row in inventory["documents"]}
     index = catalog(ROOT)
     write("knowledge/source-catalog.json", index)
     methods = json.loads((ROOT / "knowledge/pixel-art.json").read_text(encoding="utf-8"))
@@ -53,6 +47,7 @@ def verify():
     art = run_all(ROOT / "evidence/art-methods")
     library = knowledge_library()
     examples()
+    intake_example()
     bundle()
     stream = io.StringIO()
     suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"), top_level_dir=str(ROOT))
@@ -71,7 +66,8 @@ def verify():
                "knowledge_methods": len(methods["methods"]), "validated_source_ranges": source_ranges,
                "knowledge_udl": library,
                "source_documents": len(index["documents"]), "duplicate_groups": len(index["duplicates"]),
-               "original_source_hashes_unchanged": source_check,
+               "source_inventory_sha256": file_hash(ROOT / "training/source-inventory.json"),
+               "declared_source_revisions_verified": source_check,
                "runtime_hashes": {p.name: file_hash(p) for p in sorted((ROOT / "pixl").iterdir()) if p.suffix in (".py", ".json")},
                "example_hash": digest(validate(load_document(ROOT / "examples/atelier/project.px"), ROOT)),
                "limitations": ["One Windows symlink test may skip without OS privilege; all skips are listed.",

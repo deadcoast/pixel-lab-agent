@@ -97,7 +97,36 @@ class PackagingTests(unittest.TestCase):
                 launch,
                 str(plugin / "scripts/pixl.py"),
             ]
+
+            def cli(command):
+                result = subprocess.run(
+                    runner + command,
+                    cwd=cwd,
+                    env=env,
+                    capture_output=True,
+                    check=False,
+                    timeout=20,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr.decode())
+                return json.loads(result.stdout) if result.stdout else None
+
             for command in (
+                ["sources"],
+                [
+                    "intake",
+                    str(cwd / ".px2"),
+                    "--root",
+                    str(cwd),
+                    "--brief",
+                    "No chosen canvas",
+                ],
+                ["workflow", str(cwd / ".px2/state.px"), "--root", str(cwd)],
+                [
+                    "workflow",
+                    str(plugin / "resources/examples/intake/project.px"),
+                    "--root",
+                    str(plugin / "resources"),
+                ],
                 ["knowledge", "palette-contract"],
                 ["capabilities", "create_character"],
                 [
@@ -114,17 +143,22 @@ class PackagingTests(unittest.TestCase):
                 ],
                 ["poc", "--out", str(cwd / "proof")],
             ):
-                result = subprocess.run(
-                    runner + command,
-                    cwd=cwd,
-                    env=env,
-                    capture_output=True,
-                    check=False,
-                    timeout=20,
-                )
-                self.assertEqual(result.returncode, 0, result.stderr.decode())
-                data = json.loads(result.stdout)
+                data = cli(command)
                 self.assertIsInstance(data, dict)
+                if command[0] == "workflow":
+                    self.assertEqual(data["format"], 2)
+                    self.assertTrue(data["files_verified"])
+                    self.assertEqual(data["ready"], [])
+                if command[0] == "sources":
+                    self.assertTrue(data["files_verified"])
+                    self.assertEqual(Path(data["root"]), plugin / "resources")
+                    for source in data["documents"]:
+                        self.assertTrue(
+                            (plugin / "resources" / source["path"]).is_file()
+                        )
+                        self.assertFalse(
+                            (plugin / "resources" / source["previous"]["path"]).exists()
+                        )
                 if command[0] == "poc":
                     from hashlib import sha256
 
@@ -148,6 +182,18 @@ class PackagingTests(unittest.TestCase):
                                 (plugin / "resources" / name).read_bytes()
                             ).hexdigest(),
                         )
+
+            from scripts.provider_probe import run_provider_probe
+
+            provider = run_provider_probe(cli, cwd)
+            self.assertEqual(provider["status"], "pass")
+            self.assertFalse(provider["remote_executed"])
+
+            from scripts.family_probe import run_family_probe
+
+            family = run_family_probe(cli, cwd)
+            self.assertEqual(family["status"], "pass")
+            self.assertFalse(family["remote_executed"])
 
     def test_manifest_digests_match_source_and_bundle_bytes(self):
         from hashlib import sha256

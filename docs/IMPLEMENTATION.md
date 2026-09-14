@@ -19,6 +19,13 @@ PIXL is an agent-operated pixel-art project language and an executable agent kit
 
 ## Architecture choice
 
+The later [candidate-inspection design](superpowers/specs/2026-09-11-candidate-inspection-design.md)
+adds a complete prepare/view/review operation using existing PX2 records. The runtime
+owns bounded exact rendering and retained semantic identity; the acting profile or
+reviewer owns observation and judgment. The [implemented contract](../spec/candidate-inspection.md)
+and [evidence](../evidence/candidate-inspection/README.md) describe the CLI/MCP surface,
+historical drift, actual checks and limits. A new UDL version was unnecessary.
+
 Three approaches were evaluated: a prompt-only shorthand (cannot enforce referential integrity or detect stale writes), an opaque binary graph (requires a decoder for every model interaction and hides useful structure from the model), and a compact typed wire grammar backed by deterministic tools. PIXL uses the third. Human readability has zero weight in the wire-design criteria. Parse reliability, contextual closure, semantic density, measured tokenizer cost, and executable validation determine the design.
 
 Text literals carry source excerpts, descriptions accepted by PixelLab, and semantic knowledge that the model must reason about. These are payload, not an attempt to turn a language model into a new trained architecture. No evidence establishes that all existing text representations are intrinsically bad for agents. PIXL does not make that claim.

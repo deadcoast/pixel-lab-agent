@@ -1,0 +1,67 @@
+test_cli_family_routes_missing_state_to_structured_error (tests.test_family_operations.FamilyOperationTests.test_cli_family_routes_missing_state_to_structured_error) ... FAIL
+test_cli_snapshot_routes_missing_store_to_structured_error (tests.test_family_operations.FamilyOperationTests.test_cli_snapshot_routes_missing_store_to_structured_error) ... FAIL
+test_mcp_family_paths_are_confined_before_read_or_write (tests.test_family_operations.FamilyOperationTests.test_mcp_family_paths_are_confined_before_read_or_write) ... FAIL
+test_mcp_mutability_and_schema_reject_unchecked_mutations (tests.test_family_operations.FamilyOperationTests.test_mcp_mutability_and_schema_reject_unchecked_mutations) ... FAIL
+
+======================================================================
+FAIL: test_cli_family_routes_missing_state_to_structured_error (tests.test_family_operations.FamilyOperationTests.test_cli_family_routes_missing_state_to_structured_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 51, in test_cli_family_routes_missing_state_to_structured_error
+    result = self.cli(
+        "family", self.folder / "state.px", "--root", self.root,
+        expected_code=2,
+    )
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 27, in cli
+    self.assertTrue(output.lstrip().startswith(b"{"), output.decode())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : usage: pixl [-h]
+
+            {validate,context,ready,impact,init,intake,workflow,job-prepare,job-dispatch,job-observe,job-import,jobs,commit,catalog,sources,source,asset-check,encode,decode,capabilities,knowledge,prepare,job,poc,mcp} ...
+
+pixl: error: argument command: invalid choice: 'family' (choose from validate, context, ready, impact, init, intake, workflow, job-prepare, job-dispatch, job-observe, job-import, jobs, commit, catalog, sources, source, asset-check, encode, decode, capabilities, knowledge, prepare, job, poc, mcp)
+
+
+
+======================================================================
+FAIL: test_cli_snapshot_routes_missing_store_to_structured_error (tests.test_family_operations.FamilyOperationTests.test_cli_snapshot_routes_missing_store_to_structured_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 58, in test_cli_snapshot_routes_missing_store_to_structured_error
+    result = self.cli(
+        "family-snapshot", self.folder, "delivery.output", "package",
+        "--expect", "0" * 64, "--root", self.root, expected_code=2,
+    )
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 27, in cli
+    self.assertTrue(output.lstrip().startswith(b"{"), output.decode())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : usage: pixl [-h]
+
+            {validate,context,ready,impact,init,intake,workflow,job-prepare,job-dispatch,job-observe,job-import,jobs,commit,catalog,sources,source,asset-check,encode,decode,capabilities,knowledge,prepare,job,poc,mcp} ...
+
+pixl: error: argument command: invalid choice: 'family-snapshot' (choose from validate, context, ready, impact, init, intake, workflow, job-prepare, job-dispatch, job-observe, job-import, jobs, commit, catalog, sources, source, asset-check, encode, decode, capabilities, knowledge, prepare, job, poc, mcp)
+
+
+
+======================================================================
+FAIL: test_mcp_family_paths_are_confined_before_read_or_write (tests.test_family_operations.FamilyOperationTests.test_mcp_family_paths_are_confined_before_read_or_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 82, in test_mcp_family_paths_are_confined_before_read_or_write
+    self.assertIn("path_escape", report["content"][0]["text"])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'path_escape' not found in 'unknown_tool: pixl_family'
+
+======================================================================
+FAIL: test_mcp_mutability_and_schema_reject_unchecked_mutations (tests.test_family_operations.FamilyOperationTests.test_mcp_mutability_and_schema_reject_unchecked_mutations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_family_operations.py", line 66, in test_mcp_mutability_and_schema_reject_unchecked_mutations
+    self.assertTrue({"pixl_family", "pixl_family_snapshot"} <= by_name.keys())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.743s
+
+FAILED (failures=4)

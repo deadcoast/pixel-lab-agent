@@ -1,0 +1,1260 @@
+{
+  "revision": 2,
+  "records": [
+    {
+      "id": "actor",
+      "kind": "A",
+      "fields": {
+        "nm": "PIXL",
+        "rl": {
+          "$symbol": "agent"
+        }
+      }
+    },
+    {
+      "id": "c.lantern-sample",
+      "kind": "C",
+      "fields": {
+        "al": {
+          "$symbol": "full"
+        },
+        "ch": [
+          {
+            "$ref": "i.canvas"
+          },
+          {
+            "$ref": "i.view"
+          },
+          {
+            "$ref": "i.sampling"
+          },
+          {
+            "$ref": "i.alpha"
+          },
+          {
+            "$ref": "i.palette"
+          },
+          {
+            "$ref": "i.edges"
+          },
+          {
+            "$ref": "i.light"
+          },
+          {
+            "$ref": "i.shape"
+          },
+          {
+            "$ref": "i.alpha-model"
+          },
+          {
+            "$ref": "i.anchor"
+          }
+        ],
+        "li": "Flat navy structure and teal glass; one small warm cream light cluster; no inferred directional lighting",
+        "nm": "Proposed frontal lantern sample",
+        "pl": [],
+        "px": [
+          32,
+          32
+        ],
+        "sa": {
+          "$symbol": "nearest"
+        },
+        "vw": {
+          "$symbol": "ui"
+        }
+      }
+    },
+    {
+      "id": "f.approach",
+      "kind": "F",
+      "fields": {
+        "kd": {
+          "$symbol": "report"
+        },
+        "nm": "Lantern reference review and production approach",
+        "rq": [
+          {
+            "$ref": "q.approach"
+          }
+        ],
+        "tk": {
+          "$ref": "t.approach"
+        }
+      }
+    },
+    {
+      "id": "f.lantern",
+      "kind": "F",
+      "fields": {
+        "ct": {
+          "$ref": "c.lantern-sample"
+        },
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "First representative 32x32 RGBA lantern",
+        "rq": [
+          {
+            "$ref": "q.sample-mechanics"
+          },
+          {
+            "$ref": "q.sample-style"
+          },
+          {
+            "$ref": "q.sample-edge-mask"
+          },
+          {
+            "$ref": "q.sample-edges"
+          }
+        ],
+        "tk": {
+          "$ref": "t.sample"
+        }
+      }
+    },
+    {
+      "id": "handoff",
+      "kind": "N",
+      "fields": {
+        "bl": [],
+        "fo": [
+          {
+            "$ref": "t.approach"
+          },
+          {
+            "$ref": "t.sample"
+          },
+          {
+            "$ref": "i.scope"
+          },
+          {
+            "$ref": "i.engine"
+          },
+          {
+            "$ref": "i.display"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ],
+        "nx": [
+          {
+            "$ref": "t.sample"
+          }
+        ],
+        "rv": 2,
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "i.alpha",
+      "kind": "I",
+      "fields": {
+        "ky": "al",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": {
+          "$symbol": "full"
+        },
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "User explicitly requires partial transparency; binary alpha would destroy that treatment."
+      }
+    },
+    {
+      "id": "i.alpha-model",
+      "kind": "I",
+      "fields": {
+        "ky": "export_alpha",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.research"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "RGBA PNG with straight alpha; verify preservation after save/reopen and check engine conversion once target is known",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "The authored partial alpha is required; the actual import and blending route remains unproven."
+      }
+    },
+    {
+      "id": "i.anchor",
+      "kind": "I",
+      "fields": {
+        "ky": "anchor",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.measure"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": [
+          16,
+          28
+        ],
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Initial bottom-center logical anchor at the reference ground line; keep untrimmed canvas. Final engine coordinates remain unresolved."
+      }
+    },
+    {
+      "id": "i.canvas",
+      "kind": "I",
+      "fields": {
+        "ky": "px",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.measure"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": [
+          32,
+          32
+        ],
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Match the supplied reference's logical canvas for the first small sample."
+      }
+    },
+    {
+      "id": "i.display",
+      "kind": "I",
+      "fields": {
+        "ky": "target_display",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Final game backgrounds and display scale are unknown. Light/dark/checker previews are diagnostic substitutes."
+      }
+    },
+    {
+      "id": "i.edges",
+      "kind": "I",
+      "fields": {
+        "ky": "edge_treatment",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "Preserve selective authored anti-aliasing and partial transparency",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Carry the user's source aesthetic into new props."
+      }
+    },
+    {
+      "id": "i.engine",
+      "kind": "I",
+      "fields": {
+        "ky": "target_engine",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "No engine or import project supplied. Blend state, atlas behavior and pivot convention need destination verification before game-ready delivery."
+      }
+    },
+    {
+      "id": "i.light",
+      "kind": "I",
+      "fields": {
+        "ky": "li",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.visual"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "Flat navy structure and teal glass; one small warm cream light cluster; no inferred directional lighting",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Source uses flat areas; a warm lantern focal point makes its identity clear without adding a shading style."
+      }
+    },
+    {
+      "id": "i.palette",
+      "kind": "I",
+      "fields": {
+        "ky": "pl",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": [],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "User has imposed no fixed palette. Empty list means no exact RGB membership restriction; final colors remain editable."
+      }
+    },
+    {
+      "id": "i.reference",
+      "kind": "I",
+      "fields": {
+        "ky": "reference_metrics",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.image"
+          },
+          {
+            "$ref": "s.measure"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": {
+          "alpha_values": [
+            0,
+            96,
+            160,
+            255
+          ],
+          "bbox": [
+            6,
+            3,
+            26,
+            28
+          ],
+          "fractional_pixels": 30,
+          "px": [
+            32,
+            32
+          ],
+          "rgb_count": 3,
+          "rgba_count": 5
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Reference measurements describe the source; they are not mandatory sprite color or pixel counts."
+      }
+    },
+    {
+      "id": "i.sampling",
+      "kind": "I",
+      "fields": {
+        "ky": "sa",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.sampling"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": {
+          "$symbol": "nearest"
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Nearest previews preserve authored alpha texels and hard clusters; final display scale remains unresolved."
+      }
+    },
+    {
+      "id": "i.scope",
+      "kind": "I",
+      "fields": {
+        "ky": "scope",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "Reference review and lantern production approach",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Current assignment ends at the reviewed approach; sample creation is a retained next operation."
+      }
+    },
+    {
+      "id": "i.shape",
+      "kind": "I",
+      "fields": {
+        "ky": "lantern_shape",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.visual"
+          },
+          {
+            "$ref": "s.measure"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "Compact loop handle, cap, two side rails, base and one central warm light; about 18-20 x 24-26 visible pixels",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Stay near the reference's 20 x 25 footprint while making the lantern recognizable."
+      }
+    },
+    {
+      "id": "i.style",
+      "kind": "I",
+      "fields": {
+        "ky": "reference_style",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.image"
+          },
+          {
+            "$ref": "s.visual"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": "Frontal block construction; opaque navy frame and teal fill; two warm cream blocks; partial-alpha side strips only",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Native and 8x inspection on light, dark and checker backgrounds; darkness reduces frame contrast."
+      }
+    },
+    {
+      "id": "i.view",
+      "kind": "I",
+      "fields": {
+        "ky": "vw",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "s.visual"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": {
+          "$symbol": "ui"
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Frontal orthographic icon-like sample, matching the observed reference; ui is the raster contract convention and does not confirm the final gameplay use."
+      }
+    },
+    {
+      "id": "k.alpha-research",
+      "kind": "K",
+      "fields": {
+        "ap": [
+          {
+            "$symbol": "transparent_sprites"
+          }
+        ],
+        "ck": [
+          "Selected translucent regions retain nonzero, nonopaque alpha.",
+          "Round-trip RGBA matches and chosen blend produces no matte fringe."
+        ],
+        "nm": "alpha-contract: candidate for lantern proof",
+        "op": [
+          "Keep alpha independent of RGB palette membership.",
+          "Retain full alpha and verify the chosen export/compositing route.",
+          "Review light/dark backgrounds and actual import before acceptance."
+        ],
+        "rk": [
+          "The cited prose is about channels/alignment/CSS, not a complete compositing pipeline.",
+          "Bundled numeric POC proves no GPU/importer behavior."
+        ],
+        "rq": [
+          "Chosen alpha model and destination renderer; project sample proof still needed."
+        ],
+        "so": [
+          {
+            "$ref": "s.recipe"
+          },
+          {
+            "$ref": "s.channels"
+          },
+          {
+            "$ref": "s.alignment"
+          },
+          {
+            "$ref": "s.archive"
+          },
+          {
+            "$ref": "s.fixture"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ]
+      }
+    },
+    {
+      "id": "k.edge-research",
+      "kind": "K",
+      "fields": {
+        "ap": [
+          {
+            "$symbol": "subpixel_edges"
+          }
+        ],
+        "ck": [
+          "Edge edits stay inside the saved mask; protected pixels remain unchanged.",
+          "Selective soft edges preserve native readability and avoid a continuous halo."
+        ],
+        "nm": "selective-edge-aa: candidate for lantern proof",
+        "op": [
+          "Define a selected edge mask and protect structural hard edges.",
+          "Choose coherent editable edge colors and partial alpha according to this user's full-alpha treatment.",
+          "Preview the actual sample on diagnostic and target backgrounds."
+        ],
+        "rk": [
+          "Do not transfer strict-palette quantization to this unrestricted-palette brief.",
+          "Offline edit-locality fixture does not prove perceptual quality."
+        ],
+        "rq": [
+          "Sample edge mask, chosen colors and representative backgrounds."
+        ],
+        "so": [
+          {
+            "$ref": "s.recipe"
+          },
+          {
+            "$ref": "s.edge-ramp"
+          },
+          {
+            "$ref": "s.sampling"
+          },
+          {
+            "$ref": "s.fixture"
+          },
+          {
+            "$ref": "s.research"
+          },
+          {
+            "$ref": "s.brief"
+          }
+        ]
+      }
+    },
+    {
+      "id": "project",
+      "kind": "P",
+      "fields": {
+        "br": "Review translucent-reference.png and prepare a production approach for a small matching lantern prop. Preserve intentional partial transparency and selective anti-aliasing. No fixed palette has been imposed. Scope: reference review and production planning.",
+        "in": [
+          {
+            "$ref": "i.scope"
+          },
+          {
+            "$ref": "i.alpha"
+          },
+          {
+            "$ref": "i.palette"
+          },
+          {
+            "$ref": "i.edges"
+          },
+          {
+            "$ref": "i.reference"
+          },
+          {
+            "$ref": "i.style"
+          },
+          {
+            "$ref": "i.canvas"
+          },
+          {
+            "$ref": "i.view"
+          },
+          {
+            "$ref": "i.sampling"
+          },
+          {
+            "$ref": "i.light"
+          },
+          {
+            "$ref": "i.shape"
+          },
+          {
+            "$ref": "i.alpha-model"
+          },
+          {
+            "$ref": "i.anchor"
+          },
+          {
+            "$ref": "i.engine"
+          },
+          {
+            "$ref": "i.display"
+          }
+        ],
+        "nm": "Translucent lantern study",
+        "ow": {
+          "$ref": "user"
+        },
+        "sc": [
+          {
+            "$ref": "s.brief"
+          },
+          {
+            "$ref": "s.image"
+          },
+          {
+            "$ref": "s.measure"
+          },
+          {
+            "$ref": "s.visual"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ]
+      }
+    },
+    {
+      "id": "q.approach",
+      "kind": "Q",
+      "fields": {
+        "ck": "Written approach separates user constraints, measurements/visual observations, proposals and unknowns; explicitly preserves full alpha and selective AA without a fixed palette; cites actual method sources and limits; defines one representative sample and separate mechanical, visual and destination checks.",
+        "dm": {
+          "$symbol": "other"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "Reference-grounded approach completeness",
+        "so": [
+          {
+            "$ref": "s.brief"
+          },
+          {
+            "$ref": "s.measure"
+          },
+          {
+            "$ref": "s.visual"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "q.sample-edge-mask",
+      "kind": "Q",
+      "fields": {
+        "ck": "Retain a pre-AA raster and explicit mask for allowed AA/translucency edits. Pixel diff is confined to that mask and protected hard frame pixels remain byte-identical. Alpha/ramp values may change by authoring judgment; do not impose the source's exact counts.",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "Selected edge mask and protected frame",
+        "so": [
+          {
+            "$ref": "s.research"
+          },
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "q.sample-edges",
+      "kind": "Q",
+      "fields": {
+        "ck": "Inspect actual post-export sample at 1x and 8x on all diagnostic backgrounds. Partial-alpha strips are localized, opaque structure remains crisp, the warm light remains distinct, and no opaque matte fringe or unplanned uniform soft outline appears. Record dark-background contrast concerns; engine rendering is separate.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "Selective AA compositing appearance",
+        "so": [
+          {
+            "$ref": "s.visual"
+          },
+          {
+            "$ref": "s.research"
+          },
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "q.sample-mechanics",
+      "kind": "Q",
+      "fields": {
+        "ck": "One 32x32 RGBA PNG with transparent exterior and intentionally fractional-alpha edge/material regions. Save/reopen preserves visible RGBA and alpha values. Exact RGB palette membership is unrestricted; no binary-alpha thresholding. Retain source, export, hash and alpha distribution.",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "Sample raster and alpha preservation",
+        "so": [
+          {
+            "$ref": "s.brief"
+          },
+          {
+            "$ref": "s.measure"
+          },
+          {
+            "$ref": "s.research"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "q.sample-style",
+      "kind": "Q",
+      "fields": {
+        "ck": "Inspect actual sample beside reference at 1x and 8x on light #F0E8D8, dark #18222E and checker. Handle, cap, base and warm light read as a lantern; navy structure, teal body and warm focal hierarchy retain the source's flat block style; partially transparent edges remain visible and controlled.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "Lantern identity and style",
+        "so": [
+          {
+            "$ref": "s.visual"
+          },
+          {
+            "$ref": "s.brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "s.alignment",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+        "ln": [
+          1276,
+          1291
+        ],
+        "ur": ".agents/skills/pixl-kit/resources/training/original-docs/PIXEL-ART-DEEP-RESEARCH.md"
+      }
+    },
+    {
+      "id": "s.archive",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+        "ln": [
+          942,
+          958
+        ],
+        "ur": ".agents/skills/pixl-kit/resources/training/original-docs/PIXEL-ART-ASSETS.md"
+      }
+    },
+    {
+      "id": "s.brief",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "e35e5db1d9d05d503accf82a31bc4a6895a188a42faa4f1567b03262dbd6ba0e",
+        "ln": [
+          1,
+          3
+        ],
+        "ur": "review/user-brief.txt"
+      }
+    },
+    {
+      "id": "s.channels",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+        "ln": [
+          945,
+          977
+        ],
+        "ur": ".agents/skills/pixl-kit/resources/training/original-docs/PIXEL-ART-DEEP-RESEARCH.md"
+      }
+    },
+    {
+      "id": "s.edge-ramp",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+        "ln": [
+          590,
+          632
+        ],
+        "ur": ".agents/skills/pixl-kit/resources/training/original-docs/PIXEL-ART-DEEP-RESEARCH.md"
+      }
+    },
+    {
+      "id": "s.fixture",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "e9d0f2b2e306b10a73188f6b27bc2998b72c4e731d76a475e1609af2b512b43c",
+        "ln": [],
+        "ur": ".agents/skills/pixl-kit/resources/evidence/art-methods/poc-report.json"
+      }
+    },
+    {
+      "id": "s.image",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132",
+        "ln": [],
+        "ur": "translucent-reference.png"
+      }
+    },
+    {
+      "id": "s.measure",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "2f46ea44c3366b31f27ca016cfbce33ab8bea6e3cfad320ea32d21219591b0cc",
+        "ln": [],
+        "ur": "review/reference-measurements.json"
+      }
+    },
+    {
+      "id": "s.recipe",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "d169c546d99f59b4adb4d0a939b61bd7b3d21bc0b3b2e13116e2e10a4882f15c",
+        "ln": [],
+        "ur": ".agents/skills/pixl-kit/resources/knowledge/pixel-art.json"
+      }
+    },
+    {
+      "id": "s.research",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "c02d2d4218422564b2d4e695d898fe10f37a3770dae53908a81cfbc2e7142654",
+        "ln": [],
+        "ur": "review/source-grounding.json"
+      }
+    },
+    {
+      "id": "s.sampling",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+        "ln": [
+          907,
+          919
+        ],
+        "ur": ".agents/skills/pixl-kit/resources/training/original-docs/PIXEL-ART-DEEP-RESEARCH.md"
+      }
+    },
+    {
+      "id": "s.visual",
+      "kind": "S",
+      "fields": {
+        "at": "2026-09-11T20:01:20.776141+00:00",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "0b16724bef6742b4ff22c8de58dd0b94d3d3438e8773f9a0f29bc6d6c9d20cfa",
+        "ln": [
+          1,
+          11
+        ],
+        "ur": "review/reference-visual-review.md"
+      }
+    },
+    {
+      "id": "t.approach",
+      "kind": "T",
+      "fields": {
+        "ca": [
+          {
+            "$ref": "x.approach"
+          }
+        ],
+        "dc": [],
+        "dp": [],
+        "ip": [
+          {
+            "$ref": "x.reference"
+          },
+          {
+            "$ref": "x.inspection"
+          }
+        ],
+        "kn": [
+          {
+            "$ref": "k.alpha-research"
+          },
+          {
+            "$ref": "k.edge-research"
+          }
+        ],
+        "nm": "Review reference and prepare production approach",
+        "op": [
+          {
+            "$ref": "f.approach"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "research"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "done"
+        },
+        "vr": [
+          {
+            "$ref": "v.approach-review"
+          }
+        ]
+      }
+    },
+    {
+      "id": "t.sample",
+      "kind": "T",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [
+          {
+            "$ref": "t.approach"
+          }
+        ],
+        "ip": [
+          {
+            "$ref": "x.reference"
+          }
+        ],
+        "kn": [
+          {
+            "$ref": "k.alpha-research"
+          },
+          {
+            "$ref": "k.edge-research"
+          }
+        ],
+        "nm": "Prove proposed lantern treatment on one sample",
+        "op": [
+          {
+            "$ref": "f.lantern"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "sample"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "open"
+        },
+        "vr": []
+      }
+    },
+    {
+      "id": "user",
+      "kind": "A",
+      "fields": {
+        "nm": "Project owner",
+        "rl": {
+          "$symbol": "user"
+        }
+      }
+    },
+    {
+      "id": "x.inspection",
+      "kind": "X",
+      "fields": {
+        "dg": "6e8782fa33f2fa8ec1f97c9ef4c269ef73856a93d9dbddf5efff2334b14e845d",
+        "kd": {
+          "$symbol": "reference"
+        },
+        "nm": "Reference diagnostic composites at 1x and 8x",
+        "ur": "review/reference-inspection.png"
+      }
+    },
+    {
+      "id": "x.reference",
+      "kind": "X",
+      "fields": {
+        "dg": "bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132",
+        "kd": {
+          "$symbol": "reference"
+        },
+        "nm": "Original translucent reference",
+        "ur": "translucent-reference.png"
+      }
+    },
+    {
+      "id": "x.approach",
+      "kind": "X",
+      "fields": {
+        "nm": "Completed lantern reference review and production approach",
+        "ur": "lantern-production-approach.md",
+        "dg": "b7aaa9da4c31e217906b2245985063c965dbff59b950efc28c5a3aac044b6090",
+        "kd": {
+          "$symbol": "report"
+        },
+        "of": {
+          "$ref": "f.approach"
+        }
+      }
+    },
+    {
+      "id": "e.approach-review",
+      "kind": "E",
+      "fields": {
+        "nm": "Report completeness review against saved approach criterion",
+        "ur": "review/approach-review-receipt.json",
+        "dg": "2875410b52f1e92fb63c9815e288eb008b239703c440a7c15e294da87f693ff3",
+        "rs": {
+          "$symbol": "pass"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "at": "2026-09-11T20:03:29.883340+00:00",
+        "bs": [
+          {
+            "rf": {
+              "$ref": "actor"
+            },
+            "dg": "b50191e40f6e8a42564a21fe36b6e5e65bf3840602d4d00551d0823229d8735a"
+          },
+          {
+            "rf": {
+              "$ref": "f.approach"
+            },
+            "dg": "40c10dabb25e9c671907c0a39381f70fcda505d314f4d060cbd10fd1f1ecba3a"
+          },
+          {
+            "rf": {
+              "$ref": "q.approach"
+            },
+            "dg": "a66dc78b1d9ce318a32ee3506b6c6f07060d92222f1b6035f3d0359f1c8619cd"
+          },
+          {
+            "rf": {
+              "$ref": "s.brief"
+            },
+            "dg": "fde94da93401b9134c7b8e5bf5d1e5e84f65fbecd01bfb936780136bd4e1f3b3"
+          },
+          {
+            "rf": {
+              "$ref": "s.measure"
+            },
+            "dg": "28b123d9a7abd8a73aaf38d1040bdc95d7e3df41f26a23e46cb2dbb89bbee70e"
+          },
+          {
+            "rf": {
+              "$ref": "s.research"
+            },
+            "dg": "dee25f17edddc8ecebb56357f8b26e686aa40bf178d7e5ae66b33e038224641a"
+          },
+          {
+            "rf": {
+              "$ref": "s.visual"
+            },
+            "dg": "71d1a7e47afec6998871576e1747f6e343e1db191c65455213286b5ab5bdbf9d"
+          },
+          {
+            "rf": {
+              "$ref": "x.approach"
+            },
+            "dg": "20f6561b4f3276140e950fb67bd010f8c37dc904f1810886fd0a793992467541"
+          }
+        ]
+      }
+    },
+    {
+      "id": "v.approach-review",
+      "kind": "V",
+      "fields": {
+        "tk": {
+          "$ref": "t.approach"
+        },
+        "rq": {
+          "$ref": "q.approach"
+        },
+        "xr": {
+          "$ref": "x.approach"
+        },
+        "st": {
+          "$symbol": "pass"
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Document reviewed against the previously saved criterion; constraints, observed evidence, proposals, source limitations and next proof are explicit. This accepts the approach document only.",
+        "at": "2026-09-11T20:03:29.883340+00:00",
+        "ev": [
+          {
+            "$ref": "e.approach-review"
+          }
+        ]
+      }
+    }
+  ],
+  "format": 2
+}

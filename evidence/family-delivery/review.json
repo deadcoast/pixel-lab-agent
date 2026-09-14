@@ -1,0 +1,47 @@
+{
+  "observed_at": "2026-09-11T17:30:14.286929+00:00",
+  "status": "pass_scoped_review",
+  "scope": "Family semantics, immutable local delivery publication and CLI/MCP integration; independent delivery re-review after reproduced fixes.",
+  "findings": [
+    {
+      "id": "FAM-1",
+      "problem": "A family report candidate could omit xs and bypass delivery validation.",
+      "regression": "test_family_candidate_cannot_bypass_snapshot_checks_by_omitting_constituents",
+      "resolution": "Require xs for every family candidate; ordinary legacy X unchanged."
+    },
+    {
+      "id": "FAM-2",
+      "problem": "A family report plan could carry a raster contract that the snapshot report does not have.",
+      "regression": "test_family_manifest_plan_cannot_adopt_a_raster_contract",
+      "resolution": "Family report plans and candidates are explicitly non-raster and cannot carry ct."
+    },
+    {
+      "id": "FAM-3",
+      "problem": "Generic snapshot publication could also activate the delivery task.",
+      "regression": "test_generic_snapshot_publication_cannot_also_activate_the_task",
+      "resolution": "New snapshot publication adds exactly its candidate, with every existing record unchanged."
+    },
+    {
+      "id": "FAM-4",
+      "problem": "A rooted report accepted a manifest directory redirected elsewhere inside the project.",
+      "regression": "test_rooted_report_rejects_redirected_manifest_directory",
+      "resolution": "Reject lexical/resolved manifest path differences; a real Windows junction regression passes."
+    }
+  ],
+  "remaining_findings": [],
+  "independent_final_review": {
+    "reviewer": "family_semantics",
+    "tests": 23,
+    "passed": 23,
+    "skipped": 0,
+    "scope": "21 delivery checks plus the two family structural regressions."
+  },
+  "review_record": {
+    "path": "evidence/family-delivery/semantic-task-report.md",
+    "sha256": "3114102ce3d1329bfe9797ff4a4f0db8354e5cb3da7ef4bdee7093f54affae7a"
+  },
+  "boundaries": [
+    "Unrooted validation cannot inspect frozen manifest bindings or copied bytes; required rooted family reports and publication do.",
+    "Synthetic receipts, copied local files and scripted behavior do not establish artistic continuity or engine acceptance."
+  ]
+}

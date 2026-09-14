@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\evidence\candidate-inspection\closed-type-equivalence-probe.py", line 23, in <module>
+    report = inspection.report(doc, root, "packet")
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 815, in report
+    "packets": [_packet_report(doc, root, id_) for id_ in ids],
+                ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 660, in _packet_report
+    packet, frozen, directory = _load(doc, root, packet_id)
+                                ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 301, in _load
+    _require(
+    ~~~~~~~~^
+        _same(doc.records[packet].fields["mt"], _projection(value)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "typed packet projection differs",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 46, in _require
+    raise PixlError(code, detail)
+pixl.codec.PixlError: inspection_manifest: typed packet projection differs

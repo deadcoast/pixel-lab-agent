@@ -22,8 +22,9 @@ from urllib.parse import urlsplit
 
 from jsonschema import Draft202012Validator
 from PIL import Image
-from referencing import Registry
+from referencing import Registry, Resource
 from referencing.exceptions import NoSuchResource
+from referencing.jsonschema import DRAFT202012
 
 from .codec import PixlError
 
@@ -719,6 +720,369 @@ def prepare(
             "generated output, visual quality, and engine import",
         ],
     }
+
+
+def _iso_timestamp(value, field, code="platform_request"):
+    """Validate a retained timestamp with an explicit UTC offset, without coercion."""
+    if not isinstance(value, str) or not re.fullmatch(
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+        r"(?:\.[0-9]{1,6})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])",
+        value,
+    ):
+        _fail(
+            f"{field} must be an ISO timestamp with a UTC offset and at most six fractional digits",
+            code,
+        )
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        _fail(f"{field} must be a valid ISO timestamp", code)
+
+
+def _request_text(value, field):
+    if not isinstance(value, str) or not value.strip():
+        _fail(f"{field} must be nonempty text", "platform_request")
+
+
+def _request_identity(value, field):
+    if (
+        not isinstance(value, str)
+        or not 1 <= len(value) <= 256
+        or any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in value)
+    ):
+        _fail(
+            f"{field} must be an unmodified identifier of 1-256 characters",
+            "platform_request",
+        )
+
+
+def _request_fields(value, fields, label):
+    if not isinstance(value, dict) or set(value) != set(fields):
+        _fail(f"{label} has missing or unknown fields", "platform_request")
+
+
+def _schema_no_secrets(schema):
+    """Distinguish schema property declarations from credential-bearing values.
+
+    Field-based exclusion cannot identify secrets hidden in arbitrary prose.
+    Definitions may describe optional credentials, but must not retain values.
+    """
+    maps = {
+        "properties",
+        "patternProperties",
+        "$defs",
+        "definitions",
+        "dependentSchemas",
+    }
+    singles = {
+        "items",
+        "contains",
+        "additionalProperties",
+        "unevaluatedProperties",
+        "unevaluatedItems",
+        "propertyNames",
+        "not",
+        "if",
+        "then",
+        "else",
+        "additionalItems",
+        "contentSchema",
+    }
+    arrays = {"allOf", "anyOf", "oneOf", "prefixItems"}
+
+    def unavailable(uri):
+        raise NoSuchResource(ref=uri)
+
+    seen = set()
+
+    def resource(node):
+        return Resource.from_contents(node, default_specification=DRAFT202012)
+
+    def visit(node, resolver, credential=False):
+        if not isinstance(node, dict) or (id(node), credential) in seen:
+            return
+        seen.add((id(node), credential))
+        if credential and {"default", "const", "enum", "examples"}.intersection(node):
+            _fail("schema must not retain credential values", "platform_secret")
+        for key, child in node.items():
+            if key in {"$ref", "$dynamicRef"} and credential:
+                resolved = resolver.lookup(child)
+                visit(resolved.contents, resolved.resolver, True)
+            elif key in maps and isinstance(child, dict):
+                for name, subschema in child.items():
+                    secret = credential or (
+                        key in {"properties", "patternProperties"}
+                        and re.sub(r"[^a-z0-9]", "", name.lower()) in _SECRET_KEYS
+                    )
+                    if isinstance(subschema, (dict, bool)):
+                        visit(
+                            subschema,
+                            resolver.in_subresource(resource(subschema)),
+                            secret,
+                        )
+            elif key in singles and isinstance(child, (dict, bool)):
+                visit(child, resolver.in_subresource(resource(child)), credential)
+            elif key in arrays and isinstance(child, list):
+                for subschema in child:
+                    if isinstance(subschema, (dict, bool)):
+                        visit(
+                            subschema,
+                            resolver.in_subresource(resource(subschema)),
+                            credential,
+                        )
+            else:
+                _no_secrets({key: child})
+
+    try:
+        resolver = Registry(retrieve=unavailable).resolver_with_root(resource(schema))
+        visit(schema, resolver)
+    except PixlError:
+        raise
+    except Exception as error:
+        raise PixlError(
+            "platform_schema", "cannot inspect credential schema references"
+        ) from error
+
+
+def _discovered_inputs(provider, tool, arguments, schema, discovery, authorization):
+    # Validate the complete input before recursion, schema evaluation or copying.
+    _json_bytes(
+        {
+            "provider": provider,
+            "tool": tool,
+            "arguments": arguments,
+            "schema": schema,
+            "discovery": discovery,
+            "authorization": authorization,
+        }
+    )
+    _request_identity(provider, "provider")
+    _request_identity(tool, "tool")
+    if not isinstance(arguments, dict):
+        _fail("arguments must be a JSON object", "platform_arguments")
+    _request_fields(discovery, {"source", "observed_at", "evidence"}, "discovery")
+    _request_fields(authorization, {"scope", "evidence"}, "authorization")
+    _request_text(discovery["source"], "discovery.source")
+    _iso_timestamp(discovery["observed_at"], "discovery.observed_at")
+    _request_text(authorization["scope"], "authorization.scope")
+    for label, assertion in (
+        ("discovery", discovery),
+        ("authorization", authorization),
+    ):
+        if not isinstance(assertion["evidence"], dict) or not assertion["evidence"]:
+            _fail(
+                f"{label}.evidence must be a nonempty JSON object", "platform_request"
+            )
+        _no_secrets(assertion)
+    _no_secrets(arguments)
+    _schema_no_secrets(schema)
+    _validate_schema(arguments, schema)
+
+
+def _cached_assessment(provider, tool, arguments, schema, authorization):
+    result = {
+        "advisory": True,
+        "source": None,
+        "retrieved_at": None,
+        "status": "not_applicable",
+        "findings": [],
+    }
+    if provider != "pixellab":
+        return result
+    try:
+        catalog = capabilities()
+        _json_bytes(catalog)
+        _request_text(catalog.get("source"), "catalog.source")
+        _iso_timestamp(catalog.get("retrieved_at"), "catalog.retrieved_at")
+    except PixlError as error:
+        result.update(
+            status="unavailable",
+            findings=[
+                {
+                    "code": error.code,
+                    "detail": error.detail,
+                }
+            ],
+        )
+        return result
+    result.update(source=catalog["source"], retrieved_at=catalog["retrieved_at"])
+    entry = next(
+        (
+            item
+            for item in catalog["tools"]
+            if isinstance(item, dict) and item.get("name") == tool
+        ),
+        None,
+    )
+    if entry is None:
+        result.update(
+            status="unlisted",
+            findings=[
+                {
+                    "code": "platform_tool",
+                    "detail": "tool is absent from the dated catalog",
+                }
+            ],
+        )
+        return result
+    try:
+        _rules(tool, arguments, schema, authorization["evidence"], entry)
+    except PixlError as error:
+        result.update(
+            status="conflict",
+            findings=[
+                {
+                    "code": error.code,
+                    "detail": error.detail,
+                }
+            ],
+        )
+    except (TypeError, ValueError, KeyError, AttributeError, OverflowError):
+        result.update(
+            status="unavailable",
+            findings=[
+                {
+                    "code": "platform_constraint",
+                    "detail": "dated constraints could not assess the supplied request",
+                }
+            ],
+        )
+    else:
+        result["status"] = "passed"
+    return result
+
+
+def _validate_cached_assessment(value):
+    _request_fields(
+        value,
+        {"advisory", "source", "retrieved_at", "status", "findings"},
+        "cached_assessment",
+    )
+    if value["advisory"] is not True or value["status"] not in (
+        "passed",
+        "conflict",
+        "unlisted",
+        "unavailable",
+        "not_applicable",
+    ):
+        _fail("cached_assessment must remain advisory", "platform_request")
+    dated = value["source"] is not None or value["retrieved_at"] is not None
+    if dated:
+        _request_text(value["source"], "cached_assessment.source")
+        _iso_timestamp(value["retrieved_at"], "cached_assessment.retrieved_at")
+    if value["status"] in ("passed", "conflict", "unlisted") and not dated:
+        _fail("cached assessments require their source date", "platform_request")
+    if value["status"] == "not_applicable" and dated:
+        _fail("inapplicable cache must not claim a source", "platform_request")
+    if not isinstance(value["findings"], list):
+        _fail("cached_assessment.findings must be a list", "platform_request")
+    if bool(value["findings"]) != (
+        value["status"] in ("conflict", "unlisted", "unavailable")
+    ):
+        _fail(
+            "cached assessment status disagrees with its findings", "platform_request"
+        )
+    for finding in value["findings"]:
+        _request_fields(finding, {"code", "detail"}, "cached finding")
+        _request_text(finding["code"], "cached finding code")
+        _request_text(finding["detail"], "cached finding detail")
+    _no_secrets(value)
+
+
+def prepare_discovered(
+    provider: str,
+    tool: str,
+    arguments: dict,
+    schema: dict,
+    discovery: dict,
+    authorization: dict,
+) -> dict:
+    """Prepare an exact locally validated request under a supplied tool schema.
+
+    Discovery and authorization are retained caller assertions. The dated catalog
+    supplies advisory findings only; this operation performs no network request.
+    Values are never coerced, default-inserted or removed. Returned JSON is a
+    detached snapshot whose identity is checked by ``validate_discovered``.
+    """
+    _discovered_inputs(provider, tool, arguments, schema, discovery, authorization)
+    execution = {
+        "provider": provider,
+        "tool": tool,
+        "arguments": arguments,
+        "schema": schema,
+    }
+    result = {
+        "version": 1,
+        **execution,
+        "schema_sha256": _sha(schema),
+        "request_sha256": _sha(execution),
+        "discovery": discovery,
+        "authorization": authorization,
+        "prepared_at": datetime.now(UTC).isoformat(),
+        "policy": "caller_schema",
+        "remote_executed": False,
+        "cached_assessment": _cached_assessment(
+            provider, tool, arguments, schema, authorization
+        ),
+    }
+    # The final envelope must also fit the persistence boundary.
+    _json_bytes(result)
+    _validate_cached_assessment(result["cached_assessment"])
+    return copy.deepcopy(result)
+
+
+def validate_discovered(request: dict) -> dict:
+    """Validate saved identity and assertions, without refreshing dated findings.
+
+    Hashes detect inconsistent values, not replacement of an entire request.
+    Durable immutability and authorization binding belong to the containing intent
+    and the store's publication checks.
+    """
+    _json_bytes(request)
+    _request_fields(
+        request,
+        {
+            "version",
+            "provider",
+            "tool",
+            "arguments",
+            "schema",
+            "schema_sha256",
+            "request_sha256",
+            "discovery",
+            "authorization",
+            "prepared_at",
+            "policy",
+            "remote_executed",
+            "cached_assessment",
+        },
+        "discovered request",
+    )
+    if (
+        type(request["version"]) is not int
+        or request["version"] != 1
+        or request["policy"] != "caller_schema"
+        or request["remote_executed"] is not False
+    ):
+        _fail("invalid discovered request version or policy", "platform_request")
+    execution = {
+        key: request[key] for key in ("provider", "tool", "arguments", "schema")
+    }
+    _discovered_inputs(
+        **execution,
+        discovery=request["discovery"],
+        authorization=request["authorization"],
+    )
+    _iso_timestamp(request["prepared_at"], "prepared_at")
+    _validate_cached_assessment(request["cached_assessment"])
+    if request["schema_sha256"] != _sha(request["schema"]) or request[
+        "request_sha256"
+    ] != _sha(execution):
+        _fail(
+            "discovered request hash does not match its saved values",
+            "platform_request",
+        )
+    return copy.deepcopy(request)
 
 
 def _evidence_required(event, evidence):

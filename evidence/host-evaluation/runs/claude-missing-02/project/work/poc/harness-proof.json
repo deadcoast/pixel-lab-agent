@@ -1,0 +1,229 @@
+{
+  "cases": [
+    {
+      "actual_failures": [],
+      "as_predicted": true,
+      "expected_failures": [],
+      "measurements": {
+        "q.alpha": {
+          "alpha_levels": [
+            0,
+            255
+          ],
+          "fractional_alpha_pixels": 0
+        },
+        "q.canvas": {
+          "frame_count": 1,
+          "required": [
+            [
+              32,
+              32
+            ],
+            "single frame"
+          ],
+          "sizes": [
+            [
+              32,
+              32
+            ]
+          ]
+        },
+        "q.nearest": {
+          "first_nonuniform": [],
+          "new_colors": 0,
+          "nonuniform_blocks": 0,
+          "zoom": 8
+        },
+        "q.palette": {
+          "counts": {
+            "#25354A": 180,
+            "#56B5BC": 186,
+            "#F4DDA2": 24
+          },
+          "outside_palette": [],
+          "outside_palette_count": 0,
+          "outside_palette_pixels": 0,
+          "visible_colors": 3
+        }
+      },
+      "name": "control",
+      "path": "work/poc/control.png"
+    },
+    {
+      "actual_failures": [
+        "q.palette"
+      ],
+      "as_predicted": true,
+      "expected_failures": [
+        "q.palette"
+      ],
+      "measurements": {
+        "q.alpha": {
+          "alpha_levels": [
+            0,
+            255
+          ],
+          "fractional_alpha_pixels": 0
+        },
+        "q.canvas": {
+          "frame_count": 1,
+          "required": [
+            [
+              32,
+              32
+            ],
+            "single frame"
+          ],
+          "sizes": [
+            [
+              32,
+              32
+            ]
+          ]
+        },
+        "q.nearest": {
+          "first_nonuniform": [],
+          "new_colors": 0,
+          "nonuniform_blocks": 0,
+          "zoom": 8
+        },
+        "q.palette": {
+          "counts": {
+            "#25354A": 180,
+            "#56B5BC": 185,
+            "#56B5BD": 1,
+            "#F4DDA2": 24
+          },
+          "outside_palette": [
+            "#56B5BD"
+          ],
+          "outside_palette_count": 1,
+          "outside_palette_pixels": 1,
+          "visible_colors": 4
+        }
+      },
+      "name": "mutant-palette",
+      "path": "work/poc/mutant-palette.png"
+    },
+    {
+      "actual_failures": [
+        "q.alpha"
+      ],
+      "as_predicted": true,
+      "expected_failures": [
+        "q.alpha"
+      ],
+      "measurements": {
+        "q.alpha": {
+          "alpha_levels": [
+            0,
+            128,
+            255
+          ],
+          "fractional_alpha_pixels": 1
+        },
+        "q.canvas": {
+          "frame_count": 1,
+          "required": [
+            [
+              32,
+              32
+            ],
+            "single frame"
+          ],
+          "sizes": [
+            [
+              32,
+              32
+            ]
+          ]
+        },
+        "q.nearest": {
+          "first_nonuniform": [],
+          "new_colors": 0,
+          "nonuniform_blocks": 0,
+          "zoom": 8
+        },
+        "q.palette": {
+          "counts": {
+            "#25354A": 180,
+            "#56B5BC": 186,
+            "#F4DDA2": 24
+          },
+          "outside_palette": [],
+          "outside_palette_count": 0,
+          "outside_palette_pixels": 0,
+          "visible_colors": 3
+        }
+      },
+      "name": "mutant-alpha",
+      "path": "work/poc/mutant-alpha.png"
+    },
+    {
+      "actual_failures": [
+        "q.canvas"
+      ],
+      "as_predicted": true,
+      "expected_failures": [
+        "q.canvas"
+      ],
+      "measurements": {
+        "q.alpha": {
+          "alpha_levels": [
+            0,
+            255
+          ],
+          "fractional_alpha_pixels": 0
+        },
+        "q.canvas": {
+          "frame_count": 1,
+          "required": [
+            [
+              32,
+              32
+            ],
+            "single frame"
+          ],
+          "sizes": [
+            [
+              33,
+              32
+            ]
+          ]
+        },
+        "q.nearest": {
+          "first_nonuniform": [],
+          "new_colors": 0,
+          "nonuniform_blocks": 0,
+          "zoom": 8
+        },
+        "q.palette": {
+          "counts": {
+            "#25354A": 180,
+            "#56B5BC": 186,
+            "#F4DDA2": 24
+          },
+          "outside_palette": [],
+          "outside_palette_count": 0,
+          "outside_palette_pixels": 0,
+          "visible_colors": 3
+        }
+      },
+      "name": "mutant-canvas",
+      "path": "work/poc/mutant-canvas.png"
+    }
+  ],
+  "limits": [
+    "This proves the checking code discriminates on controlled mutants.",
+    "It is not a PixelLab generation, not a candidate for f.sprite, and not evidence about the artistic quality of any sprite.",
+    "q.identity and q.webdisplay are untouched by this proof."
+  ],
+  "question": "Question: do the locally decidable criteria (q.canvas, q.palette, q.alpha, q.nearest)",
+  "result": "pass",
+  "sampling_negative_control": {
+    "description": "Same art enlarged 8x with BILINEAR instead of NEAREST.",
+    "discriminates": true,
+    "new_colors_introduced": 205,
+    "nonuniform_blocks": 368
+  }
+}

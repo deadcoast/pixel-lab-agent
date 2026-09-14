@@ -7,20 +7,26 @@ from pathlib import Path
 
 from .codec import PixlError
 from .graph import confined
-
-SUPPLIED = ("links.md", "AGENT-PIXELART-TRAINING.md", "PIXEL-ART-ASSETS.md",
-            "pixel-art-deep-research-report.md", "research-pixel-art-systems.md")
+from .sources import INVENTORY_PATH, load_inventory
 
 
 def build(root, paths=None):
     root = Path(root).resolve()
+    expected = {}
     if paths is None:
-        paths = [name for name in SUPPLIED if (root / name).is_file()] or sorted(p.name for p in root.glob("*.md"))
+        if (root / INVENTORY_PATH).exists() or (root / "training/original-docs").exists():
+            inventory = load_inventory(root)
+            expected = {row["path"]: row["sha256"] for row in inventory["documents"]}
+            paths = list(expected)
+        else:
+            paths = sorted(p.name for p in root.glob("*.md"))
     documents, hashes = [], defaultdict(list)
     for name in sorted(set(paths)):
         path = confined(root, name)
         data = path.read_bytes()
         hash_ = hashlib.sha256(data).hexdigest()
+        if name in expected and hash_ != expected[name]:
+            raise PixlError("source_hash", f"{name}: source changed during cataloging")
         try:
             lines = data.decode("utf-8-sig").splitlines()
         except UnicodeError as error:

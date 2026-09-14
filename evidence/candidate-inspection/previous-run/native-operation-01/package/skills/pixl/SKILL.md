@@ -1,0 +1,28 @@
+---
+name: pixl
+description: Use when producing or reviewing pixel-art sprites, animation, tiles, style contracts, engine imports, or an art project's PIXL production state. Developing the PIXL profile, skills, language, runtime, or plugin is a maintainer task and does not activate this profile.
+---
+
+For an assigned pixel-art production task, adopt the [PIXL profile](../../resources/agent/PROFILE.md). If the task is to develop or review PIXL itself, retain the development role and treat this skill and the profile as artifacts under review. Merely reading their instructions does not change the reader's role. Resolve every relative path here from this skill directory, not the user's current working directory. The plugin root is two directories above this file's directory. Read only resources needed for the current operation.
+
+PIXL's custom UDL holds agent production state. This Markdown file and the plugin manifests are harness adapters. Read the specification and registry for the state's actual format before authoring it: [PX1 specification](../../resources/spec/PIXL-1.md) / [registry](../../runtime/pixl/registry.json), or [PX2 specification](../../resources/spec/PIXL-2.md) / [registry](../../runtime/pixl/registry-v2.json). New intake/sample operations use PX2; existing PX1 state keeps its original meaning. Locate relevant material in `../../resources/knowledge/`; examples under `../../resources/examples/` illustrate syntax, not an automatically approved project style.
+
+Use the [production workflow](references/production.md) for asset work and the [runtime boundary](references/runtime.md) for state operations or MCP wiring. Preserve the user's source aesthetics, research consequential method choices, and prove uncertain methods on a representative sample before generating a batch.
+
+Use the [source-grounded knowledge operation](references/knowledge.md) to answer a production question from the actual supplied sources. It defines source discovery, method selection, exact text retrieval, applicability assessment, and the stopping condition before project-specific adoption.
+
+Use the [intake and representative-sample operation](references/intake-sample.md) to retain unknown/proposed/confirmed choices, plan outputs before files exist, and record mechanical, visual, continuity or engine acceptance separately. Save applicable criteria before evaluation and preserve failed or unavailable checks through resumption.
+
+Use the [candidate inspection operation](references/inspection.md) to prepare saved candidate/reference views, inspect them through the host, and retain explicit reviews against their original criteria. Record actual viewing limits and next actions; mechanical measurements do not supply artistic acceptance.
+
+Use the [provider submission and recovery operation](references/provider-recovery.md) to save an exact request against its task and output plans, claim dispatch before a host call, reconcile unknown outcomes and import returned candidates. Read both workflow and job status before starting another request.
+
+Use the [family and delivery operation](references/family-delivery.md) when extending an approved sample, comparing related assets, retaining a delivery package or resuming family production. Save exact baseline, members, destination choices and collective criteria first. Inspect actual animation playback or tile neighborhoods when applicable, retain failed revisions, and distinguish copied files from accepted delivery. Start cold sessions with family, workflow and job reports.
+
+The compiled operational knowledge is [library.px](../../resources/knowledge/library.px). Retrieve one method with `context <resolved library.px> k.<method-id> --root <resolved resources directory>`. This returns the method's prerequisites, procedure, checks, failure conditions, exact source locators and current bounded POC receipt. Applicability atoms map losslessly to source meanings in [applicability.json](../../resources/knowledge/applicability.json). Read receipt limitations before adopting a method for a different production contract.
+
+The bundled runner is `../../scripts/pixl.py`; the runtime is `../../runtime/`. Resolve the runner to an absolute path and run it with the selected Python environment: `python "<resolved runner>" --help`. It requires Python 3.11+, Pillow 10+, and jsonschema 4.18+; install the bundled `../../requirements.txt` into the selected environment. It loads the bundled package regardless of the project working directory. Keep mutable state and outputs in the user's project. In a source checkout, `python -m pixl` is also available after local package setup.
+
+Before a remote action, discover the actual PixelLab tools and their schemas in the harness. The durable `job-prepare` and `job-dispatch` operations save intent and a single dispatch claim; the host performs the actual call. The original `prepare` and `job` commands remain stateless compatibility helpers. No local tool submits, polls, authenticates to, or generates with PixelLab. Use only actual remote observations to establish a real identifier and status. If tools or credentials are unavailable, complete local planning and checks and name the precise missing capability.
+
+Validate mechanical constraints, inspect images visually, and verify required engine import behavior before accepting an asset. Report what was checked and what remains uncertain. Retain evidence and use the expected current state hash when committing UDL updates. Do not claim live generation or model-performance improvements from fixtures or local validation.

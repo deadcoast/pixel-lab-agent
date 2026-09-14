@@ -2,6 +2,10 @@
 
 Read this when creating, reviewing, or integrating assets. The [profile](../../../resources/agent/PROFILE.md) defines the full contract.
 
+For incomplete intake, sample planning, criterion verdicts, revision and cold resumption, use the concrete [PX2 intake/sample operation](intake-sample.md). It defines the saved-state steps that support this production procedure. Keep existing PX1 projects in their declared version.
+
+For an approved sample, multiple related members, collective continuity or delivery, use the [family and delivery operation](family-delivery.md). It defines saved baseline/member/destination plans, comparison in playback or neighborhoods, rejected revisions, retained copied files, and the exact unfinished destination checks a cold session must resume. A family snapshot creates a candidate; its acceptance remains a separate review.
+
 ## Intake to a useful proof
 
 Inspect the user-provided references and existing assets, including their actual dimensions. State the asset's gameplay role and destination. Resolve only decisions that affect this task: native canvas size, projection, silhouette, color/ramp policy, edge treatment, lighting, transparency, directions, frame timing, anchors, tile boundaries, and renderer/import rules. Do not make a generic checklist into a mandatory style.
@@ -25,7 +29,7 @@ Examples: prove diagonal tile joins with a repeated neighborhood; prove a walk c
 
 Read the tool schemas actually available in the session and the relevant current [PixelLab MCP documentation](https://api.pixellab.ai/mcp/docs). Record which surface is being used and the evidence date; cached examples do not establish current availability. Check prerequisites and map the selected UDL contract to supported tool arguments. Preserve references and values that the selected tool can express; report any constraint requiring later editing or inspection.
 
-Use local preparation to inspect and journal the intended request when useful. Submit via the actual PixelLab tool within the user's authorization and budget. Save returned identifiers; poll those identifiers using the appropriate current tool. On an ambiguous network failure after submission, check for an existing job before retrying. Bound retries to the agreed budget or service guidance. Do not synthesize progress or convert elapsed time into a completed state.
+Follow the [provider submission and recovery operation](provider-recovery.md) for new PX2 work: save the exact request and plan, claim dispatch locally before one actual PixelLab call, retain returned identifiers and observations, and reconcile unknown outcomes before any new attempt. Import downloaded bytes as candidates, then evaluate them separately. Existing authorization and budget govern real calls. Do not synthesize progress or convert elapsed time into a completed state.
 
 ## Artifact acceptance
 

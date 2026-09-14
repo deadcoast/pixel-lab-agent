@@ -1,0 +1,108 @@
+{
+  "retrieved_at": "2026-09-11",
+  "from": "bundled PIXL knowledge library (resources/knowledge/library.px)",
+  "note": "Verbatim tool output preserved as a project source. Bundled POC receipts are reference fixtures, not proof for this project.",
+  "methods": {
+    "silhouette-readability": {
+      "id": "silhouette-readability",
+      "title": "Evaluate identity using silhouette and target backgrounds",
+      "applies_to": [
+        "characters",
+        "inventory icons",
+        "interactive props"
+      ],
+      "requires": [
+        "Intended viewing scale, representative backgrounds and identity landmarks"
+      ],
+      "procedure": [
+        "Render a flat opaque mask before detailing.",
+        "Inspect major proportions, negative spaces and landmark separation at native logical scale.",
+        "Compare the colored asset on representative light, dark and busy backgrounds."
+      ],
+      "checks": [
+        "Named identity landmarks remain visible at the target size.",
+        "Required gaps stay open and interactive forms separate from their surroundings."
+      ],
+      "pitfalls": [
+        "Silhouette alone cannot validate faces, materials or fine symbols.",
+        "No contrast ratio or component count proves aesthetic quality."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 857,
+          "end": 867
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1563,
+          "end": 1573
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11,
+          "end": 15
+        }
+      ],
+      "poc": {
+        "kind": "visual-review-fixture",
+        "procedure": [
+          "Draw a 16x16 key with a ring hole, shaft and two teeth; render mask and colored views on three backgrounds.",
+          "Create a negative example by filling the hole and merging the teeth."
+        ],
+        "acceptance": [
+          "Record native-scale contact sheets and explicit pass/fail for hole, shaft and both teeth.",
+          "Negative example fails the landmark checklist; aesthetic review remains separate."
+        ]
+      }
+    },
+    "edge-rhythm": {
+      "id": "edge-rhythm",
+      "title": "Audit stair-step runs without imposing one contour style",
+      "applies_to": [
+        "clean linework",
+        "small curved forms",
+        "hard silhouettes"
+      ],
+      "requires": [
+        "A contour mask and declared intentional corners or irregular regions"
+      ],
+      "procedure": [
+        "Trace boundary runs and highlight sudden run-length changes.",
+        "Regularize only contours intended to read as smooth.",
+        "Preserve corners, damage and organic asymmetry identified in the brief."
+      ],
+      "checks": [
+        "A supplied straight diagonal retains its declared repeating step pattern.",
+        "No protected corner changes during cleanup."
+      ],
+      "pitfalls": [
+        "Not every uneven run is a jaggy; shape can require an abrupt change.",
+        "Mechanical contour smoothing can erase style and identity."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1402,
+          "end": 1431
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 857,
+          "end": 867
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use an 8x8 45-degree one-pixel staircase and record its unit step sequence.",
+          "Add a one-cell horizontal detour at the midpoint; mark it first accidental, then intentional."
+        ],
+        "acceptance": [
+          "Detour is reported in both cases with its location.",
+          "Only the accidental case is eligible for correction."
+        ]
+      }
+    }
+  }
+}

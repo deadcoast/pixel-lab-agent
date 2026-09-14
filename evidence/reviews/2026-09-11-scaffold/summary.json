@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-09-11T11:49:09.546838+00:00",
+  "reviewed_commit": "52f86dd1a8773c3946f813c7b710f0b82184401c",
+  "baseline": {
+    "command": ".venv/Scripts/python.exe -m unittest discover -s tests -t . -v",
+    "exit_code": 1,
+    "tests": 123,
+    "passed": 77,
+    "errors": 45,
+    "skipped": 1,
+    "errors_by_module": {
+      "tests.test_knowledge": 6,
+      "tests.test_packaging": 3,
+      "tests.test_poc": 36
+    },
+    "log": "unittest.txt",
+    "log_sha256": "400cdfe769d3f50aa63130b553206f94551dc56282359c8ac708be4a32385895"
+  },
+  "main_verifier": {
+    "command": ".venv/Scripts/python.exe scripts/verify.py",
+    "exit_code": 1,
+    "error": "FileNotFoundError",
+    "missing_path": "links.md",
+    "phase": "Initial source-preservation check; evidence regeneration was not reached."
+  },
+  "edited_instructions": {
+    "codex_skill_validator": {
+      "passed": 3,
+      "detail": "instruction-checks.json"
+    },
+    "claude_native_validation": [
+      {
+        "command": "claude plugin validate ./plugins/pixl",
+        "exit_code": 0
+      },
+      {
+        "command": "claude plugin validate ./.claude/agents",
+        "exit_code": 0
+      },
+      {
+        "command": "claude plugin validate ./.claude/skills",
+        "exit_code": 0
+      }
+    ],
+    "routing_simulation": "routing-simulation.json",
+    "probe_ruff_exit_code": 0,
+    "git_diff_check_exit_code": 0
+  },
+  "environment_attempts": [
+    {
+      "command": ".venv/Scripts/python.exe -c 'import yaml; print(yaml.__version__)'",
+      "exit_code": 1,
+      "error": "ModuleNotFoundError: yaml"
+    },
+    {
+      "command": "uv run --no-project --with pyyaml python -",
+      "exit_code": 0,
+      "purpose": "Validate three skills and local links using an isolated dependency environment."
+    }
+  ],
+  "runtime_and_supplied_source_changes": [],
+  "limitations": [
+    "The baseline runtime failures remain unresolved.",
+    "The eleven production evaluation cases are specified, not executed.",
+    "The separate four-case routing check is one evaluator simulation only.",
+    "No remote generation or target-engine import was performed."
+  ]
+}

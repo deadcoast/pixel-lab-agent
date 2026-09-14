@@ -1,0 +1,48 @@
+test_amendment_preserves_original_check_and_blocks_review (tests.test_inspection.InspectionTests.test_amendment_preserves_original_check_and_blocks_review) ... ok
+test_fail_and_explicit_supersession (tests.test_inspection.InspectionTests.test_fail_and_explicit_supersession) ... ok
+test_full_coverage_pass_and_unavailable_engine (tests.test_inspection.InspectionTests.test_full_coverage_pass_and_unavailable_engine) ... ok
+test_malformed_reviewer_is_structured_error (tests.test_inspection.InspectionTests.test_malformed_reviewer_is_structured_error) ... ERROR
+test_new_candidate_unperformed (tests.test_inspection.InspectionTests.test_new_candidate_unperformed) ... ok
+test_partial_or_unknown_cannot_pass (tests.test_inspection.InspectionTests.test_partial_or_unknown_cannot_pass) ... ok
+test_prepare_no_verdict_and_cold_relocation (tests.test_inspection.InspectionTests.test_prepare_no_verdict_and_cold_relocation) ... ok
+test_stale_state_source_and_reused_id (tests.test_inspection.InspectionTests.test_stale_state_source_and_reused_id) ... ok
+test_superseded_receipt_still_has_exact_retained_closure (tests.test_inspection.InspectionTests.test_superseded_receipt_still_has_exact_retained_closure) ... FAIL
+test_tampered_typed_projection_rejected (tests.test_inspection.InspectionTests.test_tampered_typed_projection_rejected) ... ok
+
+======================================================================
+ERROR: test_malformed_reviewer_is_structured_error (tests.test_inspection.InspectionTests.test_malformed_reviewer_is_structured_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection.py", line 203, in test_malformed_reviewer_is_structured_error
+    self.review(value)
+    ~~~~~~~~~~~^^^^^^^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection.py", line 55, in review
+    return inspection.review(
+           ~~~~~~~~~~~~~~~~~^
+        self.folder,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        self.root,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 507, in review
+    coverage = _observation(doc, packet, frozen, observation, now)
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 403, in _observation
+    value["reviewer"] in doc.records and doc.records[value["reviewer"]].kind == "A",
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot use 'list' as a dict key (unhashable type: 'list')
+
+======================================================================
+FAIL: test_superseded_receipt_still_has_exact_retained_closure (tests.test_inspection.InspectionTests.test_superseded_receipt_still_has_exact_retained_closure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\tests\test_inspection.py", line 195, in test_superseded_receipt_still_has_exact_retained_closure
+    with self.assertRaises(PixlError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: PixlError not raised
+
+----------------------------------------------------------------------
+Ran 10 tests in 3.044s
+
+FAILED (failures=1, errors=1)

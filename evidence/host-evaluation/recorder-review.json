@@ -1,0 +1,129 @@
+{
+  "reviewed_at": "2026-09-11T19:56:34.184838+00:00",
+  "scope": "Read-only review of native host recorder and its focused tests against the accepted evaluation design; no host inference or bundle rebuild.",
+  "reviewed_sources": {
+    "evaluations/host_trials.py": "c585cd860df077bf0b8bd999a10c597755a363c62b52e7f14b0938b650ddc191",
+    "tests/test_host_evidence.py": "001d97085f7dfe3f27341a7b35e5daf26a40dc1251303400d5cc66bcc02bb5a4",
+    "docs/superpowers/specs/2026-09-11-host-evaluation-design.md": "45a8966423256c29eb5e8b0be4224c83154ae3c1797459cd45393552208db96b"
+  },
+  "findings": [
+    {
+      "id": "HOST-REC-001",
+      "priority": "P2",
+      "status": "open",
+      "location": "evaluations/host_trials.py:209-217,229-230,278",
+      "title": "Cold resume can add fresh inputs and copy an unverified predecessor",
+      "evidence": "The runner first seeds CASES[case].files, then overlays predecessor/project without verify_run. The record keeps only cold_predecessor name and preserves the original case_id/case_variation despite replacing the prompt.",
+      "impact": "A purported persisted-files-only trial can receive additional fixture references or changed historical output. Its case label does not identify a cold-continuation scenario, weakening interpretation and replay.",
+      "fix": "Validate a single predecessor attempt name, verify retained predecessor integrity before copying, skip fresh fixture seeding for cold runs, bind the predecessor record and copied artifact inventory hashes, and record a distinct cold-continuation case or explicit variation with source case.",
+      "validation": "Add a no-inference test that rejects a changed predecessor, asserts cold input files derive only from persisted artifacts plus declared session metadata, and checks distinct cold provenance."
+    },
+    {
+      "id": "HOST-REC-002",
+      "priority": "P2",
+      "status": "open",
+      "location": "evaluations/host_trials.py:298-305",
+      "title": "Scalar JSON output crashes final evidence recording",
+      "evidence": "outcome tolerates null/list/number JSON, but the observed-model extraction loop calls event.get without checking isinstance(event, dict).",
+      "impact": "A process that emits a valid scalar JSON line exits without record.json, losing its finalized execution status and evidence/artifact hash record even though launch and stdout remain.",
+      "fix": "Share a guarded dictionary-event parser between classification and model extraction, or guard event type before .get; preserve final receipts for malformed/unrecognized events.",
+      "validation": {
+        "method": "Called the actual run() with freeze, command discovery and evidence paths redirected to a temporary controlled fixture. The fake local Python host returned version fake-host 1.0 and emitted null; no LLM was called.",
+        "observed_exception": "AttributeError: NoneType object has no attribute get",
+        "stdout": "null\n",
+        "launch_preserved": true,
+        "final_record_preserved": false
+      }
+    },
+    {
+      "id": "HOST-REC-003",
+      "priority": "P2",
+      "status": "open",
+      "location": "evaluations/host_trials.py:308-313",
+      "title": "A changed tested package is flagged but discarded from retained evidence",
+      "evidence": "The final package inventory is compared with the frozen identity; only a boolean package_mutated is recorded. The following project copy excludes every pixl-kit directory, including modified package bytes.",
+      "impact": "If a model changes bundled instructions/runtime during a trial, the only retained package is the original. The actual changed bytes cannot be inspected or replayed, and profile/runtime identity fields continue naming the original package.",
+      "fix": "When package_mutated is true, retain the complete final package or a hash-bound set of changed/new/deleted files and its inventory; mark the run unsuitable for claims about an unchanged profile identity. Never overwrite the frozen baseline.",
+      "validation": "Add a fake-host mutation test proving changed package bytes survive independently of the frozen original and are hash-bound to the receipt."
+    }
+  ],
+  "verified_observations": [
+    "All five current tests.test_host_evidence tests passed using uv run --no-sync python -m unittest tests.test_host_evidence -v.",
+    "codex-missing-01 and claude-missing-01 pass the current retained-file integrity verifier; both archived runner hashes match their recorded f189fe290f049ced7107a35855d3cb1f45cfa6c5e8b69288713d78a42221f423.",
+    "Codex completion is correctly host_completed_ungraded with observed_model null; permission failures do not become behavior passes.",
+    "Claude first attempt is correctly host_error despite subtype success: is_error true, OAuth refresh failure, zero input/output usage, empty modelUsage and zero API duration.",
+    "Claude observed_model comes from native initialization and denotes selected configuration, not an inference result. Codex app-server discovery model selection belongs to its separate diagnostic, not automatic attribution to exec run events.",
+    "No first-attempt package mutation was recorded; HOST-REC-003 is an untested failure-path gap, not a claim that those attempts changed the package."
+  ],
+  "limitations": [
+    "Review covers recorder correctness, not grading of production behavior or artistic outcomes.",
+    "No new Claude/Codex inference calls, global setting changes, source edits, or bundle rebuilds were performed.",
+    "Line references and hashes name the reviewed version; later root-agent fixes require fresh focused validation."
+  ],
+  "followup_reviews": [
+    {
+      "reviewed_at": "2026-09-11T19:57:04.703485+00:00",
+      "sources": {
+        "evaluations/host_trials.py": "88ad6663758c1bee52850634060103f1c1670e61b84b1b6949c39a9b2668d78b",
+        "tests/test_host_evidence.py": "f3c11f02f469cc1fdabab0023f71998ddf67471d56b14d104065b9cf3ec11141"
+      },
+      "finding_id": "HOST-REC-001",
+      "status": "resolved_in_source_before_cold_trial",
+      "evidence": "copy_inputs verifies predecessor receipts, rejects unrecorded artifacts, copies only persisted project inputs, binds predecessor record/artifact hashes, and run records an explicit cold-continuation phase/variation. CLI restricts predecessor to a single retained attempt name. Seven focused recorder tests passed in independent rerun.",
+      "model_identity_note": "Future receipts now keep native init model under host_reported_model, and set observed_model only from a non-synthetic assistant message.model. The original Claude auth-error receipt remains untouched; its observed_model is historical initialization/configuration metadata and does not attest inference."
+    },
+    {
+      "reviewed_at": "2026-09-11T19:59:11.264823+00:00",
+      "finding_ids": [
+        "HOST-REC-002",
+        "HOST-REC-003"
+      ],
+      "status": "resolved_with_observed_fake_host_checks",
+      "runner_sha256": "86b29924b048e11cb81132fefedc9c9a31b1d142708478a524842cad1977615c",
+      "probe_sha256": "1f46f5ab3c70914b46237f9b8bfc07d720e66bbd1e91b268e7d2cfd0bbeaec12",
+      "retained_result": "evidence/host-evaluation/recorder-probes/check-hq_yblwk/result.json",
+      "retained_result_sha256": "2918df080af4a945de7b705295e01470ffb10ae39ec2bb0d82a90e816c7b5cbb",
+      "checks": [
+        {
+          "mode": "null",
+          "attempt": "C:\\Users\\ryanf\\github\\pixel-lab-docsuite\\evidence\\host-evaluation\\recorder-probes\\check-hq_yblwk\\evidence\\runs\\null",
+          "record_sha256": "4d6b9aa2410a7486ab491cb8f179d0782c4c16f297e6f8abb235c8f309038490",
+          "execution_status": "incomplete_no_completion_event",
+          "observed_model": null,
+          "integrity_errors": [],
+          "package_mutated": false,
+          "baseline_unchanged": true,
+          "null_transcript_preserved": true
+        },
+        {
+          "mode": "mutation",
+          "attempt": "C:\\Users\\ryanf\\github\\pixel-lab-docsuite\\evidence\\host-evaluation\\recorder-probes\\check-hq_yblwk\\evidence\\runs\\mutation",
+          "record_sha256": "b724ef211258a0f21d1a54de03bcbae42b8f9c4a561bf9d3716de4e31c0680dd",
+          "execution_status": "host_completed_ungraded",
+          "observed_model": null,
+          "integrity_errors": [],
+          "package_mutated": true,
+          "baseline_unchanged": true,
+          "mutated_package_files": {
+            "added.txt": "60393bdc8a8b04c774f1c9f1bb1bf1bd4d6b876db3ad98a4ebbbd3faa08d15fd",
+            "sample.txt": "1aeada7f26785505e053db3abd562097033be56c51e311e994a3b017251561c5"
+          },
+          "changed_new_and_deleted_files_retained": true,
+          "all_mutated_files_bound_in_evidence_hashes": true
+        }
+      ],
+      "focused_unit_tests": {
+        "command": "uv run --no-sync python -m unittest tests.test_host_evidence -v",
+        "passed": 7,
+        "failed": 0
+      },
+      "model_inference_executed": false,
+      "notes": [
+        "Null output now produces a final receipt with incomplete_no_completion_event, observed_model null, intact stdout and zero integrity errors.",
+        "Changed, newly added and deleted package fixture files are represented by a complete retained mutated-package inventory. Every retained file is included in evidence_hashes; the original baseline remains unchanged.",
+        "Both fake-process receipts are recorder proofs only, separate from actual Claude/Codex profile trials."
+      ]
+    }
+  ],
+  "current_open_findings": []
+}

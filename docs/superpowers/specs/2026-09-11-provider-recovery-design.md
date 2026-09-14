@@ -1,0 +1,44 @@
+# Durable provider intent and recovery
+
+The existing next target is PROJECT-REVIEW R5 and roadmap stage 3. PIXL needs a saved connection between a production plan, the exact host request, uncertain submission, returned identities and imported candidates. The developer implements these tools and skills; only explicitly bounded evaluation adopts PIXL.
+
+## Scope and authority
+
+Implement local preparation, a durable dispatch claim, caller-supplied observations, cold recovery reports and import of already downloaded local files. Authentication, discovery, submission, polling and downloading stay with the real host tools. This milestone does not call a paid provider or claim actual art acceptance.
+
+Current primary references inspected on 2026-09-11: [PixelLab MCP guide](https://api.pixellab.ai/mcp/docs) distinguishes creation, returned identifiers, later status and downloads; [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools) defines discovered tool input schemas. These references do not establish which tools this user's harness currently exposes.
+
+Retain PX1 and existing unjournaled PX2 J behavior. Add optional J.jr (ref:X, the current journal file), J.op (refs:F, planned outputs) and J.xs (refs:X, all imported candidates) together as the explicit durable-job extension in PX2 registry 2.1.0. J.xs keeps imported candidates in typed context closure and is not a nomination list. Older PX2 readers correctly reject the new fields. Do not infer durable history for existing jobs or permit conversion by attaching fields to a published legacy J. No changes to supplied domain-source bytes.
+
+## Request and history
+
+`platform.prepare_discovered(provider, tool, arguments, schema, discovery, authorization)` saves the complete supplied schema and arguments without coercion. Discovery requires nonempty `source`, ISO timestamp `observed_at` and nonempty `evidence` object; authorization requires nonempty `scope` and `evidence` object. These are retained caller assertions. Validate finite bounded JSON, schema/arguments and credential-field exclusion before saving. A new tool or changed argument accepted by the supplied schema must not be prohibited by the dated catalog. Cached checks are advisory, explicitly dated and never substituted for discovery or approval. Existing `prepare` stays compatible. `validate_discovered(request)` checks persisted request identity without recomputing dated advisory results.
+
+The immutable request object has version=1, provider, tool, arguments, schema, schema_sha256, request_sha256 (hash of provider/tool/arguments/schema), discovery, authorization, prepared_at, policy=caller_schema, remote_executed=false and cached_assessment. The intent binds this request, job ID and project context. Context has task, outputs, task_sha256 and bindings (record ID to record hash). Task fingerprint excludes mutable st/ca/vr; bindings cover the selected F and semantic closure of task inputs, decisions and methods. Unrelated project display or intake changes do not stale a request.
+
+`job_history.new(job_id, request, context)` yields closed JSON version=1 with intent, intent_sha256, events=[], state=prepared and remote_id=null. `append(journal, event, evidence, remote_id=None, artifact=None)` returns a new validated history. Events are closed objects with sequence, event, recorded_at, remote_id, evidence and artifact. All evidence is a nonempty credential-free JSON object. An imported artifact is `{id, output, record_sha256}`. `validate(journal)` replays every event and checks hashes, timestamps, exact shapes and derived fields; it does not attest a server.
+
+- `dispatch` is allowed once from prepared, records local evidence and moves to unknown with no remote ID. Publication must finish before the host receives arguments for execution.
+- `submitted`, `running`, `succeeded`, `failed`, `unknown` are supplied observations. Before dispatch only failed is allowed, to abandon unsubmitted intent. After dispatch, submitted/running/unknown may repeat; accepted states require a remote ID. Identity is immutable once known. Succeeded and failed are terminal except that succeeded can import candidates.
+- `imported` keeps succeeded state and adds one unique candidate/output association; no automatic nominee, verdict, measurement or completion is created.
+- A failed attempt is terminal. A new attempt needs a new J ID and fresh authorization. Any prepared/unknown/submitted/running durable job for an overlapping output blocks another preparation, even when arguments differ. Legacy nonterminal J for the same task also blocks preparation until reconciled manually.
+
+## Store and graph integration
+
+Journal snapshots and imported bytes are content-addressed files inside the project store. A journal is a report X without C/of. Every new snapshot uses a new X ID; retained X/E history is immutable for durable jobs. J.jr names exactly the current journal, J.ah its intent hash, J.tk/J.op its task/outputs, and J.si/J.ri its derived state/identity. J.ev retains one local E per successive snapshot, each binding exactly its journal X; the last binds J.jr. Its passing result means a retained journal observation, never provider success or artistic acceptance. Old journal receipts remain valid against their old immutable X, and each snapshot is the next single-event prefix.
+
+Generic rooted validation checks the journal bytes and projection. Generic store publication enforces new prepared-only jobs, a saved unchanged plan before preparation, append-only intent/events, exactly one event per update, immutable journal/candidate history, no legacy upgrade, and no duplicate pending work. Newly introduced journal X and E must correspond to the validated snapshot. Direct encode/commit cannot bypass these invariants.
+
+Preparation and dispatch require an open/active task with no lifecycle activation blockers. Dispatch also requires unchanged request context. State drift after submission must remain recordable: observations and cold reports retain the old context and explain drift instead of invalidating the whole project. Import requires unchanged output semantic scope (F, contract, criteria and their sources/choices) and binds actual copied bytes; stale context is reported and no prior verdict is inherited. If that scope changed, retain the downloaded file and reconcile the original plan explicitly before association; do not mislabel it with a new contract or infer that regeneration is required.
+
+All mutations use existing expected-hash publication and lock behavior. Write immutable blobs before committing their references; a conflict/failure may leave unreferenced blobs but must not advance state or authorize dispatch. Recovery treats state.px as authority. No transaction spans a remote call. This prevents automatic replay by cooperative callers; it is not remote exactly-once delivery or protection against callers bypassing the workflow.
+
+## Public operation
+
+`jobs.prepare(folder, expected, job_id, task_id, outputs, provider, tool, arguments, schema, discovery, authorization, root)` saves intent. `jobs.dispatch(folder, expected, job_id, root)` commits the dispatch claim and returns the exact request only on success. `jobs.observe(folder, expected, job_id, event, evidence, remote_id=None, root=None)` appends a supplied observation. `jobs.import_artifact(folder, expected, job_id, output_id, candidate_id, path, evidence, root)` snapshots a downloaded local file and links it to F. `jobs.report(doc, root)` reports retained jobs, stale bindings, imported candidates and next actions. The public CLI uses job-prepare, job-dispatch, job-observe, job-import, jobs; MCP uses corresponding pixl_job_* and pixl_jobs. Legacy prepare/job remain available with explicit stateless descriptions.
+
+The operational skill requires discovery and authorization evidence, exact saved request use, no automatic retry after dispatch, recording lost responses, identity-based recovery through discovered tools, and separate artifact acceptance through the intake/sample workflow. A cold report includes all saved request/history details needed for reconciliation but never hands out a fresh dispatch grant for unknown work.
+
+## Verification
+
+Test the real store through prepare -> dispatch -> lost response -> cold load -> observed identity -> success -> local import -> unperformed acceptance. Negative tests cover concurrent dispatch, duplicate output attempts, fabricated initial success, journal rewrites, remote identity changes, stale plans, malformed/secret data, changed files, failed publication and direct-commit bypass. Validate copied plugin and installed wheel, native instruction discovery, and a bounded independent skill exercise with synthetic provider observations. Preserve the previous milestone's evidence before regeneration and retain all failed development attempts separately.

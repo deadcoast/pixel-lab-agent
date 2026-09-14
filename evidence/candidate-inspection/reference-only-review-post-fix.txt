@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\evidence\candidate-inspection\reference-only-review-probe.py", line 34, in <module>
+    result = inspection.review(
+        folder, codec.digest(store.load(folder)), "packet", "review", o, root
+    )
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 545, in review
+    coverage = _observation(doc, packet, frozen, observation, now)
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 519, in _observation
+    _require(
+    ~~~~~~~~^
+        any(views[id_]["source"] == packet["candidate"] for id_ in seen),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "visual verdict needs observed candidate-source view",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ryanf\github\pixel-lab-docsuite\pixl\inspection.py", line 46, in _require
+    raise PixlError(code, detail)
+pixl.codec.PixlError: inspection_manifest: visual verdict needs observed candidate-source view

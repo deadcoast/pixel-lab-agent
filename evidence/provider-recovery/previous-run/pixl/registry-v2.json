@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "wire_format": 2,
+  "common": {"tg": {"type": "strings", "optional": true, "meaning": "retrieval tags"}},
+  "kinds": {
+    "A": {"meaning": "actor", "fields": {"nm": "str", "rl": "sym:agent|tool|system|user"}},
+    "P": {"meaning": "project and intake", "fields": {"nm": "str", "ow": "ref:A", "sc": "refs:S", "in": "refs:I", "ct": {"type": "ref:C", "optional": true}, "rt": {"type": "refs:R", "optional": true}, "br": {"type": "str", "optional": true}}},
+    "S": {"meaning": "source", "fields": {"ur": "str", "dg": "sha", "ln": "ints", "at": "str", "au": "sym:local|official|study"}},
+    "R": {"meaning": "runtime dependency", "fields": {"nm": "str", "ur": "str", "vr": "str", "so": "refs:S"}},
+    "C": {"meaning": "visual contract", "fields": {"nm": "str", "px": "ints", "pl": "strings", "vw": "sym:side|low_topdown|high_topdown|isometric|oblique|ui", "sa": "sym:nearest|custom", "al": "sym:binary|full", "li": "str", "ch": {"type": "refs:I", "optional": true}}},
+    "K": {"meaning": "knowledge method", "fields": {"nm": "str", "ap": "symbols", "op": "strings", "ck": "strings", "so": "refs:S", "pc": {"type": "refs:E", "optional": true}, "rq": {"type": "strings", "optional": true}, "rk": {"type": "strings", "optional": true}}},
+    "D": {"meaning": "design decision", "fields": {"wh": "ref:A", "wt": "str", "wr": "refs:*", "wy": "str", "rs": "refs:S", "pc": "refs:E"}},
+    "T": {"meaning": "lifecycle task", "fields": {"nm": "str", "ow": "ref:A", "pr": "ref:P", "dp": "refs:T", "dc": "refs:D", "kn": "refs:K", "st": "sym:open|active|blocked|done|dropped", "ph": "sym:research|sample|production|delivery", "ip": "refs:X", "op": "refs:F", "ca": "refs:X", "vr": "refs:V"}},
+    "X": {"meaning": "materialized artifact", "fields": {"nm": "str", "ur": "str", "dg": "sha", "ct": {"type": "ref:C", "optional": true}, "kd": "sym:sprite|tileset|animation|atlas|normal|material|code|report|reference", "mt": {"type": "map", "optional": true}, "of": {"type": "ref:F", "optional": true}}},
+    "E": {"meaning": "evidence receipt", "fields": {"nm": "str", "ur": "str", "dg": "sha", "rs": "sym:pass|fail", "md": "sym:local|live|visual", "at": "str", "bs": "value", "ob": {"type": "bool", "optional": true}}},
+    "J": {"meaning": "provider job", "fields": {"tk": "ref:T", "tl": "str", "ah": "sha", "si": "sym:prepared|submitted|running|succeeded|failed|unknown", "ri": "str", "ev": "refs:E"}},
+    "N": {"meaning": "handoff", "fields": {"wh": "ref:A", "fo": "refs:*", "nx": "refs:T", "bl": "refs:T", "rv": "int"}},
+    "I": {"meaning": "intake choice", "fields": {"pr": "ref:P", "wh": "ref:A", "ky": "str", "st": "sym:unresolved|observed|proposed|confirmed|conflict", "vl": "value", "so": "refs:S", "wy": "str"}},
+    "F": {"meaning": "planned output", "fields": {"tk": "ref:T", "nm": "str", "kd": "sym:sprite|tileset|animation|atlas|normal|material|code|report|reference", "rq": "refs:Q", "ct": {"type": "ref:C", "optional": true}}},
+    "Q": {"meaning": "acceptance criterion", "fields": {"nm": "str", "dm": "sym:mechanical|visual|continuity|engine|other", "md": "sym:local|live|visual", "ck": "str", "wh": "ref:A", "so": "refs:S"}},
+    "V": {"meaning": "candidate verdict", "fields": {"tk": "ref:T", "rq": "ref:Q", "xr": "ref:X", "st": "sym:pass|fail|unavailable", "wh": "ref:A", "wy": "str", "at": "str", "ev": "refs:E", "ob": {"type": "bool", "optional": true}}}
+  },
+  "field_meanings": {
+    "P": {"in": "project intake choices", "br": "brief; not an approved style contract"},
+    "C": {"ch": "intake choices instantiated by this contract"},
+    "T": {"ph": "operation phase", "ip": "existing inputs", "op": "planned outputs", "ca": "one nominated candidate per output", "vr": "retained candidate verdicts including superseded history"},
+    "I": {"pr": "owning project", "wh": "responsible actor", "ky": "choice key unique within project", "st": "epistemic status", "vl": "value or null; conflict is an alternatives list", "so": "supporting sources", "wy": "rationale or unresolved question"},
+    "F": {"tk": "owning task", "nm": "intended deliverable", "kd": "artifact kind", "rq": "applicable required criteria", "ct": "candidate contract, absent before raster planning is resolved"},
+    "Q": {"nm": "criterion name", "dm": "acceptance domain", "md": "required evidence mode", "ck": "observable acceptance condition", "wh": "criterion owner", "so": "supporting sources"},
+    "V": {"tk": "task", "rq": "criterion", "xr": "actual candidate", "st": "verdict; no verdict means unperformed", "wh": "reviewer", "wy": "observation or unavailable reason", "at": "ISO-8601 date/time", "ev": "supporting receipts", "ob": "one-way supersession"},
+    "X": {"of": "planned output materialized by this candidate"}
+  }
+}

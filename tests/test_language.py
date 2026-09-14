@@ -20,7 +20,7 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(values[3:], [True, False, None, 0, -4])
 
     def test_rejects_ambiguity_truncation_bad_utf8_and_duplicates(self):
-        invalid = [b"PX2 0\n", b"PX1 -1\n", b"PX1 0\n@a:A{x=1;x=2}",
+        invalid = [b"PX3 0\n", b"PX1 -1\n", b"PX1 0\n@a:A{x=1;x=2}",
                    b"PX1 0\n@a:A{}@a:A{}", b"PX1 0\n@a:A{x=~4:hi}",
                    b"PX1 0\n@a:A{x=~1:\xe7}", b"PX1 0\n@a:A{x=1.5}",
                    b"PX1 0\n@a:A{x=9223372036854775808}", b"PX1 0\n@a:A{x=[1,]}"]

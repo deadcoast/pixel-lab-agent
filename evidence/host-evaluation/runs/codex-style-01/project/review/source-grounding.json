@@ -1,0 +1,222 @@
+{
+  "source_inventory": {
+    "version": 1,
+    "documents": [
+      {
+        "id": "pixellab-links",
+        "path": "training/original-docs/PIXEL-LAB-LINKS.md",
+        "sha256": "8d25924d3085fa0307f3cc698c252fb9195555885def82951bf070da770b37b8",
+        "lines": 12,
+        "previous": {
+          "path": "links.md",
+          "sha256": "8d25924d3085fa0307f3cc698c252fb9195555885def82951bf070da770b37b8",
+          "lines": 12
+        }
+      },
+      {
+        "id": "agent-training",
+        "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+        "sha256": "bb21cee0a39b504f7f4e56f61f13750b57178fe2b6230f27e79b28b40934a050",
+        "lines": 1657,
+        "previous": {
+          "path": "AGENT-PIXELART-TRAINING.md",
+          "sha256": "bb21cee0a39b504f7f4e56f61f13750b57178fe2b6230f27e79b28b40934a050",
+          "lines": 1657
+        }
+      },
+      {
+        "id": "asset-archive",
+        "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+        "sha256": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+        "lines": 16070,
+        "previous": {
+          "path": "PIXEL-ART-ASSETS.md",
+          "sha256": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+          "lines": 16070
+        }
+      },
+      {
+        "id": "deep-research",
+        "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+        "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+        "lines": 1713,
+        "previous": {
+          "path": "pixel-art-deep-research-report.md",
+          "sha256": "3edf15db8c02eb3cc7225769416ef6924ef0ebe613cd3430a315389534434727",
+          "lines": 1647
+        }
+      },
+      {
+        "id": "methods",
+        "path": "training/original-docs/PIXEL-ART-METHODS.md",
+        "sha256": "d2322da8817ec0aaddf82d87844d6fbf289568aff0c15750a40c736c7f5cb466",
+        "lines": 1703,
+        "previous": {
+          "path": "research-pixel-art-systems.md",
+          "sha256": "3edf15db8c02eb3cc7225769416ef6924ef0ebe613cd3430a315389534434727",
+          "lines": 1647
+        }
+      }
+    ],
+    "root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl-host-trial-rkm83_tf\\.agents\\skills\\pixl-kit\\resources",
+    "files_verified": true,
+    "authority": "Declared source revisions; local byte identity verified, not external truth."
+  },
+  "methods": [
+    {
+      "id": "alpha-contract",
+      "title": "Declare alpha and compositing behavior",
+      "applies_to": [
+        "transparent sprites",
+        "glows",
+        "sprite atlases"
+      ],
+      "requires": [
+        "RGBA interpretation, straight or premultiplied alpha, and allowed alpha levels"
+      ],
+      "procedure": [
+        "Keep alpha policy separate from RGB palette membership.",
+        "Use the chosen compositing equation consistently through export, import and display.",
+        "Inspect edges against light and dark backgrounds after round-trip import."
+      ],
+      "checks": [
+        "Binary-alpha assets contain only 0 and 255 unless an exception is declared.",
+        "Composited fixtures agree with the declared alpha model."
+      ],
+      "pitfalls": [
+        "Fully transparent RGB channels can differ without changing visible appearance.",
+        "Multiplying premultiplied RGB by alpha again darkens edges."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 945,
+          "end": 977
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 942,
+          "end": 958
+        }
+      ],
+      "poc": {
+        "kind": "compositing-fixture",
+        "procedure": [
+          "For straight alpha composite red (255,0,0,0.5) over blue (0,0,255) in a declared linear numeric fixture.",
+          "Separately validate binary-alpha pixels [0,255,127]."
+        ],
+        "acceptance": [
+          "Unrounded linear result is (127.5,0,127.5).",
+          "Binary-alpha validation reports only the 127 entry; display color-space conversion is a separate step."
+        ]
+      }
+    },
+    {
+      "id": "selective-edge-aa",
+      "title": "Apply authored edge antialiasing only to selected edges",
+      "applies_to": [
+        "subpixel edges",
+        "curves against known backgrounds"
+      ],
+      "requires": [
+        "Approved edge ramp, edge mask and representative background"
+      ],
+      "procedure": [
+        "Choose intermediate colors from the approved ramp inside the selected boundary region.",
+        "Preserve required hard edges and avoid universal outlines of intermediate color.",
+        "Preview against each allowed background before accepting."
+      ],
+      "checks": [
+        "Changed pixels stay within the selected edge mask and palette.",
+        "Protected hard edges remain byte-identical."
+      ],
+      "pitfalls": [
+        "Background-specific intermediate colors can form halos on different backgrounds.",
+        "This is authored color placement, not a permission to enable bilinear texture filtering."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 590,
+          "end": 632
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 907,
+          "end": 919
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Render a 5x5 diagonal using dark, mid and bright colors with an explicit two-pixel AA mask.",
+          "Apply AA, then repeat with a forbidden interior pixel included by a buggy implementation."
+        ],
+        "acceptance": [
+          "Valid output changes only the two selected pixels.",
+          "The mutant reports the out-of-mask change."
+        ]
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "method": "alpha-contract",
+      "text": "PX1 0\n@c184366365e58e044b8dc:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: pixel-ui-states.png;pl=[];px=[24,8];sa=nearest;vw=ui}\n@c2b0ad2ecc4722ddaf08b:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~47:Reference fixture: tile-repeat-neighborhood.png;pl=[];px=[24,24];sa=nearest;vw=ui}\n@c5954fde427ee9fc6170a:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: integer-upscale.png;pl=[];px=[6,6];sa=nearest;vw=ui}\n@c5b270f4c41b384567ee3:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~35:Reference fixture: key-positive.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@c8c4231e34fe5637e28c3:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: dither-coverage.png;pl=[];px=[12,4];sa=nearest;vw=ui}\n@ca3a5b65679a355e9b69b:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~36:Reference fixture: crop-restored.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@ca8d17815e7147e7573b8:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~35:Reference fixture: key-negative.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@cc1522bb8cfd524d56b20:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~40:Reference fixture: key-contact-sheet.png;pl=[];px=[288,176];sa=nearest;vw=ui}\n@e.alpha-contract:E{at=~32:2026-09-11T17:21:15.899368+00:00;bs=[{dg=~64:b1939bc4b4ba42c405725663c8a9ae32c69ac3cbd4f9ff7b90089551eac7383e;rf=@c184366365e58e044b8dc},{dg=~64:25fbef7441109f8758b1844dce1d333849f9ab1473fd124f84bb7d455aa46925;rf=@c2b0ad2ecc4722ddaf08b},{dg=~64:efafa77847d55355db7bf084451e5857c436a6011ad9ce830fb7975e162d480b;rf=@c5954fde427ee9fc6170a},{dg=~64:8ab9b538d815182aaec577e1a5a84c757e3e20179370cd6b4991164d76fcf1d1;rf=@c5b270f4c41b384567ee3},{dg=~64:43a6602df86ffc08a8cad15df8b68d981af21573f019ae4da7bad9ba72193ed0;rf=@c8c4231e34fe5637e28c3},{dg=~64:fde5237aadefa7060215e9f3920548413cef1df08e3b1f1e19bfa574bf3efc6e;rf=@ca3a5b65679a355e9b69b},{dg=~64:07bfeeedfb41362be2854e64596cb16dbb6c81593fa1ccfb78264d6297acc704;rf=@ca8d17815e7147e7573b8},{dg=~64:579f9d3cf37a9ec60c91937c8fa20111eacfcf4cc48b14dd15ba0103822f5668;rf=@cc1522bb8cfd524d56b20},{dg=~64:fc002f20843933549a13d329f9d1f4c9be06832e596ac2f1429bd3e4ab19ecb4;rf=@k.alpha-contract},{dg=~64:018f4b05c1c75063a5e3400527962c9227f579133946ad3d0a5f40eeb3d426ee;rf=@s0d4c84c1f64ae48044b9},{dg=~64:0d8abd20bcdacc27d8a66639c023c35f30137b1f07bf0dd46b9577f79d3c00d7;rf=@s1df5f09ac5030214d9ae},{dg=~64:dc54c545673c870756cd15852f6bac787f33f3c62931ddb02e830dd7b0626131;rf=@s7a5659883ebbb47af40d},{dg=~64:404bf07ea1c038768fead0855941279662d30389c9358a81092f6eb8ce266307;rf=@s9607720391d7364f4ce0},{dg=~64:8e2f77fbb32d27c335da6822fbb0a5d07bfc0e409d33d6b4daf5d63734e04a7e;rf=@sbecd5d040a6c73c7d34f},{dg=~64:03ab238b9503590f90dd654fe8bd06fd25bfa8ca4e57ce49ff8ad7fa4b752aaf;rf=@sd0675d9c7db2d15689ca},{dg=~64:219c5b7a87212a23e8cd0d01d8b8787b2c6dcfc24e8e4ea92ae8464f06e9aa09;rf=@x184366365e58e044b8dc},{dg=~64:84a5591b66a8985e2eb6cc8b45ec2981576bc9fb1fb6cf8dad84d80913765b94;rf=@x2b0ad2ecc4722ddaf08b},{dg=~64:c3262603fdd83068c230520707d52bed4066642a96a507a6fbcd611dc02e0524;rf=@x5954fde427ee9fc6170a},{dg=~64:36f9cb03af01a8b0d7363c3087af13665939d0dc625623642c40c504ba302e1e;rf=@x5b270f4c41b384567ee3},{dg=~64:e6686b3fe8985ef981cdbf2d018d9f7116cb4e68850b9fb51c8318cf97cd2039;rf=@x8c4231e34fe5637e28c3},{dg=~64:7d2a4d66be1406478e9219d89c60767d886df188af7d211e226ee9f5a1326697;rf=@xa3a5b65679a355e9b69b},{dg=~64:cf89598b84cce5710fc9c5db80781afd88528b3fef29a9c289d0ee48c05b2e53;rf=@xa8d17815e7147e7573b8},{dg=~64:befac2d72f552e2e12c1b6e658ae2c0b68d56916b0ab98f21f006c13899a761f;rf=@xc1522bb8cfd524d56b20}];dg=~64:e9d0f2b2e306b10a73188f6b27bc2998b72c4e731d76a475e1609af2b512b43c;md=local;nm=~49:Bounded reference POC: alpha-compositing-contract;rs=pass;ur=~36:evidence/art-methods/poc-report.json}\n@k.alpha-contract:K{ap=[transparent_sprites_75353d50,glows_19e4066b,sprite_atlases_07b42f1f];ck=[~75:Binary-alpha assets contain only 0 and 255 unless an exception is declared.,~56:Composited fixtures agree with the declared alpha model.];nm=~38:Declare alpha and compositing behavior;op=[~55:Keep alpha policy separate from RGB palette membership.,~84:Use the chosen compositing equation consistently through export, import and display.,~73:Inspect edges against light and dark backgrounds after round-trip import.];pc=[@e.alpha-contract];rk=[~78:Fully transparent RGB channels can differ without changing visible appearance.,~59:Multiplying premultiplied RGB by alpha again darkens edges.];rq=[~78:RGBA interpretation, straight or premultiplied alpha, and allowed alpha levels];so=[@s9607720391d7364f4ce0,@s0d4c84c1f64ae48044b9,@sbecd5d040a6c73c7d34f,@s7a5659883ebbb47af40d,@sd0675d9c7db2d15689ca,@s1df5f09ac5030214d9ae];tg=[~14:alpha-contract]}\n@s0d4c84c1f64ae48044b9:S{at=~10:2026-09-11;au=local;dg=~64:fb000408c93cb29d4834b4027a09938b31d844a1b2cd945c4e0c493e8ca1da39;ln=[];ur=~11:pixl/poc.py}\n@s1df5f09ac5030214d9ae:S{at=~10:2026-09-11;au=local;dg=~64:450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900;ln=[942,958];ur=~42:training/original-docs/PIXEL-ART-ASSETS.md}\n@s7a5659883ebbb47af40d:S{at=~10:2026-09-11;au=local;dg=~64:7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28;ln=[945,977];ur=~49:training/original-docs/PIXEL-ART-DEEP-RESEARCH.md}\n@s9607720391d7364f4ce0:S{at=~10:2026-09-11;au=local;dg=~64:3527f3eb8ec23c4866bc88334f4e371e3e8a51ed6e75763b33553bb9e23d4255;ln=[];ur=~28:knowledge/applicability.json}\n@sbecd5d040a6c73c7d34f:S{at=~10:2026-09-11;au=local;dg=~64:d169c546d99f59b4adb4d0a939b61bd7b3d21bc0b3b2e13116e2e10a4882f15c;ln=[];ur=~24:knowledge/pixel-art.json}\n@sd0675d9c7db2d15689ca:S{at=~10:2026-09-11;au=local;dg=~64:7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28;ln=[1276,1291];ur=~49:training/original-docs/PIXEL-ART-DEEP-RESEARCH.md}\n@x184366365e58e044b8dc:X{ct=@c184366365e58e044b8dc;dg=~64:565bffaae08ef83e314eed5599424c7e7a08bef70aa9698469ffbbd520f27527;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:pixel-ui-states.png;ur=~40:evidence/art-methods/pixel-ui-states.png}\n@x2b0ad2ecc4722ddaf08b:X{ct=@c2b0ad2ecc4722ddaf08b;dg=~64:f2fdcae748728fd7f2687cac68b50498529b8c9153098810dc0ce157c5b355f6;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~28:tile-repeat-neighborhood.png;ur=~49:evidence/art-methods/tile-repeat-neighborhood.png}\n@x5954fde427ee9fc6170a:X{ct=@c5954fde427ee9fc6170a;dg=~64:7cb36199f7d029d5db3286824a8c538f2c77614f4912b57ce54af66214dab4af;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:integer-upscale.png;ur=~40:evidence/art-methods/integer-upscale.png}\n@x5b270f4c41b384567ee3:X{ct=@c5b270f4c41b384567ee3;dg=~64:400f07ba6129d3e47e926b6b0230b61828188e94ef0e9ea717a5521616aec592;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~16:key-positive.png;ur=~37:evidence/art-methods/key-positive.png}\n@x8c4231e34fe5637e28c3:X{ct=@c8c4231e34fe5637e28c3;dg=~64:5583344fb062c3eb032248307ae72892a3041495f1c95ad96bd6e52cfe5aba23;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:dither-coverage.png;ur=~40:evidence/art-methods/dither-coverage.png}\n@xa3a5b65679a355e9b69b:X{ct=@ca3a5b65679a355e9b69b;dg=~64:9b47ef0fe8cfb89abcf701cbb69ebfbd0f6f1720b57c0eb8369a23d10ad162af;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~17:crop-restored.png;ur=~38:evidence/art-methods/crop-restored.png}\n@xa8d17815e7147e7573b8:X{ct=@ca8d17815e7147e7573b8;dg=~64:5d72f929eee0510d1ef97c57d9cbbdacd4bf51ae1db1dec948da391b6e04b56d;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~16:key-negative.png;ur=~37:evidence/art-methods/key-negative.png}\n@xc1522bb8cfd524d56b20:X{ct=@cc1522bb8cfd524d56b20;dg=~64:6c8edf61144cadff849fd316f11618e781452e60ed1162a91255beb61a015d43;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~21:key-contact-sheet.png;ur=~42:evidence/art-methods/key-contact-sheet.png}\n"
+    },
+    {
+      "method": "selective-edge-aa",
+      "text": "PX1 0\n@c184366365e58e044b8dc:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: pixel-ui-states.png;pl=[];px=[24,8];sa=nearest;vw=ui}\n@c2b0ad2ecc4722ddaf08b:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~47:Reference fixture: tile-repeat-neighborhood.png;pl=[];px=[24,24];sa=nearest;vw=ui}\n@c5954fde427ee9fc6170a:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: integer-upscale.png;pl=[];px=[6,6];sa=nearest;vw=ui}\n@c5b270f4c41b384567ee3:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~35:Reference fixture: key-positive.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@c8c4231e34fe5637e28c3:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~38:Reference fixture: dither-coverage.png;pl=[];px=[12,4];sa=nearest;vw=ui}\n@ca3a5b65679a355e9b69b:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~36:Reference fixture: crop-restored.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@ca8d17815e7147e7573b8:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~35:Reference fixture: key-negative.png;pl=[];px=[16,16];sa=nearest;vw=ui}\n@cc1522bb8cfd524d56b20:C{al=full;li=~62:Bounded local test fixture; no production aesthetic acceptance;nm=~40:Reference fixture: key-contact-sheet.png;pl=[];px=[288,176];sa=nearest;vw=ui}\n@e.selective-edge-aa:E{at=~32:2026-09-11T17:21:15.899368+00:00;bs=[{dg=~64:b1939bc4b4ba42c405725663c8a9ae32c69ac3cbd4f9ff7b90089551eac7383e;rf=@c184366365e58e044b8dc},{dg=~64:25fbef7441109f8758b1844dce1d333849f9ab1473fd124f84bb7d455aa46925;rf=@c2b0ad2ecc4722ddaf08b},{dg=~64:efafa77847d55355db7bf084451e5857c436a6011ad9ce830fb7975e162d480b;rf=@c5954fde427ee9fc6170a},{dg=~64:8ab9b538d815182aaec577e1a5a84c757e3e20179370cd6b4991164d76fcf1d1;rf=@c5b270f4c41b384567ee3},{dg=~64:43a6602df86ffc08a8cad15df8b68d981af21573f019ae4da7bad9ba72193ed0;rf=@c8c4231e34fe5637e28c3},{dg=~64:fde5237aadefa7060215e9f3920548413cef1df08e3b1f1e19bfa574bf3efc6e;rf=@ca3a5b65679a355e9b69b},{dg=~64:07bfeeedfb41362be2854e64596cb16dbb6c81593fa1ccfb78264d6297acc704;rf=@ca8d17815e7147e7573b8},{dg=~64:579f9d3cf37a9ec60c91937c8fa20111eacfcf4cc48b14dd15ba0103822f5668;rf=@cc1522bb8cfd524d56b20},{dg=~64:8781e8b5d169efa93b9218a7cdf47761f0fce7cb316a5a930547bb24f76c0ad3;rf=@k.selective-edge-aa},{dg=~64:018f4b05c1c75063a5e3400527962c9227f579133946ad3d0a5f40eeb3d426ee;rf=@s0d4c84c1f64ae48044b9},{dg=~64:a1e3eb4570b65d4752d59aaa238fea0a3000ef9eb7aece2ebd0a45339c5128d9;rf=@s13506aa304092b45e0b3},{dg=~64:33cf38d3375a10cf82541ab918b1e5bd0180dc4d32a2f4e26eae53a71d371cd3;rf=@s54972c78922906eca1d4},{dg=~64:404bf07ea1c038768fead0855941279662d30389c9358a81092f6eb8ce266307;rf=@s9607720391d7364f4ce0},{dg=~64:8e2f77fbb32d27c335da6822fbb0a5d07bfc0e409d33d6b4daf5d63734e04a7e;rf=@sbecd5d040a6c73c7d34f},{dg=~64:219c5b7a87212a23e8cd0d01d8b8787b2c6dcfc24e8e4ea92ae8464f06e9aa09;rf=@x184366365e58e044b8dc},{dg=~64:84a5591b66a8985e2eb6cc8b45ec2981576bc9fb1fb6cf8dad84d80913765b94;rf=@x2b0ad2ecc4722ddaf08b},{dg=~64:c3262603fdd83068c230520707d52bed4066642a96a507a6fbcd611dc02e0524;rf=@x5954fde427ee9fc6170a},{dg=~64:36f9cb03af01a8b0d7363c3087af13665939d0dc625623642c40c504ba302e1e;rf=@x5b270f4c41b384567ee3},{dg=~64:e6686b3fe8985ef981cdbf2d018d9f7116cb4e68850b9fb51c8318cf97cd2039;rf=@x8c4231e34fe5637e28c3},{dg=~64:7d2a4d66be1406478e9219d89c60767d886df188af7d211e226ee9f5a1326697;rf=@xa3a5b65679a355e9b69b},{dg=~64:cf89598b84cce5710fc9c5db80781afd88528b3fef29a9c289d0ee48c05b2e53;rf=@xa8d17815e7147e7573b8},{dg=~64:befac2d72f552e2e12c1b6e658ae2c0b68d56916b0ab98f21f006c13899a761f;rf=@xc1522bb8cfd524d56b20}];dg=~64:e9d0f2b2e306b10a73188f6b27bc2998b72c4e731d76a475e1609af2b512b43c;md=local;nm=~44:Bounded reference POC: selective-aa-boundary;rs=pass;ur=~36:evidence/art-methods/poc-report.json}\n@k.selective-edge-aa:K{ap=[subpixel_edges_cb6d504d,curves_against_known_backgrounds_6fcf945e];ck=[~62:Changed pixels stay within the selected edge mask and palette.,~43:Protected hard edges remain byte-identical.];nm=~55:Apply authored edge antialiasing only to selected edges;op=[~86:Choose intermediate colors from the approved ramp inside the selected boundary region.,~80:Preserve required hard edges and avoid universal outlines of intermediate color.,~57:Preview against each allowed background before accepting.];pc=[@e.selective-edge-aa];rk=[~80:Background-specific intermediate colors can form halos on different backgrounds.,~88:This is authored color placement, not a permission to enable bilinear texture filtering.];rq=[~59:Approved edge ramp, edge mask and representative background];so=[@s9607720391d7364f4ce0,@s0d4c84c1f64ae48044b9,@sbecd5d040a6c73c7d34f,@s13506aa304092b45e0b3,@s54972c78922906eca1d4];tg=[~17:selective-edge-aa]}\n@s0d4c84c1f64ae48044b9:S{at=~10:2026-09-11;au=local;dg=~64:fb000408c93cb29d4834b4027a09938b31d844a1b2cd945c4e0c493e8ca1da39;ln=[];ur=~11:pixl/poc.py}\n@s13506aa304092b45e0b3:S{at=~10:2026-09-11;au=local;dg=~64:7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28;ln=[590,632];ur=~49:training/original-docs/PIXEL-ART-DEEP-RESEARCH.md}\n@s54972c78922906eca1d4:S{at=~10:2026-09-11;au=local;dg=~64:7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28;ln=[907,919];ur=~49:training/original-docs/PIXEL-ART-DEEP-RESEARCH.md}\n@s9607720391d7364f4ce0:S{at=~10:2026-09-11;au=local;dg=~64:3527f3eb8ec23c4866bc88334f4e371e3e8a51ed6e75763b33553bb9e23d4255;ln=[];ur=~28:knowledge/applicability.json}\n@sbecd5d040a6c73c7d34f:S{at=~10:2026-09-11;au=local;dg=~64:d169c546d99f59b4adb4d0a939b61bd7b3d21bc0b3b2e13116e2e10a4882f15c;ln=[];ur=~24:knowledge/pixel-art.json}\n@x184366365e58e044b8dc:X{ct=@c184366365e58e044b8dc;dg=~64:565bffaae08ef83e314eed5599424c7e7a08bef70aa9698469ffbbd520f27527;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:pixel-ui-states.png;ur=~40:evidence/art-methods/pixel-ui-states.png}\n@x2b0ad2ecc4722ddaf08b:X{ct=@c2b0ad2ecc4722ddaf08b;dg=~64:f2fdcae748728fd7f2687cac68b50498529b8c9153098810dc0ce157c5b355f6;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~28:tile-repeat-neighborhood.png;ur=~49:evidence/art-methods/tile-repeat-neighborhood.png}\n@x5954fde427ee9fc6170a:X{ct=@c5954fde427ee9fc6170a;dg=~64:7cb36199f7d029d5db3286824a8c538f2c77614f4912b57ce54af66214dab4af;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:integer-upscale.png;ur=~40:evidence/art-methods/integer-upscale.png}\n@x5b270f4c41b384567ee3:X{ct=@c5b270f4c41b384567ee3;dg=~64:400f07ba6129d3e47e926b6b0230b61828188e94ef0e9ea717a5521616aec592;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~16:key-positive.png;ur=~37:evidence/art-methods/key-positive.png}\n@x8c4231e34fe5637e28c3:X{ct=@c8c4231e34fe5637e28c3;dg=~64:5583344fb062c3eb032248307ae72892a3041495f1c95ad96bd6e52cfe5aba23;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~19:dither-coverage.png;ur=~40:evidence/art-methods/dither-coverage.png}\n@xa3a5b65679a355e9b69b:X{ct=@ca3a5b65679a355e9b69b;dg=~64:9b47ef0fe8cfb89abcf701cbb69ebfbd0f6f1720b57c0eb8369a23d10ad162af;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~17:crop-restored.png;ur=~38:evidence/art-methods/crop-restored.png}\n@xa8d17815e7147e7573b8:X{ct=@ca8d17815e7147e7573b8;dg=~64:5d72f929eee0510d1ef97c57d9cbbdacd4bf51ae1db1dec948da391b6e04b56d;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~16:key-negative.png;ur=~37:evidence/art-methods/key-negative.png}\n@xc1522bb8cfd524d56b20:X{ct=@cc1522bb8cfd524d56b20;dg=~64:6c8edf61144cadff849fd316f11618e781452e60ed1162a91255beb61a015d43;kd=reference;mt={mode=~4:RGBA;origin=~23:local_reference_fixture};nm=~21:key-contact-sheet.png;ur=~42:evidence/art-methods/key-contact-sheet.png}\n"
+    }
+  ],
+  "exact_source_slices": [
+    {
+      "text": "### Asset channel layout\n\nA sophisticated AI-authored sprite material can use:\n\n\\[\n\\mathcal A =\n\\{D,N,H,M,E,O\\}\n\\]\n\nwhere:\n\n| Channel | Meaning | Required? |\n|---|---|---|\n| \\(D\\) | Diffuse/base pixel color | Yes |\n| \\(N\\) | Surface normal direction | For directional lighting |\n| \\(H\\) | Approximate height/elevation | Optional but powerful |\n| \\(M\\) | Lighting/material mask | Recommended |\n| \\(E\\) | Emissive mask/color | For lamps, screens, lava |\n| \\(O\\) | Occlusion/shadow metadata | When real shadowing is required |\n\nA compact packed representation might use:\n\n```text\nTexture A: RGBA = diffuse + alpha\nTexture B: RGB  = normal\nTexture C:\n    R = height\n    G = light-response mask\n    B = emission strength\n    A = material class / free channel\n```\n\nUnity's current 2D system similarly treats normal maps and mask maps as secondary sprite textures, and requires them to remain aligned with the main sprite's sampling coordinates. citeturn15search1\n",
+      "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+      "start": 945,
+      "end": 977,
+      "bytes": 966
+    },
+    {
+      "text": "### Keep all companion textures pixel-aligned\n\nNormal-map pixels must correspond exactly to diffuse pixels. Unity's sprite secondary-texture documentation explicitly requires secondary textures to align with the main sprite because they share the sprite's UV coordinates. citeturn15search1\n\nTherefore an AI asset validator should require:\n\n```text\ndiffuse.width  == normal.width\ndiffuse.height == normal.height\ndiffuse pivot  == normal pivot\natlas rect     == corresponding normal atlas rect\nanimation frame boundaries identical\ntransparent padding consistent\n```\n\nIf the diffuse atlas receives padding but the normal atlas does not, edge sampling can fetch an unrelated normal from the adjacent sprite.\n",
+      "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+      "start": 1276,
+      "end": 1291,
+      "bytes": 713
+    },
+    {
+      "text": "### Edge-color migration\n\nSuppose a bright object ends at logical pixel \\(x\\):\n\n```text\nBackground = .\nObject     = #\nAA shade   = +\n\nFrame A: ....###....\nFrame B: ....##+....\nFrame C: ...+###....\nFrame D: ...###.....\n```\n\nNo mathematical “half pixel” exists in the final raster. But the intermediate color changes the apparent center of mass of the edge.\n\nA useful computational model is fractional coverage. Let an ideal high-resolution edge cover fraction \\(\\alpha\\) of a logical cell. A conventional filtered representation would produce\n\n```txt\n\\[\nC(\\alpha)\n=\n(1-\\alpha)C_{bg}+\\alpha C_{object}.\n\\]\n```\n\nStrict pixel art normally should **not** blindly use that RGB result. Instead, choose an approved palette color:\n\n```txt\n\\[\nC_{pixel}\n=\n\\underset{c\\in P_{edge}}{\\arg\\min}\n\\ d\\!\\left(c,C(\\alpha)\\right),\n\\]\n```\n\nwhere \\(P_{edge}\\) is the artist-approved edge ramp and \\(d\\) is a perceptual color-distance function.\n\nThe AI agent thereby gets the *coverage cue* of anti-aliasing without introducing arbitrary colors.\n\nThis aligns with Andersen's observation that palette choices need to be made with later anti-aliasing and sub-pixelling relationships in mind; those techniques depend on colors functioning together rather than being selected independently. citeturn19view0\n",
+      "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+      "start": 590,
+      "end": 632,
+      "bytes": 1293
+    },
+    {
+      "text": "### Do not confuse sub-pixel art with runtime bilinear filtering\n\nCurrent engine documentation makes the distinction operationally important. Unity describes point filtering as preserving block-like texels, while bilinear filtering blurs neighboring samples; its Pixel Perfect Camera similarly exposes a trade-off between sharper point filtering and filtered modes intended to reduce shimmering. citeturn15search25turn15search16\n\nFor handcrafted sub-pixelling:\n\n```text\nsprite sampling     = nearest / point\nlogical coordinates = integer at final raster\nfractional effect   = encoded in authored colors/clusters\n```\n\nOtherwise the GPU's interpolation destroys the controlled decisions the artist made.\n",
+      "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+      "start": 907,
+      "end": 919,
+      "bytes": 714
+    },
+    {
+      "text": ".heart:hover::before{-webkit-animation-play-state:paused;border-radius:100%;opacity:0}\r\n\r\n.heart::before{\r\ncontent:'';\r\ndisplay:block;\r\ntransition:all 400ms;\r\n-webkit-animation:pulse 1.2s steps(1) infinite;\r\nwidth:$s+px;\r\nheight:$s+px;\r\nmargin:(-$s+px) 0 0 (-$s+px);\r\nbox-shadow:2*$s+px 1*$s+px #8e1a19,3*$s+px 1*$s+px #ac0500,5*$s+px 1*$s+px #f73f0c,6*$s+px 1*$s+px #fa5f27,1*$s+px 2*$s+px #740100,2*$s+px 2*$s+px #8e0500,3*$s+px 2*$s+px #8e1918,4*$s+px 2*$s+px #ca1300,5*$s+px 2*$s+px #f34f2b,6*$s+px 2*$s+px #df351f,7*$s+px 2*$s+px #f77c2a,1*$s+px 3*$s+px #4b0000,2*$s+px 3*$s+px #690100,3*$s+px 3*$s+px #8e0f0b,4*$s+px 3*$s+px #bf1000,5*$s+px 3*$s+px #f84010,6*$s+px 3*$s+px #f04222,7*$s+px 3*$s+px #fa5724,1*$s+px 4*$s+px #451312,2*$s+px 4*$s+px #5a0100,3*$s+px 4*$s+px #840e0c,4*$s+px 4*$s+px #a51d1a,5*$s+px 4*$s+px #ed2805,6*$s+px 4*$s+px #d9321e,7*$s+px 4*$s+px #f44622,2*$s+px 5*$s+px #3b0000,3*$s+px 5*$s+px #5d1a1b,4*$s+px 5*$s+px #8e1a19,5*$s+px 5*$s+px #a80700,6*$s+px 5*$s+px #b90a00,3*$s+px 6*$s+px #3d0000,4*$s+px 6*$s+px #551415,5*$s+px 6*$s+px #670100,4*$s+px 7*$s+px #340000;\r\n}\r\n\r\n@-webkit-keyframes pulse{\r\n  50%{\r\n    -webkit-filter:blur(1.4px);\r\n    -webkit-transform:translate(-2px, 2px);\r\n",
+      "sha256": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+      "start": 942,
+      "end": 958,
+      "bytes": 1215
+    }
+  ],
+  "applicability": {
+    "question": "How to preserve this reference's intentional partial alpha and selective edge AA in a matching small lantern?",
+    "alpha_contract": "Applicable as a planning checklist. Full RGBA is required by the user. RGB palette and alpha are independent. Source ranges 945-977 and 1276-1291 discuss channels/alignment; asset archive 942-958 is CSS. These ranges do not prove a complete straight/premultiplied export pipeline. Confirm that pipeline with the actual lantern and destination before adoption.",
+    "selective_edge_aa": "Applicable to deliberately masked edge coverage. The strict-palette quantization advice in 590-632 is conditional and is not adopted: this user imposes no fixed palette. Use an editable coherent ramp and authored alpha where needed. Source 907-919 distinguishes authored cues from display filtering; nearest preview is proposed, final engine behavior remains unverified.",
+    "prerequisites": "Reference and edge treatment observed; final edge mask, chosen lantern colors, real game backgrounds, target display scale and engine alpha mode remain unproven.",
+    "receipt_limit": "Bundled POCs are offline reference fixtures only, not lantern art, project-specific proof, current provider support, or engine acceptance. No bundled receipt is adopted as a project decision.",
+    "next_proof": "One 32x32 RGBA lantern: protected hard frame, selected one-pixel alpha edge mask, editable colors; inspect native and 8x on light/dark/checker and later target backgrounds; verify export round-trip RGBA and actual engine blend."
+  }
+}

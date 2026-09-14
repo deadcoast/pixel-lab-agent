@@ -12,6 +12,12 @@ from .codec import Document, PixlError, Ref, Symbol, encode, record_hash
 REGISTRY = json.loads(
     Path(__file__).with_name("registry.json").read_text(encoding="utf-8")
 )
+REGISTRIES = {
+    1: REGISTRY,
+    2: json.loads(
+        Path(__file__).with_name("registry-v2.json").read_text(encoding="utf-8")
+    ),
+}
 SHA = re.compile(r"[0-9a-f]{64}")
 
 
@@ -47,7 +53,7 @@ def proof_scope(doc, seeds, adjacency=None):
     semantic = {
         id_: targets
         for id_, targets in adjacency.items()
-        if doc.records[id_].kind not in "EPTJN"
+        if doc.records[id_].kind not in ("EPTJNV" if doc.format == 2 else "EPTJN")
     }
     return set(
         closure(
@@ -141,9 +147,10 @@ def validate(doc, root=None):
     encode(
         doc
     )  # Check wire-representable values and resource bounds, even for programmatic input.
+    registry = REGISTRIES[doc.format]
     for id_, record in doc.records.items():
-        _require(record.kind in REGISTRY["kinds"], "unknown_kind", record.kind)
-        fields = dict(REGISTRY["common"], **REGISTRY["kinds"][record.kind]["fields"])
+        _require(record.kind in registry["kinds"], "unknown_kind", record.kind)
+        fields = dict(registry["common"], **registry["kinds"][record.kind]["fields"])
         for name in record.fields:
             _require(name in fields, "unknown_field", f"{id_}.{name}")
         for name, spec in fields.items():
@@ -161,7 +168,9 @@ def validate(doc, root=None):
     _dag(doc)
     adjacency = edges(doc)
     semantic = {
-        id_ for id_, record in doc.records.items() if record.kind not in "EPTJN"
+        id_
+        for id_, record in doc.records.items()
+        if record.kind not in ("EPTJNV" if doc.format == 2 else "EPTJN")
     }
     proof_edges = {
         id_: targets & semantic for id_, targets in adjacency.items() if id_ in semantic
@@ -274,7 +283,7 @@ def validate(doc, root=None):
                         "evidence_context",
                         f"{id_}: bind artifact {target} and its full contract/reference closure",
                     )
-        if record.kind == "T":
+        if record.kind == "T" and doc.format == 1:
             _require(bool(f["dc"]), "task_decision", id_)
             if f["st"].value in ("active", "done"):
                 for method in f["kn"]:
@@ -329,11 +338,28 @@ def validate(doc, root=None):
                 except UnicodeError as error:
                     raise PixlError("source_encoding", id_) from error
                 _require(f["ln"][1] <= count, "source_range", id_)
+    if doc.format == 2:
+        from . import delivery, families, jobs, lifecycle
+
+        families.validate(doc)
+        lifecycle.validate(doc, scope, bound)
+        jobs.validate(doc, root)
+        delivery.validate(doc, root)
     return doc
 
 
 def ready(doc):
     validate(doc)
+    if doc.format == 2:
+        from . import lifecycle
+
+        return sorted(
+            id_
+            for id_, r in doc.records.items()
+            if r.kind == "T"
+            and r.fields["st"].value == "open"
+            and not lifecycle.blockers(doc, id_)
+        )
     return sorted(
         id_
         for id_, r in doc.records.items()
@@ -361,7 +387,11 @@ def context(doc, focus, budget=None):
         if r.kind in ("J", "N") and focus in set(refs(r.fields)):
             seeds.add(id_)
     selected = closure(edges(doc), seeds)
-    packet = Document(doc.revision, {id_: doc.records[id_] for id_ in sorted(selected)})
+    packet = Document(
+        doc.revision,
+        {id_: doc.records[id_] for id_ in sorted(selected)},
+        format=doc.format,
+    )
     required = len(encode(packet))
     if budget is not None:
         _require(

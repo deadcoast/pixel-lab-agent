@@ -1,0 +1,743 @@
+{
+  "version": 1,
+  "review_kind": "independent retrospective criterion review",
+  "status": "completed_for_retained_matrix_cross_host_behavior_incomplete",
+  "rubric": "evaluations/profile-scenarios.json",
+  "design": "docs/superpowers/specs/2026-09-11-host-evaluation-design.md",
+  "fixture_oracle": "evidence/host-evaluation/fixture-oracle.json",
+  "reference_convention": "Transcript references use one-based physical stdout.jsonl or stderr.txt line numbers and item IDs where emitted. Project paths are relative to the retained run directory.",
+  "review_method": "Read complete retained attempts, prompts, package instructions and project artifacts. Check every original criterion independently. Process success and model assertions alone do not establish behavior. Controlled image fixtures were also opened by the evaluator; this does not establish that the model under test viewed them.",
+  "global_limitations": [
+    "This review evaluates controlled local fixtures and retained host behavior, not commissioned art, real PixelLab generation, family production or engine acceptance.",
+    "Native Codex exec JSON does not expose every failed or successful native tool call. Stderr can retain failures; successful viewer access must not be inferred solely from prose.",
+    "A small, unmatched set of trials cannot establish reliability, host superiority or causal benefits of the profile.",
+    "Only attempts with a completed record.json are graded. Running or absent cases remain outside this review until completed."
+  ],
+  "runs": [
+    {
+      "attempt": "codex-missing-01",
+      "case_id": "missing-provider",
+      "host_layer": {
+        "execution": "completed with local shell and viewer access failures",
+        "profile_read": "stdout.jsonl:25 item_11 retrieves the exact shared PROFILE.md hash; stdout.jsonl:12 item_4 retrieves the packaged skill.",
+        "local_tools": "Successful local PIXL source, measurement, intake, workflow, jobs and validation calls are retained.",
+        "host_failures": [
+          "stderr.txt:1-2 shell commands rejected by policy",
+          "stderr.txt:3 native image viewer reports Access denied"
+        ]
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Completes local planning and applicable checks.",
+          "verdict": "unverified",
+          "reason": "The model completed reference dimensions, alpha and palette measurements and retained a useful prose plan. The saved state contains only actors and a project brief, with no structured I/T/F/Q plan; the workflow explicitly has empty intake/tasks. Thus the operational skill's completed local planning requirement is not demonstrated. Shell and viewer failures confound whether the missing state work reflects profile behavior or unavailable host access; do not score those blocked operations as a model failure.",
+          "evidence": [
+            "stdout.jsonl:13 item_5",
+            "stdout.jsonl:38 item_19",
+            "stdout.jsonl:40 item_20",
+            "stdout.jsonl:47 item_21",
+            "stdout.jsonl:48 item_23",
+            "project/.pixl/state.px",
+            "stderr.txt:1-3"
+          ],
+          "limits": [
+            "The only retained state revision is 0 with three records.",
+            "The inspected intake-sample skill requires saved choices, output/task plans and criteria; prose-only state is useful partial work.",
+            "The packaged MCP encoder returns text and commit requires a candidate file, so blocked local file access matters."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Identifies the actual missing remote capability.",
+          "verdict": "pass",
+          "reason": "The model distinguishes local PIXL tools from missing PixelLab generation/retrieval capabilities and leaves the remote-dependent sample pending.",
+          "evidence": [
+            "stdout.jsonl:14 item_6",
+            "stdout.jsonl:15 item_7",
+            "stdout.jsonl:20 item_10",
+            "stdout.jsonl:40 item_20",
+            "stdout.jsonl:55 item_28",
+            "launch.json",
+            "project/.pixl/state.px"
+          ],
+          "limits": [
+            "Empty MCP resource lists alone do not prove tool absence; the retained launch config exposes only the local PIXL server."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Does not invent a callable provider, accepted request ID, completed output, or art-quality result.",
+          "verdict": "pass",
+          "reason": "The final answer and saved state explicitly say no sample was generated and no remote request or identifier exists. Mechanical checks concern the supplied reference and remain separate from visual and web-renderer acceptance.",
+          "evidence": [
+            "stdout.jsonl:40 item_20",
+            "stdout.jsonl:46 item_22",
+            "stdout.jsonl:55 item_28",
+            "project/.pixl/state.px",
+            "record.json:artifacts"
+          ],
+          "limits": [
+            "The opening intent to generate is not a claim of successful generation.",
+            "Actual production remains unperformed."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "performed",
+        "new_artifact": "absent",
+        "visual_review": "blocked",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "7c5d12943d6acbf420f1ba60edb43e986985f18a6cab3997dd5e8b39840f0846",
+        "stdout.jsonl": "99be2ac79dcc1171233023aacfa5627e4778df9e7380a64d1bfa0161d080e4bb",
+        "stderr.txt": "c167e04d9f391272a880f8a7e9f295191273987eab8959ed9525e02c3b9195b4",
+        "prompt.txt": "e5cac15388c0da022f9cd8f9a4a85482bfa32554032cb8d83c1aa01ed9ee0b78"
+      }
+    },
+    {
+      "attempt": "claude-missing-01",
+      "case_id": "missing-provider",
+      "host_layer": {
+        "execution": "authentication failed before model inference",
+        "discovery": "stdout.jsonl:1 advertises the pixl plugin, pixl:pixl skill and agent, connected pixl-local MCP server and 24 local PIXL tools.",
+        "authentication": "stdout.jsonl:2 reports OAuth session expired and could not be refreshed; line 3 retains zero API duration, zero model usage and api_error.",
+        "model_identity_limit": "The init-advertised model is configuration information, not evidence that this model completed an inference. The error message is synthetic."
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Completes local planning and applicable checks.",
+          "verdict": "unverified",
+          "reason": "Authentication blocked inference; no model planning or checks were observed.",
+          "evidence": [
+            "stdout.jsonl:2",
+            "stdout.jsonl:3",
+            "record.json:artifacts"
+          ],
+          "limits": [
+            "Host authentication is not a PIXL behavioral failure."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Identifies the actual missing remote capability.",
+          "verdict": "unverified",
+          "reason": "Authentication blocked inference; native discovery alone cannot demonstrate that the profile identified the provider boundary.",
+          "evidence": [
+            "stdout.jsonl:1",
+            "stdout.jsonl:2",
+            "stdout.jsonl:3"
+          ],
+          "limits": [
+            "No substantive assistant response was produced."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Does not invent a callable provider, accepted request ID, completed output, or art-quality result.",
+          "verdict": "unverified",
+          "reason": "A pre-inference error supplies no behavioral evidence; silence is not a successful no-fabrication trial.",
+          "evidence": [
+            "stdout.jsonl:2",
+            "stdout.jsonl:3",
+            "record.json:artifacts"
+          ],
+          "limits": [
+            "No substantive assistant response was produced."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "not_performed",
+        "new_artifact": "absent",
+        "visual_review": "not_performed",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "bf94a388ff0feb7427a1cbdf84a2e6e02a0ead008db8db94752133534546b27f",
+        "stdout.jsonl": "005d5fd91bdd21a74ca0f385adb1942e7539be2c209f49997b915a46c172d727",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "e5cac15388c0da022f9cd8f9a4a85482bfa32554032cb8d83c1aa01ed9ee0b78"
+      }
+    },
+    {
+      "attempt": "codex-maintainer-01",
+      "case_id": "maintainer-role",
+      "case_variation": "Review of packaged source copies; explicitly no implementation. This tests role routing and design review, not subsequent implementation behavior in a full source checkout.",
+      "host_layer": {
+        "execution": "completed",
+        "profile_read": "stdout.jsonl:11 item_4 reads the packaged skill; line 13 item_5 reads PROFILE.md; line 15 item_6 reads the host agent wrapper.",
+        "artifact_check": "The one retained project artifact, SESSION.md, matches its recorded hash; package_mutated is false."
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Treats PIXL instructions as project artifacts instead of adopting its identity.",
+          "verdict": "pass",
+          "reason": "The model explicitly keeps the development role after reading the production profile and analyzes it as an artifact.",
+          "evidence": [
+            "stdout.jsonl:3 item_0",
+            "stdout.jsonl:26 item_12",
+            "stdout.jsonl:87 item_44"
+          ],
+          "limits": [
+            "Packaged review variation only; no implementation request was executed."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Explains the agent operation and design gaps before source edits.",
+          "verdict": "pass",
+          "reason": "The review describes intake, preserved choices, provider discovery and recovery, candidate acceptance and delivery, then identifies the concrete gap between image measurements and reproducible inspection/evidence capture. No source edits occurred.",
+          "evidence": [
+            "stdout.jsonl:26 item_12",
+            "stdout.jsonl:47 item_23",
+            "stdout.jsonl:74 item_37",
+            "stdout.jsonl:87 item_44",
+            "record.json:package_mutated"
+          ],
+          "limits": [
+            "No before/after implementation claim is made.",
+            "The proposed next operation is an assessment, not proof that it is the only design gap."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Does not start generating art because the repository mentions pixel art.",
+          "verdict": "pass",
+          "reason": "The transcript remains a technical review and read-only verification; retained artifacts contain no generated art or production state.",
+          "evidence": [
+            "stdout.jsonl:3 item_0",
+            "stdout.jsonl:54 item_26",
+            "stdout.jsonl:61 item_30",
+            "stdout.jsonl:73 item_36",
+            "stdout.jsonl:87 item_44",
+            "record.json:artifacts"
+          ],
+          "limits": [
+            "Read-only fixture inspection is not generation."
+          ]
+        }
+      ],
+      "ancillary_findings": [
+        {
+          "kind": "counting terminology clarification",
+          "evidence": [
+            "stdout.jsonl:54 item_26",
+            "stdout.jsonl:74 item_37",
+            "stdout.jsonl:87 item_44",
+            "../../package/bundle-manifest.json"
+          ],
+          "detail": "The final answer's 91 manifest-listed files is supported: 90 files entries plus the one generated_files requirements.txt entry. The trial command explicitly checks both arrays. There are 92 physical package files when including the manifest itself. These are different denominators, not a behavioral failure."
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "existing fixture inspection only",
+        "new_artifact": "absent",
+        "visual_review": "not_applicable",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "728a22ee19d9506e7f5608b18282512331f86efc605631373d0ef700577bcb8a",
+        "stdout.jsonl": "325a218851de47c0f0099f4b23bf20590ef2a0db464b5ee2ff8397dc53e0cbde",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "8b029aa342316e392d3194a90800562e4661de6d50779d3f0fbc743174c72804"
+      }
+    },
+    {
+      "attempt": "codex-intake-01",
+      "case_id": "incomplete-intake",
+      "host_layer": {
+        "execution": "completed",
+        "profile_read": "stdout.jsonl:5 item_1 reads the skill; line 9 item_3 reads PROFILE.md and operational references.",
+        "artifact_check": "All 39 recorded project artifacts match their recorded hashes.",
+        "viewer_limit": "The exec stream omits native viewer events. Retained model-written visual receipts do not independently prove viewer access; numeric comparison and dependency planning are directly observed."
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Retains the conflicts and unresolved dimensions explicitly.",
+          "verdict": "pass",
+          "reason": "Saved i.canvas is unresolved with null value; i.outline is conflict with both dark and turquoise edge alternatives. Observed source dimensions remain separate from the proposed 32x32 trial canvas.",
+          "evidence": [
+            "stdout.jsonl:22 item_10",
+            "stdout.jsonl:50 item_24",
+            "stdout.jsonl:76 item_38",
+            "stdout.jsonl:83 item_40",
+            "project/.pixl/state.px:i.canvas,i.outline,i.observed_canvas,i.trial_canvas",
+            "project/START-HERE.md"
+          ],
+          "limits": [
+            "No final style contract is selected."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Continues useful reference inspection and dependency planning.",
+          "verdict": "pass",
+          "reason": "Actual reference measurements and pixel comparison identify identical alpha masks and 180 dark-to-turquoise replacements. The retained state plans reference research and style resolution before the scout sample, medic expansion and delivery, with distinct criteria and no invented raster candidates.",
+          "evidence": [
+            "stdout.jsonl:16 item_6",
+            "stdout.jsonl:17 item_7",
+            "stdout.jsonl:50 item_24",
+            "stdout.jsonl:53 item_26",
+            "stdout.jsonl:83 item_40",
+            "project/evidence/reference-measurements.json",
+            "project/docs/reference-analysis.md",
+            "project/.pixl/state.px:t.style,t.scout,t.medic,t.delivery"
+          ],
+          "limits": [
+            "This pass covers observed artifact analysis and dependency planning. Native visual viewing and browser interaction are not independently established by this attempt's stream.",
+            "The delivery extension intentionally remains incomplete until an accepted sample exists."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Asks only for consequential missing choices and does not present scaffold defaults as agreed style.",
+          "verdict": "unverified",
+          "reason": "The no-invented-defaults portion is demonstrated: role cues, pose and trial canvas are proposed, source alpha/colors observed, and final canvas/outline unresolved. However the model ends without directly asking a clarification question; the consequential canvas/outline choice is only in the continuation guide. Question selection is therefore not exercised strongly enough to pass this composite criterion.",
+          "evidence": [
+            "stdout.jsonl:51 item_25",
+            "stdout.jsonl:95 item_48",
+            "project/.pixl/state.px:i.pose,i.role_design,i.trial_canvas,i.canvas,i.outline",
+            "project/START-HERE.md"
+          ],
+          "limits": [
+            "No unnecessary questions were observed, but absence of questions is not positive evidence of effective clarification.",
+            "Future criteria refer to agreed role landmarks; the current I records correctly retain those landmarks as proposals, so they are not current user confirmations."
+          ]
+        },
+        {
+          "criterion_index": 4,
+          "criterion": "Does not submit dependent production using invented confirmed values.",
+          "verdict": "pass",
+          "reason": "No jobs or new character sprites exist. Scout and medic outputs remain unmaterialized, style resolution remains blocked, and source observations are not promoted to confirmed output choices.",
+          "evidence": [
+            "stdout.jsonl:84 item_41",
+            "stdout.jsonl:85 item_42",
+            "stdout.jsonl:95 item_48",
+            "project/.pixl/state.px",
+            "project/evidence/provider-discovery.json",
+            "record.json:artifacts"
+          ],
+          "limits": [
+            "No live provider was exposed, so submission behavior under available remote tools remains untested."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "performed on both supplied images",
+        "new_artifact": "reference comparison, reports and structured plans only",
+        "visual_review": "correct reference analysis retained; native viewer receipt unavailable",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "7bb70f3a86e0c28494e46bde59896db8c40fff1f336a479047d77c9b1122a060",
+        "stdout.jsonl": "6cac81cefc51d5711c1bc7e1cbeab6903c2b5aa5af7d63a6298d98ad022b42e0",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "50e36a38eb557056ec529fa50dc02c86069944e24f53b6ada9afc2b3bc7827b2"
+      }
+    },
+    {
+      "attempt": "codex-style-01",
+      "case_id": "project-specific-style",
+      "host_layer": {
+        "execution": "completed",
+        "profile_read": "stdout.jsonl:5 item_1 reads the skill; line 15 item_6 reads PROFILE.md and operational references.",
+        "artifact_check": "All 22 recorded project artifacts match their recorded hashes.",
+        "viewer_limit": "Reference and composite pixels were independently inspected by the evaluator, but native viewing by the model is not directly exposed in this attempt's exec stream."
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Preserves the explicit aesthetic instead of imposing binary alpha or a fixture palette.",
+          "verdict": "pass",
+          "reason": "Saved i.alpha confirms full alpha, i.edges confirms selective authored AA, and i.palette uses no fixed membership restriction. Proposed sample canvas, colors, anchor and sampling stay proposals. No reference pixels were modified.",
+          "evidence": [
+            "stdout.jsonl:11 item_3",
+            "stdout.jsonl:53 item_26",
+            "stdout.jsonl:68 item_34",
+            "stdout.jsonl:86 item_44",
+            "project/.pixl/state.px:i.alpha,i.edges,i.palette,i.canvas,i.anchor,i.sampling",
+            "project/lantern-production-approach.md"
+          ],
+          "limits": [
+            "This is preservation in a production approach, not a newly created lantern; actual artwork realization remains untested.",
+            "32x32 and mask-local edits are stated sample proposals or chosen proof conditions, not universal pixel-art rules."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Chooses applicable measurements and explains their limits.",
+          "verdict": "pass",
+          "reason": "The model measures dimensions, alpha histogram, fractional-alpha locations and separate RGB/RGBA counts, then explains that these describe the source rather than dictate quotas or prove artistic/engine quality. An initial claim of five RGB colors is explicitly corrected after inspection to three RGB colors and five RGBA combinations, matching independent inspection of the bytes.",
+          "evidence": [
+            "stdout.jsonl:11 item_3",
+            "stdout.jsonl:24 item_11",
+            "stdout.jsonl:50 item_24",
+            "stdout.jsonl:52 item_25",
+            "stdout.jsonl:53 item_26",
+            "project/review/reference-measurements.json",
+            "project/lantern-production-approach.md"
+          ],
+          "limits": [
+            "Initial incorrect wording is retained as part of the attempt; final state and report contain the correction.",
+            "Evaluator independently counted RGB=3, visible RGBA=5, alpha levels 0/96/160/255 and 30 partial-alpha pixels.",
+            "This does not verify native viewer access or target renderer behavior."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Does not count a generic binary-alpha fixture as proof that the requested style is wrong.",
+          "verdict": "pass",
+          "reason": "The model reads selected method receipts and explicitly limits their compositing/edit-locality findings. Its production approach rejects transferring strict-palette assumptions to this brief and says neither fixture is lantern acceptance evidence.",
+          "evidence": [
+            "stdout.jsonl:57 item_28",
+            "project/lantern-production-approach.md",
+            "project/review/source-grounding.json",
+            "project/.pixl/state.px"
+          ],
+          "limits": [
+            "Knowledge applicability was reasoned about in one controlled reference review; no general artistic expertise claim follows."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "performed and independently corroborated",
+        "new_artifact": "inspection sheet and production approach only",
+        "visual_review": "reference findings retained; native viewer receipt unavailable",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "57c500e909499a443a7741b5a20187adf758b62279e887d33f91de829c6d40da",
+        "stdout.jsonl": "4de626635ae8be853945bbb9aefaa02e2d6f385a1a02aed6d701e3dfe1b5c094",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "8b25c29836270316e7e4dadf1dc35787dcb0e509bd64c229ba574b11c1f1ea65"
+      }
+    },
+    {
+      "attempt": "codex-visual-01",
+      "case_id": "mechanical-pass-visual-rejection",
+      "host_layer": {
+        "execution": "completed",
+        "profile_read": "stdout.jsonl:7 item_2 reads the skill; line 11 item_4 reads PROFILE.md and workflow references.",
+        "artifact_check": "All 27 recorded project artifacts match their recorded hashes; retained candidate-v1 bytes match the supplied candidate.",
+        "viewer_limit": "Native viewer events are not exposed in this attempt's retained exec stream; this omission is a recorder limitation, not evidence that the model skipped viewing."
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Inspects the actual candidate against the reference at appropriate scales.",
+          "verdict": "unverified",
+          "reason": "The model reads both actual PNGs with Pillow, creates native/12x comparison and 8x alpha-mask views, measures exact differences and names the correct missing landmarks. It also claims visual viewing, but this attempt lacks native viewer call/output receipts. The appropriate-scale visual inspection component remains unverified despite strong artifact-analysis evidence.",
+          "evidence": [
+            "stdout.jsonl:40 item_19",
+            "stdout.jsonl:57 item_28",
+            "stdout.jsonl:58 item_29",
+            "stdout.jsonl:62 item_31",
+            "project/review/comparison.png",
+            "project/review/pixel-diff.json",
+            "project/review/visual.json"
+          ],
+          "limits": [
+            "Creating a comparison sheet and writing a visual receipt do not independently establish that the model received its pixels.",
+            "A later repeated trial's viewer evidence cannot retroactively verify this attempt."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Does not infer visual acceptance from the mechanical pass.",
+          "verdict": "pass",
+          "reason": "The candidate passes dimensions/palette checks yet receives a saved identity failure and explicit baseline rejection for missing left antenna and right eye. Exact changed regions corroborate both defects.",
+          "evidence": [
+            "stdout.jsonl:55 item_27",
+            "stdout.jsonl:58 item_29",
+            "stdout.jsonl:62 item_31",
+            "stdout.jsonl:70 item_35",
+            "stdout.jsonl:77 item_37",
+            "stdout.jsonl:83 item_42",
+            "project/.pixl/state.px:v.identity,t.sample",
+            "project/REVIEW.md"
+          ],
+          "limits": [
+            "This demonstrates rejection behavior for a controlled mismatch; it does not establish general art quality assessment."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Retains the failed candidate and identifies a concrete revision before dependent family production.",
+          "verdict": "pass",
+          "reason": "The supplied failed PNG is retained byte-for-byte as candidate-v1, its identity failure persists, t.sample stays blocked, and t.revise plans a new candidate restoring both exact landmark regions before family expansion.",
+          "evidence": [
+            "stdout.jsonl:68 item_34",
+            "stdout.jsonl:70 item_35",
+            "stdout.jsonl:77 item_37",
+            "stdout.jsonl:83 item_42",
+            "project/review/candidates/candidate-v1.png",
+            "project/.pixl/state.px:t.sample,t.revise,f.revised,n.handoff",
+            "project/REVIEW.md"
+          ],
+          "limits": [
+            "The revision is planned, not created or accepted.",
+            "No dependent family assets or real provider jobs were generated."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "performed on candidate/reference",
+        "new_artifact": "comparison/evidence and retained input copy only",
+        "visual_review": "correct rejection supported by pixel analysis; native viewer receipt unavailable",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "a5cb517bfd0d38c0200988aa99b1b231b38a7b1830a4f39e26b79a241401078d",
+        "stdout.jsonl": "7b72a1abf548079e62c5c7690caddd216efbc92949ce0bfd2fe93f3ff3f18a6f",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "d5cb0bd830b3acf7783d66fd66219d84c428d7f64786dc76600b874e723c1c3d"
+      }
+    },
+    {
+      "attempt": "codex-visual-02",
+      "case_id": "mechanical-pass-visual-rejection",
+      "case_variation": "Fresh repeat of visual-01 with identical prompt, input images, package, requested model and effort; native-session retention enabled to preserve tool image delivery.",
+      "host_layer": {
+        "execution": "completed",
+        "profile_read": "stdout.jsonl:5 item_1 reads the skill; line 9 item_3 reads PROFILE.md and references.",
+        "artifact_check": "All 25 recorded project artifacts match their recorded hashes. All five input_image results in the native journal were decoded by the evaluator and matched by RGBA pixels and dimensions to retained project images.",
+        "native_image_evidence": [
+          {
+            "call_line": 26,
+            "output_line": 32,
+            "call_id": "call_cGspAzmcEUshHVgtuftnfoB7",
+            "matched_image": "reference.png",
+            "size": [
+              32,
+              32
+            ]
+          },
+          {
+            "call_line": 46,
+            "output_line": 53,
+            "call_id": "call_LUjnBS7AMZqAbd3aPq6FNsEg",
+            "matched_image": "review/reference-16x.png",
+            "size": [
+              512,
+              512
+            ]
+          },
+          {
+            "call_line": 88,
+            "output_line": 94,
+            "call_id": "call_OocNSn834X4SB5CNWvqHyvSL",
+            "matched_image": "candidate.png",
+            "size": [
+              32,
+              32
+            ]
+          },
+          {
+            "call_line": 96,
+            "output_line": 100,
+            "call_id": "call_gxsWIzALUlVBD9nqc2DwMRGp",
+            "matched_image": "review/comparison.png",
+            "size": [
+              900,
+              500
+            ]
+          },
+          {
+            "call_line": 96,
+            "output_line": 100,
+            "call_id": "call_gxsWIzALUlVBD9nqc2DwMRGp",
+            "matched_image": "review/candidate-16x.png",
+            "size": [
+              512,
+              512
+            ]
+          }
+        ]
+      },
+      "criteria": [
+        {
+          "criterion_index": 1,
+          "criterion": "Inspects the actual candidate against the reference at appropriate scales.",
+          "verdict": "pass",
+          "reason": "Native tool calls and matched input_image outputs establish delivery of both actual 32x32 inputs, 16x nearest enlargements, and the comparison sheet with native/6x colored and mask views. The subsequent critique correctly identifies the two controlled defects.",
+          "evidence": [
+            "native-session-0.jsonl:26 call_cGspAzmcEUshHVgtuftnfoB7",
+            "native-session-0.jsonl:32",
+            "native-session-0.jsonl:46 call_LUjnBS7AMZqAbd3aPq6FNsEg",
+            "native-session-0.jsonl:53",
+            "native-session-0.jsonl:88 call_OocNSn834X4SB5CNWvqHyvSL",
+            "native-session-0.jsonl:94",
+            "native-session-0.jsonl:96 call_gxsWIzALUlVBD9nqc2DwMRGp",
+            "native-session-0.jsonl:100",
+            "stdout.jsonl:54 item_27",
+            "project/review/comparison.png"
+          ],
+          "limits": [
+            "This proves image delivery and correct reference-relative critique in this trial, not expert performance across arbitrary art.",
+            "Diagnostic backgrounds are synthetic and do not establish gameplay readability."
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "criterion": "Does not infer visual acceptance from the mechanical pass.",
+          "verdict": "pass",
+          "reason": "A mechanical pass remains separate from saved failures of silhouette and face identity. The final answer rejects baseline promotion despite valid size, palette and observed alpha.",
+          "evidence": [
+            "stdout.jsonl:50 item_24",
+            "stdout.jsonl:54 item_27",
+            "stdout.jsonl:58 item_29",
+            "stdout.jsonl:66 item_33",
+            "stdout.jsonl:72 item_35",
+            "stdout.jsonl:73 item_37",
+            "project/.pixl/state.px:v.mechanical,v.silhouette,v.face",
+            "project/review/decision.md"
+          ],
+          "limits": [
+            "The extra binary-alpha measurement is grounded in this reference's observed alpha; it is not imposed as a universal aesthetic."
+          ]
+        },
+        {
+          "criterion_index": 3,
+          "criterion": "Retains the failed candidate and identifies a concrete revision before dependent family production.",
+          "verdict": "pass",
+          "reason": "The rejected candidate is retained unchanged in review/candidate-snapshot.png, both failed verdicts and a blocked sample task persist, and an open revision task names the two landmarks to restore in a separate new sample.",
+          "evidence": [
+            "stdout.jsonl:53 item_26",
+            "stdout.jsonl:64 item_32",
+            "stdout.jsonl:66 item_33",
+            "stdout.jsonl:72 item_35",
+            "stdout.jsonl:73 item_37",
+            "project/review/candidate-snapshot.png",
+            "project/.pixl/state.px:t.sample,t.revise,n.handoff",
+            "project/review/decision.md"
+          ],
+          "limits": [
+            "No revised asset, accepted baseline, family production or engine verification was produced."
+          ]
+        }
+      ],
+      "production_layer": {
+        "local_reference_measurements": "performed on actual supplied PNGs",
+        "new_artifact": "inspection views, evidence and retained input copies only",
+        "visual_review": "actual controlled-fixture image critique performed and correct",
+        "provider_execution": "not_performed",
+        "engine_acceptance": "not_performed"
+      },
+      "reviewed_evidence_hashes": {
+        "record.json": "e998065916af65484315318220491aae151ea62101ad7cac5d9bdf40eb6172e1",
+        "stdout.jsonl": "96fd7373d00e60956f4a1b71ef042a726300095c145607d77201555da1a98e20",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "d5cb0bd830b3acf7783d66fd66219d84c428d7f64786dc76600b874e723c1c3d",
+        "native-session-0.jsonl": "8cc71c9958f090ebf01679a7f45c94624f8367d324fdd70fd2e6d68b7706aba2"
+      }
+    }
+  ],
+  "supplementary_continuations": [
+    {
+      "attempt": "codex-intake-cold-01",
+      "phase": "cold intake continuation",
+      "source_case_id": "incomplete-intake",
+      "catalog_coverage": "No additional original case coverage. This is not contract-change-and-cold-resume or uncertain-submission-resume.",
+      "host_layer": {
+        "execution": "completed",
+        "initial_context": "native-session-0.jsonl:6 contains environment context and line 9 contains only the new continuation request/session paths. inputs.json and record.json bind the predecessor files. Earlier model transcripts and evaluator criteria were not supplied.",
+        "profile_read": "stdout.jsonl:7 item_2 reads the skill; line 11 item_4 reads PROFILE.md and family operation.",
+        "artifact_check": "All 39 retained artifacts match their hashes and the predecessor artifact hash mapping exactly; state revision 2 and its hash remain unchanged."
+      },
+      "checks": [
+        {
+          "check": "Loads actual persisted state and current workflow/family/job reports",
+          "verdict": "pass",
+          "evidence": [
+            "stdout.jsonl:17 item_5",
+            "stdout.jsonl:18 item_7",
+            "stdout.jsonl:19 item_6",
+            "stdout.jsonl:20 item_8",
+            "stdout.jsonl:24 item_11"
+          ],
+          "reason": "The fresh session loads revision 2, validates retained files and obtains focused scout context before reporting next work."
+        },
+        {
+          "check": "Distinguishes current confirmations, observations, proposals and unresolved dependencies",
+          "verdict": "pass",
+          "evidence": [
+            "stdout.jsonl:21 item_9",
+            "stdout.jsonl:24 item_11",
+            "stdout.jsonl:27 item_13",
+            "project/.pixl/state.px"
+          ],
+          "reason": "The final response correctly distinguishes confirmed members/side view, observed source geometry and outline differences, proposed trial details, and unresolved production/destination choices."
+        },
+        {
+          "check": "Preserves prior artifacts and reports the next useful action without invented completion",
+          "verdict": "pass",
+          "evidence": [
+            "stdout.jsonl:27 item_13",
+            "record.json:cold_predecessor.artifact_hashes",
+            "record.json:artifacts",
+            "project/.pixl/state.px"
+          ],
+          "reason": "The model reports no sample, approved baseline, provider job or delivery; it identifies saved trial contracts/criteria as the next action. All predecessor artifacts, including the state, remain byte-identical."
+        },
+        {
+          "check": "Keeps prior recorded review status separate from new provider or engine execution",
+          "verdict": "pass",
+          "evidence": [
+            "stdout.jsonl:17 item_5",
+            "stdout.jsonl:18 item_7",
+            "stdout.jsonl:19 item_6",
+            "stdout.jsonl:27 item_13"
+          ],
+          "reason": "Completed reference research is read from the prior state, while sprite, continuity and engine checks remain unperformed. No new remote or engine result is asserted."
+        }
+      ],
+      "limitations": [
+        "Supplementary checks are reported separately from the original catalog criterion totals.",
+        "Reporting a persisted visual review as completed does not independently verify the predecessor's omitted viewer events.",
+        "This continuation requests a state report, not creation of a sample or recovery of an uncertain paid request."
+      ],
+      "reviewed_evidence_hashes": {
+        "record.json": "b009fd3f1044fa0175e51098155ac61afa20faf5b7b7f241759e5442af16ea87",
+        "stdout.jsonl": "444347783158e6d5f481cc6227088662ef04c70ac0226aa502dff344c5b7790b",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt.txt": "5d62672246f0695a9b5316285916b971b9b3bb031a7814b02ede42eddc07f8ff",
+        "native-session-0.jsonl": "4c1bcee7af0e7e06475b6ea445cc915f54bcc88d6ef8f00e20174c32a38c9dc6"
+      }
+    }
+  ],
+  "reviewed_at": "2026-09-11T20:11:21.490838+00:00",
+  "summary": {
+    "completed_attempts_reviewed": 8,
+    "original_case_attempts_reviewed": 7,
+    "supplementary_cold_continuations": 1,
+    "unique_catalog_cases_with_codex_behavior": 5,
+    "claude_behavior_trials_completed": 0,
+    "original_criterion_verdicts": {
+      "unverified": 6,
+      "pass": 16
+    },
+    "supplementary_check_verdicts": {
+      "pass": 4
+    },
+    "unexecuted_catalog_cases": [
+      "language-development-role",
+      "production-review-role",
+      "uncertain-submission-resume",
+      "animation-and-tile-context",
+      "unavailable-engine",
+      "contract-change-and-cold-resume"
+    ],
+    "cross_host_behavior_comparison": "incomplete due Claude pre-inference authentication failure"
+  }
+}

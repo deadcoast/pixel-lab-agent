@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from . import assets, catalog, codec, graph, store
+from . import assets, catalog, codec, graph, jobs, store
 from .codec import PixlError
 
 
@@ -82,6 +82,18 @@ def knowledge(method=None):
     }
 
 
+def source_inventory(root=None):
+    from .sources import load_inventory
+
+    selected = resource_root() if root is None else Path(root).resolve()
+    return dict(
+        load_inventory(selected),
+        root=str(selected),
+        files_verified=True,
+        authority="Declared source revisions; local byte identity verified, not external truth.",
+    )
+
+
 def from_data(value):
     if isinstance(value, list):
         return [from_data(v) for v in value]
@@ -120,13 +132,13 @@ def capability_index(name=None):
 def from_json(data):
     if (
         not isinstance(data, dict)
-        or set(data) != {"revision", "records"}
+        or set(data) not in ({"revision", "records"}, {"format", "revision", "records"})
         or not isinstance(data["records"], list)
     ):
         raise PixlError(
             "document_shape", "expected {revision, records:[{id,kind,fields}]}"
         )
-    doc = codec.Document(data["revision"])
+    doc = codec.Document(data["revision"], format=data.get("format", 1))
     for row in data["records"]:
         if not isinstance(row, dict) or set(row) != {"id", "kind", "fields"}:
             raise PixlError(
@@ -158,6 +170,7 @@ def inspect_document(path, root=None):
     graph.validate(doc, root)
     return {
         "valid": True,
+        "format": doc.format,
         "revision": doc.revision,
         "hash": codec.digest(doc),
         "records": len(doc.records),
@@ -166,6 +179,71 @@ def inspect_document(path, root=None):
             id_: codec.record_hash(r) for id_, r in sorted(doc.records.items())
         },
     }
+
+
+def workflow(path, root=None):
+    from . import lifecycle
+
+    doc = load_document(path)
+    graph.validate(doc, root)
+    if doc.format != 2:
+        raise PixlError(
+            "lifecycle_format",
+            "workflow requires PX2; PX1 state retains its original rules",
+        )
+    return dict(
+        lifecycle.report(doc),
+        format=2,
+        revision=doc.revision,
+        hash=codec.digest(doc),
+        files_verified=root is not None,
+    )
+
+
+JOB_REQUEST_FIELDS = (
+    "provider",
+    "tool",
+    "arguments",
+    "schema",
+    "discovery",
+    "authorization",
+)
+
+
+def job_prepare(folder, expected, job_id, task_id, outputs, request, root=None):
+    """Validate the request envelope before publishing durable provider intent."""
+    if not isinstance(request, dict) or set(request) != set(JOB_REQUEST_FIELDS):
+        raise PixlError(
+            "job_request",
+            "request must contain exactly provider, tool, arguments, schema, discovery and authorization",
+        )
+    return jobs.prepare(
+        folder,
+        expected,
+        job_id,
+        task_id,
+        outputs,
+        **request,
+        root=root,
+    )
+
+
+def job_report(path, root):
+    return jobs.report(load_document(path), root)
+
+
+def family_report(path, root, output_id=None):
+    """Verify retained family files and describe the current saved selection."""
+    from . import delivery
+
+    return delivery.report(load_document(path), root, output_id)
+
+
+def inspection_report(path, root, packet_id=None):
+    """Verify retained inspection data and report original conditions and reviews."""
+    from . import inspection
+
+    return inspection.report(load_document(path), root, packet_id)
 
 
 def call(name, args, root):
@@ -195,15 +273,106 @@ def call(name, args, root):
         return store.initialize(
             path("store"), root=root, name=args.get("name", "PIXL project")
         )
+    if name == "pixl_intake":
+        return store.initialize(
+            path("store"),
+            doc=store.intake_project(
+                args.get("name", "PIXL project"), args.get("brief", "")
+            ),
+            root=root,
+        )
+    if name == "pixl_workflow":
+        return workflow(path("path"), root)
+    if name == "pixl_inspection":
+        return inspection_report(path("path"), root, args.get("packet_id"))
+    if name == "pixl_inspection_prepare":
+        from . import inspection
+
+        return inspection.prepare(
+            path("store"),
+            args["expect"],
+            args["candidate_id"],
+            args["packet_id"],
+            args["options"],
+            root,
+        )
+    if name == "pixl_inspection_review":
+        from . import inspection
+
+        return inspection.review(
+            path("store"),
+            args["expect"],
+            args["packet_id"],
+            args["review_id"],
+            args["observation"],
+            root,
+        )
+    if name == "pixl_family":
+        return family_report(path("path"), root, args.get("output"))
+    if name == "pixl_family_snapshot":
+        from . import delivery
+
+        return delivery.snapshot(
+            path("store"),
+            args["expect"],
+            args["output_id"],
+            args["candidate_id"],
+            root,
+        )
+    if name == "pixl_job_prepare":
+        return job_prepare(
+            path("store"),
+            args["expect"],
+            args["job_id"],
+            args["task_id"],
+            args["outputs"],
+            {key: args[key] for key in JOB_REQUEST_FIELDS},
+            root,
+        )
+    if name == "pixl_job_dispatch":
+        return jobs.dispatch(path("store"), args["expect"], args["job_id"], root)
+    if name == "pixl_job_observe":
+        return jobs.observe(
+            path("store"),
+            args["expect"],
+            args["job_id"],
+            args["event"],
+            args["evidence"],
+            remote_id=args.get("remote_id"),
+            root=root,
+        )
+    if name == "pixl_job_import":
+        return jobs.import_artifact(
+            path("store"),
+            args["expect"],
+            args["job_id"],
+            args["output_id"],
+            args["candidate_id"],
+            args["path"],
+            args["evidence"],
+            root,
+        )
+    if name == "pixl_jobs":
+        return job_report(path("path"), root)
     if name == "pixl_commit":
         return store.commit(
             path("store"), load_document(path("candidate")), args["expect"], root=root
         )
     if name == "pixl_catalog":
         return catalog.build(root, args.get("paths"))
+    if name == "pixl_sources":
+        return source_inventory()
     if name == "pixl_source":
+        scope = args.get("scope", "project")
+        if scope not in ("project", "library"):
+            raise PixlError("source_scope", scope)
+        source_path = (
+            graph.confined(resource_root(), args["path"])
+            if scope == "library"
+            else path("path")
+        )
         return source_slice(
-            path("path"),
+            source_path,
             args["expect"],
             args["start"],
             args["end"],
