@@ -1,0 +1,24 @@
+BLE001 Do not catch blind exception: `Exception`
+   --> scripts\verify.py:262:13
+    |
+260 |         summary["stages"][summary["stage"]] = "pass"
+261 |         summary["status"] = "pass"
+262 |     except (Exception, KeyboardInterrupt, SystemExit) as error:
+    |             ^^^^^^^^^
+263 |         summary.update(status="fail", error=f"{type(error).__name__}: {error}")
+264 |         summary["stages"][summary["stage"]] = "fail"
+    |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests\test_verification.py:89:13
+   |
+87 |                   manifest + "\nprune training/original-docs\n", encoding="utf-8"
+88 |               )
+89 | /             with patch.object(check_wheel, "ROOT", root):
+90 | |                 with self.assertRaisesRegex(RuntimeError, "source_missing"):
+   | |____________________________________________________________________________^
+91 |                       check_wheel.run()
+   |
+help: Combine `with` statements
+
+Found 2 errors.

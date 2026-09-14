@@ -1,5 +1,62 @@
 # Verification and limits
 
+## Build and verification repair, 2026-09-14
+
+The [ecosystem audit](../evidence/reviews/2026-09-13-ecosystem/README.md) retains the
+failing build, the complete failing baseline suite, regression failures, and fresh
+results. Earlier sections below describe historical runs. Their passing counts
+do not certify the current checkout or complete modules.
+
+Use the existing uv environment:
+
+```powershell
+uv sync --locked
+uv run --no-sync python scripts/verify.py
+uv build
+```
+
+The verifier discovers every test under `tests/`, regenerates reference proofs and
+the portable plugin, and exercises `checkout -> sdist -> wheel -> temporary
+installation`. The installation reuses the selected environment's dependencies;
+it does not prove a clean dependency installation on another OS or Python version.
+
+Each verification attempt archives the previous generated outputs before replacing
+them, records its own logs under `evidence/verification-runs/`, and publishes a
+current [result](../evidence/test-results.json). Import, source, test and build
+errors produce failure records. Unreached stages remain `not_run`. A successful
+file-hash comparison establishes byte identity, not coverage or correctness of
+every function in that file.
+
+Coverage is a separate measurement using the uv development dependency:
+
+```powershell
+uv run --no-sync python -m coverage run --data-file build/coverage-data scripts/verify.py
+uv run --no-sync python -m coverage combine --data-file build/coverage-data
+uv run --no-sync python -m coverage report --data-file build/coverage-data
+uv run --no-sync python -m coverage json --data-file build/coverage-data -o build/coverage.json
+```
+
+Coverage includes branches and uses Coverage.py's [subprocess instrumentation](https://coverage.readthedocs.io/en/latest/subprocess.html).
+The report measures the checkout's `pixl/` runtime. Copied and installed runtimes
+are exercised by the packaging checks; their separate file paths are not merged
+into the checkout's coverage percentages. Percentages measure executed code, not
+assertion quality, complete input coverage, artistic judgment or production readiness.
+Use a new data-file prefix to retain separate measurement attempts.
+
+Static checks have their own scope and exit status:
+
+```powershell
+uv run --no-sync python -m ruff check pixl scripts tests evaluations setup.py plugins/pixl/runtime plugins/pixl/resources/pixl plugins/pixl/scripts
+uv run --no-sync python -m mypy --check-untyped-defs pixl
+uv run --no-sync python -m mypy --check-untyped-defs --explicit-package-bases scripts evaluations setup.py
+```
+
+The expanded Mypy audit reports unresolved diagnostics; a passing default Mypy
+run that skips untyped bodies cannot stand in for it. Historical training scripts
+and frozen evaluation packages are evidence inputs, outside the maintained-code
+lint command above. This repair does not run new agent-behavior trials, PixelLab
+generation, visual acceptance or target-engine acceptance.
+
 ## Candidate inspection operation, 2026-09-11
 
 The current full verifier passed **380 tests, zero failures/errors and one Windows

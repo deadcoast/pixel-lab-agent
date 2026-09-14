@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\pixl\sources.py", line 94, in capture_inventory
+    snapshot = path.read_bytes()
+  File "C:\Python314\Lib\pathlib\__init__.py", line 777, in read_bytes
+    with self.open(mode='rb', buffering=0) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\training\\original-docs\\PIXEL-LAB-LINKS.md'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\scripts\verify.py", line 83, in <module>
+    raise SystemExit(verify())
+                     ~~~~~~^^
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\scripts\verify.py", line 35, in verify
+    inventory = load_inventory(ROOT)
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\pixl\sources.py", line 114, in load_inventory
+    return capture_inventory(root)[0]
+           ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\pixl\sources.py", line 96, in capture_inventory
+    raise PixlError("source_missing", row["path"]) from error
+pixl.codec.PixlError: source_missing: training/original-docs/PIXEL-LAB-LINKS.md

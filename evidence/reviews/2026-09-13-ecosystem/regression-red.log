@@ -1,0 +1,53 @@
+test_missing_source_replaces_old_pass_and_preserves_previous_bytes (tests.test_verification.VerificationTests.test_missing_source_replaces_old_pass_and_preserves_previous_bytes) ... FAIL
+test_wheel_checker_rejects_sources_omitted_from_sdist (tests.test_verification.VerificationTests.test_wheel_checker_rejects_sources_omitted_from_sdist) ... FAIL
+
+======================================================================
+FAIL: test_missing_source_replaces_old_pass_and_preserves_previous_bytes (tests.test_verification.VerificationTests.test_missing_source_replaces_old_pass_and_preserves_previous_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_verification.py", line 38, in test_missing_source_replaces_old_pass_and_preserves_previous_bytes
+    self.assertEqual(report["status"], "fail", result.stderr.decode())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'pass' != 'fail'
+- pass
++ fail
+ : Traceback (most recent call last):
+  File "C:\Users\ryanf\AppData\Local\Temp\pixl failed verification 7otaezjq\pixl\sources.py", line 94, in capture_inventory
+    snapshot = path.read_bytes()
+  File "C:\Python314\Lib\pathlib\__init__.py", line 777, in read_bytes
+    with self.open(mode='rb', buffering=0) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl failed verification 7otaezjq\\training\\original-docs\\PIXEL-LAB-LINKS.md'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ryanf\AppData\Local\Temp\pixl failed verification 7otaezjq\scripts\verify.py", line 83, in <module>
+    raise SystemExit(verify())
+                     ~~~~~~^^
+  File "C:\Users\ryanf\AppData\Local\Temp\pixl failed verification 7otaezjq\scripts\verify.py", line 35, in verify
+    inventory = load_inventory(ROOT)
+  File "C:\Users\ryanf\AppData\Local\Temp\pixl failed verification 7otaezjq\pixl\sources.py", line 114, in load_inventory
+    return capture_inventory(root)[0]
+           ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ryanf\AppData\Local\Temp\pixl failed verification 7otaezjq\pixl\sources.py", line 96, in capture_inventory
+    raise PixlError("source_missing", row["path"]) from error
+pixl.codec.PixlError: source_missing: training/original-docs/PIXEL-LAB-LINKS.md
+
+
+======================================================================
+FAIL: test_wheel_checker_rejects_sources_omitted_from_sdist (tests.test_verification.VerificationTests.test_wheel_checker_rejects_sources_omitted_from_sdist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_verification.py", line 64, in test_wheel_checker_rejects_sources_omitted_from_sdist
+    with self.assertRaisesRegex(RuntimeError, "source_missing"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 2 tests in 9.422s
+
+FAILED (failures=2)

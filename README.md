@@ -2,7 +2,7 @@
 
 PIXL is a pixel-art production agent profile and skill system for Claude and Codex. This repository develops that profile, its operational skills, and the tools and knowledge that support its work. The intended outcome is coherent game assets produced from project-specific references, inspected, integrated, and preserved with enough context for another session to continue.
 
-**Current stage: developing beyond the initial scaffold.** Source-grounded research, intake/sample acceptance, durable provider recovery, family delivery and candidate inspection are implemented locally. Inspection now prepares exact saved views and retains explicit reviews with original criteria and cold-resume context. The current verifier passed 380 tests with one Windows privilege skip and 39 reference checks. [Native host evaluation](evaluations/README.md) retains the earlier five-case Claude/Codex comparison separately from the new inspection trials. Real generation, artistic production quality and target-engine acceptance remain open. Read the [project review](docs/PROJECT-REVIEW.md), [inspection evidence](evidence/candidate-inspection/README.md) and [MIVIM tasks](evaluations/TODO.spec.md) for the evidence and next work.
+**Current stage: developing beyond the initial scaffold.** Source-grounded research, intake/sample acceptance, durable provider recovery, family delivery and candidate inspection are implemented locally. Inspection prepares saved views and retains explicit reviews with original criteria and cold-resume context. The [latest local verification attempt](evidence/test-results.json) records its exact test inventory, skipped checks, build route and limitations; it does not certify complete modules or production readiness. [Native host evaluation](evaluations/README.md) retains earlier behavioral observations separately. Real generation, artistic production quality and target-engine acceptance remain open. Read the [project review](docs/PROJECT-REVIEW.md), [inspection evidence](evidence/candidate-inspection/README.md) and [MIVIM tasks](evaluations/TODO.spec.md) for the evidence and next work.
 
 For repository development, follow [AGENTS.md](AGENTS.md). Reading or editing PIXL's profile does not activate it. Invoke the production profile when the task is to perform pixel-art work.
 
@@ -10,19 +10,21 @@ The UDL is designed for agent operation. Human readability is not a wire-design 
 
 ## Use it
 
-Python 3.11 or newer:
+The project is uv managed. Keep the existing `.venv`; the current development environment uses Python 3.14.3 (the package declares Python 3.11 or newer):
 
 ```powershell
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -e .
-.venv/Scripts/python.exe scripts/verify.py
-.venv/Scripts/python.exe -m pixl sources --root .
-.venv/Scripts/python.exe -m pixl workflow examples/intake/project.px --root .
-.venv/Scripts/python.exe -m pixl validate examples/atelier/project.px --root .
-.venv/Scripts/python.exe -m pixl context examples/atelier/project.px produce
+uv sync --locked
+uv build
+uv run --no-sync python scripts/verify.py
+uv run --no-sync python -m pixl sources --root .
+uv run --no-sync python -m pixl workflow examples/intake/project.px --root .
+uv run --no-sync python -m pixl validate examples/atelier/project.px --root .
+uv run --no-sync python -m pixl context examples/atelier/project.px produce
 ```
 
-On POSIX, use `.venv/bin/python`. Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also supports `claude --agent pixl`. The complete portable plugin is [`plugins/pixl`](plugins/pixl); [`AGENT-KIT.md`](docs/AGENT-KIT.md) gives exact discovery, relocation and MCP setup instructions. No global configuration has been changed.
+The verifier archives previous generated evidence, regenerates local fixtures and the plugin, discovers the entire test suite, and builds/installs a wheel through its source distribution. Each attempt has its own directory under `evidence/verification-runs/`; a failed stage leaves a current failure report and identifies unperformed stages. See [verification scope](docs/VERIFICATION.md) for separate lint/type checks and evidence limits.
+
+Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also supports `claude --agent pixl`. The complete portable plugin is [`plugins/pixl`](plugins/pixl); [`AGENT-KIT.md`](docs/AGENT-KIT.md) gives exact discovery, relocation and MCP setup instructions. No global configuration has been changed.
 
 ## Scaffold mechanisms
 
@@ -48,6 +50,6 @@ On POSIX, use `.venv/bin/python`. Invoke `$pixl` in Codex from this repository, 
 | [Test results](evidence/test-results.json) | Actual suite counts, runtime hashes and source preservation |
 | [Representation benchmark](evidence/representation-benchmark.json) | Equal-semantics byte/token measurements and bootstrap cost |
 
-The supplied source corpus is under [training/original-docs](docs/pixel-art-training), identified by [source-inventory.json](training/source-inventory.json). All five files retain their supplied bytes. The [citation migration](knowledge/source-migration.json) records old/current identities and reviewed line correspondence; [archived evidence](evidence/source-migration/previous-run/manifest.json) preserves the earlier source layout and receipts. Current receipts were regenerated by executing against the current sources. Local reference fixtures are labeled as fixtures; they are not PixelLab-generated assets.
+The supplied source corpus is under [training/original-docs](training/original-docs), identified by [source-inventory.json](training/source-inventory.json). All five files retain their supplied bytes. The [citation migration](knowledge/source-migration.json) records old/current identities and reviewed line correspondence; [archived evidence](evidence/source-migration/previous-run/manifest.json) preserves the earlier source layout and receipts. Current receipts were regenerated by executing against the current sources. Local reference fixtures are labeled as fixtures; they are not PixelLab-generated assets.
 
 Live PixelLab generation, target-engine import and controlled multi-model performance trials were not run. The kit implements the local mechanisms and teaches the agent how to gather those project-specific proofs. A smaller serialization and passing mechanical checks do not establish better reasoning or better art.

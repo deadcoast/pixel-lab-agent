@@ -1,25 +1,25 @@
 """Build and exercise a wheel in a temporary target, without installing globally."""
 
+import hashlib
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-if __package__:
-    from .family_probe import run_family_probe
-    from .provider_probe import run_provider_probe
-else:
-    from family_probe import run_family_probe
-    from provider_probe import run_provider_probe
-
 ROOT = Path(__file__).resolve().parents[1]
+if not __package__:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.family_probe import run_family_probe
+from scripts.provider_probe import run_provider_probe
 
 
-def run():
+def run(log_dir=None):
     uv = shutil.which("uv")
     if uv is None:
         raise RuntimeError("uv is required to build and verify the wheel")
@@ -31,7 +31,6 @@ def run():
             [
                 uv,
                 "build",
-                "--wheel",
                 "--python",
                 sys.executable,
                 "--out-dir",
@@ -43,8 +42,26 @@ def run():
             check=False,
             timeout=60,
         )
+        if log_dir is not None:
+            Path(log_dir).mkdir(parents=True, exist_ok=True)
+            (Path(log_dir) / "distribution-build.log").write_text(
+                built.stdout + built.stderr, encoding="utf-8"
+            )
         if built.returncode:
             raise RuntimeError(built.stdout + built.stderr)
+        sdist = next(wheels.glob("pixl_agent-*.tar.gz"))
+        source_inventory = json.loads(
+            (ROOT / "training/source-inventory.json").read_bytes()
+        )
+        with tarfile.open(sdist) as source_archive:
+            prefix = source_archive.getmembers()[0].name.split("/", 1)[0]
+            for row in source_inventory["documents"]:
+                member = source_archive.extractfile(prefix + "/" + row["path"])
+                if (
+                    member is None
+                    or hashlib.sha256(member.read()).hexdigest() != row["sha256"]
+                ):
+                    raise RuntimeError(f"sdist source identity differs: {row['path']}")
         wheel = next(wheels.glob("pixl_agent-*.whl"))
         with zipfile.ZipFile(wheel) as archive:
             names = archive.namelist()
@@ -65,7 +82,16 @@ def run():
             inventory = json.loads(
                 archive.read("pixl/resources/training/source-inventory.json")
             )
+            if inventory != source_inventory:
+                raise RuntimeError("wheel inventory differs from source checkout")
             for row in inventory["documents"]:
+                if (
+                    hashlib.sha256(
+                        archive.read("pixl/resources/" + row["path"])
+                    ).hexdigest()
+                    != row["sha256"]
+                ):
+                    raise RuntimeError(f"wheel source identity differs: {row['path']}")
                 previous = row.get("previous")
                 if (
                     previous
@@ -75,6 +101,13 @@ def run():
                     raise RuntimeError(
                         f"wheel retained obsolete source {previous['path']}"
                     )
+            for path in (ROOT / "pixl").iterdir():
+                if path.suffix in (".py", ".json"):
+                    for prefix in ("pixl/", "pixl/resources/pixl/"):
+                        if archive.read(prefix + path.name) != path.read_bytes():
+                            raise RuntimeError(
+                                f"wheel runtime differs: {prefix}{path.name}"
+                            )
         installed = subprocess.run(
             [
                 uv,
@@ -92,6 +125,10 @@ def run():
             check=False,
             timeout=60,
         )
+        if log_dir is not None:
+            (Path(log_dir) / "distribution-install.log").write_text(
+                installed.stdout + installed.stderr, encoding="utf-8"
+            )
         if installed.returncode:
             raise RuntimeError(installed.stdout + installed.stderr)
         dependency_paths = [p for p in sys.path if p.endswith("site-packages")]
@@ -163,11 +200,16 @@ def run():
         return {
             "status": "pass",
             "wheel": wheel.name,
+            "wheel_sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
+            "sdist": sdist.name,
+            "sdist_sha256": hashlib.sha256(sdist.read_bytes()).hexdigest(),
+            "build_route": "checkout -> sdist -> wheel -> temporary installation",
+            "source_documents_verified": len(inventory["documents"]),
             "wheel_files": len(names),
             "checks": checks,
             "provider_probe": provider,
             "family_probe": family,
-            "scope": "temporary wheel installation; runtime dependencies reused; no global installation or source import",
+            "scope": "uv default sdist-to-wheel build; temporary wheel installation; runtime dependencies reused; no global installation or source import; no whole-module coverage claim",
         }
 
 

@@ -1,0 +1,475 @@
+{
+  "scope": "Build/source-path and verification repair; broader ecosystem qualification remains open",
+  "source_revision": "861d771fd9a210552ca10c75318801ace43e5a51",
+  "source_documents": [
+    {
+      "path": "training/original-docs/PIXEL-LAB-LINKS.md",
+      "sha256": "8d25924d3085fa0307f3cc698c252fb9195555885def82951bf070da770b37b8",
+      "restored_matches": true,
+      "research_copy_matches": true
+    },
+    {
+      "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+      "sha256": "bb21cee0a39b504f7f4e56f61f13750b57178fe2b6230f27e79b28b40934a050",
+      "restored_matches": true,
+      "research_copy_matches": true
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+      "sha256": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+      "restored_matches": true,
+      "research_copy_matches": true
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+      "restored_matches": true,
+      "research_copy_matches": true
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-METHODS.md",
+      "sha256": "d2322da8817ec0aaddf82d87844d6fbf289568aff0c15750a40c736c7f5cb466",
+      "restored_matches": true,
+      "research_copy_matches": true
+    }
+  ],
+  "runtime_and_registries_unchanged_from_baseline": true,
+  "baseline": {
+    "tests": {
+      "run": 381,
+      "passed": 335,
+      "errors": 45,
+      "failures": 0,
+      "skipped": 1
+    },
+    "build": {
+      "command": [
+        "uv",
+        "build",
+        "--out-dir",
+        "build/repair-baseline-dist"
+      ],
+      "exit_code": 2,
+      "seconds": 2.858
+    },
+    "tests_command": {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-t",
+        ".",
+        "-v"
+      ],
+      "exit_code": 1,
+      "seconds": 32.245
+    }
+  },
+  "final": {
+    "sync": {
+      "command": [
+        "uv",
+        "sync",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "seconds": 1.504
+    },
+    "build": {
+      "command": [
+        "uv",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 4.381
+    },
+    "verifier_command": {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-m",
+        "coverage",
+        "run",
+        "--data-file",
+        "evidence/reviews/2026-09-13-ecosystem/coverage-final-data",
+        "scripts/verify.py"
+      ],
+      "exit_code": 0,
+      "seconds": 95.754
+    },
+    "verifier_result": "evidence/verification-runs/20260914T094609.319493Z/result.json",
+    "tests": {
+      "status": "pass",
+      "discovered": 383,
+      "run": 383,
+      "passed": 382,
+      "failures": 0,
+      "errors": 0,
+      "skipped": [
+        {
+          "test": "test_history_symlink_cannot_redirect_publication (tests.test_store.StoreTests.test_history_symlink_cannot_redirect_publication)",
+          "reason": "symlink privilege unavailable"
+        }
+      ]
+    },
+    "art_pocs": {
+      "status": "pass",
+      "total": 39,
+      "passed": 39,
+      "methods_with_reference_checks": 43
+    },
+    "distribution_checks": 33,
+    "distribution": {
+      "status": "pass",
+      "wheel": "pixl_agent-1.0.0-py3-none-any.whl",
+      "wheel_sha256": "e0da8aad401916b7dd14850763d7deda5421adf5e6a413c4eeb8f126327ef34a",
+      "sdist": "pixl_agent-1.0.0.tar.gz",
+      "sdist_sha256": "3c5b87fab371990e900d0b06645c002aaf670f0e4f7808dfbb08ba380b87b96b",
+      "build_route": "checkout -> sdist -> wheel -> temporary installation",
+      "source_documents_verified": 5,
+      "wheel_files": 93,
+      "checks": [
+        {
+          "command": "sources",
+          "status": "pass"
+        },
+        {
+          "command": "intake",
+          "status": "pass"
+        },
+        {
+          "command": "workflow",
+          "status": "pass"
+        },
+        {
+          "command": "workflow",
+          "status": "pass"
+        },
+        {
+          "command": "knowledge",
+          "status": "pass"
+        },
+        {
+          "command": "capabilities",
+          "status": "pass"
+        },
+        {
+          "command": "init",
+          "status": "pass"
+        },
+        {
+          "command": "validate",
+          "status": "pass"
+        },
+        {
+          "command": "validate",
+          "status": "pass"
+        },
+        {
+          "command": "poc",
+          "status": "pass"
+        },
+        {
+          "command": "intake",
+          "check": "initialize synthetic PX2 intake",
+          "status": "pass"
+        },
+        {
+          "command": "decode",
+          "check": "read saved PX2 intake",
+          "status": "pass"
+        },
+        {
+          "command": "encode",
+          "check": "encode the fixture plan",
+          "status": "pass"
+        },
+        {
+          "command": "commit",
+          "check": "save the plan before intent",
+          "status": "pass"
+        },
+        {
+          "command": "job-prepare",
+          "check": "persist exact synthetic intent",
+          "status": "pass"
+        },
+        {
+          "command": "job-dispatch",
+          "check": "publish dispatch claim before request handoff",
+          "status": "pass"
+        },
+        {
+          "command": "jobs",
+          "check": "recover unknown submission in a new process",
+          "status": "pass"
+        },
+        {
+          "command": "job-observe",
+          "check": "retain supplied success and synthetic identity",
+          "status": "pass"
+        },
+        {
+          "command": "job-import",
+          "check": "import actual local candidate bytes",
+          "status": "pass"
+        },
+        {
+          "command": "decode",
+          "check": "verify imported candidate identity and bytes",
+          "status": "pass"
+        },
+        {
+          "command": "workflow",
+          "check": "retain all acceptance obligations as unperformed",
+          "status": "pass"
+        },
+        {
+          "command": "family",
+          "check": "inspect the supplied synthetic accepted-member plan",
+          "status": "pass"
+        },
+        {
+          "command": "family-snapshot",
+          "check": "snapshot actual selected bytes without approval",
+          "status": "pass"
+        },
+        {
+          "command": "decode",
+          "check": "read retained candidate",
+          "status": "pass"
+        },
+        {
+          "command": "family",
+          "check": "cold report retains unperformed collective checks",
+          "status": "pass"
+        },
+        {
+          "command": "encode",
+          "check": "unavailable-engine encode",
+          "status": "pass"
+        },
+        {
+          "command": "commit",
+          "check": "unavailable-engine publish",
+          "status": "pass"
+        },
+        {
+          "command": "family",
+          "check": "cold report keeps engine unavailable and delivery open",
+          "status": "pass"
+        },
+        {
+          "command": "encode",
+          "check": "amended-membership encode",
+          "status": "pass"
+        },
+        {
+          "command": "commit",
+          "check": "amended-membership publish",
+          "status": "pass"
+        },
+        {
+          "command": "family",
+          "check": "membership amendment preserves old package and reports drift",
+          "status": "pass"
+        },
+        {
+          "command": "family-snapshot",
+          "check": "retain a new snapshot against the saved amended plan",
+          "status": "pass"
+        },
+        {
+          "command": "family",
+          "check": "cold report retains both exact packages",
+          "status": "pass"
+        }
+      ],
+      "provider_probe": {
+        "status": "pass",
+        "checks": [
+          {
+            "command": "intake",
+            "check": "initialize synthetic PX2 intake",
+            "status": "pass"
+          },
+          {
+            "command": "decode",
+            "check": "read saved PX2 intake",
+            "status": "pass"
+          },
+          {
+            "command": "encode",
+            "check": "encode the fixture plan",
+            "status": "pass"
+          },
+          {
+            "command": "commit",
+            "check": "save the plan before intent",
+            "status": "pass"
+          },
+          {
+            "command": "job-prepare",
+            "check": "persist exact synthetic intent",
+            "status": "pass"
+          },
+          {
+            "command": "job-dispatch",
+            "check": "publish dispatch claim before request handoff",
+            "status": "pass"
+          },
+          {
+            "command": "jobs",
+            "check": "recover unknown submission in a new process",
+            "status": "pass"
+          },
+          {
+            "command": "job-observe",
+            "check": "retain supplied success and synthetic identity",
+            "status": "pass"
+          },
+          {
+            "command": "job-import",
+            "check": "import actual local candidate bytes",
+            "status": "pass"
+          },
+          {
+            "command": "decode",
+            "check": "verify imported candidate identity and bytes",
+            "status": "pass"
+          },
+          {
+            "command": "workflow",
+            "check": "retain all acceptance obligations as unperformed",
+            "status": "pass"
+          }
+        ],
+        "remote_executed": false,
+        "scope": "Separate isolated CLI processes; synthetic discovery, authorization and observations; local raster import; no real provider, visual or engine acceptance."
+      },
+      "family_probe": {
+        "status": "pass",
+        "checks": [
+          {
+            "command": "family",
+            "check": "inspect the supplied synthetic accepted-member plan",
+            "status": "pass"
+          },
+          {
+            "command": "family-snapshot",
+            "check": "snapshot actual selected bytes without approval",
+            "status": "pass"
+          },
+          {
+            "command": "decode",
+            "check": "read retained candidate",
+            "status": "pass"
+          },
+          {
+            "command": "family",
+            "check": "cold report retains unperformed collective checks",
+            "status": "pass"
+          },
+          {
+            "command": "encode",
+            "check": "unavailable-engine encode",
+            "status": "pass"
+          },
+          {
+            "command": "commit",
+            "check": "unavailable-engine publish",
+            "status": "pass"
+          },
+          {
+            "command": "family",
+            "check": "cold report keeps engine unavailable and delivery open",
+            "status": "pass"
+          },
+          {
+            "command": "encode",
+            "check": "amended-membership encode",
+            "status": "pass"
+          },
+          {
+            "command": "commit",
+            "check": "amended-membership publish",
+            "status": "pass"
+          },
+          {
+            "command": "family",
+            "check": "membership amendment preserves old package and reports drift",
+            "status": "pass"
+          },
+          {
+            "command": "family-snapshot",
+            "check": "retain a new snapshot against the saved amended plan",
+            "status": "pass"
+          },
+          {
+            "command": "family",
+            "check": "cold report retains both exact packages",
+            "status": "pass"
+          }
+        ],
+        "remote_executed": false,
+        "fixture_sha256": "fc9fcef5fc390e036f1517424ceff2c2000808475e621c6a6bc39b3d6bc52b11",
+        "scope": "Public isolated CLI from a retained synthetic preaccepted checkpoint; actual member copies, unavailable engine and amended membership; no real art/engine outcome."
+      },
+      "scope": "uv default sdist-to-wheel build; temporary wheel installation; runtime dependencies reused; no global installation or source import; no whole-module coverage claim"
+    },
+    "lint": {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "pixl",
+        "scripts",
+        "tests",
+        "evaluations",
+        "setup.py",
+        "plugins/pixl/runtime",
+        "plugins/pixl/resources/pixl",
+        "plugins/pixl/scripts"
+      ],
+      "exit_code": 0,
+      "seconds": 0.113
+    },
+    "coverage": {
+      "covered_lines": 3843,
+      "num_statements": 4067,
+      "percent_covered": 92.74008810572687,
+      "percent_covered_display": "93",
+      "missing_lines": 224,
+      "excluded_lines": 0,
+      "percent_statements_covered": 94.49225473321859,
+      "percent_statements_covered_display": "94",
+      "num_branches": 1608,
+      "num_partial_branches": 134,
+      "covered_branches": 1420,
+      "missing_branches": 188,
+      "percent_branches_covered": 88.30845771144278,
+      "percent_branches_covered_display": "88"
+    },
+    "runtime_files_measured": 20
+  },
+  "open_findings": [
+    "24 expanded Mypy diagnostics: 22 in runtime code and two in support scripts; see final-support-types.log.",
+    "Coverage records remaining runtime lines and branches; no whole-module completion is established.",
+    "Profile/skill instruction following, new native host trials, actual PixelLab production, visual quality and engine acceptance were not exercised.",
+    "Dependency installation on a clean machine and other Python/OS versions were not exercised.",
+    "Existing mandatory dependencies still mix runtime and development tools; coverage was added only to the dev group."
+  ],
+  "artifacts": {
+    "pixl_agent-1.0.0-py3-none-any.whl": {
+      "bytes": 718970,
+      "sha256": "4aa6352e43e34330c3566630ed92060e76eadf1d3516c1bc209ac7907bf04d2c"
+    },
+    "pixl_agent-1.0.0.tar.gz": {
+      "bytes": 657528,
+      "sha256": "54e386e00523ccb22e49b19f0227fc3db85832fcd5a3d43a782f9fb17a3d7909"
+    }
+  }
+}
