@@ -102,12 +102,12 @@ def validate(doc, scope, bound):
                 id_ in _ids(doc.records[project_id].fields["in"]),
                 "intake_project", f"{id_} must be listed in {project_id}.in",
             )
-            key = (project_id, f["ky"])
+            choice_key = (project_id, f["ky"])
             _require(
-                bool(f["ky"].strip()) and key not in choice_keys,
+                bool(f["ky"].strip()) and choice_key not in choice_keys,
                 "intake_key", f"{id_}: choice keys must be nonempty and unique within a project",
             )
-            choice_keys.add(key)
+            choice_keys.add(choice_key)
             state, value = f["st"].value, f["vl"]
             if state == "unresolved":
                 _require(value is None, "intake_value", f"{id_}: unresolved value must be null")
@@ -183,9 +183,9 @@ def validate(doc, scope, bound):
                 f["rq"].id in _ids(output["rq"]),
                 "verdict_requirement", f"{id_}: criterion is not required by this candidate's output",
             )
-            key = (f["tk"].id, f["xr"].id, f["rq"].id)
-            _require(key not in current_verdicts, "verdict_duplicate", f"{id_}: supersede the previous verdict first")
-            current_verdicts[key] = record
+            verdict_key = (f["tk"].id, f["xr"].id, f["rq"].id)
+            _require(verdict_key not in current_verdicts, "verdict_duplicate", f"{id_}: supersede the previous verdict first")
+            current_verdicts[verdict_key] = record
             if f["st"].value != "unavailable":
                 current = [e for e in f["ev"] if not doc.records[e.id].fields.get("ob", False)]
                 criterion = doc.records[f["rq"].id].fields
@@ -262,7 +262,7 @@ def blockers(doc, task_id):
     _require(task_id in doc.records and doc.records[task_id].kind == "T", "unknown_task", task_id)
 
     def bound(evidence, passing=False):
-        covered = set()
+        covered: set[str] = set()
         for reference in evidence:
             receipt = doc.records[reference.id].fields
             if not receipt.get("ob", False) and (not passing or receipt["rs"].value == "pass"):
@@ -283,7 +283,7 @@ def report(doc):
         (r.fields["tk"].id, r.fields["xr"].id, r.fields["rq"].id): r
         for r in doc.records.values() if r.kind == "V" and not r.fields.get("ob", False)
     }
-    candidates = {}
+    candidates: dict[str, list[str]] = {}
     for id_, record in sorted(doc.records.items()):
         if record.kind == "X" and "of" in record.fields:
             candidates.setdefault(record.fields["of"].id, []).append(id_)

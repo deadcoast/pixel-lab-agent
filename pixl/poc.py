@@ -1062,7 +1062,7 @@ def run_all(output_dir: Path | str) -> dict:
                 if column == 0:
                     for y in range(16):
                         for x in range(16):
-                            if foreground.getpixel((x, y))[3]:
+                            if cast(tuple[int, int, int, int], foreground.getpixel((x, y)))[3]:
                                 foreground.putpixel((x, y), (255, 255, 255, 255))
                 composed = Image.alpha_composite(background, foreground)
                 sheet.paste(composed, (column * 72 + 4, row * 88 + 4))
@@ -1248,7 +1248,7 @@ def run_all(output_dir: Path | str) -> dict:
     )
 
     def provenance_manifest():
-        entries = [
+        entries: list[dict[str, str | None]] = [
             {
                 "id": "folder-original",
                 "origin": "original",

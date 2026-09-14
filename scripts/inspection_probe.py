@@ -58,7 +58,7 @@ def run(destination):
     env.pop("PYTHONPATH", None)
     env.pop("PIXL_PLUGIN_ROOT", None)
     runner = [sys.executable, "-I", str(package / "scripts/pixl.py")]
-    calls = []
+    calls: list[dict[str, object]] = []
     report = {
         "status": "running",
         "fixture_sha256": sha(fixture_path),

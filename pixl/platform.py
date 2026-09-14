@@ -17,16 +17,26 @@ import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Never
+from typing import Never, Protocol, cast
 from urllib.parse import urlsplit
 
 from jsonschema import Draft202012Validator
 from PIL import Image
 from referencing import Registry, Resource
 from referencing.exceptions import NoSuchResource
-from referencing.jsonschema import DRAFT202012
+from referencing.jsonschema import DRAFT202012, Schema
+from referencing.typing import Retrieve
 
 from .codec import PixlError
+
+
+class _RegistryFactory(Protocol):
+    def __call__(self, *, retrieve: Retrieve[Schema]) -> Registry[Schema]: ...
+
+
+# referencing's private attrs decorator hides its generated constructor from
+# mypy. Describe only the public keyword we use, keeping retrieval disabled.
+_registry = cast(_RegistryFactory, Registry)
 
 _SECRET_KEYS = {
     "apikey",
@@ -183,12 +193,12 @@ def _validate_schema(arguments, schema):
 
     def unavailable(uri):
         # An explicit registry prevents jsonschema's historical network fallback.
-        raise NoSuchResource(ref=uri)
+        raise NoSuchResource(uri)
 
     try:
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(
-            schema, registry=Registry(retrieve=unavailable)
+            schema, registry=_registry(retrieve=unavailable)
         )
         error = next(validator.iter_errors(arguments), None)
         if error is not None:
@@ -791,7 +801,7 @@ def _schema_no_secrets(schema):
     arrays = {"allOf", "anyOf", "oneOf", "prefixItems"}
 
     def unavailable(uri):
-        raise NoSuchResource(ref=uri)
+        raise NoSuchResource(uri)
 
     seen = set()
 
@@ -834,7 +844,7 @@ def _schema_no_secrets(schema):
                 _no_secrets({key: child})
 
     try:
-        resolver = Registry(retrieve=unavailable).resolver_with_root(resource(schema))
+        resolver = _registry(retrieve=unavailable).resolver_with_root(resource(schema))
         visit(schema, resolver)
     except PixlError:
         raise
@@ -880,7 +890,7 @@ def _discovered_inputs(provider, tool, arguments, schema, discovery, authorizati
 
 
 def _cached_assessment(provider, tool, arguments, schema, authorization):
-    result = {
+    result: dict[str, object] = {
         "advisory": True,
         "source": None,
         "retrieved_at": None,

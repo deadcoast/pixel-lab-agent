@@ -1,0 +1,79 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> pixl\mcp.py:3:1
+   |
+ 1 |   """Small synchronous MCP stdio server for local PIXL operations only."""
+ 2 |
+ 3 | / import json
+ 4 | | import sys
+ 5 | |
+ 6 | | from jsonschema import Draft202012Validator, ValidationError
+ 7 | |
+ 8 | |
+ 9 | | from .codec import PixlError
+10 | | from .service import call, parse_json
+   | |_____________________________________^
+help: Organize imports
+  |
+7 |
+  -
+8 | from .codec import PixlError
+  |
+
+ISC004 Unparenthesized implicit string concatenation in collection
+  --> tests\test_json_inputs.py:26:13
+   |
+24 |               '{"revision":1,"revision":0,"records":[]}',
+25 |               '{"revision":0,"format":1,"format":2,"records":[]}',
+26 | /             '{"revision":0,"records":[{"id":"a","kind":"A","fields":'
+27 | |             '{"nm":"first","nm":"second","rl":{"$symbol":"agent"}}}]}',
+   | |______________________________________________________________________^
+28 |               # JSON escapes are decoded before member names are compared.
+29 |               '{"revision":0,"records":[{"id":"a","kind":"A","fields":'
+   |
+help: Did you forget a comma?
+help: Wrap implicitly concatenated strings in parentheses
+
+ISC004 Unparenthesized implicit string concatenation in collection
+  --> tests\test_json_inputs.py:29:13
+   |
+27 |               '{"nm":"first","nm":"second","rl":{"$symbol":"agent"}}}]}',
+28 |               # JSON escapes are decoded before member names are compared.
+29 | /             '{"revision":0,"records":[{"id":"a","kind":"A","fields":'
+30 | |             '{"nm":"first","n\\u006d":"second","rl":{"$symbol":"agent"}}}]}',
+   | |____________________________________________________________________________^
+31 |           ]
+32 |           with TemporaryDirectory() as tmp:
+   |
+help: Did you forget a comma?
+help: Wrap implicitly concatenated strings in parentheses
+
+ISC004 Unparenthesized implicit string concatenation in collection
+  --> tests\test_json_inputs.py:75:13
+   |
+73 |       def test_mcp_ambiguous_mutation_is_rejected_before_store_creation(self):
+74 |           requests = [
+75 | /             '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":'
+76 | |             '{"name":"pixl_init","arguments":{"store":"first","store":"second"}}}',
+   | |__________________________________________________________________________________^
+77 |               '{"jsonrpc":"2.0","id":2,"method":"ping","method":"tools/call",'
+78 |               '"params":{"name":"pixl_init","arguments":{"store":"third"}}}',
+   |
+help: Did you forget a comma?
+help: Wrap implicitly concatenated strings in parentheses
+
+ISC004 Unparenthesized implicit string concatenation in collection
+  --> tests\test_json_inputs.py:77:13
+   |
+75 |               '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":'
+76 |               '{"name":"pixl_init","arguments":{"store":"first","store":"second"}}}',
+77 | /             '{"jsonrpc":"2.0","id":2,"method":"ping","method":"tools/call",'
+78 | |             '"params":{"name":"pixl_init","arguments":{"store":"third"}}}',
+   | |__________________________________________________________________________^
+79 |               '{"jsonrpc":"2.0","id":3,"method":"ping"}',
+80 |           ]
+   |
+help: Did you forget a comma?
+help: Wrap implicitly concatenated strings in parentheses
+
+Found 5 errors.
+[*] 1 fixable with the `--fix` option (4 hidden fixes can be enabled with the `--unsafe-fixes` option).

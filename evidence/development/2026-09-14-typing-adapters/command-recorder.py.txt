@@ -1,0 +1,23 @@
+"""Retain commands from the post-convergence typing and adapter work."""
+import hashlib
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "evidence/development/2026-09-14-typing-adapters"
+OUT.mkdir(parents=True, exist_ok=True)
+name, command = sys.argv[1], sys.argv[2:]
+inputs = {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+          for folder in ("pixl", "scripts", "tests") for p in (ROOT / folder).glob("*.py")}
+start = time.monotonic()
+with (OUT / (name + ".log")).open("xb") as stream:
+    result = subprocess.run(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, check=False)
+report = {"command": command, "exit_code": result.returncode,
+          "seconds": round(time.monotonic() - start, 3), "input_hashes": inputs}
+(OUT / (name + ".json")).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+print(json.dumps({k: report[k] for k in ("command", "exit_code", "seconds")}))
+print((OUT / (name + ".log")).read_text(encoding="utf-8", errors="replace")[-2500:])
+raise SystemExit(result.returncode)

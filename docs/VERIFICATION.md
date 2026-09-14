@@ -51,11 +51,23 @@ uv run --no-sync python -m mypy --check-untyped-defs pixl
 uv run --no-sync python -m mypy --check-untyped-defs --explicit-package-bases scripts evaluations setup.py
 ```
 
-The expanded Mypy audit reports unresolved diagnostics; a passing default Mypy
-run that skips untyped bodies cannot stand in for it. Historical training scripts
-and frozen evaluation packages are evidence inputs, outside the maintained-code
-lint command above. This repair does not run new agent-behavior trials, PixelLab
-generation, visual acceptance or target-engine acceptance.
+The [follow-up development evidence](../evidence/development/2026-09-14-typing-adapters/README.md)
+retains the original 24 Mypy diagnostics and the passing check of all 36 maintained
+runtime, build and evaluation source files with `--check-untyped-defs`. These files
+still contain unannotated interfaces: this is not a claim of complete static typing.
+Historical training scripts and frozen evaluation packages are evidence inputs,
+outside the maintained-code lint command above. This repair does not run new
+agent-behavior trials, PixelLab generation, visual acceptance or target-engine acceptance.
+
+Host JSON files and MCP input now reject repeated object member names, including
+escaped spellings of the same name. Previously the decoder silently retained the
+last value and could publish a different document or initialize a different store.
+CLI input failures return `json_read` before writing output; MCP returns a parse
+error before dispatch and continues reading subsequent requests. Repeated names
+in different objects remain valid. PX1/PX2 wire syntax and saved-state semantics
+are unchanged. Process-level regression failures and passing results are retained
+in the follow-up evidence; they establish these input behaviors, not completeness
+of the CLI, MCP or service modules.
 
 ## Candidate inspection operation, 2026-09-11
 

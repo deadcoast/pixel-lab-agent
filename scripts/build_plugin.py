@@ -51,7 +51,7 @@ def build():
     if review.exists():
         add(review, Path("resources") / review.relative_to(ROOT))
     add(ROOT / "NOTICE.md", Path("NOTICE.md"))
-    for folder in (
+    for plugin_folder in (
         "skills",
         "agents",
         "scripts",
@@ -59,7 +59,7 @@ def build():
         ".claude-plugin",
         ".codex-plugin",
     ):
-        for path in (PLUGIN / folder).rglob("*"):
+        for path in (PLUGIN / plugin_folder).rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 add(path, path.relative_to(PLUGIN))
     # Preflight all bytes before changing an installed/generated file.

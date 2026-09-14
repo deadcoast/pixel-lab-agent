@@ -1,0 +1,78 @@
+test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) ... 
+  test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":1,"revision":0,"records":[]}') ... FAIL
+  test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"format":1,"format":2,"records":[]}') ... FAIL
+  test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"records":[{"id":"a","kind":"A","fields":{"nm":"first","nm":"second","rl":{"$symbol":"agent"}}}]}') ... FAIL
+  test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"records":[{"id":"a","kind":"A","fields":{"nm":"first","n\\u006d":"second","rl":{"$symbol":"agent"}}}]}') ... FAIL
+test_cli_round_trip_preserves_both_formats_and_distinct_objects (tests.test_json_inputs.JsonInputTests.test_cli_round_trip_preserves_both_formats_and_distinct_objects) ... ok
+test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers (tests.test_json_inputs.JsonInputTests.test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers) ... 
+  test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers (tests.test_json_inputs.JsonInputTests.test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers) (value='{"evidence":{"status":"fail","status":"pass"}}') ... FAIL
+test_mcp_ambiguous_mutation_is_rejected_before_store_creation (tests.test_json_inputs.JsonInputTests.test_mcp_ambiguous_mutation_is_rejected_before_store_creation) ... FAIL
+test_mcp_duplicate_document_fields_then_valid_encode (tests.test_json_inputs.JsonInputTests.test_mcp_duplicate_document_fields_then_valid_encode) ... FAIL
+
+======================================================================
+FAIL: test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":1,"revision":0,"records":[]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 40, in test_cli_duplicate_members_do_not_overwrite_existing_output
+    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+======================================================================
+FAIL: test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"format":1,"format":2,"records":[]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 40, in test_cli_duplicate_members_do_not_overwrite_existing_output
+    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+======================================================================
+FAIL: test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"records":[{"id":"a","kind":"A","fields":{"nm":"first","nm":"second","rl":{"$symbol":"agent"}}}]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 40, in test_cli_duplicate_members_do_not_overwrite_existing_output
+    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+======================================================================
+FAIL: test_cli_duplicate_members_do_not_overwrite_existing_output (tests.test_json_inputs.JsonInputTests.test_cli_duplicate_members_do_not_overwrite_existing_output) (document='{"revision":0,"records":[{"id":"a","kind":"A","fields":{"nm":"first","n\\u006d":"second","rl":{"$symbol":"agent"}}}]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 40, in test_cli_duplicate_members_do_not_overwrite_existing_output
+    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : 
+
+======================================================================
+FAIL: test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers (tests.test_json_inputs.JsonInputTests.test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers) (value='{"evidence":{"status":"fail","status":"pass"}}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 124, in test_file_json_rejects_duplicate_nested_members_and_nonfinite_numbers
+    with self.assertRaisesRegex(PixlError, "json_read"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: PixlError not raised
+
+======================================================================
+FAIL: test_mcp_ambiguous_mutation_is_rejected_before_store_creation (tests.test_json_inputs.JsonInputTests.test_mcp_ambiguous_mutation_is_rejected_before_store_creation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 87, in test_mcp_ambiguous_mutation_is_rejected_before_store_creation
+    self.assertEqual(reply.get("error", {}).get("code"), -32700, reply)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != -32700 : {'jsonrpc': '2.0', 'id': 1, 'result': {'content': [{'type': 'text', 'text': '{"revision":0,"hash":"1a0ee0d27b85b29950f73a6ef766af6591a9e050f51b2b3b4aae9c0157b90d2c","state":"C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\tmpj_ti4d94\\\\second\\\\state.px"}'}], 'structuredContent': {'revision': 0, 'hash': '1a0ee0d27b85b29950f73a6ef766af6591a9e050f51b2b3b4aae9c0157b90d2c', 'state': 'C:\\Users\\ryanf\\AppData\\Local\\Temp\\tmpj_ti4d94\\second\\state.px'}, 'isError': False}}
+
+======================================================================
+FAIL: test_mcp_duplicate_document_fields_then_valid_encode (tests.test_json_inputs.JsonInputTests.test_mcp_duplicate_document_fields_then_valid_encode)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ryanf\github\TODO\pixel-lab-docsuite\tests\test_json_inputs.py", line 112, in test_mcp_duplicate_document_fields_then_valid_encode
+    self.assertEqual(replies[0].get("error", {}).get("code"), -32700, replies[0])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != -32700 : {'jsonrpc': '2.0', 'id': 1, 'result': {'content': [{'type': 'text', 'text': '{"wire":"PX1 0\\n@a:A{nm=~4:kept;rl=agent}\\n"}'}], 'structuredContent': {'wire': 'PX1 0\n@a:A{nm=~4:kept;rl=agent}\n'}, 'isError': False}}
+
+----------------------------------------------------------------------
+Ran 5 tests in 1.898s
+
+FAILED (failures=7)

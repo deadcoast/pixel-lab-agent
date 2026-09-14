@@ -31,7 +31,8 @@ def build(root, paths=None):
             lines = data.decode("utf-8-sig").splitlines()
         except UnicodeError as error:
             raise PixlError("source_encoding", name) from error
-        sections, fence = [], None
+        sections: list[dict[str, str | int]] = []
+        fence = None
         fenced_blocks = []
         for number, line in enumerate(lines, 1):
             if match := re.match(r"^\s{0,3}(`{3,}|~{3,})(.*)$", line):

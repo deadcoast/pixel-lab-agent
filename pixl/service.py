@@ -56,12 +56,26 @@ def _reject_constant(value):
     raise PixlError("json", "nonfinite number")
 
 
+def _unique_members(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            # Do not include supplied values (which may contain credentials).
+            raise PixlError("json", "duplicate object member")
+        result[key] = value
+    return result
+
+
+def parse_json(data):
+    """Decode host input without silently discarding conflicting members."""
+    return json.loads(
+        data, parse_constant=_reject_constant, object_pairs_hook=_unique_members
+    )
+
+
 def read_json(path):
     try:
-        return json.loads(
-            Path(path).read_text(encoding="utf-8"),
-            parse_constant=_reject_constant,
-        )
+        return parse_json(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise PixlError("json_read", str(path)) from error
 

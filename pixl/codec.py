@@ -113,20 +113,20 @@ class Parser:
         ):
             return False
         if ch == b"[":
-            result = []
+            items: list[object] = []
             self.skip()
             if self.data[self.i : self.i + 1] == b"]":
                 self.i += 1
-                return result
+                return items
             while True:
-                result.append(self.value(depth + 1))
+                items.append(self.value(depth + 1))
                 self.skip()
                 if self.data[self.i : self.i + 1] == b"]":
                     self.i += 1
-                    return result
+                    return items
                 self.take(b",")
         elif ch == b"{":
-            result = {}
+            result: dict[str, object] = {}
             self.skip()
             if self.data[self.i : self.i + 1] == b"}":
                 self.i += 1

@@ -125,7 +125,7 @@ def _dag(doc):
         if r.kind == "T"
     }
     # Kahn traversal avoids recursion limits for deep, otherwise valid plans.
-    dependents = {id_: set() for id_ in tasks}
+    dependents: dict[str, set[str]] = {id_: set() for id_ in tasks}
     for id_, needs in tasks.items():
         for needed in needs:
             dependents[needed].add(id_)
@@ -372,7 +372,7 @@ def ready(doc):
 def impact(doc, id_):
     validate(doc)
     _require(id_ in doc.records, "unknown_record", id_)
-    reverse = {key: set() for key in doc.records}
+    reverse: dict[str, set[str]] = {key: set() for key in doc.records}
     for source, targets in edges(doc).items():
         for target in targets:
             reverse[target].add(source)

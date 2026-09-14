@@ -113,7 +113,7 @@ def _snapshots(doc, record, root):
     _require(
         bool(fields["ev"]), "job_projection", f"{record.id}: journal receipts required"
     )
-    histories = []
+    histories: list[dict] = []
     references = []
     for ref in fields["ev"]:
         receipt = doc.records[ref.id]

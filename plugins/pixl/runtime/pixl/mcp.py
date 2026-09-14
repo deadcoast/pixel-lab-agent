@@ -5,13 +5,8 @@ import sys
 
 from jsonschema import Draft202012Validator, ValidationError
 
-
-def _reject_constant(value):
-    raise ValueError(value)
-
-
 from .codec import PixlError
-from .service import call
+from .service import call, parse_json
 
 
 def schema(properties, required=()):
@@ -409,10 +404,7 @@ def serve(root):
             }
         else:
             try:
-                request = json.loads(
-                    line,
-                    parse_constant=_reject_constant,
-                )
+                request = parse_json(line)
                 response = dispatch(request, root)
             except (ValueError, RecursionError):
                 response = {
