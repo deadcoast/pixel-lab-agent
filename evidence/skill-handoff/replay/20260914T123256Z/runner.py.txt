@@ -1,0 +1,53 @@
+"""Read-only replay of copied native project states with their exact frozen kit."""
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/skill-handoff"
+out = base / "replay" / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+out.mkdir(parents=True, exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+results = []
+for series in ("revised-routing",):
+    for record_path in sorted((base / series / "runs").glob("*/record.json")):
+        attempt = record_path.parent
+        if attempt.name != "claude-intake-01":
+            continue
+        assert not runner.verify_run(attempt)
+        record = json.loads(record_path.read_text())
+        states = [name for name in record["artifacts"] if Path(name).name == "state.px"]
+        assert len(states) == 1, states
+        state_path = states[0]
+        project = Path(tempfile.mkdtemp(prefix="pixl-handoff-replay-", dir=ROOT / "build"))
+        shutil.copytree(attempt / "project", project, dirs_exist_ok=True)
+        kit = project / ".agents/skills/pixl-kit"
+        shutil.copytree(base / series / "package", kit)
+        before = runner.inventory(project, ("__pycache__",))
+        for operation in ("validate", "workflow", "jobs", "family"):
+            command = [sys.executable, "-I", str(kit / "scripts/pixl.py"), operation,
+                       str(project / state_path), "--root", str(project)]
+            result = subprocess.run(command, cwd=project, capture_output=True)
+            name = f"{series}--{attempt.name}--{operation}"
+            for stream in ("stdout", "stderr"):
+                (out / f"{name}.{stream}.txt").write_bytes(getattr(result, stream))
+            results.append({"series": series, "attempt": attempt.name, "operation": operation,
+                            "record_sha256": runner.sha(record_path), "command": command,
+                            "exit_code": result.returncode,
+                            "host_execution_status": record["execution_status"]})
+        assert runner.inventory(project, ("__pycache__",)) == before
+        assert not runner.verify_run(attempt)
+(out / "result.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
+manifest = {p.name: sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file()}
+(out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+print(json.dumps({"result": str(out), "operations": len(results),
+                  "passed": sum(r["exit_code"] == 0 for r in results),
+                  "failures": [r for r in results if r["exit_code"]]}))

@@ -1,0 +1,34 @@
+"""Retain selected earlier native failures and their exact provenance, without edits."""
+import json
+import shutil
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+out = ROOT / "evidence/artistic-authority/earlier-failures"
+out.mkdir(exist_ok=False)
+selections = {
+    "style": ("evidence/host-evaluation/runs/claude-style-01", [
+        "record.json", "prompt.txt", "project/analysis/reference-analysis.md",
+        "project/plan/lantern-production-approach.md", "project/plan/lantern-treatment.contract.json"]),
+    "intake": ("evidence/skill-handoff/native-control/runs/claude-intake-01", ["record.json", "prompt.txt"]),
+    "cold": ("evidence/host-evaluation/runs/claude-intake-cold-01", ["record.json", "prompt.txt", "project/state.px/state.px"]),
+}
+manifest = {}
+for label, (origin, names) in selections.items():
+    root = ROOT / origin
+    assert not runner.verify_run(root), origin
+    for name in names:
+        target = out / label / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, target)
+        manifest[target.relative_to(out).as_posix()] = {"source": f"{origin}/{name}", "sha256": runner.sha(target)}
+source = ROOT / "evidence/skill-handoff/responses/native-control--claude-intake-01.json"
+shutil.copyfile(source, out / "intake-final.json")
+manifest["intake-final.json"] = {"source": source.relative_to(ROOT).as_posix(), "sha256": runner.sha(source)}
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+runner.write_json(out / "manifest.json", {"files": manifest, "status": "historical failures, not current-package trials"})
+print(json.dumps({"retained_files": len(manifest), "destination": str(out)}))

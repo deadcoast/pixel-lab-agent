@@ -1,0 +1,47 @@
+"""Extract actual final responses; leave behavioral grading to explicit review."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/skill-handoff"
+out = base / "responses"
+out.mkdir(exist_ok=True)
+for series in ("baseline", "workspace-control", "native-control", "revised", "revised-routing"):
+    for attempt in sorted((base / series / "runs").glob("*/record.json")):
+        if attempt.parent.name == "seed-intake":
+            continue
+        record = json.loads(attempt.read_text(encoding="utf-8"))
+        assert not runner.verify_run(attempt.parent), str(attempt)
+        final = []
+        if record["host"] == "codex":
+            for session in sorted(attempt.parent.glob("native-session-*.jsonl")):
+                for number, line in enumerate(session.read_text(encoding="utf-8").splitlines(), 1):
+                    event = json.loads(line)
+                    payload = event.get("payload", {})
+                    if (event.get("type") == "response_item" and payload.get("type") == "message"
+                            and payload.get("role") == "assistant" and payload.get("phase") == "final_answer"):
+                        final.append({"file": session.relative_to(base).as_posix(), "line": number,
+                                      "text": "\n".join(c["text"] for c in payload["content"] if c.get("type") == "output_text")})
+        else:
+            stream = attempt.parent / "stdout.jsonl"
+            for number, line in enumerate(stream.read_text(encoding="utf-8").splitlines(), 1):
+                event = json.loads(line)
+                if event.get("type") == "result" and isinstance(event.get("result"), str):
+                    final.append({"file": stream.relative_to(base).as_posix(), "line": number, "text": event["result"]})
+        result = {"attempt": attempt.parent.name, "series": series,
+                  "record_sha256": runner.sha(attempt), "execution_status": record["execution_status"],
+                  "host": record["host"], "requested_model": record["requested_model"],
+                  "observed_model": record.get("observed_model"), "host_reported_model": record.get("host_reported_model"),
+                  "artifact_count": len(record["artifacts"]), "package_mutated": record["package_mutated"],
+                  "integrity_errors": [], "final_responses": final, "behavioral_status": "ungraded"}
+        target = out / (series + "--" + attempt.parent.name + ".json")
+        text = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == text, "retained extraction changed"
+        else:
+            target.write_text(text, encoding="utf-8")
+        print(json.dumps({k:result[k] for k in ("series", "attempt", "execution_status", "artifact_count")}))

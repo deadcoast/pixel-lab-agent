@@ -1,0 +1,21 @@
+"""Measure controlled input pixels without assigning artistic verdicts."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from pixl.assets import inspect
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "input-measurements"
+out.mkdir(exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+report = {}
+for name in ("translucent-reference.png", "small-separated.png"):
+    path = base / "control/fixture-inputs" / name
+    report[name] = {"sha256": runner.sha(path), "measurement": inspect(path, alpha="full")}
+runner.write_json(out / "result.json", {"inputs": report,
+    "limits": "Deterministic evaluator fixtures, not generated production art. Measurements do not establish artistic acceptance or universal rules."})
+print(json.dumps(report))

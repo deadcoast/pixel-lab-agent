@@ -1,0 +1,44 @@
+"""Index observable instruction reads and image-related events without interpreting them."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "event-index"
+out.mkdir(exist_ok=True)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+for series in ("control", "revised"):
+    for rec_path in sorted((base / series / "runs").glob("*/record.json")):
+        rec = json.loads(rec_path.read_text())
+        assert not runner.verify_run(rec_path.parent)
+        events = []
+        streams = list(rec_path.parent.glob("native-session-*.jsonl")) if rec["host"] == "codex" else [rec_path.parent / "stdout.jsonl"]
+        for stream in streams:
+            for number, line in enumerate(stream.read_text(encoding="utf-8").splitlines(), 1):
+                event = json.loads(line)
+                calls = []
+                if rec["host"] == "codex":
+                    payload = event.get("payload", {})
+                    if event.get("type") == "response_item" and payload.get("type") == "function_call":
+                        calls.append((payload.get("name", ""), payload.get("arguments", "")))
+                elif event.get("type") == "assistant":
+                    for content in event.get("message", {}).get("content", []):
+                        if content.get("type") == "tool_use":
+                            calls.append((content.get("name", ""), json.dumps(content.get("input", {}))))
+                for name, args in calls:
+                    if any(token in name + args for token in ("view_image", "intake-sample.md", "inspection.md", "PROFILE.md", "SKILL.md", ".png")):
+                        events.append({"file": stream.relative_to(base).as_posix(), "line": number,
+                                       "tool": name, "arguments": args})
+        result = {"record_sha256": runner.sha(rec_path), "events": events,
+                  "limit": "Index of observable calls only; a call or filename alone does not establish successful read/view or artistic acceptance."}
+        target = out / f"{series}--{rec_path.parent.name}.json"
+        data = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == data
+        else:
+            target.write_text(data, encoding="utf-8")
+        print(json.dumps({"series": series, "attempt": rec_path.parent.name, "indexed_calls": len(events)}))

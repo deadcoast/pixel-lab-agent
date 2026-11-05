@@ -1,0 +1,38 @@
+"""Archive all completed native attempts including hidden project state, verifying bytes."""
+import json
+import shutil
+import sys
+import zipfile
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/skill-handoff"
+archive_dir = base / "archives"
+archive_dir.mkdir(exist_ok=True)
+for series in ("baseline", "workspace-control", "native-control", "revised", "revised-routing"):
+    folder = base / series
+    for attempt in (folder / "runs").iterdir():
+        assert (attempt / "record.json").is_file(), f"unfinished: {attempt}"
+        assert not runner.verify_run(attempt)
+    paths = [p for p in sorted(folder.rglob("*")) if p.is_file() and "__pycache__" not in p.parts]
+    expected = {p.relative_to(base).as_posix(): runner.sha(p) for p in paths}
+    target = archive_dir / f"{series}.zip"
+    with zipfile.ZipFile(target, "x", zipfile.ZIP_DEFLATED) as archive:
+        for path in paths:
+            archive.write(path, path.relative_to(base).as_posix())
+    with zipfile.ZipFile(target) as archive:
+        actual = {name: sha256(archive.read(name)).hexdigest() for name in archive.namelist()}
+    assert actual == expected
+    manifest = {"archive": target.name, "archive_sha256": runner.sha(target),
+                "file_count": len(expected), "files": expected,
+                "excludes": ["regenerable __pycache__ files only"],
+                "preserves_hidden_project_state": True}
+    runner.write_json(archive_dir / f"{series}.manifest.json", manifest)
+    print(json.dumps({"series": series, "files": len(expected), "zip_bytes": target.stat().st_size}))
+for source in ("archive_handoff.py", "collect_handoff.py"):
+    shutil.copyfile(ROOT / "build" / source, archive_dir / (source + ".txt"))
+shutil.copyfile(ROOT / "evaluations/host_trials.py", archive_dir / "host_trials.py.txt")

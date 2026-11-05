@@ -1,0 +1,375 @@
+{
+  "intake": [
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "The user has not chosen final frame dimensions; source dimensions do not establish this choice."
+    },
+    {
+      "id": "destination",
+      "project": "project",
+      "key": "destination_engine",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "No engine, target project, or version was supplied; eventual import acceptance remains unverified."
+    },
+    {
+      "id": "display",
+      "project": "project",
+      "key": "display_scale_backgrounds",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "The intended display scale and gameplay backgrounds are unknown. Diagnostic light/dark/patterned backgrounds cannot establish game-scene readability."
+    },
+    {
+      "id": "edges",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "A: navy exterior band, typically two pixels, with navy upper projections",
+        "B: same silhouette with teal outer edges and no contrasting navy border"
+      ],
+      "sources": [
+        "src.a",
+        "src.b",
+        "src.observations"
+      ],
+      "rationale": "Preserve both supplied alternatives until a sample comparison or user selection resolves the conflict."
+    },
+    {
+      "id": "motion",
+      "project": "project",
+      "key": "animation_scope",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "Animation counts, directions and timing were not requested. Begin with a proposed static pose; defer motion planning."
+    },
+    {
+      "id": "projection",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "side"
+      },
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "Side-view gameplay is explicit in the brief; references themselves appear frontal."
+    },
+    {
+      "id": "provider",
+      "project": "project",
+      "key": "provider_access",
+      "status": "observed",
+      "value": "No connected PixelLab provider tool exposed",
+      "sources": [
+        "src.capabilities"
+      ],
+      "rationale": "Local PIXL operations are present; no remote generation, polling or download request was made."
+    },
+    {
+      "id": "role_cues",
+      "project": "project",
+      "key": "role_cues",
+      "status": "proposed",
+      "value": {
+        "medic": "larger aid satchel with a cream patch; shared underlying body",
+        "scout": "compact rear field pack and forward-facing eye landmark"
+      },
+      "sources": [
+        "src.brief",
+        "src.observations"
+      ],
+      "rationale": "Separate role silhouettes while retaining the simple teal body and cream detail language. Equipment and side-facing adaptation are proposals, not source facts."
+    },
+    {
+      "id": "roles",
+      "project": "project",
+      "key": "members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "src.brief"
+      ],
+      "rationale": "The user explicitly requests these two roles."
+    },
+    {
+      "id": "sample_trial",
+      "project": "project",
+      "key": "sample_trial",
+      "status": "proposed",
+      "value": {
+        "canvas": [
+          32,
+          32
+        ],
+        "facing": "right",
+        "pose": "idle",
+        "treatments": [
+          "A",
+          "B"
+        ]
+      },
+      "sources": [
+        "src.observations"
+      ],
+      "rationale": "Smallest proposed comparison: same scout pose, proportions and landmarks with two edge treatments. Trial size does not settle final canvas."
+    },
+    {
+      "id": "source_alpha",
+      "project": "project",
+      "key": "reference_alpha",
+      "status": "observed",
+      "value": {
+        "$symbol": "binary"
+      },
+      "sources": [
+        "src.measurements"
+      ],
+      "rationale": "Both references have only zero/255 alpha; output alpha policy still requires a concrete sample contract."
+    },
+    {
+      "id": "source_canvas",
+      "project": "project",
+      "key": "reference_canvas",
+      "status": "observed",
+      "value": [
+        32,
+        32
+      ],
+      "sources": [
+        "src.measurements"
+      ],
+      "rationale": "Measured in both reference PNGs; not adopted as final output size."
+    },
+    {
+      "id": "source_palette",
+      "project": "project",
+      "key": "reference_colors",
+      "status": "observed",
+      "value": [
+        "#56B5BC",
+        "#F4DDA2",
+        "#25354A (A only)"
+      ],
+      "sources": [
+        "src.measurements",
+        "src.observations"
+      ],
+      "rationale": "Both references are flat teal and cream; A also uses navy. No family-wide exact palette lock is inferred."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "family.delivery",
+      "project": "project",
+      "phase": "delivery",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: scout.sample is open; it must be done",
+        "task_prerequisite: medic.production is open; it must be done",
+        "task_decision: family.delivery needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "out.family",
+          "name": "Planned family package; membership and baseline to be bound when actual candidates exist",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q.continuity",
+              "name": "Family consistency",
+              "check": "Compare the exact accepted scout and medic together at native and enlarged scales: body volume, ground contact, facing convention, face placement, palette use and edge treatment agree; equipment distinguishes the roles without relying only on recoloring.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q.engine",
+              "name": "Destination import",
+              "check": "In the named target engine/project, import the retained sprites and demonstrate agreed sampling, display scale, transparency and contact/pivot placement against representative gameplay backgrounds. If later animation is added, declare slicing and timing criteria before review.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "medic.production",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: scout.sample is open; it must be done",
+        "output_contract: out.medic needs a concrete raster contract",
+        "task_decision: medic.production needs an evidence-backed adoption decision",
+        "method_poc: method.readability needs current passing method proof"
+      ],
+      "outputs": [
+        {
+          "id": "out.medic",
+          "name": "Side-facing medic idle; exact baseline to be bound after scout acceptance",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q.raster",
+              "name": "Candidate file measurements",
+              "check": "The actual candidate decodes and matches its saved trial contract canvas and alpha policy; apply an exact palette test only if a palette is explicitly adopted. Measure bounds and placement without treating them as visual acceptance.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q.medic",
+              "name": "Medic style and role readability",
+              "check": "At native scale and integer-nearest enlargement, the medic reads as a distinct aid carrier through the proposed satchel silhouette and patch after those cues are selected, while matching the accepted scout proportions, chosen edge treatment and color language.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "research",
+      "project": "project",
+      "phase": "research",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "out.research",
+          "name": "Reference review and representative-sample plan",
+          "candidate": "report.research",
+          "requirements": [
+            {
+              "id": "q.research",
+              "name": "Resumable source review",
+              "check": "The retained report identifies both references and their hashes, exact researched method source ranges, reference observations versus proposals and unresolved choices, fixture limitations, and the next sample and provider blockers.",
+              "domain": "other",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "v.research",
+              "reason": "Report retains source identities, exact citations, observations, proposals, unknowns, fixture limits and concrete next actions; no asset acceptance is claimed.",
+              "reviewer": "actor",
+              "evidence": [
+                "e.research"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "report.research",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "q.research",
+                  "name": "Resumable source review",
+                  "check": "The retained report identifies both references and their hashes, exact researched method source ranges, reference observations versus proposals and unresolved choices, fixture limitations, and the next sample and provider blockers.",
+                  "domain": "other",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "v.research",
+                  "reason": "Report retains source identities, exact citations, observations, proposals, unknowns, fixture limits and concrete next actions; no asset acceptance is claimed.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e.research"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scout.sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: out.scout needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "out.scout",
+          "name": "Representative side-facing scout idle; raster plan awaiting concrete trial contract",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q.raster",
+              "name": "Candidate file measurements",
+              "check": "The actual candidate decodes and matches its saved trial contract canvas and alpha policy; apply an exact palette test only if a palette is explicitly adopted. Measure bounds and placement without treating them as visual acceptance.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q.scout",
+              "name": "Scout style and role readability",
+              "check": "At native scale and integer-nearest enlargement, the side-facing idle scout retains the reference body language and readable cream face landmark; its compact field-pack silhouette and forward direction are legible on declared diagnostic backgrounds. Compare outline alternatives with pose and proportions held fixed. Record diagnostic-background and viewing limits.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 2,
+  "hash": "fffa7c95c694d1ab897c7257befeca4adcb5de94f26817d6bf7093b716da8197",
+  "files_verified": true
+}

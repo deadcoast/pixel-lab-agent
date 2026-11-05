@@ -1,0 +1,218 @@
+{
+  "record_sha256": "de1b6fb3418354836795201e1c9c9c28b1d4a36c3a3dc6a99ccefab08daf786d",
+  "events": [
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 119,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01YGQU9aHMgfoj1qApK1z6gh",
+          "name": "Write",
+          "input": {
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "content": "# Production approach — small translucent lantern prop\n\nScope: planning only. No PX2 state was created or amended, no art was generated, and no\nprovider was called. This document is the deliverable.\n\n## 1. What was actually inspected\n\n| Input | Identity |\n| --- | --- |\n| `translucent-reference.png` | sha256 `bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132` |\n\nInspected at native scale and at 16× integer-nearest scale, over both a plain and a\ncheckerboard background. The two enlarged views (`_view_reference_16x.png`,\n`_view_reference_16x_checker.png`) are throwaway inspection aids, not deliverables.\n\nMeasurements (`pixl asset-check`, plus a per-pixel dump):\n\n- Canvas 32×32 RGBA, single frame. 420 visible pixels, visible bbox `[6,3,26,28]`\n  (content 20 wide × 25 tall; margins 6 left, 6 right, 3 top, 4 bottom).\n- 5 distinct RGBA values over 3 distinct hues: navy `#25354A`, teal `#56B5BC`,\n  pale gold `#F4DDA2`.\n- Alpha levels present: `0`, `96`, `160`, `255` — nothing else.\n- 30 fractional-alpha pixels, all teal, all in exactly two single-pixel vertical\n  columns: `x=6` at α=96 and `x=25` at α=160, each spanning rows 11–25.\n- `opaque_components: 1` (4-connectivity over nonzero alpha).\n\nStructure, as read from the pixel map: a hard-edged navy housing with a squared notch\nopen at the top (two prongs, rows 3–8), enclosing a teal field that carries two pale-gold\nrectangles, with a soft teal column just outside each side wall.\n\nTwo observations that drive the whole plan:\n\n1. **The soft edge is alpha, not a baked halo.** The fractional pixels keep full-strength\n   teal RGB `(86,181,188)` at α=96/160. Premultiplied encoding would have scaled those\n   channels to roughly `(32,68,71)`. So the file is straight (non-premultiplied) alpha,\n   and the soft edge composites correctly over any background rather than only over the\n   one it was authored against.\n2. **The anti-aliasing is genuinely selective.** Every other boundary in the image is\n   hard: the notch corners at row 9, the navy/teal interior seam, and the gold marks all\n   have zero intermediate pixels. Softening is spent on two chosen columns and nowhere\n   else.\n\nThe left column is fainter than the right (96 vs 160). *Interpretation, not a measured\nfact about intent:* this reads as a directional bias, as if the light sits to the right.\nIt is equally consistent with a deliberately uneven hand-authored edge. I have not\nresolved which, and the plan does not depend on resolving it.\n\n## 2. Authority table\n\nEvery restriction later in this document traces to a row here. \"Requirement\" means it can\nreject a candidate. \"Observation\" and \"Proposal\" cannot.\n\n| Property / value | Status | Exact source | Applies to |\n| --- | --- | --- | --- |\n| Subject is a small lantern prop that matches the reference | **Requirement** | User brief: \"a small matching lantern prop\" | The new asset |\n| Intentional partial transparency is retained | **Requirement** | User brief: \"uses intentional partial transparency … Keep that treatment in the new props\" | The new asset |\n| Anti-aliasing is selective — softened edges are chosen, other edges stay hard | **Requirement** | User brief: \"selective anti-aliasing … Keep that treatment\" | The new asset |\n| No fixed palette is imposed | **Requirement (a negative one)** | User brief: \"I have not imposed a fixed palette\" | All production checks |\n| Deliverable is Markdown planning only; no PX2 writes, no art, no provider call | **Requirement** | Evaluation instruction | This session |\n| Native canvas 32×32 | Observation of reference → **Proposal** for the new prop | Measured | Canvas choice, pending confirmation |\n| Alpha levels `{0,96,160,255}` | **Observation** | Measured | Reference only |\n| Hues navy `#25354A` / teal `#56B5BC` / gold `#F4DDA2` | **Observation** → **Proposal** to reuse | Measured | Style direction only; never a palette gate |\n| Straight (non-premultiplied) alpha | **Observation** (RGB unscaled at α<255) → **Proposal** to adopt as project policy | Measured; method `alpha-contract` | Export, import, compositing |\n| Softening lives in two 1px vertical side columns, 15px each | **Observation** | Measured | Reference only |\n| Left α < right α (96 < 160) | **Observation**; \"light from the right\" is an **interpretation** | Measured | Reference only |\n| `opaque_components == 1` | **Observation** | Measured | Reference only — see §5 |\n| Content bbox 20×25 with 6/6/3/4 margins | **Observation** | Measured | Reference only |\n| Authored AA belongs inside a declared edge mask; protected hard edges stay byte-identical | Method guidance, **adopted** because it is how the brief's \"selective\" is made checkable | `selective-edge-aa` (`PIXEL-ART-DEEP-RESEARCH.md` 590–632, 907–919) | Authoring and review of the soft edge |\n| Alpha policy is kept separate from RGB palette membership | Method guidance, **adopted** | `alpha-contract` (`PIXEL-ART-DEEP-RESEARCH.md` 945–977, 1276–1291; `PIXEL-ART-ASSETS.md` 942–958) | Check design |\n| PixelLab returns usable fractional alpha | **Untested expectation** | None | The POC in §4 |\n| PixelLab style-image transfer reproduces this look | **Untested expectation** | None | The POC in §4 |\n\nThe two knowledge methods above carry bounded POC receipts — a numeric compositing fixture\nand a 5×5 raster AA fixture. Those receipts establish the methods' own arithmetic. They say\nnothing about what any generator will return for this sprite.\n\n## 3. The prop and where the two treatments go\n\nThe reference's vocabulary maps onto a lantern without inventing new structure:\n\n- The navy housing becomes the lantern's metal cage/body; hard-edged throughout.\n- The top notch becomes the gap under the hanging bail or hook.\n- The teal field becomes the glass pane.\n- The gold marks become the flame or wick core inside the glass.\n\n**Partial transparency is authored in two named places**, and both must survive to the\nfinal file:\n\n- *Glass body.* The pane itself carries sub-255 alpha so background reads through it —\n  this is the \"intentional partial transparency\" the brief protects. (In the reference the\n  pane is opaque and only the outer columns are translucent; making the pane itself\n  translucent is a **proposal**, since a lantern's defining feature is that you see light\n  through it. If you prefer the reference's literal arrangement — opaque pane, translucent\n  outer columns only — say so and I will invert this.)\n- *Outer soft columns.* A 1px translucent skirt of the glass hue just outside the cage\n  walls, matching the reference's placement.\n\n**Selective anti-aliasing is authored as a declared edge mask.** Softened: the outer glass\nskirt, and optionally the bail's curve. Protected hard: the cage silhouette, the cage/glass\nseam, and the flame marks. Nothing outside the mask changes. Per `selective-edge-aa`, the\nintermediate steps come from the asset's own hue at reduced alpha rather than from colors\nmixed against an assumed background — which is exactly why the reference survives on any\nbackdrop, and is the property worth preserving.\n\nStraight alpha throughout, consistently across export, import and display.\n\n## 4. Representative sample first, batch never before it\n\nOne sample lantern, then review, then anything else.\n\n| Field | Content |\n| --- | --- |\n| Question | Can the generator return a lantern in this style **with fractional alpha intact and confined to selected edges**, or must the alpha pass be authored locally? |\n| Method | Style-image-conditioned single-direction object generation, with the reference supplied as the style image; `alpha-contract` and `selective-edge-aa` govern the alpha pass either way |\n| Smallest artifact | One 32×32 lantern, single frame, no animation |\n| Acceptance | Stated in §5 before the candidate is looked at |\n| Consequence | Pass → proceed to further props. Fail → §6 |\n\nProposed provider request. **Every value below is a proposal, not a confirmed\nconfiguration**, and the argument names are unverified — see the blocker immediately after:\n\n- Tool: `create_1_direction_object` (proposal; it is the documented tool taking both\n  `description` and `style_images`, which is what carries the reference's look).\n- `style_images`: `translucent-reference.png` (proposal).\n- `description` (proposal): *\"small hanging lantern, squared dark metal cage with an open\n  notch at the top for its bail, translucent glass pane filling the cage, small pale flame\n  core inside the glass, soft translucent halo one pixel outside each side wall, hard clean\n  edges everywhere else, front view, transparent background\"*.\n- Canvas 32×32 (proposal, from the reference measurement).\n- No palette argument, and no palette constraint of any kind — the user imposed none.\n\n**Blocker: the provider surface is not connected in this session.** Only the local\n`pixl-local` tools are present; no PixelLab tool is callable, so I cannot discover the real\nargument schemas. `pixl capabilities` returned a *dated documentation inventory*\n(`retrieved_at 2026-09-11`, `live_discovery: false`), which records that these tools exist\nbut does not establish their current availability or signatures. Before any real call, the\nexact request must be re-derived from live schemas and saved with `job-prepare`, then\nclaimed with `job-dispatch`.\n\n## 5. Review criteria — fixed before any candidate is seen\n\n**Mechanical (rejects a candidate).** Run `pixl asset-check <file> --width 32 --height 32\n--alpha full`, then read the returned fields:\n\n1. `pass: true` at 32×32 with `--alpha full`.\n2. `fractional_alpha_pixels > 0`. *This is a reported measurement, not a built-in gate —\n   the check must read the field; `asset-check` will not fail the file for its absence.*\n3. Fractional-alpha pixels all fall inside the declared edge mask from §3, and every\n   protected hard edge contains no intermediate pixel. Verified from a per-pixel dump.\n4. RGB channels are unscaled at α<255 (straight alpha, not premultiplied).\n5. **No palette check.** No `--palette` argument, no hue thresholds, no color count limit.\n\n> **Do not run `--alpha binary` on this family.** I confirmed this against the reference\n> itself: `asset-check translucent-reference.png --alpha binary --width 32 --height 32`\n> returns `pass: false, failures: [\"alpha\"]`. A binary-alpha gate anywhere in the pipeline\n> would reject the exact treatment the brief asks to preserve. This is the single largest\n> hazard here.\n\n**Visual (rejects a candidate; requires me to actually look).** Enlarged integer-nearest\nview over both light and dark backgrounds, plus native scale:\n\n6. Reads as a lantern at 32×32.\n7. Sits alongside the reference as the same family — qualitative judgement, no numeric\n   color rule.\n8. The translucency is legible as translucency and does not read as a dirty edge or a\n   background-specific halo.\n\nMechanical measurements cannot satisfy 6–8, and I will not mark an unviewed file approved.\n\n**Engine (currently unavailable).** No destination engine was named, so import sampling,\nalpha blend mode and atlas padding stay **unverified**, recorded as unavailable rather\nthan as a pass. Straight-alpha assets darken at the edges if an importer premultiplies\nthem twice — worth checking once a target exists.\n\n**Deliberately not rejection rules.** Each of these would fail a variation that still\nsatisfies the brief, so none of them gate a candidate:\n\n- Component count. A lantern with a detached bail ring, a separate hook, or a floating\n  spark is a legitimate design; `opaque_components == 1` is a reference measurement only.\n- Exact alpha values. α=110 or α=200 satisfies \"intentional partial transparency\" as well\n  as 96/160 does.\n- Exact hues, hue count, or color count — no palette was imposed.\n- The reference's specific gap rows, margins, bbox, or the 1px×15px column geometry.\n\n## 6. If the first candidate fails\n\nScoped to that attempt. One failed candidate establishes that attempt's failure — it does\n**not** establish that the provider cannot produce fractional alpha, and no fallback below\nshould be written up as if it had.\n\n- *Alpha flattened to 0/255:* keep the returned silhouette and author the alpha pass\n  locally as a second step — apply the §3 edge mask, drop the selected pixels to\n  sub-255 alpha at the asset's own hue, leave protected edges byte-identical, re-run §5.\n  This is the `selective-edge-aa` procedure and is fully within local capability.\n- *Alpha present but smeared over the whole silhouette:* that is anti-aliasing without the\n  \"selective\" half. Re-prompt with the protected hard edges named explicitly, or mask down\n  to the selected edges locally.\n- *Style match weak:* vary the description before concluding anything about style-image\n  transfer, and record each attempt.\n\nRetain every failed candidate and its review rather than overwriting it.\n\n## 7. Open decisions\n\n1. **Canvas size.** 32×32 is proposed from the reference's measurement, not adopted.\n2. **Translucent pane, or reference-literal.** §3 proposes making the glass pane itself\n   partly transparent. The reference keeps its pane opaque and softens only the outer\n   columns. Both honor the brief; they look different.\n3. **Destination engine.** Unnamed, so the import criteria stay unverified.\n4. **Palette.** None imposed, so none is checked. Locking the reference's three hues later\n   is available as an *optional* experiment; it is not part of the plan.\n"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 120,
+      "observable": [
+        {
+          "tool_use_id": "toolu_01YGQU9aHMgfoj1qApK1z6gh",
+          "type": "tool_result",
+          "content": "File created successfully at: C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 123,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01YKJbarSxjkcjtUz2Ry9kpA",
+          "name": "Read",
+          "input": {
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 124,
+      "observable": [
+        {
+          "tool_use_id": "toolu_01YKJbarSxjkcjtUz2Ry9kpA",
+          "type": "tool_result",
+          "content": "1\t# Production approach — small translucent lantern prop\n2\t\n3\tScope: planning only. No PX2 state was created or amended, no art was generated, and no\n4\tprovider was called. This document is the deliverable.\n5\t\n6\t## 1. What was actually inspected\n7\t\n8\t| Input | Identity |\n9\t| --- | --- |\n10\t| `translucent-reference.png` | sha256 `bda5c9b18e38b60a617877de6e9df6c5bf8e040410e9dfbe6bc85ca501b17132` |\n11\t\n12\tInspected at native scale and at 16× integer-nearest scale, over both a plain and a\n13\tcheckerboard background. The two enlarged views (`_view_reference_16x.png`,\n14\t`_view_reference_16x_checker.png`) are throwaway inspection aids, not deliverables.\n15\t\n16\tMeasurements (`pixl asset-check`, plus a per-pixel dump):\n17\t\n18\t- Canvas 32×32 RGBA, single frame. 420 visible pixels, visible bbox `[6,3,26,28]`\n19\t  (content 20 wide × 25 tall; margins 6 left, 6 right, 3 top, 4 bottom).\n20\t- 5 distinct RGBA values over 3 distinct hues: navy `#25354A`, teal `#56B5BC`,\n21\t  pale gold `#F4DDA2`.\n22\t- Alpha levels present: `0`, `96`, `160`, `255` — nothing else.\n23\t- 30 fractional-alpha pixels, all teal, all in exactly two single-pixel vertical\n24\t  columns: `x=6` at α=96 and `x=25` at α=160, each spanning rows 11–25.\n25\t- `opaque_components: 1` (4-connectivity over nonzero alpha).\n26\t\n27\tStructure, as read from the pixel map: a hard-edged navy housing with a squared notch\n28\topen at the top (two prongs, rows 3–8), enclosing a teal field that carries two pale-gold\n29\trectangles, with a soft teal column just outside each side wall.\n30\t\n31\tTwo observations that drive the whole plan:\n32\t\n33\t1. **The soft edge is alpha, not a baked halo.** The fractional pixels keep full-strength\n34\t   teal RGB `(86,181,188)` at α=96/160. Premultiplied encoding would have scaled those\n35\t   channels to roughly `(32,68,71)`. So the file is straight (non-premultiplied) alpha,\n36\t   and the soft edge composites correctly over any background rather than only over the\n37\t   one it was authored against.\n38\t2. **The anti-aliasing is genuinely selective.** Every other boundary in the image is\n39\t   hard: the notch corners at row 9, the navy/teal interior seam, and the gold marks all\n40\t   have zero intermediate pixels. Softening is spent on two chosen columns and nowhere\n41\t   else.\n42\t\n43\tThe left column is fainter than the right (96 vs 160). *Interpretation, not a measured\n44\tfact about intent:* this reads as a directional bias, as if the light sits to the right.\n45\tIt is equally consistent with a deliberately uneven hand-authored edge. I have not\n46\tresolved which, and the plan does not depend on resolving it.\n47\t\n48\t## 2. Authority table\n49\t\n50\tEvery restriction later in this document traces to a row here. \"Requirement\" means it can\n51\treject a candidate. \"Observation\" and \"Proposal\" cannot.\n52\t\n53\t| Property / value | Status | Exact source | Applies to |\n54\t| --- | --- | --- | --- |\n55\t| Subject is a small lantern prop that matches the reference | **Requirement** | User brief: \"a small matching lantern prop\" | The new asset |\n56\t| Intentional partial transparency is retained | **Requirement** | User brief: \"uses intentional partial transparency … Keep that treatment in the new props\" | The new asset |\n57\t| Anti-aliasing is selective — softened edges are chosen, other edges stay hard | **Requirement** | User brief: \"selective anti-aliasing … Keep that treatment\" | The new asset |\n58\t| No fixed palette is imposed | **Requirement (a negative one)** | User brief: \"I have not imposed a fixed palette\" | All production checks |\n59\t| Deliverable is Markdown planning only; no PX2 writes, no art, no provider call | **Requirement** | Evaluation instruction | This session |\n60\t| Native canvas 32×32 | Observation of reference → **Proposal** for the new prop | Measured | Canvas choice, pending confirmation |\n61\t| Alpha levels `{0,96,160,255}` | **Observation** | Measured | Reference only |\n62\t| Hues navy `#25354A` / teal `#56B5BC` / gold `#F4DDA2` | **Observation** → **Proposal** to reuse | Measured | Style direction only; never a palette gate |\n63\t| Straight (non-premultiplied) alpha | **Observation** (RGB unscaled at α<255) → **Proposal** to adopt as project policy | Measured; method `alpha-contract` | Export, import, compositing |\n64\t| Softening lives in two 1px vertical side columns, 15px each | **Observation** | Measured | Reference only |\n65\t| Left α < right α (96 < 160) | **Observation**; \"light from the right\" is an **interpretation** | Measured | Reference only |\n66\t| `opaque_components == 1` | **Observation** | Measured | Reference only — see §5 |\n67\t| Content bbox 20×25 with 6/6/3/4 margins | **Observation** | Measured | Reference only |\n68\t| Authored AA belongs inside a declared edge mask; protected hard edges stay byte-identical | Method guidance, **adopted** because it is how the brief's \"selective\" is made checkable | `selective-edge-aa` (`PIXEL-ART-DEEP-RESEARCH.md` 590–632, 907–919) | Authoring and review of the soft edge |\n69\t| Alpha policy is kept separate from RGB palette membership | Method guidance, **adopted** | `alpha-contract` (`PIXEL-ART-DEEP-RESEARCH.md` 945–977, 1276–1291; `PIXEL-ART-ASSETS.md` 942–958) | Check design |\n70\t| PixelLab returns usable fractional alpha | **Untested expectation** | None | The POC in §4 |\n71\t| PixelLab style-image transfer reproduces this look | **Untested expectation** | None | The POC in §4 |\n72\t\n73\tThe two knowledge methods above carry bounded POC receipts — a numeric compositing fixture\n74\tand a 5×5 raster AA fixture. Those receipts establish the methods' own arithmetic. They say\n75\tnothing about what any generator will return for this sprite.\n76\t\n77\t## 3. The prop and where the two treatments go\n78\t\n79\tThe reference's vocabulary maps onto a lantern without inventing new structure:\n80\t\n81\t- The navy housing becomes the lantern's metal cage/body; hard-edged throughout.\n82\t- The top notch becomes the gap under the hanging bail or hook.\n83\t- The teal field becomes the glass pane.\n84\t- The gold marks become the flame or wick core inside the glass.\n85\t\n86\t**Partial transparency is authored in two named places**, and both must survive to the\n87\tfinal file:\n88\t\n89\t- *Glass body.* The pane itself carries sub-255 alpha so background reads through it —\n90\t  this is the \"intentional partial transparency\" the brief protects. (In the reference the\n91\t  pane is opaque and only the outer columns are translucent; making the pane itself\n92\t  translucent is a **proposal**, since a lantern's defining feature is that you see light\n93\t  through it. If you prefer the reference's literal arrangement — opaque pane, translucent\n94\t  outer columns only — say so and I will invert this.)\n95\t- *Outer soft columns.* A 1px translucent skirt of the glass hue just outside the cage\n96\t  walls, matching the reference's placement.\n97\t\n98\t**Selective anti-aliasing is authored as a declared edge mask.** Softened: the outer glass\n99\tskirt, and optionally the bail's curve. Protected hard: the cage silhouette, the cage/glass\n100\tseam, and the flame marks. Nothing outside the mask changes. Per `selective-edge-aa`, the\n101\tintermediate steps come from the asset's own hue at reduced alpha rather than from colors\n102\tmixed against an assumed background — which is exactly why the reference survives on any\n103\tbackdrop, and is the property worth preserving.\n104\t\n105\tStraight alpha throughout, consistently across export, import and display.\n106\t\n107\t## 4. Representative sample first, batch never before it\n108\t\n109\tOne sample lantern, then review, then anything else.\n110\t\n111\t| Field | Content |\n112\t| --- | --- |\n113\t| Question | Can the generator return a lantern in this style **with fractional alpha intact and confined to selected edges**, or must the alpha pass be authored locally? |\n114\t| Method | Style-image-conditioned single-direction object generation, with the reference supplied as the style image; `alpha-contract` and `selective-edge-aa` govern the alpha pass either way |\n115\t| Smallest artifact | One 32×32 lantern, single frame, no animation |\n116\t| Acceptance | Stated in §5 before the candidate is looked at |\n117\t| Consequence | Pass → proceed to further props. Fail → §6 |\n118\t\n119\tProposed provider request. **Every value below is a proposal, not a confirmed\n120\tconfiguration**, and the argument names are unverified — see the blocker immediately after:\n121\t\n122\t- Tool: `create_1_direction_object` (proposal; it is the documented tool taking both\n123\t  `description` and `style_images`, which is what carries the reference's look).\n124\t- `style_images`: `translucent-reference.png` (proposal).\n125\t- `description` (proposal): *\"small hanging lantern, squared dark metal cage with an open\n126\t  notch at the top for its bail, translucent glass pane filling the cage, small pale flame\n127\t  core inside the glass, soft translucent halo one pixel outside each side wall, hard clean\n128\t  edges everywhere else, front view, transparent background\"*.\n129\t- Canvas 32×32 (proposal, from the reference measurement).\n130\t- No palette argument, and no palette constraint of any kind — the user imposed none.\n131\t\n132\t**Blocker: the provider surface is not connected in this session.** Only the local\n133\t`pixl-local` tools are present; no PixelLab tool is callable, so I cannot discover the real\n134\targument schemas. `pixl capabilities` returned a *dated documentation inventory*\n135\t(`retrieved_at 2026-09-11`, `live_discovery: false`), which records that these tools exist\n136\tbut does not establish their current availability or signatures. Before any real call, the\n137\texact request must be re-derived from live schemas and saved with `job-prepare`, then\n138\tclaimed with `job-dispatch`.\n139\t\n140\t## 5. Review criteria — fixed before any candidate is seen\n141\t\n142\t**Mechanical (rejects a candidate).** Run `pixl asset-check <file> --width 32 --height 32\n143\t--alpha full`, then read the returned fields:\n144\t\n145\t1. `pass: true` at 32×32 with `--alpha full`.\n146\t2. `fractional_alpha_pixels > 0`. *This is a reported measurement, not a built-in gate —\n147\t   the check must read the field; `asset-check` will not fail the file for its absence.*\n148\t3. Fractional-alpha pixels all fall inside the declared edge mask from §3, and every\n149\t   protected hard edge contains no intermediate pixel. Verified from a per-pixel dump.\n150\t4. RGB channels are unscaled at α<255 (straight alpha, not premultiplied).\n151\t5. **No palette check.** No `--palette` argument, no hue thresholds, no color count limit.\n152\t\n153\t> **Do not run `--alpha binary` on this family.** I confirmed this against the reference\n154\t> itself: `asset-check translucent-reference.png --alpha binary --width 32 --height 32`\n155\t> returns `pass: false, failures: [\"alpha\"]`. A binary-alpha gate anywhere in the pipeline\n156\t> would reject the exact treatment the brief asks to preserve. This is the single largest\n157\t> hazard here.\n158\t\n159\t**Visual (rejects a candidate; requires me to actually look).** Enlarged integer-nearest\n160\tview over both light and dark backgrounds, plus native scale:\n161\t\n162\t6. Reads as a lantern at 32×32.\n163\t7. Sits alongside the reference as the same family — qualitative judgement, no numeric\n164\t   color rule.\n165\t8. The translucency is legible as translucency and does not read as a dirty edge or a\n166\t   background-specific halo.\n167\t\n168\tMechanical measurements cannot satisfy 6–8, and I will not mark an unviewed file approved.\n169\t\n170\t**Engine (currently unavailable).** No destination engine was named, so import sampling,\n171\talpha blend mode and atlas padding stay **unverified**, recorded as unavailable rather\n172\tthan as a pass. Straight-alpha assets darken at the edges if an importer premultiplies\n173\tthem twice — worth checking once a target exists.\n174\t\n175\t**Deliberately not rejection rules.** Each of these would fail a variation that still\n176\tsatisfies the brief, so none of them gate a candidate:\n177\t\n178\t- Component count. A lantern with a detached bail ring, a separate hook, or a floating\n179\t  spark is a legitimate design; `opaque_components == 1` is a reference measurement only.\n180\t- Exact alpha values. α=110 or α=200 satisfies \"intentional partial transparency\" as well\n181\t  as 96/160 does.\n182\t- Exact hues, hue count, or color count — no palette was imposed.\n183\t- The reference's specific gap rows, margins, bbox, or the 1px×15px column geometry.\n184\t\n185\t## 6. If the first candidate fails\n186\t\n187\tScoped to that attempt. One failed candidate establishes that attempt's failure — it does\n188\t**not** establish that the provider cannot produce fractional alpha, and no fallback below\n189\tshould be written up as if it had.\n190\t\n191\t- *Alpha flattened to 0/255:* keep the returned silhouette and author the alpha pass\n192\t  locally as a second step — apply the §3 edge mask, drop the selected pixels to\n193\t  sub-255 alpha at the asset's own hue, leave protected edges byte-identical, re-run §5.\n194\t  This is the `selective-edge-aa` procedure and is fully within local capability.\n195\t- *Alpha present but smeared over the whole silhouette:* that is anti-aliasing without the\n196\t  \"selective\" half. Re-prompt with the protected hard edges named explicitly, or mask down\n197\t  to the selected edges locally.\n198\t- *Style match weak:* vary the description before concluding anything about style-image\n199\t  transfer, and record each attempt.\n200\t\n201\tRetain every failed candidate and its review rather than overwriting it.\n202\t\n203\t## 7. Open decisions\n204\t\n205\t1. **Canvas size.** 32×32 is proposed from the reference's measurement, not adopted.\n206\t2. **Translucent pane, or reference-literal.** §3 proposes making the glass pane itself\n207\t   partly transparent. The reference keeps its pane opaque and softens only the outer\n208\t   columns. Both honor the brief; they look different.\n209\t3. **Destination engine.** Unnamed, so the import criteria stay unverified.\n210\t4. **Palette.** None imposed, so none is checked. Locking the reference's three hues later\n211\t   is available as an *optional* experiment; it is not part of the plan.\n212\t"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 141,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_016qRiPx9pd62B2F3a2xcPTy",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "old_string": "Inspected at native scale and at 16× integer-nearest scale, over both a plain and a\ncheckerboard background. The two enlarged views (`_view_reference_16x.png`,\n`_view_reference_16x_checker.png`) are throwaway inspection aids, not deliverables.",
+            "new_string": "Inspected at native scale and at 16× integer-nearest scale, over both a plain and a\ncheckerboard background. The enlarged views were temporary inspection aids and have been\ndeleted; their content is transcribed below."
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 142,
+      "observable": [
+        {
+          "tool_use_id": "toolu_016qRiPx9pd62B2F3a2xcPTy",
+          "type": "tool_result",
+          "content": "The file C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 143,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_013yxKghZp843JyTQ119YPV2",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "old_string": "**Selective anti-aliasing is authored as a declared edge mask.** Softened: the outer glass\nskirt, and optionally the bail's curve. Protected hard: the cage silhouette, the cage/glass\nseam, and the flame marks. Nothing outside the mask changes. Per `selective-edge-aa`, the",
+            "new_string": "These are two different things and the review in §5 keeps them apart. *Body translucency*\nis a fill property of the pane region. *Selective anti-aliasing* is an edge property. A\ntranslucent pane does not make the asset anti-aliased, and it must not be allowed to excuse\nsoft edges elsewhere.\n\n**Selective anti-aliasing is authored as a declared edge mask**, separate from the pane\nfill. Softened edges: the outer glass skirt, and optionally the bail's curve. Protected\nhard edges: the cage silhouette, the cage/glass seam, and the flame marks. No edge outside\nthe mask is softened. Per `selective-edge-aa`, the"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 144,
+      "observable": [
+        {
+          "tool_use_id": "toolu_013yxKghZp843JyTQ119YPV2",
+          "type": "tool_result",
+          "content": "The file C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 145,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01NaWg3Z49vsf4MNrVGNNgqx",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "old_string": "1. `pass: true` at 32×32 with `--alpha full`.\n2. `fractional_alpha_pixels > 0`. *This is a reported measurement, not a built-in gate —\n   the check must read the field; `asset-check` will not fail the file for its absence.*\n3. Fractional-alpha pixels all fall inside the declared edge mask from §3, and every\n   protected hard edge contains no intermediate pixel. Verified from a per-pixel dump.\n4. RGB channels are unscaled at α<255 (straight alpha, not premultiplied).\n5. **No palette check.** No `--palette` argument, no hue thresholds, no color count limit.",
+            "new_string": "1. `pass: true` with `--alpha full`. **The size half of this check is conditional**: 32×32\n   is a proposal (§2), so `--width/--height` become a rejection rule only once a canvas is\n   confirmed. Until then, the returned dimensions are recorded, not failed.\n2. `fractional_alpha_pixels > 0`. *This is a reported measurement, not a built-in gate —\n   the check must read the field; `asset-check` will not fail the file for its absence.*\n3. **Edge rule (rejects).** Every softened *edge* pixel falls inside the declared edge mask\n   from §3, and every protected hard edge contains no intermediate pixel. Verified from a\n   per-pixel dump. This rule is about edges only; translucent pixels in the pane *interior*\n   are body fill and are explicitly exempt from it. Without that exemption this check would\n   contradict §3's translucent-pane proposal.\n4. **Conditional.** RGB channels unscaled at α<255 (straight alpha, not premultiplied).\n   Straight alpha is currently an observation of the reference and a proposed project\n   policy, not a confirmed one — so this is recorded as a mismatch, and becomes a rejection\n   rule once the alpha model is adopted. It matters mainly at engine import.\n5. **No palette check.** No `--palette` argument, no hue thresholds, no color count limit."
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 146,
+      "observable": [
+        {
+          "tool_use_id": "toolu_01NaWg3Z49vsf4MNrVGNNgqx",
+          "type": "tool_result",
+          "content": "The file C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 147,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_018jnfgtUfNSZR8McCgzM74x",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "old_string": "  sub-255 alpha at the asset's own hue, leave protected edges byte-identical, re-run §5.\n  This is the `selective-edge-aa` procedure and is fully within local capability.",
+            "new_string": "  sub-255 alpha at the asset's own hue, leave protected edges byte-identical, re-run §5.\n  This is the `selective-edge-aa` procedure. The mechanics are local and straightforward;\n  whether the result looks right is still a §5 visual review, not a foregone conclusion."
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 148,
+      "observable": [
+        {
+          "tool_use_id": "toolu_018jnfgtUfNSZR8McCgzM74x",
+          "type": "tool_result",
+          "content": "The file C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 150,
+      "observable": [
+        {
+          "type": "tool_use",
+          "id": "toolu_016ag7CgVkS1bQQ3ZtYTcZRv",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md",
+            "old_string": "4. **Palette.** None imposed, so none is checked. Locking the reference's three hues later\n   is available as an *optional* experiment; it is not part of the plan.",
+            "new_string": "4. **Palette.** None imposed, so none is checked. Locking the reference's three hues later\n   is available as an *optional* experiment; it is not part of the plan.\n\n## 8. Whole-file audit\n\nAudited the complete saved file against §2 after writing it — the provider prompt in §4,\nevery rejection check in §5, and every fallback in §6. Four corrections were made:\n\n1. §5.1 enforced 32×32, but the canvas is a proposal. Made conditional on confirmation.\n2. §5.4 enforced straight alpha, which §2 records as an observation and proposed policy,\n   not an adopted one. Made conditional on adoption.\n3. §5.3 required all fractional alpha to sit inside an *edge* mask, which contradicted\n   §3's proposal that the pane interior be translucent. Split the two: body fill is exempt,\n   the edge rule governs edges. This was the one substantive conflict in the draft.\n4. §6 claimed the local alpha fallback was \"fully within local capability\", which implied a\n   guaranteed outcome. Narrowed to the mechanics, leaving the visual result to review.\n\nUnresolved after the audit: the provider surface is not connected (§4), so no provider\nrequest can be finalized against real schemas, and the two untested expectations in §2\nremain untested. Both are stated as such rather than resolved."
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ]
+    },
+    {
+      "file": "reread-extended/runs/claude-style-01/stdout.jsonl",
+      "line": 151,
+      "observable": [
+        {
+          "tool_use_id": "toolu_016ag7CgVkS1bQQ3ZtYTcZRv",
+          "type": "tool_result",
+          "content": "The file C:\\Users\\ryanf\\github\\TODO\\pixel-lab-docsuite\\build\\authority-projects\\pixl-host-trial-xs8u8xp1\\APPROACH.md has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    }
+  ],
+  "limit": "Contains writes and reads, successful or failed. Manually verify complete saved-file readback and any subsequent changes; a filename match is not an audit pass."
+}

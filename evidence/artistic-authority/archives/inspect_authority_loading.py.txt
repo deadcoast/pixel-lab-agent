@@ -1,0 +1,22 @@
+"""Inspect observable native skill discovery/loading events only."""
+import json
+from pathlib import Path
+
+base = Path(__file__).resolve().parents[1] / "evidence/artistic-authority"
+for attempt in ("claude-style-01", "claude-counter-01"):
+    path = base / "revised/runs" / attempt / "stdout.jsonl"
+    events = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    print(attempt)
+    for event in events[:18]:
+        if event.get("type") == "system":
+            print(json.dumps({k: event.get(k) for k in ("type", "subtype", "cwd", "plugins", "skills", "agents", "model")}))
+        elif event.get("type") == "user":
+            for c in event.get("message", {}).get("content", []):
+                if c.get("type") in ("text", "tool_result"):
+                    s = c.get("text", c.get("content", ""))
+                    if isinstance(s, str):
+                        print(c.get("type"), s[:4500])
+        elif event.get("type") == "assistant":
+            for c in event.get("message", {}).get("content", []):
+                if c.get("type") == "tool_use":
+                    print(c.get("name"), c.get("input"))

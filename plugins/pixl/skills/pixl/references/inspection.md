@@ -13,6 +13,10 @@ work. Resolve the candidate X, its output F, contract C and required Q. Save app
 criteria before preparing views. If requirements or source bytes have changed, retain
 the earlier result and prepare a fresh packet against the amended saved plan.
 
+When forming or amending criteria, apply the [authority check](intake-sample.md#keep-authority-through-derived-rules).
+Retain the supporting project requirement or proposal through the verdict; an observed
+reference property or diagnostic threshold does not become an adopted rejection rule.
+
 Choose actual reference S/X IDs, an integer enlargement and useful backgrounds.
 An empty reference list is explicit. For animation or tiles, supply the known decoded
 frame and actual rectangles/timing/pivots or tile neighborhood. Unknown timing and

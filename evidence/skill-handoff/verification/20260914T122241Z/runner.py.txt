@@ -1,0 +1,34 @@
+"""Retain this pace's complete repository checks without replacing old attempts."""
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+out = ROOT / "evidence/skill-handoff/verification" / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+out.mkdir(parents=True, exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+checks = []
+for name, command in (
+    ("full-verifier", [sys.executable, "scripts/verify.py"]),
+    ("ruff", [sys.executable, "-m", "ruff", "check", "."]),
+    ("mypy", [sys.executable, "-m", "mypy", "pixl", "scripts", "setup.py"]),
+    ("uv-build", ["uv", "build"]),
+):
+    started = datetime.now(UTC).isoformat()
+    result = subprocess.run(command, cwd=ROOT, capture_output=True)
+    for stream in ("stdout", "stderr"):
+        (out / f"{name}.{stream}.txt").write_bytes(getattr(result, stream))
+    row = {"name": name, "command": command, "started_at": started,
+           "finished_at": datetime.now(UTC).isoformat(), "exit_code": result.returncode}
+    if name == "full-verifier":
+        report = json.loads((ROOT / "evidence/test-results.json").read_text())
+        row["verification_run"] = report["run_directory"]
+    checks.append(row)
+    print(json.dumps(row), flush=True)
+    (out / "result.json").write_text(json.dumps(checks, indent=2) + "\n", encoding="utf-8")
+manifest = {p.name: sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file()}
+(out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+raise SystemExit(int(any(c["exit_code"] for c in checks)))

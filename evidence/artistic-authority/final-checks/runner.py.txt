@@ -1,0 +1,91 @@
+"""Archive native attempts and verify final identities without regenerating proof."""
+import difflib
+import json
+import shutil
+import subprocess
+import sys
+import zipfile
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "final-checks"
+out.mkdir(exist_ok=False)
+archive_dir = base / "archives"
+archive_dir.mkdir(exist_ok=True)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+series_names = ("control", "revised", "embedded", "intent", "derivation", "reread", "reread-extended")
+protocols = {s: json.loads((base / s / "protocol.json").read_text()) for s in series_names}
+matched = ("cases", "recorder_sha256", "controls_sha256", "fixtures", "criteria")
+for key in matched:
+    assert all(p[key] == protocols["control"][key] for p in protocols.values()), key
+assert all(p["timeout_seconds"] == (600 if s == "reread-extended" else 360) for s, p in protocols.items())
+packages = {s: runner.inventory(base / s / "package", ("__pycache__",)) for s in series_names}
+assert all(packages["reread"][p] == packages["reread-extended"][p] for p in packages["reread"] if p.startswith(("skills/", "runtime/")) or p == "resources/agent/PROFILE.md")
+changes = {}
+for s in ("revised", "embedded", "intent", "derivation", "reread", "reread-extended"):
+    control = packages["control"]
+    changes[s] = [p for p in sorted(set(control) | set(packages[s])) if control.get(p) != packages[s].get(p)]
+    assert all(control[p] == packages[s][p] for p in control if p.startswith("runtime/") or p == "resources/agent/PROFILE.md")
+    patch = []
+    for name in changes[s]:
+        if name.startswith("skills/"):
+            a = (base / "control/package" / name).read_text(encoding="utf-8").splitlines(keepends=True)
+            b = (base / s / "package" / name).read_text(encoding="utf-8").splitlines(keepends=True)
+            patch.extend(difflib.unified_diff(a, b, fromfile=f"control/{name}", tofile=f"{s}/{name}"))
+    (out / f"{s}-instructions.diff").write_text("".join(patch), encoding="utf-8")
+archives, attempts = [], []
+for series in series_names:
+    folder = base / series
+    for attempt in sorted((folder / "runs").iterdir()):
+        assert (attempt / "record.json").is_file(), f"unfinished: {attempt}"
+        assert not runner.verify_run(attempt)
+        rec = json.loads((attempt / "record.json").read_text())
+        assert not rec["package_mutated"]
+        attempts.append({"series": series, "attempt": attempt.name, "record_sha256": runner.sha(attempt / "record.json"),
+                         "execution_status": rec["execution_status"], "elapsed_seconds": rec["elapsed_seconds"],
+                         "artifact_count": len(rec["artifacts"]), "package_mutated": False})
+    files = [p for p in sorted(folder.rglob("*")) if p.is_file() and "__pycache__" not in p.parts]
+    expected = {p.relative_to(base).as_posix(): runner.sha(p) for p in files}
+    target = archive_dir / f"{series}.zip"
+    with zipfile.ZipFile(target, "x", zipfile.ZIP_DEFLATED) as z:
+        for path in files:
+            z.write(path, path.relative_to(base).as_posix())
+    with zipfile.ZipFile(target) as z:
+        actual = {name: sha256(z.read(name)).hexdigest() for name in z.namelist()}
+    assert actual == expected
+    runner.write_json(archive_dir / f"{series}.manifest.json", {"archive": target.name, "sha256": runner.sha(target),
+                      "files": expected, "excludes": ["regenerable __pycache__ only"], "preserves_hidden_files": True})
+    archives.append({"name": target.name, "sha256": runner.sha(target), "files": len(files)})
+for name in ("collect_authority.py", "audit_authority_events.py", "inspect_authority_loading.py", "authority_observations.py", "authority_approach_events.py", "verify_authority_readback.py"):
+    shutil.copyfile(ROOT / "build" / name, archive_dir / (name + ".txt"))
+shutil.copyfile(ROOT / "evaluations/host_trials.py", archive_dir / "host_trials.py.txt")
+current = runner.inventory(ROOT / "plugins/pixl", ("__pycache__",))
+assert all(current[p] == packages["reread"][p] for p in current if p.startswith(("skills/", "runtime/")) or p == "resources/agent/PROFILE.md")
+old_handoff = (base / "control/package/skills/pixl/references/intake-sample.md").read_text(encoding="utf-8").split("## Revise, finish or leave a resumable boundary", 1)[1]
+assert (ROOT / "plugins/pixl/skills/pixl/references/intake-sample.md").read_text(encoding="utf-8").endswith(old_handoff)
+report = json.loads((ROOT / "evidence/test-results.json").read_text())
+assert report["status"] == "pass"
+assert all(runner.sha(ROOT / name) == digest for name, digest in report["checked_input_hashes"].items())
+manifest = json.loads((ROOT / "plugins/pixl/bundle-manifest.json").read_text())
+assert all(runner.sha(ROOT / "plugins/pixl" / row["path"]) == row["sha256"] for row in manifest["files"])
+assert runner.sha(ROOT / "plugins/pixl/bundle-manifest.json") == report["bundle_manifest_sha256"]
+command = ["git", "-c", "core.whitespace=trailing-space,space-before-tab,cr-at-eol", "diff", "--check", "--",
+           "plugins/pixl/skills", "evaluations/TODO.spec.md", "docs", "pixl", "scripts", "tests"]
+proc = subprocess.run(command, cwd=ROOT, capture_output=True)
+(out / "source-diff.stdout.txt").write_bytes(proc.stdout)
+(out / "source-diff.stderr.txt").write_bytes(proc.stderr)
+assert proc.returncode == 0
+summary = {"matched_protocol_fields": matched, "timeout_seconds_by_series": {s: p["timeout_seconds"] for s, p in protocols.items()},
+           "package_changes_from_control": changes, "archives": archives, "attempts": attempts,
+           "source_hashes_match": len(report["checked_input_hashes"]), "bundle_entries_match": len(manifest["files"]),
+           "verification_run": report["run_directory"], "previous_handoff_preserved": True,
+           "current_instructions_profile_runtime_match_final_trials": True, "source_diff_exit": proc.returncode,
+           "limits": ["Hash identity and process completion do not grade behavior.",
+                      "Verifier regenerated proof/example resources between trial versions; identities are explicit."]}
+runner.write_json(out / "result.json", summary)
+print(json.dumps(summary))

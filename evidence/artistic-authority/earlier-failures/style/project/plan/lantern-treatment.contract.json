@@ -1,0 +1,56 @@
+{
+  "name": "lantern-treatment",
+  "status": "proposed",
+  "derived_from": "plan/reference-treatment.contract.json",
+  "size": [32, 32],
+  "alpha_model": "straight (non-premultiplied) RGBA",
+  "alpha_levels": [0, 96, 160, 255],
+  "clear_rgb_must_be_zero": true,
+  "single_opaque_body": true,
+  "fringe_touches_body": true,
+  "max_fractional_share": 0.12,
+  "roles": {
+    "structure_dark": {
+      "rgb": ["#25354a"],
+      "translucent": false,
+      "note": "inherited unchanged from the reference; frame, cap, base, handle"
+    },
+    "structure_mid": {
+      "rgb": ["#3d7583"],
+      "translucent": false,
+      "note": "PROPOSED addition; lit metal edge on the right-biased side. Midway between the reference navy and glass teal so the metal stays in the same ramp"
+    },
+    "glass": {
+      "rgb": ["#56b5bc"],
+      "translucent": true,
+      "note": "inherited unchanged; the only role permitted fractional alpha"
+    },
+    "flame_mid": {
+      "rgb": ["#d99a4e"],
+      "translucent": false,
+      "note": "PROPOSED addition; warm mid so the flame has a two-step ramp the reference did not need"
+    },
+    "flame_core": {
+      "rgb": ["#f4dda2"],
+      "translucent": false,
+      "note": "inherited unchanged from the reference accent"
+    }
+  },
+  "glow": {
+    "rgb": "#56b5bc",
+    "left_alpha": 96,
+    "right_alpha": 160,
+    "trigger_rgb": ["#56b5bc"],
+    "note": "same rule and same levels that reproduce the reference byte-identically"
+  },
+  "geometry_target": {
+    "opaque_bbox": [9, 3, 22, 27],
+    "fringe_columns": {"left_x": 8, "right_x": 23},
+    "handle": "inverted-U ring, 2px thick, y 3..7",
+    "cap": "2px bar, y 8..9",
+    "glass_window": "x 11..20, y 10..24, posts 2px at x 9..10 and x 21..22",
+    "flame": "4x6 cluster centred x 14..17, y 15..20; cream core inside amber",
+    "base": "2px bar, y 25..26, foot row y 27",
+    "note": "Target, not a mandate. Deviation is fine if the silhouette reads better; the checked rules are palette, alpha levels, role/alpha separation and hard silhouette."
+  }
+}

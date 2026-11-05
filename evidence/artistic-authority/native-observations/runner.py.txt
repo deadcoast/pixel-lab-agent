@@ -1,0 +1,60 @@
+"""Locate successful image payloads and native skill injection, without grading."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "native-observations"
+out.mkdir(exist_ok=True)
+
+
+def images(value):
+    if isinstance(value, dict):
+        own = int(value.get("type") in ("image", "input_image", "image_url"))
+        return own + sum(images(v) for v in value.values())
+    if isinstance(value, list):
+        return sum(images(v) for v in value)
+    return 0
+
+
+for series in ("control", "revised", "embedded", "intent", "derivation", "reread", "reread-extended"):
+    for rec_path in sorted((base / series / "runs").glob("*/record.json")):
+        assert not runner.verify_run(rec_path.parent)
+        rec = json.loads(rec_path.read_text())
+        streams = list(rec_path.parent.glob("native-session-*.jsonl")) if rec["host"] == "codex" else [rec_path.parent / "stdout.jsonl"]
+        observations = []
+        for stream in streams:
+            for number, line in enumerate(stream.read_text(encoding="utf-8").splitlines(), 1):
+                event = json.loads(line)
+                if rec["host"] == "codex":
+                    payload = event.get("payload", {})
+                    if event.get("type") != "response_item" or payload.get("type") not in ("function_call_output", "custom_tool_call_output", "message"):
+                        continue
+                    observable = payload
+                else:
+                    if event.get("type") != "user":
+                        continue
+                    observable = event.get("message", {}).get("content", [])
+                count = images(observable)
+                text = json.dumps(observable, ensure_ascii=False)
+                injected = "Base directory for this skill:" in text
+                if count or injected:
+                    observations.append({"file": stream.relative_to(base).as_posix(), "line": number,
+                        "image_blocks": count, "native_skill_injection": injected,
+                        "authority_paragraph_present": injected and "Every production approach carries a compact authority table" in text,
+                        "treatment_paragraph_present": injected and "When the brief specifies a treatment" in text,
+                        "derivation_paragraph_present": injected and "Test each derived restriction" in text})
+        result = {"record_sha256": runner.sha(rec_path), "observations": observations,
+            "limit": "Image payloads prove delivery to the host context, not native physical display scale, perception, compliance or art acceptance. Skill text presence is not behavioral success."}
+        target = out / f"{series}--{rec_path.parent.name}.json"
+        data = json.dumps(result, indent=2) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == data
+        else:
+            target.write_text(data, encoding="utf-8")
+        print(json.dumps({"series": series, "attempt": rec_path.parent.name, "observations": observations}))
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())

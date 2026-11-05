@@ -8,6 +8,18 @@ Read the actual [PX2 specification](../../../resources/spec/PIXL-2.md) and [regi
 
 Inspect available references and artifacts at native scale and enlarged scale. Identify which choices affect this operation and which can remain unresolved. Preserve the user's actual instruction or relevant observation in project-owned source files, then record S identities/ranges. The profile supplies the judgment; dimensions, binary alpha and fixed palettes are not universal requirements.
 
+## Keep authority through derived rules
+
+Before deriving a style contract, acceptance criterion, checker rule or provider instruction, retain a compact account of each consequential restriction: property/value, authority and status, exact supporting instruction or adopted project choice, and where the restriction applies. Use the existing choice/source fields in PIXL state; this account adds no UDL fields. Carry its status through the entire approach, including prompts, checks and handoff.
+
+The user's instruction and adopted project choices establish requirements. Reference pixels establish observations; matching a reference does not adopt every measured dimension, color, gap, alpha level or component count as a mandatory rule. For an unspecified property, explain a project-specific proposal and the trial it would test. A proposed trial can proceed within existing authorization while the final production choice remains open.
+
+If your interpretation of an image differs from the brief's terminology, describe the observed pixels and the uncertainty while preserving the requested treatment. An alternative that contradicts that treatment is a change for the user to adopt, not a correction you can silently install in the contract. Neither a tool default nor a passing checker supplies that adoption.
+
+Keep diagnostic conclusions attached to their tested artifact, method, scale and background. Failure of one resized fixture does not establish a minimum canvas for other designs; a measured component count or contrast ratio does not establish a universal rejection threshold. Label verified tool limitations separately from artistic choices.
+
+Before saving the approach or a verdict, trace every enforced artistic restriction back to that account. Correct downstream claims such as “approved,” “binding,” or “must” when their source is still observed, proposed or unresolved. Preserve the earlier draft and its evidence when correcting it.
+
 ## Preserve intake and plan before execution
 
 1. Load the current state and canonical hash. Decode it through the runner, keeping `format: 2` in the host adapter. Amend the relevant fields, increase the revision by one, encode a candidate, validate against the project root, and commit with the previously observed hash. A stale-write error means reload and reconcile.
@@ -47,5 +59,7 @@ An unavailable V has `ev=[]` and a concrete reason. For example, a target projec
 - Commit state and leave a handoff with the next task or unresolved requirement. A cold session starts with `workflow` and the focused `context`, inspecting retained observations before repeating work.
 
 This operation ends with either a representative sample accepted against its actual requirements, or a concrete retained boundary: missing choice, failed candidate, unavailable inspection, or next proof. Explain that useful outcome plainly; keep hashes, record IDs and mechanical details in evidence unless they clarify a conflict.
+
+If the next dependent step needs a consequential user choice, the final response must contain the useful progress saved, a direct concise question for the smallest set of necessary answers, and what those answers unlock. Carry a still-unanswered question into that final response even when it was asked earlier or saved in the handoff. Present genuine alternatives when helpful and keep suggested trials labeled as proposals. Reference dimensions remain observations until adopted for this project. Continue authorized work that is independent of the answer. When the necessary choices are already supplied, use them and report the next operation under the existing authorization.
 
 When the representative sample is accepted and the assignment continues across a family, enter the [family and delivery operation](family-delivery.md). It records the exact nominated sample as the baseline, saves member and destination plans, and declares collective continuity before batch results. Replaced/rejected samples and unknown provider attempts must be reconciled before dependent production; an old artifact's existence is not baseline eligibility.

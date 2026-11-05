@@ -1,0 +1,88 @@
+"""Check complete document delivery from recorded reads; never grade reasoning."""
+import json
+import re
+import sys
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "readback-evidence"
+out.mkdir(exist_ok=True)
+
+
+def normal(value):
+    return value.replace("\r\n", "\n").rstrip("\n")
+
+
+for series in ("reread", "reread-extended"):
+    for path in sorted((base / "approach-events").glob(f"{series}--*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        attempt = path.stem.removeprefix(series + "--")
+        rec_path = base / series / "runs" / attempt / "record.json"
+        assert not runner.verify_run(rec_path.parent)
+        rec = json.loads(rec_path.read_text())
+        final_path = rec_path.parent / "project/APPROACH.md"
+        final = normal(final_path.read_text(encoding="utf-8"))
+        pending, current, reads = {}, None, []
+        for event in data["events"]:
+            for item in event["observable"]:
+                kind = item.get("type")
+                text = None
+                match_known = False
+                if kind == "tool_use":
+                    pending[item["id"]] = item
+                elif kind == "tool_result":
+                    call = pending.get(item.get("tool_use_id"), {})
+                    inp = call.get("input", {})
+                    content = item.get("content", "")
+                    if not isinstance(content, str):
+                        continue
+                    if call.get("name") == "Write" and "created successfully" in content:
+                        current = inp["content"]
+                    elif call.get("name") == "Edit" and "updated successfully" in content:
+                        if current is not None and inp["old_string"] in current:
+                            current = current.replace(inp["old_string"], inp["new_string"], -1 if inp.get("replace_all") else 1)
+                        else:
+                            current = None
+                    elif call.get("name") == "Read":
+                        numbered = re.findall(r"(?m)^(\d+)\t(.*)$", content)
+                        if numbered and [int(n) for n, _ in numbered] == list(range(1, len(numbered) + 1)):
+                            text = normal("\n".join(t for _, t in numbered))
+                            match_known = current is not None and text == normal(current)
+                elif kind == "custom_tool_call_output":
+                    for block in item.get("output", []):
+                        if not isinstance(block, dict):
+                            continue
+                        try:
+                            result = json.loads(block.get("text", ""))
+                        except (json.JSONDecodeError, TypeError):
+                            continue
+                        if isinstance(result, dict) and result.get("exit_code") == 0 and isinstance(result.get("output"), str):
+                            if final in normal(result["output"]):
+                                text, match_known = final, True
+                if text is not None:
+                    digest = sha256(text.encode()).hexdigest()
+                    name = f"{series}--{attempt}--line-{event['line']}.md"
+                    target = out / name
+                    if target.exists():
+                        assert target.read_text(encoding="utf-8") == text + "\n"
+                    else:
+                        target.write_text(text + "\n", encoding="utf-8")
+                    reads.append({"source": event["file"], "line": event["line"], "extracted": name,
+                                  "normalized_sha256": digest, "lines": len(text.splitlines()),
+                                  "matches_complete_known_file": match_known, "matches_final_file": text == final})
+        result = {"record_sha256": runner.sha(rec_path), "execution_status": rec["execution_status"], "reads": reads,
+                  "limit": "Complete text delivery is a mechanical fact, not proof of attention, correct reasoning, completed handoff or artistic acceptance. A timeout remains interrupted."}
+        target = out / (path.stem + ".json")
+        encoded = json.dumps(result, indent=2) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == encoded
+        else:
+            target.write_text(encoded, encoding="utf-8")
+        print(json.dumps({"series": series, "attempt": attempt, "complete_readbacks": sum(r["matches_complete_known_file"] for r in reads),
+                          "final_file_readbacks": sum(r["matches_final_file"] for r in reads)}))
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())

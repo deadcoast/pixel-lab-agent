@@ -1,0 +1,361 @@
+{
+  "intake": [
+    {
+      "id": "i_alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": {
+        "$symbol": "binary"
+      },
+      "sources": [
+        "s_refobs"
+      ],
+      "rationale": "Both references contain zero fractional-alpha pixels. Recorded as an observation of the references, not yet as confirmed project policy."
+    },
+    {
+      "id": "i_canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_refobs"
+      ],
+      "rationale": "The user has not chosen the final canvas size. Observed: the references occupy 18x25 inside a 32x32 canvas. The choice is coupled to display_scale and to edge_treatment, because a border consumes 23.6% of the visible pixels at 1 px and 44.6% at 2 px at the supplied occupancy."
+    },
+    {
+      "id": "i_edges",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "2 px dark border in #25354A, the 8-connectivity boundary band, as in reference.png; head stubs carry no body colour and the interior drops to 14x15",
+        "no border, flat body colour over the whole 18x25 silhouette, as in reference-b.png"
+      ],
+      "sources": [
+        "s_brief",
+        "s_refobs",
+        "s_methods"
+      ],
+      "rationale": "The two supplied references have pixel-identical silhouettes, alpha and visors and differ only here, so this is a deliberate unresolved choice rather than a drafting inconsistency. The user flagged it and has not resolved it. A 1 px border is a measured third option carried in the study; it is a proposal, not a supplied reference."
+    },
+    {
+      "id": "i_engine",
+      "project": "project",
+      "key": "destination_engine",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "No destination engine or import route was supplied, so every engine criterion in this project is currently unperformable."
+    },
+    {
+      "id": "i_lighting",
+      "project": "project",
+      "key": "li",
+      "status": "observed",
+      "value": "flat; no shading, ramp or directional light present",
+      "sources": [
+        "s_refobs"
+      ],
+      "rationale": "Neither reference contains any value variation inside the body, so no light direction can be inferred. Whether the family stays flat is open."
+    },
+    {
+      "id": "i_members",
+      "project": "project",
+      "key": "family_members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The user named both members directly."
+    },
+    {
+      "id": "i_palette",
+      "project": "project",
+      "key": "pl",
+      "status": "observed",
+      "value": [
+        "#56B5BC",
+        "#25354A",
+        "#F4DDA2"
+      ],
+      "sources": [
+        "s_refobs"
+      ],
+      "rationale": "Measured from the references. #25354A occurs only in the bordered reference, so the palette cannot be confirmed before edge_treatment is. Whether these three are the whole project palette is not established."
+    },
+    {
+      "id": "i_sampling",
+      "project": "project",
+      "key": "sa",
+      "status": "proposed",
+      "value": {
+        "$symbol": "nearest"
+      },
+      "sources": [
+        "s_methods"
+      ],
+      "rationale": "Proposed from integer-presentation. Not confirmed, because the destination engine and display scale are unknown."
+    },
+    {
+      "id": "i_scale",
+      "project": "project",
+      "key": "display_scale",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_methods"
+      ],
+      "rationale": "integer-presentation requires the logical resolution, camera convention and target viewport; none were supplied. A canvas size has no meaning without the scale it is drawn at."
+    },
+    {
+      "id": "i_view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "side"
+      },
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The user stated the family is for a side-view game."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t_edge_study",
+      "project": "project",
+      "phase": "research",
+      "state": "active",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "f_study_sheet",
+          "name": "Outline treatment comparison sheet",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_study_mech",
+              "name": "study sheet mechanics",
+              "check": "study/outline-study.png is a single 138x104 frame containing only the three reference colours, the silhouette mask grey, the three declared background colours and the gutter marker.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_study_visual",
+              "name": "study sheet coverage",
+              "check": "Viewed at native scale and at integer enlargement, the sheet shows the shared silhouette and all three border treatments on light, dark and busy backgrounds, and for each treatment the visor and both head stubs can be judged as separable or not separable from the background.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        },
+        {
+          "id": "f_study_report",
+          "name": "Outline and canvas findings for the user's decision",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_report_grounded",
+              "name": "findings are grounded",
+              "check": "The findings document states, for every border treatment, the measured border pixel share and remaining interior, cites the exact source path, hash and line range behind each method claim, and selects no treatment on the user's behalf.",
+              "domain": "other",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_family_delivery",
+      "project": "project",
+      "phase": "delivery",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_scout_sample is open; it must be done",
+        "task_prerequisite: t_medic_production is open; it must be done",
+        "task_decision: t_family_delivery needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "f_family_manifest",
+          "name": "Scout and medic family delivery manifest",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_family_continuity",
+              "name": "family continuity",
+              "check": "Scout and medic, viewed together at native scale, share silhouette mass, border treatment, palette and lighting, with no unintended volume or anchor drift between them.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_distinct",
+              "name": "roles are distinguishable",
+              "check": "Viewed together at native scale, scout and medic are tellable apart by shape or insignia rather than by colour alone, inside whatever interior the confirmed border treatment leaves.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_medic_production",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_scout_sample is open; it must be done",
+        "output_contract: f_medic needs a concrete raster contract",
+        "task_decision: t_medic_production needs an evidence-backed adoption decision",
+        "method_poc: k_silhouette needs current passing method proof"
+      ],
+      "outputs": [
+        {
+          "id": "f_medic",
+          "name": "Medic matching the accepted scout sample",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas_match",
+              "name": "canvas and alpha",
+              "check": "The candidate file matches the confirmed canvas size, the confirmed alpha policy and the confirmed palette.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "role readability",
+              "check": "At the confirmed canvas and display scale, on the game's own backgrounds, the character reads as its intended role and the visor and both head stubs stay separable from the background.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_engine_import",
+              "name": "engine import",
+              "check": "The destination engine imports the sprite with the intended sampling, integer scale, pivot and transparency.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_scout_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_edge_study is active; it must be done",
+        "output_contract: f_scout_sample needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "f_scout_sample",
+          "name": "Representative scout pose, side view",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas_match",
+              "name": "canvas and alpha",
+              "check": "The candidate file matches the confirmed canvas size, the confirmed alpha policy and the confirmed palette.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "role readability",
+              "check": "At the confirmed canvas and display scale, on the game's own backgrounds, the character reads as its intended role and the visor and both head stubs stay separable from the background.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_engine_import",
+              "name": "engine import",
+              "check": "The destination engine imports the sprite with the intended sampling, integer scale, pivot and transparency.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 1,
+  "hash": "fe9e16f26fbecb3ece1ceb898770d21bd53c393e6760ebaac59b01eb569fef9f",
+  "files_verified": true
+}
