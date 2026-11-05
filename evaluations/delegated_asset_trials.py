@@ -22,11 +22,13 @@ sys.path.insert(0, str(ROOT))
 from evaluations.host_trials import codex_command, inventory, outcome, sha, write_json
 
 BRIEF = (
-    "Generate one 32x32 side-view teal robot sprite matching reference.png: two antennae, "
+    "Generate one 32x32 front-facing teal robot sprite matching reference.png: two antennae, "
     "two yellow eyes, dark outlines and binary transparency, with no ground shadow. "
     "The reference palette is #25354A, #56B5BC and #F4DDA2. These requirements apply "
     "only to this controlled test. Deliver one PNG and a concise review. No engine "
-    "integration is required. Provider HTTP calls are mocked; do not call real PixelLab."
+    "integration is required. Provider HTTP calls are mocked; do not call real PixelLab. "
+    "The mock is expected to return bytes identical to the reference. Accept that as "
+    "a deterministic test response, never as proof of newly generated artwork."
 )
 
 

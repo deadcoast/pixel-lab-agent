@@ -1,6 +1,8 @@
 # PX-EVAL-004 — delegated PixelLab integration in both hosts
 
-**Status:** selected next milestone, 2026-11-05; implementation and host trials pending.
+**Status:** implementation and offline checks complete, 2026-11-05; native trials
+are recorded in the [outcome review](../evidence/delegated-asset-request/README.md).
+The review, not a host exit code, determines acceptance.
 
 **Product outcome:** Claude or Codex delegates an asset-generation request to PIXL.
 PIXL uses the official PixelLab integration to submit the request, observe the job,
@@ -10,7 +12,8 @@ retrieve and inspect its output, and return usable asset files to the caller.
 mocked. No real generation requests, PixelLab credits or provider network access
 are part of the tests. Retained images are mock response payloads, not a replacement
 for the production integration or a shortcut around its generation-request path.
-This planning change does not launch model benchmark sessions.
+Native trials use the installed hosts and their existing login; ordinary unit tests
+do not start host agents.
 
 The milestone should reveal which existing mechanisms help production, which need
 a simpler interface, and which can remain optional reference infrastructure. Keep
@@ -23,6 +26,15 @@ Keep production wired to the official PixelLab surface supported by the host.
 Identify that surface and its actual request/response contract before authoring
 fixtures; do not interchange HTTP endpoint schemas and MCP tool schemas by guesswork.
 The existing local PIXL state server remains responsible for state and evidence.
+
+The implemented route is `POST /v2/create-image-pixflux-background`, followed by
+`GET /v2/background-jobs/{job_id}` and decoding `last_response.image.base64`.
+The [retained official OpenAPI subset](../knowledge/pixellab-http-image.json)
+identifies the source, retrieval date and full-source hash. The optional
+[adapter](../pixl/pixellab_http.py) and [MCP bridge](../pixl/pixellab_mcp.py)
+use the existing durable job and candidate-import operations. Only
+[HTTP transport](pixellab_mock.py) is replaced in the trials; its process denies
+socket creation. Production and mock jobs cannot switch transport modes.
 
 Substitute only the outward provider boundary in tests: the host tool dispatcher
 or the adapter's HTTP transport, as applicable. Request construction, dispatch
@@ -131,12 +143,14 @@ by itself authorizes removing existing work.
 
 ## Work remaining
 
-- [ ] Identify the official production interface and its test interception boundary.
-- [ ] Prepare the matched generation brief, schema-bound responses and image payloads.
-- [ ] Exercise request, job, retrieval and failure behavior without provider access.
+- [x] Identify the official production interface and its test interception boundary.
+- [x] Prepare the matched generation brief, schema-bound responses and image payloads.
+- [x] Exercise request, job, retrieval and failure behavior without provider access.
 - [ ] Run and independently review actual delegation and delivery in Claude.
 - [ ] Run and independently review actual delegation and delivery in Codex.
 - [ ] Publish per-host outcomes and evidence-backed interface recommendations.
 
-This document defines the work; it does not claim those integration tests or host
-trials have already run.
+Run `python -m unittest tests.test_pixellab_http tests.test_delegated_trials` for
+the bounded offline checks. Use `evaluations/delegated_asset_trials.py --host
+claude|codex --out NEW_DIRECTORY` to freeze inputs without launching a host;
+add `--run` to execute a native trial. Every attempt requires a fresh directory.

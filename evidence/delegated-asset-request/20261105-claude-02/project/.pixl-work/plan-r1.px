@@ -1,0 +1,18 @@
+PX2 1
+@actor:A{nm=~4:PIXL;rl=agent}
+@brief:S{at=~10:2026-11-05;au=local;dg=~64:1453d35b5fab34f9d94a5e3febfbe21588ea3a8fdeac3e3b7bccb55a87ac4480;ln=[1,1];ur=~8:BRIEF.md}
+@ch_al:I{ky=~2:al;pr=@project;so=[@brief];st=confirmed;vl=binary;wh=@user;wy=~35:Brief requires binary transparency.}
+@ch_facing:I{ky=~6:facing;pr=@project;so=[@brief];st=confirmed;vl=~12:front-facing;wh=@user;wy=~36:Brief requires a front-facing robot.}
+@ch_features:I{ky=~8:features;pr=@project;so=[@brief];st=confirmed;vl=[~10:teal robot,~12:two antennae,~15:two yellow eyes,~13:dark outlines,~16:no ground shadow];wh=@user;wy=~132:Required identity features stated in the brief. Reference component counts, coordinates and gaps are observations, not requirements.}
+@ch_pl:I{ky=~2:pl;pr=@project;so=[@brief];st=confirmed;vl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];wh=@user;wy=~139:Brief states the reference palette and asks the sprite to match reference.png; adopted as the output palette for this controlled test only.}
+@ch_px:I{ky=~2:px;pr=@project;so=[@brief];st=confirmed;vl=[32,32];wh=@user;wy=~57:Brief requires one 32x32 sprite for this controlled test.}
+@ch_sa:I{ky=~2:sa;pr=@project;so=[];st=proposed;vl=nearest;wh=@actor;wy=~125:Proposal: nearest-neighbour enlargement for review views; no engine integration is required so no engine sampling is adopted.}
+@ch_vw:I{ky=~2:vw;pr=@project;so=[];st=proposed;vl=side;wh=@actor;wy=~191:Proposal: the contract view enum has no front option; side (straight-on, no top-down tilt) is the closest projection. The brief's front-facing requirement is retained separately as ch_facing.}
+@contract:C{al=binary;ch=[@ch_px,@ch_pl,@ch_al,@ch_vw,@ch_sa,@ch_facing,@ch_features];li=~101:Unspecified by the brief; follow the reference treatment (observation, not an adopted lighting rule).;nm=~30:Teal robot 32x32 test contract;pl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];px=[32,32];sa=nearest;vw=side}
+@make_sprite:T{ca=[];dc=[];dp=[];ip=[@reference];kn=[];nm=~71:Produce and review one 32x32 teal robot sprite (controlled mocked test);op=[@sprite];ow=@actor;ph=sample;pr=@project;st=open;vr=[]}
+@project:P{br=~562:Generate one 32x32 front-facing teal robot sprite matching reference.png: two antennae, two yellow eyes, dark outlines and binary transparency, with no ground shadow. The reference palette is #25354A, #56B5BC and #F4DDA2. These requirements apply only to this controlled test. Deliver one PNG and a concise review. No engine integration is required. Provider HTTP calls are mocked; do not call real PixelLab. The mock is expected to return bytes identical to the reference. Accept that as a deterministic test response, never as proof of newly generated artwork.;ct=@contract;in=[@ch_px,@ch_pl,@ch_al,@ch_vw,@ch_sa,@ch_facing,@ch_features];nm=~17:Teal robot sprite;ow=@user;sc=[@brief]}
+@q_mech:Q{ck=~109:The PNG is 32x32, every pixel alpha is 0 or 255, and every visible color is one of #25354A, #56B5BC, #F4DDA2.;dm=mechanical;md=local;nm=~25:Canvas, alpha and palette;so=[@brief];wh=@user}
+@q_visual:Q{ck=~232:Viewed at native and integer-enlarged scale on light and dark backgrounds, the sprite reads as one front-facing teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and corresponds to reference.png.;dm=visual;md=visual;nm=~34:Robot identity and reference match;so=[@brief];wh=@user}
+@reference:X{dg=~64:d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7;kd=reference;nm=~30:User-supplied reference sprite;ur=~13:reference.png}
+@sprite:F{ct=@contract;kd=sprite;nm=~21:Teal robot sprite PNG;rq=[@q_mech,@q_visual];tk=@make_sprite}
+@user:A{nm=~13:Project owner;rl=user}

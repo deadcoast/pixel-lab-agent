@@ -5,7 +5,9 @@ Claude and Codex through the official PixelLab integration. Exercise the product
 request, job, retrieval, inspection and delivery workflow with only external calls
 mocked; tests must not submit real generation jobs or consume credits.
 [PX-EVAL-004](../evaluations/delegated-asset-request.spec.md) defines acceptance
-and the mechanism assessment. Implementation and trials remain pending. Preserve
+and the mechanism assessment. The adapter and offline tests are implemented;
+[native trial evidence](../evidence/delegated-asset-request/README.md) records outcomes
+and interface friction separately from live provider execution. Preserve
 existing work; the dated review below remains historical context.
 
 Reviewed 2026-09-11 from commit `52f86dd`. This is a development review of the initial scaffold. It describes observed mechanisms and the work needed to support the intended agent; it does not certify a production system. The user's current direction is authoritative: this project concerns agent profiles and skills, with PIXL as the pixel-art production profile. The developer reviewing it does not adopt that profile.
