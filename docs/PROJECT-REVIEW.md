@@ -1,5 +1,13 @@
 # PIXL scaffold review and development direction
 
+**Next milestone selected, 2026-11-05:** test a delegated generation request in
+Claude and Codex through the official PixelLab integration. Exercise the production
+request, job, retrieval, inspection and delivery workflow with only external calls
+mocked; tests must not submit real generation jobs or consume credits.
+[PX-EVAL-004](../evaluations/delegated-asset-request.spec.md) defines acceptance
+and the mechanism assessment. Implementation and trials remain pending. Preserve
+existing work; the dated review below remains historical context.
+
 Reviewed 2026-09-11 from commit `52f86dd`. This is a development review of the initial scaffold. It describes observed mechanisms and the work needed to support the intended agent; it does not certify a production system. The user's current direction is authoritative: this project concerns agent profiles and skills, with PIXL as the pixel-art production profile. The developer reviewing it does not adopt that profile.
 
 **Current development update, 2026-09-11:** source-grounded research, intake/sample acceptance, durable provider recovery, local family delivery and [candidate inspection](../spec/candidate-inspection.md) are implemented. Inspection retains exact native/enlarged views, original semantic conditions and explicit reviews through existing PX2 X/E/V; it introduces no new UDL version or automatic artistic judgment. The current verifier passed 380 tests, one Windows privilege skip and 39 reference checks. The [inspection evidence](../evidence/candidate-inspection/README.md) separates runtime/copy proofs from new native profile trials. The earlier [five-case matched evaluation](../evaluations/README.md) stays frozen with its original package, failures and viewing limits. Remaining pressure cases, real generation and destination acceptance remain open; [MIVIM tasks](../evaluations/TODO.spec.md) retain that work.

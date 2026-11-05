@@ -128,6 +128,17 @@ PixelLab authentication remains a separate harness connection. Consult [PixelLab
 
 ## Local operations and handoff
 
+An optional, separate [HTTP bridge](../plugins/pixl/scripts/pixellab.py) supports
+the official PixelLab async image endpoint. Configure another stdio server with
+the selected Python interpreter and arguments `PATH/TO/pixellab.py --root PROJECT`.
+Supply `PIXELLAB_API_KEY` through that server's environment; keep its value out of
+project files. It is not enabled by the local MCP configuration. Its five tools
+cover contract discovery, saved preparation, submission, polling and PNG import.
+See the [provider operation](../plugins/pixl/skills/pixl/references/provider-recovery.md)
+for the sequence. Authentication and live generation have not been tested here.
+The [delegated trial runner](../evaluations/delegated_asset_trials.py) substitutes
+only HTTP transport and prohibits provider network calls; it needs no PixelLab key.
+
 The CLI is available as `python -m pixl`, as `pixl` after package installation, or through the bundled runner. Run `--help` for exact arguments. New lifecycle work begins with `intake STORE --name NAME --brief TEXT --root ROOT`; its PX2 `state.px` has no invented style contract. Follow the [intake/sample skill](../plugins/pixl/skills/pixl/references/intake-sample.md) to retain choices and save planned outputs/criteria before verdicts. `workflow FILE --root ROOT` reports candidate-specific checks and blockers. Legacy `init` remains a PX1 initializer with scaffold defaults; existing stores are never silently upgraded. Use `context FILE FOCUS --budget BYTES`, `ready FILE` and `impact FILE ID` for focused work, and `commit STORE CANDIDATE --expect SHA256 --root ROOT` after reconciling the current hash. Use the same project root for file checks and commits when the store sits in a subdirectory.
 
 For a method question, follow the [knowledge operation](../plugins/pixl/skills/pixl/references/knowledge.md). `sources` discovers the selected runtime's verified supplied-source inventory; `sources --root ROOT` explicitly checks a source tree. Use `knowledge METHOD_ID`, then retrieve the method's dependency closure from `knowledge/library.px` with the resource root returned by discovery. `source PATH --expect SHA256 --start N --end N` retrieves exact cited text. Through MCP, `pixl_sources` discovers library sources and `pixl_source` with `scope: "library"` resolves their paths within those installed resources; the default `scope: "project"` continues to resolve project files. Current identities never fall back to old bundled filenames.

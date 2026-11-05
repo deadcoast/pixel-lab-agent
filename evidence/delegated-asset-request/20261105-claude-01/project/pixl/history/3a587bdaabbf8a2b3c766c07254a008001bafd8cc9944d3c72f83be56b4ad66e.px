@@ -1,0 +1,17 @@
+PX2 1
+@actor:A{nm=~4:PIXL;rl=agent}
+@alpha:I{ky=~2:al;pr=@project;so=[@brief];st=confirmed;vl=binary;wh=@user;wy=~35:Brief requires binary transparency.}
+@brief:S{at=~10:2026-11-05;au=local;dg=~64:445f1d5b759cba7d4d629181f80ff35d6d282b6ba25ed058f838c1d0afd30bd9;ln=[1,1];ur=~8:BRIEF.md}
+@canvas:I{ky=~2:px;pr=@project;so=[@brief];st=confirmed;vl=[32,32];wh=@user;wy=~57:Brief requires one 32x32 sprite for this controlled test.}
+@contract:C{al=binary;ch=[@canvas,@view,@alpha,@palette,@sampling,@features];li=~26:not specified by the brief;nm=~40:Teal robot 32x32 side-view test contract;pl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];px=[32,32];sa=nearest;vw=side}
+@features:I{ky=~16:subject_features;pr=@project;so=[@brief];st=confirmed;vl=~74:teal robot; two antennae; two yellow eyes; dark outlines; no ground shadow;wh=@user;wy=~46:Required subject features stated in the brief.}
+@make_robot:T{ca=[];dc=[];dp=[];ip=[@reference];kn=[];nm=~41:Generate and review the teal robot sprite;op=[@robot_sprite];ow=@actor;ph=sample;pr=@project;st=open;vr=[]}
+@palette:I{ky=~2:pl;pr=@project;so=[@brief];st=confirmed;vl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];wh=@user;wy=~193:Brief names this three-color reference palette among the requirements of this controlled test and asks for a sprite matching reference.png; interpreted as the output palette for this test only.}
+@project:P{br=~405:Generate one 32x32 side-view teal robot sprite matching reference.png: two antennae, two yellow eyes, dark outlines and binary transparency, with no ground shadow. The reference palette is #25354A, #56B5BC and #F4DDA2. These requirements apply only to this controlled test. Deliver one PNG and a concise review. No engine integration is required. Provider HTTP calls are mocked; do not call real PixelLab.;in=[@canvas,@view,@alpha,@palette,@sampling,@features];nm=~10:teal-robot;ow=@user;sc=[@brief]}
+@q_mechanical:Q{ck=~137:The candidate PNG is 32x32, has binary alpha (no fractional alpha pixels), and every visible pixel is one of #25354A, #56B5BC or #F4DDA2.;dm=mechanical;md=local;nm=~23:size, alpha and palette;so=[@brief];wh=@user}
+@q_visual:Q{ck=~287:Viewed at native and integer-enlarged scale, the candidate reads as a side-view teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and is consistent in subject and treatment with reference.png (exact pixel identity with the reference is not required).;dm=visual;md=visual;nm=~36:subject features and reference match;so=[@brief];wh=@user}
+@reference:X{dg=~64:d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7;kd=reference;nm=~27:User-supplied reference.png;ur=~13:reference.png}
+@robot_sprite:F{ct=@contract;kd=sprite;nm=~41:One 32x32 side-view teal robot sprite PNG;rq=[@q_mechanical,@q_visual];tk=@make_robot}
+@sampling:I{ky=~2:sa;pr=@project;so=[];st=proposed;vl=nearest;wh=@actor;wy=~161:Not stated by the brief; nearest-neighbor enlargement is proposed only for inspection views of this binary-alpha pixel sprite. No engine integration is required.}
+@user:A{nm=~13:Project owner;rl=user}
+@view:I{ky=~2:vw;pr=@project;so=[@brief];st=confirmed;vl=side;wh=@user;wy=~34:Brief requires a side-view sprite.}

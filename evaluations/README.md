@@ -1,5 +1,12 @@
 # PIXL host evaluations
 
+**Next milestone, 2026-11-05:** [PX-EVAL-004](delegated-asset-request.spec.md)
+tests the official PixelLab integration through a delegated generation request in
+each host. Exercise request construction, job handling, retrieval, inspection and
+parent consumption; mock only the external provider boundary. Tests must not
+submit real generation jobs or consume PixelLab credits. Implementation and trials
+remain pending. Earlier packages, attempts and verdicts stay unchanged.
+
 The newer [candidate-inspection milestone](../evidence/candidate-inspection/README.md)
 adds three native attempts in separate frozen series. Codex used the new operation
 with verified native/enlarged viewing and retained all three outcome categories.

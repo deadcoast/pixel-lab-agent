@@ -5,6 +5,30 @@ authority remains the profile, operation skills and versioned specifications.
 Evidence is under `evidence/host-evaluation/`; a host pass never stands in for
 artistic or destination acceptance.
 
+## Next milestone: PX-EVAL-004 — delegated PixelLab integration in both hosts
+
+- **Status:** selected next, 2026-11-05; specified, implementation and trials pending.
+- **WHO:** a parent agent delegates to PIXL in each host; the maintainer reviews
+  asserted requests, simulated provider responses, actual artifacts and caller evidence.
+- **WHAT:** a generation request exercises the official PixelLab integration,
+  job handling, retrieval, inspection and delivery in each host. Mock only external
+  provider calls; keep the production workflow as the implementation under test.
+- **WHERE:** [milestone and acceptance contract](delegated-asset-request.spec.md);
+  new execution evidence will live under `evidence/delegated-asset-request/`.
+- **WHY:** the product is a callable asset specialist. Existing local mechanisms
+  and planning trials do not establish that a calling agent receives useful art.
+- **Inputs:** matched test brief, fixtures tied to the official interface contract,
+  frozen package, actual delegation and an intercepted provider boundary.
+- **Proof:** parent-to-PIXL invocation, checked request arguments, simulated job
+  observations, artifact retrieval/review and parent consumption, with no live calls.
+- **Stopping condition:** both host deliveries satisfy their assignment; retained
+  run evidence identifies mechanisms to keep, simplify or leave optional. Failed
+  art or a required unavailable check leaves that host incomplete. Fresh PixelLab
+  execution remains unverified; paid generation is not a test prerequisite.
+- **Priority:** this is the next complete operation. Retain the backlog and fix
+  blockers it exposes; do not require completion of all six remaining PX-EVAL-003
+  scenarios or expand unrelated infrastructure before attempting this delivery.
+
 ## PX-EVAL-001 — recorded packaged-profile baseline
 
 - **Status:** implemented; initial evidence preserved before the matched continuation.
@@ -178,6 +202,9 @@ artistic or destination acceptance.
 ## PX-EVAL-003 — broaden outcome and recovery coverage
 
 - **Status:** planned; requires concrete fixtures or a separately authorized production brief.
+- **Priority update, 2026-11-05:** the selected next operation is the zero-provider-spend
+  [PX-EVAL-004 milestone](delegated-asset-request.spec.md). The six cases and fresh
+  real-art outcome below remain open and are not prerequisites for that operation.
 - **WHO:** maintainer supplies controlled pressure cases; actual production uses the
   chosen provider, project owner and target engine.
 - **WHAT:** execute the six unattempted catalog cases: language development, production
