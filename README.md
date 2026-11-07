@@ -46,7 +46,7 @@ Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also 
 |---|---|
 | [PX1 specification](spec/PIXL-1.md) / [registry](pixl/registry.json), [PX2 specification](spec/PIXL-2.md) / [registry](pixl/registry-v2.json) | Versioned syntax, types, semantics and boundaries |
 | [Design and implementation decisions](docs/IMPLEMENTATION.md) | WHO / WHAT / WHERE / WHY, research, alternatives and proof obligations |
-| [PIXL profile](agent/PROFILE.md) | Forward-facing expert behavior and production loop |
+| [PIXL profile](.agents/PROFILE.md) | Forward-facing expert behavior and production loop |
 | [Pixel-art research](docs/research/pixel-art-knowledge.md) | Curated methods, source corrections and artistic scope |
 | [PixelLab research](docs/research/pixellab-platform.md) | Tool capabilities, API distinctions and execution constraints |
 | [Verification](docs/VERIFICATION.md) | Reproduction commands, failed attempts, final evidence and limitations |

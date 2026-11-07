@@ -15,7 +15,7 @@ The product is a capable, reusable agent profile with operational skills, ground
 
 The repository is developing beyond its initial scaffold. Existing implementations, fixtures, counts, and version labels establish only what has been built and checked. They do not establish final architecture, artistic expertise, successful instruction following, or complete production workflows.
 
-Read [the project review](docs/PROJECT-REVIEW.md) for the operational model, observed gaps, and development order. Read [the production profile](agent/PROFILE.md) as the description of the intended specialist behavior.
+Read [the project review](docs/PROJECT-REVIEW.md) for the operational model, observed gaps, and development order. Read [the production profile](.agents/PROFILE.md) as the description of the intended specialist behavior.
 
 ## Sources and changes
 
