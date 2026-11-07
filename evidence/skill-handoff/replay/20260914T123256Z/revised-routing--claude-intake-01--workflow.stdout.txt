@@ -1,0 +1,620 @@
+{
+  "intake": [
+    {
+      "id": "i_alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": "binary",
+      "sources": [
+        "s_refobs"
+      ],
+      "rationale": "Both references contain zero fractional-alpha pixels. Observed from the source art; not yet confirmed as this project output policy."
+    },
+    {
+      "id": "i_canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_refobs"
+      ],
+      "rationale": "The user has explicitly not chosen the final canvas size. Both references are 32x32 carrying an 18x25 figure, which is an observation about the source art and not an adopted project value. This choice blocks every raster output plan."
+    },
+    {
+      "id": "i_design_language",
+      "project": "project",
+      "key": "design_language",
+      "status": "proposed",
+      "value": "Carry the flat colour, absent anti-aliasing, binary alpha and blocky low-detail construction of the references into a genuinely side-view figure; treat the front-facing symmetric shape of the references as a style swatch rather than as the character design.",
+      "sources": [
+        "s_brief",
+        "s_refobs"
+      ],
+      "rationale": "Proposal needing the agreement of the owner. Both references are front-facing and bilaterally symmetric while the stated destination is a side-view game, so the reference pose cannot be reproduced literally. This proposal states which parts of the references are being matched and which are not."
+    },
+    {
+      "id": "i_display_scale",
+      "project": "project",
+      "key": "display_scale",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_methods"
+      ],
+      "rationale": "The target on-screen integer zoom is not stated. The bundled integer-presentation method requires a target viewport as an input, and the scale bounds how much interior detail survives, so it interacts with the canvas choice."
+    },
+    {
+      "id": "i_engine",
+      "project": "project",
+      "key": "engine",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "No destination engine or importer is named, so no engine import acceptance can be performed in this project yet."
+    },
+    {
+      "id": "i_outline",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "reference.png: flat 2px dark outline #25354A fully enclosing the body, also carrying the shoulder bar, base bar and solid top stalks",
+        "reference-b.png: no outline, flat teal silhouette with cream eyes only"
+      ],
+      "sources": [
+        "s_brief",
+        "s_refobs",
+        "s_ref_a",
+        "s_ref_b"
+      ],
+      "rationale": "The user states the references disagree here. Measured: the two files differ in exactly 180 pixels and every difference is #25354A becoming #56B5BC. The outline is load-bearing rather than trim, because removing it also removes the shoulder bar, base bar and stalk interiors. Retained as a conflict; the bundled edge-rhythm method states contour style is authored intent and must not be resolved mechanically."
+    },
+    {
+      "id": "i_palette",
+      "project": "project",
+      "key": "pl",
+      "status": "observed",
+      "value": [
+        "#56B5BC",
+        "#F4DDA2",
+        "#25354A"
+      ],
+      "sources": [
+        "s_refobs",
+        "s_ref_a",
+        "s_ref_b"
+      ],
+      "rationale": "Measured from the references: teal body, cream eyes, and navy present only in reference.png. Observed, not agreed. Whether #25354A belongs to the output palette depends entirely on the unresolved outline decision, so this cannot be confirmed first."
+    },
+    {
+      "id": "i_role_diff",
+      "project": "project",
+      "key": "role_differentiation",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_refobs"
+      ],
+      "rationale": "How a scout reads as a scout and a medic as a medic is not stated, and neither reference carries role-identifying equipment or accent colour. At the detail density of the references this needs a deliberate device, such as a reserved accent hue or a silhouette attachment."
+    },
+    {
+      "id": "i_roster",
+      "project": "project",
+      "key": "roster",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The brief names exactly these two family members."
+    },
+    {
+      "id": "i_sampling",
+      "project": "project",
+      "key": "sa",
+      "status": "proposed",
+      "value": "nearest",
+      "sources": [
+        "s_methods"
+      ],
+      "rationale": "Proposal. Neither reference contains anti-aliasing or dithering, so nearest sampling preserves the supplied look. Proposed rather than confirmed because the display scale and engine are unknown."
+    },
+    {
+      "id": "i_view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": "side",
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The brief states the destination is a side-view game."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t_aid",
+      "project": "project",
+      "phase": "research",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "f_aid",
+          "name": "Outline and display-scale comparison sheet for the owner decision",
+          "candidate": "x_aid",
+          "requirements": [
+            {
+              "id": "q_aid_faithful",
+              "name": "decision aid is a faithful enlargement",
+              "check": "Every enlarged sprite panel in the sheet is an exact integer nearest-neighbour enlargement of the supplied reference bytes: each source pixel becomes a uniform z-by-z block of the identical colour, and no sprite pixel takes a colour absent from its source file.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "v_aid_faithful",
+              "reason": "All 36 panels were checked block by block: 14,040 opaque source pixels each enlarge into a uniform z-by-z block of the identical colour, with zero non-uniform blocks and zero colours absent from the source files. This is enlargement fidelity only and carries no artistic weight.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_aid_faithful"
+              ]
+            },
+            {
+              "id": "q_aid_useful",
+              "name": "decision aid supports the decision",
+              "check": "Viewed as an image, the sheet shows both outline treatments together at every sampled display scale on light, dark and busy backgrounds, and the difference between them is visible well enough to choose between them.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "v_aid_useful",
+              "reason": "The sheet was viewed in this session. It shows both treatments at all six sampled scales over light, dark and busy backgrounds, and it surfaced a finding neither reference shows alone: the navy outline loses the figure against dark backgrounds but is what separates it against busy ones. Stated limit: at 1x the two treatments are not reliably distinguishable, so the sheet supports the decision from 3x upward.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_aid_useful"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "x_aid",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "q_aid_faithful",
+                  "name": "decision aid is a faithful enlargement",
+                  "check": "Every enlarged sprite panel in the sheet is an exact integer nearest-neighbour enlargement of the supplied reference bytes: each source pixel becomes a uniform z-by-z block of the identical colour, and no sprite pixel takes a colour absent from its source file.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "v_aid_faithful",
+                  "reason": "All 36 panels were checked block by block: 14,040 opaque source pixels each enlarge into a uniform z-by-z block of the identical colour, with zero non-uniform blocks and zero colours absent from the source files. This is enlargement fidelity only and carries no artistic weight.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_aid_faithful"
+                  ]
+                },
+                {
+                  "id": "q_aid_useful",
+                  "name": "decision aid supports the decision",
+                  "check": "Viewed as an image, the sheet shows both outline treatments together at every sampled display scale on light, dark and busy backgrounds, and the difference between them is visible well enough to choose between them.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "v_aid_useful",
+                  "reason": "The sheet was viewed in this session. It shows both treatments at all six sampled scales over light, dark and busy backgrounds, and it surfaced a finding neither reference shows alone: the navy outline loses the figure against dark backgrounds but is what separates it against busy ones. Stated limit: at 1x the two treatments are not reliably distinguishable, so the sheet supports the decision from 3x upward.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_aid_useful"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_family",
+      "project": "project",
+      "phase": "delivery",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_scout is open; it must be done",
+        "task_prerequisite: t_medic is open; it must be done",
+        "task_decision: t_family needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "f_family",
+          "name": "Scout and medic family delivery manifest",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_family_continuity",
+              "name": "family continuity",
+              "check": "Viewed together at equal zoom the family members share height, volume, eye-line, ground contact and anchor placement, and use one palette.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_engine_import",
+              "name": "destination engine import",
+              "check": "The destination engine imports the sprites with the intended nearest sampling, integer scale, pivot placement and transparency, verified in the running engine.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_medic",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_sample is open; it must be done",
+        "output_contract: f_medic needs a concrete raster contract",
+        "task_decision: t_medic needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "f_medic",
+          "name": "Medic, side view",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas",
+              "name": "canvas and alpha",
+              "check": "The candidate file matches the confirmed canvas size exactly and contains zero fractional-alpha pixels under the confirmed alpha policy.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_palette",
+              "name": "palette membership",
+              "check": "Every visible pixel of the candidate is a member of the confirmed project palette, with no colours outside it.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_outline",
+              "name": "outline treatment applied",
+              "check": "The candidate applies the confirmed outline treatment consistently on every contour and on the interior landmarks that treatment is responsible for, inspected at native scale and at integer zoom.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "side-view readability",
+              "check": "At native scale on light, dark and busy backgrounds the figure reads as a side-view character with an unambiguous facing direction and separable head, torso and limb landmarks.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_match",
+              "name": "reads as the same style",
+              "check": "Viewed beside reference.png and reference-b.png at equal integer zoom, the candidate reads as the same art style in colour, detail density and edge language.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_read",
+              "name": "scout and medic are distinguishable",
+              "check": "At native scale a viewer can tell the scout from the medic by silhouette or accent alone, without text or a legend.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: f_sample needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "f_sample",
+          "name": "Representative side-view scout, single idle pose",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas",
+              "name": "canvas and alpha",
+              "check": "The candidate file matches the confirmed canvas size exactly and contains zero fractional-alpha pixels under the confirmed alpha policy.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_palette",
+              "name": "palette membership",
+              "check": "Every visible pixel of the candidate is a member of the confirmed project palette, with no colours outside it.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_outline",
+              "name": "outline treatment applied",
+              "check": "The candidate applies the confirmed outline treatment consistently on every contour and on the interior landmarks that treatment is responsible for, inspected at native scale and at integer zoom.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "side-view readability",
+              "check": "At native scale on light, dark and busy backgrounds the figure reads as a side-view character with an unambiguous facing direction and separable head, torso and limb landmarks.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_match",
+              "name": "reads as the same style",
+              "check": "Viewed beside reference.png and reference-b.png at equal integer zoom, the candidate reads as the same art style in colour, detail density and edge language.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_scout",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_sample is open; it must be done",
+        "output_contract: f_scout needs a concrete raster contract",
+        "task_decision: t_scout needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "f_scout",
+          "name": "Scout, side view",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas",
+              "name": "canvas and alpha",
+              "check": "The candidate file matches the confirmed canvas size exactly and contains zero fractional-alpha pixels under the confirmed alpha policy.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_palette",
+              "name": "palette membership",
+              "check": "Every visible pixel of the candidate is a member of the confirmed project palette, with no colours outside it.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_outline",
+              "name": "outline treatment applied",
+              "check": "The candidate applies the confirmed outline treatment consistently on every contour and on the interior landmarks that treatment is responsible for, inspected at native scale and at integer zoom.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "side-view readability",
+              "check": "At native scale on light, dark and busy backgrounds the figure reads as a side-view character with an unambiguous facing direction and separable head, torso and limb landmarks.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_match",
+              "name": "reads as the same style",
+              "check": "Viewed beside reference.png and reference-b.png at equal integer zoom, the candidate reads as the same art style in colour, detail density and edge language.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_read",
+              "name": "scout and medic are distinguishable",
+              "check": "At native scale a viewer can tell the scout from the medic by silhouette or accent alone, without text or a legend.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_study",
+      "project": "project",
+      "phase": "research",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "f_study",
+          "name": "Reference measurement and outline-conflict study",
+          "candidate": "x_study",
+          "requirements": [
+            {
+              "id": "q_study_complete",
+              "name": "reference study complete",
+              "check": "The retained study states both reference file identities by hash, the exact count and nature of the pixel differences between them, and names every choice it leaves unresolved.",
+              "domain": "other",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "v_study_complete",
+              "reason": "Every declared completeness check passed when run against the retained study: both reference hashes, the exact 180-pixel difference and its single colour-substitution nature, and the unresolved projection, role, scale and animation questions are all stated. This is a textual check and carries no artistic weight.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_study_complete"
+              ]
+            },
+            {
+              "id": "q_study_seen",
+              "name": "reference study matches what was viewed",
+              "check": "Both references were actually inspected at native scale and at integer enlargement, and the description in the study of the outline treatment and eye placement matches what was seen.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "v_study_seen",
+              "reason": "Both references were opened at native 32x32 and at 12x nearest-neighbour enlargement in this session. At native scale the outline difference was not reliably judgeable; the enlargement is what made it legible. What was seen matches the study, including that the navy in reference.png also carries the shoulder bar, base bar and solid stalks, so the unoutlined variant loses those landmarks and not merely the contour.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_study_seen"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "x_study",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "q_study_complete",
+                  "name": "reference study complete",
+                  "check": "The retained study states both reference file identities by hash, the exact count and nature of the pixel differences between them, and names every choice it leaves unresolved.",
+                  "domain": "other",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "v_study_complete",
+                  "reason": "Every declared completeness check passed when run against the retained study: both reference hashes, the exact 180-pixel difference and its single colour-substitution nature, and the unresolved projection, role, scale and animation questions are all stated. This is a textual check and carries no artistic weight.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_study_complete"
+                  ]
+                },
+                {
+                  "id": "q_study_seen",
+                  "name": "reference study matches what was viewed",
+                  "check": "Both references were actually inspected at native scale and at integer enlargement, and the description in the study of the outline treatment and eye placement matches what was seen.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "v_study_seen",
+                  "reason": "Both references were opened at native 32x32 and at 12x nearest-neighbour enlargement in this session. At native scale the outline difference was not reliably judgeable; the enlargement is what made it legible. What was seen matches the study, including that the navy in reference.png also carries the shoulder bar, base bar and solid stalks, so the unoutlined variant loses those landmarks and not merely the contour.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_study_seen"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 5,
+  "hash": "dc5029e484e22ee4dd9965287e2d1238864671c9a110825046e92d9f8d957000",
+  "files_verified": true
+}

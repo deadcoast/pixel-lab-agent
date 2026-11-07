@@ -1,5 +1,15 @@
 # PIXL scaffold review and development direction
 
+**Next milestone selected, 2026-11-05:** test a delegated generation request in
+Claude and Codex through the official PixelLab integration. Exercise the production
+request, job, retrieval, inspection and delivery workflow with only external calls
+mocked; tests must not submit real generation jobs or consume credits.
+[PX-EVAL-004](../evaluations/delegated-asset-request.spec.md) defines acceptance
+and the mechanism assessment. The adapter and offline tests are implemented;
+[native trial evidence](../evidence/delegated-asset-request/README.md) records outcomes
+and interface friction separately from live provider execution. Preserve
+existing work; the dated review below remains historical context.
+
 Reviewed 2026-09-11 from commit `52f86dd`. This is a development review of the initial scaffold. It describes observed mechanisms and the work needed to support the intended agent; it does not certify a production system. The user's current direction is authoritative: this project concerns agent profiles and skills, with PIXL as the pixel-art production profile. The developer reviewing it does not adopt that profile.
 
 **Current development update, 2026-09-11:** source-grounded research, intake/sample acceptance, durable provider recovery, local family delivery and [candidate inspection](../spec/candidate-inspection.md) are implemented. Inspection retains exact native/enlarged views, original semantic conditions and explicit reviews through existing PX2 X/E/V; it introduces no new UDL version or automatic artistic judgment. The current verifier passed 380 tests, one Windows privilege skip and 39 reference checks. The [inspection evidence](../evidence/candidate-inspection/README.md) separates runtime/copy proofs from new native profile trials. The earlier [five-case matched evaluation](../evaluations/README.md) stays frozen with its original package, failures and viewing limits. Remaining pressure cases, real generation and destination acceptance remain open; [MIVIM tasks](../evaluations/TODO.spec.md) retain that work.
@@ -12,7 +22,7 @@ The central product is the agent's ability to carry out a coherent production as
 
 PIXL's specialist knowledge includes pixel craft, characters, animation, tiles, modular rigs, sub-pixel effects, simulation, rendering, and engine integration. These domains have different operations and acceptance criteria. Their examples are teaching and test material, not a request to build every illustrated game system into this repository.
 
-The [profile](../agent/PROFILE.md) describes the intended end operation:
+The [profile](../.agents/PROFILE.md) describes the intended end operation:
 
 1. Inspect the user's brief, references, existing assets, target, and constraints.
 2. Establish a source-specific contract while retaining unresolved choices.
@@ -32,7 +42,7 @@ These are conceptual responsibilities, not a proposal to create six new framewor
 | Responsibility | Current location | Required role in the finished operation |
 | --- | --- | --- |
 | Development authority | User direction; now [AGENTS.md](../AGENTS.md) | Develop and evaluate the product without accidentally adopting its specialist prompt |
-| PIXL profile | [agent/PROFILE.md](../agent/PROFILE.md) | Consistent domain judgment, responsibility, communication, and task scope across hosts |
+| PIXL profile | [agent/PROFILE.md](../.agents/PROFILE.md) | Consistent domain judgment, responsibility, communication, and task scope across hosts |
 | Operational skills | [common skill](../plugins/pixl/skills/pixl/SKILL.md) and its two references | Defined entry conditions, required context, procedure, outputs, failure/recovery behavior, and completion criteria per operation |
 | Domain knowledge | [supplied sources](pixel-art-training), [curation](../knowledge/pixel-art.json), compiled library | Retrieve relevant techniques with applicability and source limits; distinguish reference demonstrations from project-specific proof |
 | State and evidence | [specification](../spec/PIXL-1.md), [registry](../pixl/registry.json), Python runtime | Represent uncertainty, dependencies, decisions, artifacts, observations, acceptance, change impact, and resumption without inventing facts |

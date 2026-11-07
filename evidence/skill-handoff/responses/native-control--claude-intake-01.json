@@ -1,0 +1,21 @@
+{
+  "attempt": "claude-intake-01",
+  "series": "native-control",
+  "record_sha256": "7de539745c011a82161ebc8e0a2241eeca627fd026d0425a5f7a4b3316c6428a",
+  "execution_status": "host_completed_ungraded",
+  "host": "claude",
+  "requested_model": null,
+  "observed_model": "claude-opus-5",
+  "host_reported_model": "claude-opus-5[1m]",
+  "artifact_count": 34,
+  "package_mutated": false,
+  "integrity_errors": [],
+  "final_responses": [
+    {
+      "file": "native-control/runs/claude-intake-01/stdout.jsonl",
+      "line": 343,
+      "text": "The project is established and the one thing that could be settled this session has been settled. State: PX2 revision 2, valid, all files verified.\n\n## What I found\n\nThe two references are pixel-identical in silhouette (both 32×32, 390 visible pixels, same bbox, binary alpha). They differ only in that `reference.png` adds a 2 px navy `#25354A` border. That border is **inset** — spent out of the body's own area, not added around it. At the reference's own scale it consumes 22% of body width, which is why the 4 px upper prongs are solid navy with no teal core.\n\nSo I built a proof (`work/poc/outline-canvas-report.md`) and viewed the fixtures:\n\n**Neither reference wins.** Outlined loses its prongs against a dark field — the navy is too close to the background, and the figure visually shrinks to its teal core. Unoutlined loses its body edges against a field sharing its teal. Each fails exactly where the other survives.\n\n**Your two open questions are one question.** Inset outline vs. canvas:\n\n| Canvas | 2 px outline | 1 px | none |\n|---|---|---|---|\n| 32 | 49% interior — pass | 71% | 94% |\n| 24 | 44% — marginal | 66% | 95% |\n| 16 | **25% — fails**, eyes collide with the contour | 47% — pass | 92% |\n\n\"Keep the reference outline\" and \"use a small canvas\" are not jointly satisfiable. And thickness isn't a free fix: at canvas 32, dropping to 1 px gives the prongs a teal core, which visibly departs from the reference where solid-navy prongs are deliberate.\n\n## What I did not do\n\nNo sprite was generated. **PixelLab is not connected in this session** — only the local `pixl-local` tools are exposed. `pixl_capabilities` lists PixelLab tools but reports `live_discovery: false`, so it's dated documentation, not a callable surface. I prepared no job and invented no identifier.\n\n`t_research` is done with both criteria passing. `t_scout` and `t_medic` are correctly blocked — `f_scout` has no raster contract because canvas is unresolved and outline is in conflict. I deliberately left `i_edges` as a recorded conflict rather than picking one, because the evidence says the choice depends on something neither reference tells us.\n\n## The question that unblocks everything\n\n**What backgrounds does the game render these characters against?** That's a question about your game, not about the art, and it decides the outline. Answer it plus a canvas size and `t_scout` activates immediately.\n\nOne untested proposal is recorded: choose the outline colour for contrast against your actual backgrounds rather than fixing it at `#25354A`. Both failures were failures of that one navy, not of outlining as such — but I haven't proven it, so it's logged as `proposed`, not adopted.\n\nFull detail in `HANDOFF.md`. Note that `v_poc_viewed` records that *I* viewed the fixtures; no human has, and nothing has been checked in any engine."
+    }
+  ],
+  "behavioral_status": "ungraded"
+}

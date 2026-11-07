@@ -1,0 +1,52 @@
+"""Retain observable saved-approach calls and their results for manual read auditing."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "approach-events"
+out.mkdir(exist_ok=True)
+for series in ("derivation", "reread", "reread-extended"):
+    for rec_path in sorted((base / series / "runs").glob("*/record.json")):
+        assert not runner.verify_run(rec_path.parent)
+        rec = json.loads(rec_path.read_text())
+        streams = list(rec_path.parent.glob("native-session-*.jsonl")) if rec["host"] == "codex" else [rec_path.parent / "stdout.jsonl"]
+        calls, events = set(), []
+        for stream in streams:
+            for number, line in enumerate(stream.read_text(encoding="utf-8").splitlines(), 1):
+                event = json.loads(line)
+                selected = []
+                if rec["host"] == "codex":
+                    p = event.get("payload", {})
+                    if event.get("type") == "response_item":
+                        kind = p.get("type")
+                        if kind in ("function_call", "custom_tool_call") and "APPROACH.md" in json.dumps(p):
+                            calls.add(p["call_id"])
+                            selected.append(p)
+                        elif kind in ("function_call_output", "custom_tool_call_output") and p.get("call_id") in calls:
+                            selected.append(p)
+                elif event.get("type") in ("assistant", "user"):
+                    for p in event.get("message", {}).get("content", []):
+                        if not isinstance(p, dict):
+                            continue
+                        if p.get("type") == "tool_use" and "APPROACH.md" in json.dumps(p.get("input", {})):
+                            calls.add(p["id"])
+                            selected.append(p)
+                        elif p.get("type") == "tool_result" and p.get("tool_use_id") in calls:
+                            selected.append(p)
+                if selected:
+                    events.append({"file": stream.relative_to(base).as_posix(), "line": number, "observable": selected})
+        result = {"record_sha256": runner.sha(rec_path), "events": events,
+                  "limit": "Contains writes and reads, successful or failed. Manually verify complete saved-file readback and any subsequent changes; a filename match is not an audit pass."}
+        target = out / f"{series}--{rec_path.parent.name}.json"
+        data = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == data
+        else:
+            target.write_text(data, encoding="utf-8")
+        print(json.dumps({"series": series, "attempt": rec_path.parent.name, "event_count": len(events)}))
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())

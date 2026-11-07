@@ -1,0 +1,415 @@
+{
+  "intake": [
+    {
+      "id": "i_alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": "binary",
+      "sources": [
+        "s_ref_a",
+        "s_ref_b",
+        "s_obs"
+      ],
+      "rationale": "Both references have zero fractional-alpha pixels across all 1024 positions. Observed from the art, not yet confirmed as a project rule."
+    },
+    {
+      "id": "i_anim",
+      "project": "project",
+      "key": "animation",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "No animation, direction set or frame timing was requested. Recorded so a later session does not assume a still sprite is the whole deliverable."
+    },
+    {
+      "id": "i_backgrounds",
+      "project": "project",
+      "key": "backgrounds",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_poc"
+      ],
+      "rationale": "The backgrounds the game renders these characters against are unknown. This is the evidence edge_treatment actually depends on, and is the single most useful answer the owner can supply."
+    },
+    {
+      "id": "i_canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief",
+        "s_poc"
+      ],
+      "rationale": "The owner has not chosen the final canvas size. It is not independent of edge_treatment: the proof shows a 2 px inset outline works at 32, is marginal at 24 and destroys the interior at 16."
+    },
+    {
+      "id": "i_edges",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "2 px inset outline in #25354A, as in reference.png",
+        "no outline, flat body color, as in reference-b.png"
+      ],
+      "sources": [
+        "s_ref_a",
+        "s_ref_b",
+        "s_obs",
+        "s_poc"
+      ],
+      "rationale": "The two supplied references carry the identical silhouette and differ only in this. The proof found neither alternative dominates: the outlined form loses its prongs on a dark background, and the unoutlined form loses its edges on a background sharing its hue. Held open deliberately until backgrounds is known."
+    },
+    {
+      "id": "i_engine",
+      "project": "project",
+      "key": "target_engine",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "No destination engine was named, so no import requirement can be checked and every engine criterion stays unavailable."
+    },
+    {
+      "id": "i_outline_color",
+      "project": "project",
+      "key": "outline_color_policy",
+      "status": "proposed",
+      "value": "choose the outline color for contrast against the game's actual backgrounds rather than fixing it at the reference's #25354A",
+      "sources": [
+        "s_poc"
+      ],
+      "rationale": "Both observed failures are failures of one specific navy against one specific background, not of outlining as such. Untested proposal; it cannot be adopted before backgrounds is known."
+    },
+    {
+      "id": "i_palette",
+      "project": "project",
+      "key": "pl",
+      "status": "observed",
+      "value": [
+        "#56B5BC",
+        "#F4DDA2",
+        "#25354A"
+      ],
+      "sources": [
+        "s_ref_a",
+        "s_ref_b",
+        "s_obs"
+      ],
+      "rationale": "Measured from the references. #56B5BC body and #F4DDA2 eyes appear in both; #25354A appears only in the outlined reference, so its membership follows from edge_treatment and is not yet agreed."
+    },
+    {
+      "id": "i_roster",
+      "project": "project",
+      "key": "family_roster",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The owner stated the family is a scout and a medic."
+    },
+    {
+      "id": "i_sampling",
+      "project": "project",
+      "key": "sa",
+      "status": "observed",
+      "value": "nearest",
+      "sources": [
+        "s_obs"
+      ],
+      "rationale": "Both references are axis-aligned rectangular clusters with no anti-aliasing, which is consistent with nearest-neighbour presentation. The actual display scale has not been stated."
+    },
+    {
+      "id": "i_scale",
+      "project": "project",
+      "key": "display_scale",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The scale the game presents these at is unknown; it bears on how much interior detail the chosen canvas needs to carry."
+    },
+    {
+      "id": "i_view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": "side",
+      "sources": [
+        "s_brief"
+      ],
+      "rationale": "The owner stated the destination is a side-view game."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t_medic",
+      "project": "project",
+      "phase": "production",
+      "state": "blocked",
+      "blockers": [
+        "task_prerequisite: t_scout is blocked; it must be done",
+        "output_contract: f_medic needs a concrete raster contract",
+        "task_decision: t_medic needs an evidence-backed adoption decision",
+        "method_poc: k_silhouette needs current passing method proof"
+      ],
+      "outputs": [
+        {
+          "id": "f_medic",
+          "name": "Medic sprite matching the accepted scout",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "canvas, palette and alpha",
+              "check": "The file matches the confirmed canvas size, contains no color outside the confirmed palette, and has zero fractional-alpha pixels.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_read",
+              "name": "native-scale readability",
+              "check": "At native scale on the game's actual backgrounds, the full silhouette including both upper prongs stays distinguishable from the background, and both eye landmarks remain visible and separated from each other and from the body edge.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style",
+              "name": "style match to the references",
+              "check": "Viewed beside reference.png and reference-b.png the candidate reads as the same style: axis-aligned rectangular clusters, hard right-angle contours, no anti-aliasing and no dithering, with the confirmed outline treatment applied consistently.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role",
+              "name": "role reads from the sprite",
+              "check": "Without a label, the sprite reads as its intended role, and the scout is not mistaken for the medic or the reverse.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_continuity",
+              "name": "scout and medic are one family",
+              "check": "Viewed side by side at native scale, both members share body volume, eye placement, outline treatment and palette; role is distinguished by silhouette and accent rather than by a change of style.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_engine",
+              "name": "destination import behaviour",
+              "check": "The destination engine imports the sprite with nearest sampling, an integer display scale, unmultiplied binary alpha and the intended pivot, with no resampling at the edges.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "id": "t_research",
+      "project": "project",
+      "phase": "research",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "f_poc",
+          "name": "Outline and canvas coupling report",
+          "candidate": "x_poc",
+          "requirements": [
+            {
+              "id": "q_poc_stated",
+              "name": "proof is self-describing",
+              "check": "The report states its question, the acceptance conditions it fixed before looking at results, and for every conclusion the artifact path and the measurement or observation that supports it.",
+              "domain": "other",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "v_poc_stated",
+              "reason": "The report fixes its question and its acceptance conditions before the result sections, and every project artifact it cites exists with the recorded hash. Citations into the installed knowledge corpus lie outside the project root and were verified separately at retrieval time.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_poc_stated"
+              ]
+            },
+            {
+              "id": "q_poc_viewed",
+              "name": "proof fixtures were actually viewed",
+              "check": "Both fixture sets were viewed at native scale and at integer zoom, and each reported pass or fail names the specific background or canvas at which it was observed.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "v_poc_viewed",
+              "reason": "Both fixture sets were viewed by the acting agent at native scale and at integer zoom. Every reported pass and fail names the background or the canvas at which it was observed. No human has viewed these images.",
+              "reviewer": "actor",
+              "evidence": [
+                "e_poc_viewed"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "x_poc",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "q_poc_stated",
+                  "name": "proof is self-describing",
+                  "check": "The report states its question, the acceptance conditions it fixed before looking at results, and for every conclusion the artifact path and the measurement or observation that supports it.",
+                  "domain": "other",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "v_poc_stated",
+                  "reason": "The report fixes its question and its acceptance conditions before the result sections, and every project artifact it cites exists with the recorded hash. Citations into the installed knowledge corpus lie outside the project root and were verified separately at retrieval time.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_poc_stated"
+                  ]
+                },
+                {
+                  "id": "q_poc_viewed",
+                  "name": "proof fixtures were actually viewed",
+                  "check": "Both fixture sets were viewed at native scale and at integer zoom, and each reported pass or fail names the specific background or canvas at which it was observed.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "v_poc_viewed",
+                  "reason": "Both fixture sets were viewed by the acting agent at native scale and at integer zoom. Every reported pass and fail names the background or the canvas at which it was observed. No human has viewed these images.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "e_poc_viewed"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_scout",
+      "project": "project",
+      "phase": "sample",
+      "state": "blocked",
+      "blockers": [
+        "output_contract: f_scout needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "f_scout",
+          "name": "Scout representative sprite, single side-view pose",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "canvas, palette and alpha",
+              "check": "The file matches the confirmed canvas size, contains no color outside the confirmed palette, and has zero fractional-alpha pixels.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_read",
+              "name": "native-scale readability",
+              "check": "At native scale on the game's actual backgrounds, the full silhouette including both upper prongs stays distinguishable from the background, and both eye landmarks remain visible and separated from each other and from the body edge.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style",
+              "name": "style match to the references",
+              "check": "Viewed beside reference.png and reference-b.png the candidate reads as the same style: axis-aligned rectangular clusters, hard right-angle contours, no anti-aliasing and no dithering, with the confirmed outline treatment applied consistently.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role",
+              "name": "role reads from the sprite",
+              "check": "Without a label, the sprite reads as its intended role, and the scout is not mistaken for the medic or the reverse.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_engine",
+              "name": "destination import behaviour",
+              "check": "The destination engine imports the sprite with nearest sampling, an integer display scale, unmultiplied binary alpha and the intended pivot, with no resampling at the edges.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ]
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 2,
+  "hash": "0951d7be64fe4e8d9b63f6c6baa9b29540142d4d6c5afb75594d9ff689434a14",
+  "files_verified": true
+}

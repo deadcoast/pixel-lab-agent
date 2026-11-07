@@ -1,0 +1,49 @@
+"""Verify final source, bundle and retained archive identities without regenerating proof."""
+import json
+import subprocess
+import sys
+import zipfile
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/skill-handoff"
+out = base / "final-checks"
+out.mkdir(exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+report = json.loads((ROOT / "evidence/test-results.json").read_text())
+assert report["status"] == "pass"
+assert all(runner.sha(ROOT / p) == expected for p, expected in report["checked_input_hashes"].items())
+manifest = json.loads((ROOT / "plugins/pixl/bundle-manifest.json").read_text())
+assert all(runner.sha(ROOT / "plugins/pixl" / row["path"]) == row["sha256"] for row in manifest["files"])
+assert runner.sha(ROOT / "plugins/pixl/bundle-manifest.json") == report["bundle_manifest_sha256"]
+trial = runner.inventory(base / "revised-routing/package", ("__pycache__",))
+current = runner.inventory(ROOT / "plugins/pixl", ("__pycache__",))
+assert all(trial[p] == current[p] for p in trial if p.startswith(("skills/", "runtime/")) or p == "resources/agent/PROFILE.md")
+archives = []
+for path in sorted((base / "archives").glob("*.manifest.json")):
+    rec = json.loads(path.read_text())
+    target = path.parent / rec["archive"]
+    assert runner.sha(target) == rec["archive_sha256"]
+    with zipfile.ZipFile(target) as z:
+        actual = {name: sha256(z.read(name)).hexdigest() for name in z.namelist()}
+    assert actual == rec["files"]
+    archives.append({"archive": target.name, "files": len(actual), "sha256": rec["archive_sha256"]})
+command = ["git", "-c", "core.whitespace=trailing-space,space-before-tab,cr-at-eol", "diff", "--check", "--",
+           "evaluations/TODO.spec.md", "plugins/pixl/skills", "pixl", "scripts", "tests", "docs", "plugins/pixl/runtime", "plugins/pixl/resources/pixl"]
+result = subprocess.run(command, cwd=ROOT, capture_output=True)
+(out / "source-diff-check.stdout.txt").write_bytes(result.stdout)
+(out / "source-diff-check.stderr.txt").write_bytes(result.stderr)
+assert result.returncode == 0
+summary = {"observed_at": datetime.now(UTC).isoformat(), "checked_input_hashes_match": len(report["checked_input_hashes"]),
+           "bundle_entries_match": len(manifest["files"]), "verification_run": report["run_directory"],
+           "skill_profile_runtime_match_native_trial": True, "archives": archives,
+           "source_diff_check": {"command": command, "exit_code": result.returncode},
+           "limits": ["Hashes are identity checks, not coverage or behavior judgments.",
+                      "Native trials used frozen proof resources; verifier regenerated current proof resources."]}
+(out / "result.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+print(json.dumps(summary))

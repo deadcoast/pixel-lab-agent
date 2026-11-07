@@ -1,0 +1,43 @@
+"""Record complete repository verification for this pace, preserving earlier output."""
+import json
+import re
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+out = ROOT / "evidence/artistic-authority/verification" / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+out.mkdir(parents=True, exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+checks = []
+for name, command in (
+    ("full-verifier", [sys.executable, "scripts/verify.py"]),
+    ("maintained-source-ruff", [sys.executable, "-m", "ruff", "check", "pixl", "scripts", "tests", "evaluations", "setup.py"]),
+    ("expanded-mypy", [sys.executable, "-m", "mypy", "--check-untyped-defs", "--explicit-package-bases", "pixl", "scripts", "evaluations", "setup.py"]),
+):
+    start = datetime.now(UTC).isoformat()
+    result = subprocess.run(command, cwd=ROOT, capture_output=True)
+    for stream in ("stdout", "stderr"):
+        (out / f"{name}.{stream}.txt").write_bytes(getattr(result, stream))
+    row = {"name": name, "command": command, "started_at": start,
+           "finished_at": datetime.now(UTC).isoformat(), "exit_code": result.returncode}
+    if name == "full-verifier":
+        report = json.loads((ROOT / "evidence/test-results.json").read_text())
+        row["verification_run"] = report["run_directory"]
+    checks.append(row)
+    (out / "result.json").write_text(json.dumps(checks, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(row), flush=True)
+links = []
+for file in sorted((ROOT / "plugins/pixl/skills/pixl").rglob("*.md")):
+    for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", file.read_text(encoding="utf-8")):
+        if "://" in target:
+            continue
+        path, _, fragment = target.partition("#")
+        actual = (file.parent / path).resolve() if path else file
+        assert actual.is_file(), (file, target)
+        if fragment == "keep-authority-through-derived-rules":
+            assert "## Keep authority through derived rules" in actual.read_text(encoding="utf-8")
+        links.append({"source": file.relative_to(ROOT).as_posix(), "target": target})
+(out / "skill-links.json").write_text(json.dumps({"checked": len(links), "links": links}, indent=2) + "\n", encoding="utf-8")
+raise SystemExit(int(any(c["exit_code"] for c in checks)))

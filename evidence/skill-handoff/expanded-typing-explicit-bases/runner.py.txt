@@ -1,0 +1,16 @@
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[1]
+out = root / "evidence/skill-handoff/expanded-typing-explicit-bases"
+out.mkdir(exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+command = [sys.executable, "-m", "mypy", "--check-untyped-defs", "--explicit-package-bases", "pixl", "scripts", "evaluations", "setup.py"]
+result = subprocess.run(command, cwd=root, capture_output=True)
+(out / "stdout.txt").write_bytes(result.stdout)
+(out / "stderr.txt").write_bytes(result.stderr)
+(out / "result.json").write_text(json.dumps({"command": command, "exit_code": result.returncode}, indent=2) + "\n")
+print(result.stdout.decode("utf-8"))
+raise SystemExit(result.returncode)

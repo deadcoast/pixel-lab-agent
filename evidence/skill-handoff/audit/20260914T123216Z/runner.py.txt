@@ -1,0 +1,55 @@
+"""Record comparable trial inputs and exact current instruction/runtime identity."""
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/skill-handoff"
+out = base / "audit" / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+out.mkdir(parents=True, exist_ok=False)
+(out / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+control = runner.inventory(base / "native-control/package", ("__pycache__",))
+versions = {}
+for name, folder in (("reference-only", base / "revised/package"),
+                     ("routing-and-reference", base / "revised-routing/package"),
+                     ("current-rebuilt-package", ROOT / "plugins/pixl")):
+    actual = runner.inventory(folder, ("__pycache__",))
+    versions[name] = {"changed_from_control": [p for p in sorted(set(control) | set(actual)) if control.get(p) != actual.get(p)],
+                      "files": actual}
+trial = versions["routing-and-reference"]["files"]
+current = versions["current-rebuilt-package"]["files"]
+relevant = [p for p in trial if p.startswith(("skills/", "runtime/")) or p == "resources/agent/PROFILE.md"]
+assert all(trial[p] == current[p] for p in relevant)
+protocols = {s: json.loads((base / s / "protocol.json").read_text())
+             for s in ("native-control", "revised", "revised-routing")}
+matched = ("fresh_prompt", "cold_prompt", "recorder_sha256", "controls_sha256", "fixture_files", "profile_hash")
+assert all(all(p[key] == protocols["native-control"][key] for key in matched) for p in protocols.values())
+seed = base / "native-control/runs/codex-intake-01"
+assert all(runner.sha(base / s / "runs/seed-intake/record.json") == runner.sha(seed / "record.json")
+           for s in ("revised", "revised-routing"))
+records = []
+for s in protocols:
+    for p in sorted((base / s / "runs").glob("*/record.json")):
+        if p.parent.name == "seed-intake":
+            continue
+        record = json.loads(p.read_text())
+        assert not runner.verify_run(p.parent)
+        records.append({"series": s, "attempt": p.parent.name,
+                        **{k: record[k] for k in ("execution_status", "cold_predecessor", "profile_hash", "runtime_hash",
+                                                 "timeout_seconds", "shell_sandbox", "package_mutated", "elapsed_seconds")}})
+result = {"package_versions": versions, "matched_protocol_fields": matched,
+          "revised_seed_record_sha256": runner.sha(seed / "record.json"),
+          "current_skill_runtime_profile_match_trial": True, "attempts": records}
+(out / "result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+command = [sys.executable, "-m", "ruff", "check", "pixl", "scripts", "tests", "evaluations", "setup.py"]
+proc = subprocess.run(command, cwd=ROOT, capture_output=True)
+(out / "source-ruff.stdout.txt").write_bytes(proc.stdout)
+(out / "source-ruff.stderr.txt").write_bytes(proc.stderr)
+(out / "source-ruff.json").write_text(json.dumps({"command": command, "exit_code": proc.returncode}, indent=2) + "\n")
+print(json.dumps({"output": str(out), "source_ruff_exit": proc.returncode,
+                  "package_changes": {name: v["changed_from_control"] for name, v in versions.items()}}))

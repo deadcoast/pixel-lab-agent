@@ -1,0 +1,47 @@
+"""Extract actual final responses and retained approaches; never grade behavior."""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+base = ROOT / "evidence/artistic-authority"
+out = base / "responses"
+out.mkdir(exist_ok=True)
+for series in ("control", "revised", "embedded", "intent", "derivation", "reread", "reread-extended"):
+    for p in sorted((base / series / "runs").glob("*/record.json")):
+        rec = json.loads(p.read_text())
+        assert not runner.verify_run(p.parent), str(p)
+        finals = []
+        if rec["host"] == "codex":
+            for session in p.parent.glob("native-session-*.jsonl"):
+                for number, line in enumerate(session.read_text(encoding="utf-8").splitlines(), 1):
+                    event = json.loads(line)
+                    payload = event.get("payload", {})
+                    if event.get("type") == "response_item" and payload.get("type") == "message" and payload.get("role") == "assistant" and payload.get("phase") == "final_answer":
+                        finals.append({"file": session.relative_to(base).as_posix(), "line": number,
+                                       "text": "\n".join(c["text"] for c in payload["content"] if c.get("type") == "output_text")})
+        else:
+            stream = p.parent / "stdout.jsonl"
+            for number, line in enumerate(stream.read_text(encoding="utf-8").splitlines(), 1):
+                event = json.loads(line)
+                if event.get("type") == "result" and isinstance(event.get("result"), str):
+                    finals.append({"file": stream.relative_to(base).as_posix(), "line": number, "text": event["result"]})
+        approach = p.parent / "project/APPROACH.md"
+        result = {"series": series, "attempt": p.parent.name, "case": rec["case_id"],
+                  "record_sha256": runner.sha(p), "execution_status": rec["execution_status"],
+                  "requested_model": rec["requested_model"], "observed_model": rec.get("observed_model"),
+                  "host_reported_model": rec.get("host_reported_model"), "package_mutated": rec["package_mutated"],
+                  "integrity_errors": [], "final_responses": finals,
+                  "approach": {"text": approach.read_text(encoding="utf-8"), "sha256": runner.sha(approach)} if approach.exists() else None,
+                  "behavioral_status": "ungraded"}
+        target = out / f"{series}--{p.parent.name}.json"
+        text = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+        if target.exists():
+            assert target.read_text(encoding="utf-8") == text, "immutable extraction changed"
+        else:
+            target.write_text(text, encoding="utf-8")
+        print(json.dumps({"series": series, "attempt": p.parent.name, "status": rec["execution_status"],
+                          "final_count": len(finals), "approach": approach.exists()}))

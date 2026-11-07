@@ -1,0 +1,36 @@
+"""Compare the retained cold seed under its original and current packages."""
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from evaluations import host_trials as runner
+
+out = ROOT / "evidence/skill-handoff/seed-compatibility"
+out.mkdir(parents=True, exist_ok=False)
+seed = ROOT / "evidence/host-evaluation/runs/codex-intake-01"
+assert not runner.verify_run(seed)
+results = []
+for label, package in (("original", ROOT / "evidence/host-evaluation/package"),
+                       ("current", ROOT / "evidence/skill-handoff/baseline/package")):
+    project = ROOT / "build/handoff-seed-check" / label
+    shutil.copytree(seed / "project", project)
+    destination = project / ".agents/skills/pixl-kit"
+    shutil.copytree(package, destination)
+    command = [sys.executable, "-I", str(destination / "scripts/pixl.py"),
+               "validate", str(project / ".pixl/state.px"), "--root", str(project)]
+    result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", check=False)
+    results.append({"package": label, "package_files": runner.inventory(package),
+                    "command": command, "returncode": result.returncode,
+                    "stdout": result.stdout, "stderr": result.stderr})
+runner.write_json(out / "result.json", {
+    "seed_record_sha256": runner.sha(seed / "record.json"),
+    "seed_files": runner.inventory(seed / "project"),
+    "results": results,
+    "interpretation": "A current package is not a compatible replacement for the exact pinned proof resources in this historical cold seed. Validation must not silently accept changed receipts.",
+})
+(out / "probe.py.txt").write_bytes(Path(__file__).read_bytes())
+print(json.dumps([{k: v[k] for k in ("package", "returncode", "stderr")} for v in results], indent=2))

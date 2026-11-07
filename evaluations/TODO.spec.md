@@ -5,6 +5,30 @@ authority remains the profile, operation skills and versioned specifications.
 Evidence is under `evidence/host-evaluation/`; a host pass never stands in for
 artistic or destination acceptance.
 
+## Next milestone: PX-EVAL-004 — delegated PixelLab integration in both hosts
+
+- **Status:** selected next, 2026-11-05; specified, implementation and trials pending.
+- **WHO:** a parent agent delegates to PIXL in each host; the maintainer reviews
+  asserted requests, simulated provider responses, actual artifacts and caller evidence.
+- **WHAT:** a generation request exercises the official PixelLab integration,
+  job handling, retrieval, inspection and delivery in each host. Mock only external
+  provider calls; keep the production workflow as the implementation under test.
+- **WHERE:** [milestone and acceptance contract](delegated-asset-request.spec.md);
+  new execution evidence will live under `evidence/delegated-asset-request/`.
+- **WHY:** the product is a callable asset specialist. Existing local mechanisms
+  and planning trials do not establish that a calling agent receives useful art.
+- **Inputs:** matched test brief, fixtures tied to the official interface contract,
+  frozen package, actual delegation and an intercepted provider boundary.
+- **Proof:** parent-to-PIXL invocation, checked request arguments, simulated job
+  observations, artifact retrieval/review and parent consumption, with no live calls.
+- **Stopping condition:** both host deliveries satisfy their assignment; retained
+  run evidence identifies mechanisms to keep, simplify or leave optional. Failed
+  art or a required unavailable check leaves that host incomplete. Fresh PixelLab
+  execution remains unverified; paid generation is not a test prerequisite.
+- **Priority:** this is the next complete operation. Retain the backlog and fix
+  blockers it exposes; do not require completion of all six remaining PX-EVAL-003
+  scenarios or expand unrelated infrastructure before attempting this delivery.
+
 ## PX-EVAL-001 — recorded packaged-profile baseline
 
 - **Status:** implemented; initial evidence preserved before the matched continuation.
@@ -85,7 +109,8 @@ artistic or destination acceptance.
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** ready; next development target after PX-OPS-001.
+- **Status:** implemented, 2026-09-14; bounded Codex fresh/cold handoffs verified;
+  completed Claude comparison remains unverified after the fixed-time trials.
 - **WHO:** shared PIXL skill owns the handoff; user owns consequential style choices.
 - **WHAT:** make an unresolved choice actionable at the response boundary when it is
   the next necessary user input, while continuing independent inspection and planning.
@@ -98,10 +123,47 @@ artistic or destination acceptance.
   authorization, imposing source dimensions, or turning every proposal into a blocker.
 - **Stopping condition:** the actual final response gives the user the required next
   decision and retains useful work. Do not count an expected answer as observed behavior.
+- **Result:** unchanged native Codex fresh/cold controls omitted the final question.
+  A reference-only revision failed because cold resume never loaded that reference.
+  Adding an explicit cold-intake route produced an actionable final question in
+  both current Codex cases; choices and proposed trials remained distinct. Paired
+  already-decided micro-controls retained authorization without new questions.
+  All twelve native attempts, including access confounds and three timeouts, are
+  preserved in [the evidence](../evidence/skill-handoff/README.md). The current Claude
+  fresh attempt has no final response; no cross-host reliability claim follows.
+- **Verification:** complete discovery ran 388 tests (387 pass, one privilege skip),
+  39 reference checks and the default sdist-to-wheel/install path passed. Maintained
+  source Ruff and expanded Mypy passed. Broad repository Ruff failed on retained
+  and supplied scripts; its output remains. Nine saved states pass 36 correctly
+  addressed read-only replay operations; four initial evaluator-path failures remain.
+- **Remaining boundary:** completed Claude intake behavior and PX-SKILL-002's
+  unsupported artistic rules still need focused evaluation. A passing unchanged
+  micro-control shows omission is not universal; these small trials do not prove
+  general reliability. The historical seed/package mismatch is PX-OPS-002 below.
+
+## PX-OPS-002 — preserve project proof dependencies across kit updates
+
+- **Status:** observed integration gap, 2026-09-14; design required before implementation.
+- **WHO:** project publication and recovery tools preserve evidence; the maintainer
+  verifies package-update behavior without asserting that old proof covers new code.
+- **WHAT:** keep exact proof/source dependencies recoverable after a kit update and
+  give cold resume an actionable account of obsolete or unavailable proof.
+- **WHERE:** knowledge adoption, project-owned source retention and cold recovery.
+- **WHY:** the retained intake project points `s.fixture_receipt` at the mutable
+  bundled `resources/evidence/art-methods/poc-report.json`. Updating the kit changes
+  that file and prevents validated workflow/context/job reports from loading.
+- **Proof so far:** the same untouched project validates with its original frozen
+  package (exit 0) and fails with the current package (exit 2, `file_hash`). Exact
+  package and project hashes are in `evidence/skill-handoff/seed-compatibility/`.
+- **Stopping condition:** an updated kit can resume with the original evidence
+  still addressable and affected new claims explicitly unresolved. Never rewrite
+  old receipts, accept mismatched hashes or relabel old proof as testing new code.
 
 ## PX-SKILL-002 — preserve the authority of artistic requirements
 
-- **Status:** ready for a focused instruction trial; baseline package stays frozen.
+- **Status:** partial implementation, 2026-09-14; remains open. Revised guidance and
+  complete-file audits improve observed behavior, but completed Claude approaches
+  still promote proposals to requirements and falsely report internal consistency.
 - **WHO:** the user sets requirements; PIXL records observations, proposes choices and
   supplies project-specific artistic reasoning; the evaluator checks those boundaries.
 - **WHAT:** distinguish supplied requirements, measured facts, proposals and universal
@@ -122,10 +184,27 @@ artistic or destination acceptance.
   A sourced method must still fit this project's conditions.
 - **Stopping condition:** observed model behavior supports the revised guidance; string
   presence, valid state, or a correct rejection alone cannot close this task.
+- **Result:** 26 retained native attempts across unchanged controls and five instruction
+  revisions, including two separately labeled 600-second completion repeats. Final
+  Codex style/counterexample approaches pass the bounded criteria with complete readback.
+  Both final 360-second Claude trials made corrections but timed out without responses;
+  both longer Claude trials completed and still fail whole-approach authority handling.
+  Exact briefs, packages, inputs, image payloads, drafts, final responses and manual
+  judgments are in [the evidence](../evidence/artistic-authority/README.md).
+- **Verification:** full discovery ran 388 tests (387 pass, one privilege skip), 39
+  reference POCs and the default sdist-to-wheel/install route passed. Maintained-source
+  Ruff and expanded Mypy passed. These do not override observed behavioral failures.
+- **Next work:** specify how the operation retains the exact proposed prompt and criteria
+  and checks them against the source brief before adoption. Evaluate contradiction
+  detection on fresh cases; the producing model's self-reported whole-file audit cannot
+  be treated as acceptance. Keep this pace open until that outcome is observed.
 
 ## PX-EVAL-003 — broaden outcome and recovery coverage
 
 - **Status:** planned; requires concrete fixtures or a separately authorized production brief.
+- **Priority update, 2026-11-05:** the selected next operation is the zero-provider-spend
+  [PX-EVAL-004 milestone](delegated-asset-request.spec.md). The six cases and fresh
+  real-art outcome below remain open and are not prerequisites for that operation.
 - **WHO:** maintainer supplies controlled pressure cases; actual production uses the
   chosen provider, project owner and target engine.
 - **WHAT:** execute the six unattempted catalog cases: language development, production

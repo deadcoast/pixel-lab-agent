@@ -4,6 +4,8 @@ PIXL is a pixel-art production agent profile and skill system for Claude and Cod
 
 **Current stage: developing beyond the initial scaffold.** Source-grounded research, intake/sample acceptance, durable provider recovery, family delivery and candidate inspection are implemented locally. Inspection prepares saved views and retains explicit reviews with original criteria and cold-resume context. The [latest local verification attempt](evidence/test-results.json) records its exact test inventory, skipped checks, build route and limitations; it does not certify complete modules or production readiness. [Native host evaluation](evaluations/README.md) retains earlier behavioral observations separately. Real generation, artistic production quality and target-engine acceptance remain open. Read the [project review](docs/PROJECT-REVIEW.md), [inspection evidence](evidence/candidate-inspection/README.md) and [MIVIM tasks](evaluations/TODO.spec.md) for the evidence and next work.
 
+**Next milestone: delegated PixelLab integration in both hosts.** The optional official HTTP adapter and offline integration tests are implemented. Native parent-to-PIXL trials exercise request preparation, job handling, retrieval, inspection and delivery with only provider transport mocked. See the [recorded outcomes and audit](evidence/delegated-asset-request/README.md) and [milestone contract](evaluations/delegated-asset-request.spec.md). No live PixelLab generation is part of these tests.
+
 For repository development, follow [AGENTS.md](AGENTS.md). Reading or editing PIXL's profile does not activate it. Invoke the production profile when the task is to perform pixel-art work.
 
 The UDL is designed for agent operation. Human readability is not a wire-design criterion. Host Markdown, JSON and TOML exist at the Claude/Codex/MCP boundary; the operational project language is `.px`.
@@ -35,6 +37,7 @@ Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also 
 - **State runtime:** revision-checked commits, local writer exclusion, immutable snapshots, immutable proof receipts with explicit supersession, source/artifact drift checks and mandatory reopening of affected completed tasks.
 - **Pixel-art knowledge:** 43 curated methods with 93 reviewed current source locators and 39 freshly executed reference checks. The compiled [PIXL library](knowledge/library.px) contains prerequisites, procedures, checks, pitfalls, sources and bound proof receipts. The [knowledge operation](plugins/pixl/skills/pixl/references/knowledge.md) takes a production question through source discovery, exact retrieval, applicability assessment and a specific next proof. [Coverage](methods/method-proof-coverage.json) states each reference proof's limits.
 - **PixelLab preparation:** 100 documented MCP tools and 454 parameters, a dated official documentation snapshot, exact caller-supplied schema validation, cross-field rules, deterministic intent identity and observation-based job journaling.
+- **Optional PixelLab HTTP adapter:** one official async image endpoint, exact retained OpenAPI schema, durable submission/polling and PNG import. A separate opt-in MCP bridge exposes it; tests replace its HTTP transport and block sockets.
 - **Agent kit:** one shared PIXL expert profile, Claude/Codex adapters, a portable runtime, and 27 local MCP tools. The actual authenticated PixelLab connection remains with the host harness.
 
 ## Source and evidence
@@ -43,7 +46,7 @@ Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also 
 |---|---|
 | [PX1 specification](spec/PIXL-1.md) / [registry](pixl/registry.json), [PX2 specification](spec/PIXL-2.md) / [registry](pixl/registry-v2.json) | Versioned syntax, types, semantics and boundaries |
 | [Design and implementation decisions](docs/IMPLEMENTATION.md) | WHO / WHAT / WHERE / WHY, research, alternatives and proof obligations |
-| [PIXL profile](agent/PROFILE.md) | Forward-facing expert behavior and production loop |
+| [PIXL profile](.agents/PROFILE.md) | Forward-facing expert behavior and production loop |
 | [Pixel-art research](docs/research/pixel-art-knowledge.md) | Curated methods, source corrections and artistic scope |
 | [PixelLab research](docs/research/pixellab-platform.md) | Tool capabilities, API distinctions and execution constraints |
 | [Verification](docs/VERIFICATION.md) | Reproduction commands, failed attempts, final evidence and limitations |

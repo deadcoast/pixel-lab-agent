@@ -1,0 +1,312 @@
+"""Record parent-to-PIXL trials with the production HTTP adapter and mock transport.
+
+Preparing a trial never starts a host. --run explicitly launches the installed
+host using its existing authentication; PixelLab remains fully mocked.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from evaluations.host_trials import codex_command, inventory, outcome, sha, write_json
+
+BRIEF = (
+    "Generate one 32x32 side-view teal robot sprite matching reference.png: two antennae, "
+    "two yellow eyes, dark outlines and binary transparency, with no ground shadow. "
+    "The reference palette is #25354A, #56B5BC and #F4DDA2. These requirements apply "
+    "only to this controlled test. Deliver one PNG and a concise review. No engine "
+    "integration is required. Provider HTTP calls are mocked; do not call real PixelLab."
+)
+
+
+def prepare(destination: Path, host: str) -> dict:
+    destination = destination.resolve()
+    destination.mkdir(parents=True, exist_ok=False)
+    project = destination / "project"
+    project.mkdir()
+    package = project / ".agents/skills/pixl-kit"
+    shutil.copytree(
+        ROOT / "plugins/pixl", package, ignore=shutil.ignore_patterns("__pycache__")
+    )
+    manifest = json.loads(
+        (package / "bundle-manifest.json").read_text(encoding="utf-8")
+    )
+    for entry in manifest["files"]:
+        if sha(package / entry["path"]) != entry["sha256"]:
+            raise ValueError(
+                "Build the plugin before freezing this trial: " + entry["path"]
+            )
+    # The positive image is a retained evaluator fixture, never live production art.
+    fixture = ROOT / "evidence/host-evaluation/fixture-inputs/reference.png"
+    shutil.copyfile(fixture, project / "reference.png")
+    shutil.copyfile(fixture, destination / "provider-output.png")
+    (project / "BRIEF.md").write_text(BRIEF + "\n", encoding="utf-8")
+    python = ROOT / ".venv/Scripts/python.exe"
+    mock_script = destination / "pixellab_mock.py"
+    shutil.copyfile(ROOT / "evaluations/pixellab_mock.py", mock_script)
+    local = {
+        "command": str(python),
+        "args": [str(package / "scripts/pixl.py"), "mcp", "--root", str(project)],
+    }
+    provider = {
+        "command": str(python),
+        "args": [
+            str(mock_script),
+            "--root",
+            str(project),
+            "--plugin",
+            str(package),
+            "--image",
+            str(destination / "provider-output.png"),
+            "--log",
+            str(destination / "provider-calls.jsonl"),
+        ],
+    }
+    guidance = (
+        "This is a controlled PIXL host evaluation. Do not contact external services, install packages, "
+        "read credentials or change host settings. PixelLab HTTP transport is mocked. Work only in this project. "
+        f"Selected Python: {python.as_posix()}. Read the packaged PIXL skill and profile under "
+        ".agents/skills/pixl-kit. Keep provider_simulated=true in your handoff. The official HTTP bridge "
+        "exposes pixellab_contract, pixellab_prepare_image, pixellab_submit, pixellab_poll and "
+        "pixellab_import_image. These use the real runtime with a mock HTTP transport. "
+        "Use pixl_intake and normal saved planning; prepare requires an existing task/output. "
+        "The image API uses description and image_size, not the MCP width/height aliases. "
+        "For this test, authorization is the stated one mocked request with zero real calls. "
+        "Mock polling requires no delay. Retain visual review through the inspection operation. "
+        "Return the actual retained PNG path; copying to another delivery folder is unnecessary. "
+        "Do not reproduce or copy reference.png as your output: retrieve it through the adapter. "
+    )
+    (project / "SESSION.md").write_text(guidance + "\n", encoding="utf-8")
+    (project / "AGENTS.md").write_text(guidance + "\n", encoding="utf-8")
+    parent_prompt = (
+        "You are the calling agent. Delegate the generation assignment in BRIEF.md to exactly one PIXL "
+        "specialist subagent, using the native delegation tool, and wait for its result. Do not perform "
+        "the specialist's work yourself. Pass SESSION.md as context. After PIXL returns, open its actual "
+        "delivered PNG and review file, check dimensions and the requested identity, then save "
+        "PARENT-RESULT.json with asset_path (project relative), specialist_name, provider_simulated=true, "
+        "parent_review (your own observations), and limitations. Keep all work inside the project. "
+        "This is a test with mocked PixelLab transport, not live generated artwork."
+    )
+    (destination / "prompt.txt").write_text(parent_prompt, encoding="utf-8")
+    specialist = "You are PIXL for this assigned production test. " + guidance
+    if host == "claude":
+        config = destination / "mcp.json"
+        write_json(
+            config,
+            {
+                "mcpServers": {
+                    "pixl-local": {"type": "stdio", **local},
+                    "pixellab-test": {"type": "stdio", **provider},
+                }
+            },
+        )
+        agents = destination / "agents.json"
+        write_json(
+            agents,
+            {
+                "pixl": {
+                    "description": "Pixel-art production specialist. Delegate the asset brief here.",
+                    "prompt": specialist,
+                }
+            },
+        )
+        command = [
+            shutil.which("claude") or "claude",
+            "--print",
+            "--verbose",
+            "--output-format",
+            "stream-json",
+            "--forward-subagent-text",
+            "--no-session-persistence",
+            "--setting-sources",
+            "",
+            "--strict-mcp-config",
+            "--mcp-config",
+            str(config),
+            "--agents",
+            str(agents),
+            "--plugin-dir",
+            str(package),
+            "--permission-mode",
+            "acceptEdits",
+            "--permission-prompts",
+            "none",
+            "--tools",
+            "Read,Write,Edit,Glob,Grep,Skill,Agent",
+            "--allowedTools",
+            "Read,Write,Edit,Glob,Grep,Skill,Agent,mcp__pixl-local__*,mcp__pixellab-test__*",
+        ]
+    else:
+        agents_folder = project / ".codex/agents"
+        agents_folder.mkdir(parents=True)
+        (agents_folder / "pixl.toml").write_text(
+            'name = "pixl"\ndescription = "Pixel-art production specialist for the assigned asset."\n'
+            + "developer_instructions = "
+            + json.dumps(specialist)
+            + "\n",
+            encoding="utf-8",
+        )
+        command = codex_command() + [
+            "exec",
+            "--ignore-user-config",
+            "--ignore-rules",
+            "--json",
+            "--skip-git-repo-check",
+            "-C",
+            str(project),
+            "-c",
+            'default_permissions=":workspace"',
+            "-c",
+            'approval_policy="never"',
+            "-c",
+            "agents.enabled=true",
+            "-c",
+            "agents.max_concurrent_threads_per_session=1",
+            "-c",
+            "features.apps=false",
+            "-c",
+            "features.plugins=false",
+            "-c",
+            'web_search="disabled"',
+        ]
+        for name, server in (("pixl_local", local), ("pixellab_test", provider)):
+            # This launcher exposes only local state and socket-blocked mock tools.
+            # Approve those tools for the noninteractive test, never a live server.
+            command.extend(
+                ["-c", f'mcp_servers.{name}.default_tools_approval_mode="approve"']
+            )
+            for key in ("command", "args"):
+                command.extend(
+                    ["-c", f"mcp_servers.{name}.{key}=" + json.dumps(server[key])]
+                )
+        command.append("-")
+    write_json(
+        destination / "launch.json",
+        {"host": host, "cwd": str(project), "command": command},
+    )
+    identity = {
+        "host": host,
+        "created_at": datetime.now(UTC).isoformat(),
+        "source_revision": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        ).strip(),
+        "runner_sha256": sha(Path(__file__)),
+        "mock_sha256": sha(mock_script),
+        "package_files": inventory(package),
+        "fixture_sha256": sha(fixture),
+        "prompt_sha256": sha(destination / "prompt.txt"),
+        "provider_simulated": True,
+        "production_art": False,
+        "execution_status": "prepared_not_run",
+    }
+    write_json(destination / "identity.json", identity)
+    shutil.copyfile(Path(__file__), destination / "runner.py.txt")
+    return identity
+
+
+def run(destination: Path, timeout: int = 900) -> dict:
+    destination = destination.resolve()
+    launch = json.loads((destination / "launch.json").read_text())
+    if (destination / "stdout.jsonl").exists():
+        raise ValueError("A trial can run only once; prepare a fresh attempt")
+    env = dict(os.environ)
+    # Existing host login is retained; provider/API-key environment is not inherited.
+    for key in list(env):
+        if any(
+            word in key.upper()
+            for word in ("PIXELLAB", "PIXEL_LAB", "ANTHROPIC_API_KEY", "OPENAI_API_KEY")
+        ):
+            del env[key]
+    env.pop("PYTHONPATH", None)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    started = time.monotonic()
+    timed_out = False
+    with (
+        (destination / "stdout.jsonl").open("wb") as stdout,
+        (destination / "stderr.txt").open("wb") as stderr,
+    ):
+        process = subprocess.Popen(
+            launch["command"],
+            cwd=launch["cwd"],
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=stdout,
+            stderr=stderr,
+        )
+        try:
+            process.communicate(
+                (destination / "prompt.txt").read_bytes(), timeout=timeout
+            )
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            if os.name == "nt":
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    capture_output=True,
+                    check=False,
+                )
+            else:
+                process.kill()
+            process.wait()
+    record = {
+        "host": launch["host"],
+        "elapsed_seconds": round(time.monotonic() - started, 3),
+        "returncode": process.returncode,
+        "timed_out": timed_out,
+        "execution_status": outcome(
+            process.returncode,
+            timed_out,
+            (destination / "stdout.jsonl").read_text(
+                encoding="utf-8", errors="replace"
+            ),
+        ),
+        "provider_simulated": True,
+        "behavioral_verdict": "ungraded",
+        "artifacts": inventory(destination / "project", ("__pycache__",)),
+        "recorded_files": {
+            name: sha(destination / name)
+            for name in ("stdout.jsonl", "stderr.txt", "provider-calls.jsonl")
+            if (destination / name).exists()
+        },
+    }
+    write_json(destination / "record.json", record)
+    return record
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--host", choices=("claude", "codex"), required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--run", action="store_true")
+    parser.add_argument("--timeout", type=int, default=900)
+    args = parser.parse_args()
+    prepare(args.out, args.host)
+    result = run(args.out, args.timeout) if args.run else {"status": "prepared_not_run"}
+    print(
+        json.dumps(
+            {
+                "out": str(args.out),
+                **{
+                    key: result[key]
+                    for key in ("execution_status", "elapsed_seconds", "status")
+                    if key in result
+                },
+            },
+            indent=2,
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()

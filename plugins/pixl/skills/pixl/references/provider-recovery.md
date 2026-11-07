@@ -15,6 +15,19 @@ Resolve `../../../scripts/pixl.py` relative to this reference directory and invo
 
 ## Prepare a saved request
 
+When the host exposes the optional PixelLab HTTP bridge, use `pixellab_contract`
+to inspect its retained official HTTP schema, source date and simulated/live flag.
+It currently supports one async image operation. This is a dated HTTP contract,
+not live MCP discovery; HTTP `image_size` is distinct from MCP width/height aliases.
+`pixellab_prepare_image` validates and saves the request against the planned task
+and output. Then `pixellab_submit` claims, submits once and records the response;
+do not call local `job-dispatch` first. `pixellab_poll` observes the saved ID once
+(allow the returned interval between real polls), and `pixellab_import_image`
+decodes and retains a completed response as an unaccepted candidate. Each mutation
+requires the current store hash. Continue with normal inspection and acceptance.
+Unknown submission outcomes cannot be resubmitted; preserve and reconcile them.
+Mocked bridge observations remain simulated, including in handoffs.
+
 1. Run `workflow STORE/state.px --root ROOT` and `jobs STORE/state.px --root ROOT`. Read both lifecycle blockers and existing provider attempts. An open task does not imply permission to create another remote job. Pending prepared/unknown/submitted/running work on the output must be resolved first.
 2. Retrieve the task's focused context. Translate its intended output and relevant inputs, decisions, methods and contract into the actual tool schema. Preserve arguments exactly; describe any requirement the tool cannot express and the later acceptance check that will evaluate it.
 3. Write a request JSON object with exactly `provider`, `tool`, `arguments`, `schema`, `discovery`, and `authorization`. `schema` is the full inputSchema object. Discovery has `source`, `observed_at`, `evidence`; authorization has `scope`, `evidence`. Evidence must be nonempty objects. Timestamps require an explicit UTC offset and at most six fractional digits. Values come from the current assignment and observations, not from a bundled art fixture.
