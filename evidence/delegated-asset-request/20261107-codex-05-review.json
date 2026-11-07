@@ -1,0 +1,678 @@
+{
+  "verdict": "pass for the bounded delegated integration milestone",
+  "attempt": "20261107-codex-05",
+  "runner_record_sha256": "2564f5901a5cb0fd24f5e0acf8cec562fb7cc2a5d594465a4bc8eb406f8d8cfa",
+  "package_manifest_sha256": "222d208f6c850ca936f169510c7554b22083dca4640f90ef3069d71530cac3ac",
+  "brief_sha256": "1453d35b5fab34f9d94a5e3febfbe21588ea3a8fdeac3e3b7bccb55a87ac4480",
+  "parent_result_sha256": "7c49c75c20a9ab3c29ed27f4326c45f6c33e901dc820a2912cd831117b86eb80",
+  "asset_path": "robot-production/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png",
+  "asset_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+  "equals_fixture": true,
+  "request_sequence": [
+    {
+      "method": "POST",
+      "path": "/create-image-pixflux-background"
+    },
+    {
+      "method": "GET",
+      "path": "/background-jobs/test-pixellab-0001"
+    },
+    {
+      "method": "GET",
+      "path": "/background-jobs/test-pixellab-0001"
+    }
+  ],
+  "request": {
+    "description": "32x32 front-facing teal robot sprite matching supplied reference: two antennae, two yellow eyes, dark #25354A outlines, teal #56B5BC body, pale yellow #F4DDA2 eyes; binary transparency; no ground shadow.",
+    "image_size": {
+      "height": 32,
+      "width": 32
+    },
+    "no_background": true
+  },
+  "provider_simulated": true,
+  "state_validation": {
+    "valid": true,
+    "format": 2,
+    "revision": 11,
+    "hash": "34c33f8bf9d17185a82991eea6a4bc85fe79d38ed4025d5f9472d9072cfd3f5d",
+    "files_verified": true
+  },
+  "workflow": {
+    "intake": [
+      {
+        "id": "requirements",
+        "project": "project",
+        "key": "test sprite identity",
+        "status": "confirmed",
+        "value": "32x32 front-facing teal robot; two antennae; two yellow eyes; dark outline; binary transparency; no ground shadow; reference palette #25354A #56B5BC #F4DDA2. Only this controlled test.",
+        "sources": [
+          "brief",
+          "session"
+        ],
+        "rationale": "Explicit supplied brief, scoped to mocked test. Reference visually shows these features. No engine integration required."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "sample",
+        "project": "project",
+        "phase": "sample",
+        "state": "done",
+        "blockers": [],
+        "outputs": [
+          {
+            "id": "robot",
+            "name": "One robot PNG",
+            "candidate": "robot-candidate",
+            "requirements": [
+              {
+                "id": "mechanical",
+                "name": "Raster requirements",
+                "check": "PNG 32x32, binary alpha; visible palette matches #25354A #56B5BC #F4DDA2.",
+                "domain": "mechanical",
+                "mode": "local",
+                "status": "pass",
+                "verdict": "robot-review.verdict.0",
+                "reason": "Retained measurements show one 32x32 frame, three visible colors, no out-of-palette pixels and zero fractional-alpha pixels.",
+                "reviewer": "actor",
+                "evidence": [
+                  "robot-review.evidence.0"
+                ]
+              },
+              {
+                "id": "visual",
+                "name": "Requested identity",
+                "check": "Front-facing teal robot matching reference: two antennae, two yellow eyes, dark outlines, no ground shadow.",
+                "domain": "visual",
+                "mode": "visual",
+                "status": "pass",
+                "verdict": "robot-review.verdict.1",
+                "reason": "Viewed all native and 8x candidate/reference views at original sizes: matching front-facing teal robot, two antennae, two yellow eyes, dark outlines and no ground shadow.",
+                "reviewer": "actor",
+                "evidence": [
+                  "robot-review.evidence.1"
+                ]
+              }
+            ],
+            "candidates": [
+              {
+                "id": "robot-candidate",
+                "nominated": true,
+                "requirements": [
+                  {
+                    "id": "mechanical",
+                    "name": "Raster requirements",
+                    "check": "PNG 32x32, binary alpha; visible palette matches #25354A #56B5BC #F4DDA2.",
+                    "domain": "mechanical",
+                    "mode": "local",
+                    "status": "pass",
+                    "verdict": "robot-review.verdict.0",
+                    "reason": "Retained measurements show one 32x32 frame, three visible colors, no out-of-palette pixels and zero fractional-alpha pixels.",
+                    "reviewer": "actor",
+                    "evidence": [
+                      "robot-review.evidence.0"
+                    ]
+                  },
+                  {
+                    "id": "visual",
+                    "name": "Requested identity",
+                    "check": "Front-facing teal robot matching reference: two antennae, two yellow eyes, dark outlines, no ground shadow.",
+                    "domain": "visual",
+                    "mode": "visual",
+                    "status": "pass",
+                    "verdict": "robot-review.verdict.1",
+                    "reason": "Viewed all native and 8x candidate/reference views at original sizes: matching front-facing teal robot, two antennae, two yellow eyes, dark outlines and no ground shadow.",
+                    "reviewer": "actor",
+                    "evidence": [
+                      "robot-review.evidence.1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "ready": [],
+    "format": 2,
+    "revision": 11,
+    "hash": "34c33f8bf9d17185a82991eea6a4bc85fe79d38ed4025d5f9472d9072cfd3f5d",
+    "files_verified": true
+  },
+  "inspection": {
+    "hash": "34c33f8bf9d17185a82991eea6a4bc85fe79d38ed4025d5f9472d9072cfd3f5d",
+    "packets": [
+      {
+        "packet": "robot-inspection",
+        "candidate": "robot-candidate",
+        "output": "robot",
+        "task": "sample",
+        "created_at": "2026-11-07T20:27:43.071878+00:00",
+        "views": [
+          {
+            "background": null,
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot-inspection.view.0",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0000.png",
+            "scale": 1,
+            "sha256": "e8e293faa93e7d602dddb3711bdd91e89969ae8d186e44e7b386655dff2234d5",
+            "source": "robot-candidate",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot-inspection.view.1",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0001.png",
+            "scale": 1,
+            "sha256": "15187fac7fca5834bccebad470c8ab66086b968f0f2ad01cee7cecedffda2a10",
+            "source": "robot-candidate",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot-inspection.view.2",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0002.png",
+            "scale": 8,
+            "sha256": "74ddce2e32b754db8436b51aca2b0bf4adf42ab2473d30feabf56d6fc6e193fd",
+            "source": "robot-candidate",
+            "width": 256
+          },
+          {
+            "background": null,
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot-inspection.view.3",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0003.png",
+            "scale": 1,
+            "sha256": "e8e293faa93e7d602dddb3711bdd91e89969ae8d186e44e7b386655dff2234d5",
+            "source": "reference",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot-inspection.view.4",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0004.png",
+            "scale": 1,
+            "sha256": "15187fac7fca5834bccebad470c8ab66086b968f0f2ad01cee7cecedffda2a10",
+            "source": "reference",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot-inspection.view.5",
+            "path": "robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0005.png",
+            "scale": 8,
+            "sha256": "74ddce2e32b754db8436b51aca2b0bf4adf42ab2473d30feabf56d6fc6e193fd",
+            "source": "reference",
+            "width": 256
+          }
+        ],
+        "measurements": {
+          "reference": {
+            "engine_import_verified": false,
+            "failures": [],
+            "frame_count": 1,
+            "frames": [
+              {
+                "duration_ms": null,
+                "fractional_alpha_pixels": 0,
+                "height": 32,
+                "index": 0,
+                "opaque_components": 1,
+                "outside_palette": [],
+                "outside_palette_count": 0,
+                "visible_bbox": [
+                  7,
+                  3,
+                  25,
+                  28
+                ],
+                "visible_colors": 3,
+                "visible_pixels": 390,
+                "width": 32
+              }
+            ],
+            "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure.",
+            "pass": true,
+            "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+            "visual_quality_verified": false
+          },
+          "robot-candidate": {
+            "engine_import_verified": false,
+            "failures": [],
+            "frame_count": 1,
+            "frames": [
+              {
+                "duration_ms": null,
+                "fractional_alpha_pixels": 0,
+                "height": 32,
+                "index": 0,
+                "opaque_components": 1,
+                "outside_palette": [],
+                "outside_palette_count": 0,
+                "visible_bbox": [
+                  7,
+                  3,
+                  25,
+                  28
+                ],
+                "visible_colors": 3,
+                "visible_pixels": 390,
+                "width": 32
+              }
+            ],
+            "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure.",
+            "pass": true,
+            "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+            "visual_quality_verified": false
+          }
+        },
+        "context_observations": [],
+        "criteria": [
+          {
+            "id": "mechanical",
+            "name": "Raster requirements",
+            "check": "PNG 32x32, binary alpha; visible palette matches #25354A #56B5BC #F4DDA2.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "robot-review.verdict.0"
+          },
+          {
+            "id": "visual",
+            "name": "Requested identity",
+            "check": "Front-facing teal robot matching reference: two antennae, two yellow eyes, dark outlines, no ground shadow.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "robot-review.verdict.1"
+          }
+        ],
+        "binding_drift": [],
+        "reviews": [
+          {
+            "coverage": {
+              "complete": true,
+              "missing": [],
+              "observed": [
+                "robot-inspection.view.0",
+                "robot-inspection.view.1",
+                "robot-inspection.view.2",
+                "robot-inspection.view.3",
+                "robot-inspection.view.4",
+                "robot-inspection.view.5"
+              ],
+              "resized": [],
+              "unknown_size": []
+            },
+            "kind": "review",
+            "observation": {
+              "limitations": [
+                "provider_simulated=true: exactly one mocked submission, zero real provider calls; deterministic fixture response is not newly generated artwork.",
+                "No engine integration requested or performed."
+              ],
+              "next_action": "Nominate reviewed sample and return actual retained PNG and concise review to parent for independent assessment.",
+              "observations": [
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Viewed at original 32x32: readable front-facing teal robot with paired eyes and antennae; matches supplied reference.",
+                  "view": "robot-inspection.view.0"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Viewed at original 32x32: readable front-facing teal robot with paired eyes and antennae; matches supplied reference.",
+                  "view": "robot-inspection.view.1"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Viewed at original 256x256: two dark upright antennae; two pale yellow rectangular eyes; teal rectangular front body with dark perimeter; no ground shadow. Candidate and reference structures match.",
+                  "view": "robot-inspection.view.2"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Viewed at original 32x32: readable front-facing teal robot with paired eyes and antennae; matches supplied reference.",
+                  "view": "robot-inspection.view.3"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Viewed at original 32x32: readable front-facing teal robot with paired eyes and antennae; matches supplied reference.",
+                  "view": "robot-inspection.view.4"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Viewed at original 256x256: two dark upright antennae; two pale yellow rectangular eyes; teal rectangular front body with dark perimeter; no ground shadow. Candidate and reference structures match.",
+                  "view": "robot-inspection.view.5"
+                }
+              ],
+              "observed_at": "2026-11-07T20:27:46+00:00",
+              "reviewer": "actor",
+              "verdicts": [
+                {
+                  "criterion": "mechanical",
+                  "reason": "Retained measurements show one 32x32 frame, three visible colors, no out-of-palette pixels and zero fractional-alpha pixels.",
+                  "status": "pass",
+                  "supersedes": null
+                },
+                {
+                  "criterion": "visual",
+                  "reason": "Viewed all native and 8x candidate/reference views at original sizes: matching front-facing teal robot, two antennae, two yellow eyes, dark outlines and no ground shadow.",
+                  "status": "pass",
+                  "supersedes": null
+                }
+              ]
+            },
+            "packet": "robot-inspection",
+            "recorded_at": "2026-11-07T20:27:58.327913+00:00",
+            "review": "robot-review",
+            "source_state_sha256": "e2796901af707cfafebba1ac973e21d7a888c25ca8f61f85cbd5d52ef46539f6",
+            "version": 1
+          }
+        ],
+        "files_verified": true,
+        "visual_quality_verified": false,
+        "engine_import_verified": false
+      }
+    ],
+    "files_verified": true
+  },
+  "measurements": {
+    "pass": true,
+    "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "frame_count": 1,
+    "frames": [
+      {
+        "index": 0,
+        "width": 32,
+        "height": 32,
+        "duration_ms": null,
+        "visible_pixels": 390,
+        "visible_colors": 3,
+        "fractional_alpha_pixels": 0,
+        "outside_palette": [],
+        "outside_palette_count": 0,
+        "opaque_components": 1,
+        "visible_bbox": [
+          7,
+          3,
+          25,
+          28
+        ]
+      }
+    ],
+    "failures": [],
+    "visual_quality_verified": false,
+    "engine_import_verified": false,
+    "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure."
+  },
+  "invocation": {
+    "parent_thread": "01a1b7b0-7dd0-77a3-b57c-87f348300a77",
+    "child_threads": [
+      "01a1b7b0-d410-7950-aaa3-ac3d7ea3833a"
+    ],
+    "parent_image_views": [
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0002.png"
+    ],
+    "specialist_image_views": [
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/reference.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0000.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0001.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0002.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0003.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0004.png",
+      "file:///C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/delegated-asset-request/20261107-codex-05/project/robot-production/inspections/ea401abbb017f13fb028862a4cbc4fffeabb00a610f9bad24c6049bec7fec393/views/0005.png"
+    ],
+    "specialist_mcp_calls": [
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_contract",
+        "argument_keys": []
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_intake",
+        "argument_keys": [
+          "brief",
+          "name",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_commit",
+        "argument_keys": [
+          "document",
+          "expect",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_workflow",
+        "argument_keys": [
+          "path"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_jobs",
+        "argument_keys": [
+          "path"
+        ]
+      },
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_prepare_image",
+        "argument_keys": [
+          "arguments",
+          "authorization",
+          "expect",
+          "job_id",
+          "output_id",
+          "store",
+          "task_id"
+        ]
+      },
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_submit",
+        "argument_keys": [
+          "expect",
+          "job_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_poll",
+        "argument_keys": [
+          "expect",
+          "job_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_poll",
+        "argument_keys": [
+          "expect",
+          "job_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixellab_test",
+        "tool": "pixellab_import_image",
+        "argument_keys": [
+          "candidate_id",
+          "expect",
+          "job_id",
+          "output_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_inspection",
+        "argument_keys": [
+          "path"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_inspection_prepare",
+        "argument_keys": [
+          "candidate_id",
+          "expect",
+          "options",
+          "packet_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_inspection_review",
+        "argument_keys": [
+          "expect",
+          "observation",
+          "packet_id",
+          "review_id",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_commit",
+        "argument_keys": [
+          "document",
+          "expect",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_inspection",
+        "argument_keys": [
+          "packet_id",
+          "path"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_workflow",
+        "argument_keys": [
+          "path"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_commit",
+        "argument_keys": [
+          "document",
+          "expect",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_commit",
+        "argument_keys": [
+          "document",
+          "expect",
+          "store"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_workflow",
+        "argument_keys": [
+          "path"
+        ]
+      },
+      {
+        "server": "pixl_local",
+        "tool": "pixl_validate",
+        "argument_keys": [
+          "path"
+        ]
+      }
+    ]
+  },
+  "review_basis": "Actual native delegation, one POST and two polls, retained imported candidate, specialist and parent image-viewing records, parent result and current state validation.",
+  "limits": [
+    "Deterministic response equals the reference; this cannot establish generated-art fidelity.",
+    "No target engine was required.",
+    "The provider request translated reference features into text; it did not upload an init/reference image."
+  ]
+}

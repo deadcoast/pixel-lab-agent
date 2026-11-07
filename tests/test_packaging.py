@@ -81,6 +81,10 @@ class PackagingTests(unittest.TestCase):
                 plugin,
                 ignore=shutil.ignore_patterns("__pycache__"),
             )
+            self.assertEqual(
+                (plugin / "resources/agent/PROFILE.md").read_bytes(),
+                (ROOT / ".agents/PROFILE.md").read_bytes(),
+            )
             cwd = Path(tmp) / "project"
             cwd.mkdir()
             env = dict(os.environ)
@@ -110,6 +114,19 @@ class PackagingTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
                 return json.loads(result.stdout) if result.stdout else None
 
+            shutil.copytree(ROOT / "examples/plar-project", cwd / "consumer")
+            packet = cli(
+                [
+                    "plar",
+                    "read",
+                    "--root",
+                    str(cwd / "consumer"),
+                    "--asset",
+                    "queue.working",
+                ]
+            )
+            self.assertEqual(packet["asset"]["delivery"]["path"], "assets/working.png")
+            self.assertTrue((plugin / "skills/plar/SKILL.md").is_file())
             for command in (
                 ["sources"],
                 [

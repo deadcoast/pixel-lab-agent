@@ -1,7 +1,7 @@
 # PX-EVAL-004 — delegated PixelLab integration in both hosts
 
-**Status:** implementation and offline checks complete, 2026-11-05; native trials
-are recorded in the [outcome review](../evidence/delegated-asset-request/README.md).
+**Status:** bounded cross-host integration milestone complete, 2026-11-07;
+matched native deliveries are recorded in the [outcome review](../evidence/delegated-asset-request/README.md).
 The review, not a host exit code, determines acceptance.
 
 **Product outcome:** Claude or Codex delegates an asset-generation request to PIXL.

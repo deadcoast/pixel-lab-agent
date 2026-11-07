@@ -1,0 +1,705 @@
+{
+  "verdict": "pass for the bounded delegated integration milestone",
+  "attempt": "20261107-claude-03",
+  "runner_record_sha256": "1a7a5be7673c844cec49fbd7eadb332abd20f8c126edd878abbe33d5957c83a8",
+  "package_manifest_sha256": "222d208f6c850ca936f169510c7554b22083dca4640f90ef3069d71530cac3ac",
+  "brief_sha256": "1453d35b5fab34f9d94a5e3febfbe21588ea3a8fdeac3e3b7bccb55a87ac4480",
+  "parent_result_sha256": "56797f73d2c8302964eb0f50f34ce0925665c574fd7dafcc1f8292383e8ffda3",
+  "asset_path": "pixl/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png",
+  "asset_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+  "equals_fixture": true,
+  "request_sequence": [
+    {
+      "method": "POST",
+      "path": "/create-image-pixflux-background"
+    },
+    {
+      "method": "GET",
+      "path": "/background-jobs/test-pixellab-0001"
+    },
+    {
+      "method": "GET",
+      "path": "/background-jobs/test-pixellab-0001"
+    }
+  ],
+  "request": {
+    "description": "front-facing teal robot, two antennae, two yellow eyes, dark navy outline, simple flat pixel art sprite, no ground shadow",
+    "detail": "low detail",
+    "direction": "south",
+    "image_size": {
+      "height": 32,
+      "width": 32
+    },
+    "no_background": true,
+    "outline": "single color outline",
+    "shading": "flat shading",
+    "view": "side"
+  },
+  "provider_simulated": true,
+  "state_validation": {
+    "valid": true,
+    "format": 2,
+    "revision": 11,
+    "hash": "b12c5402d3d4b1da9f51878cf46ca33a7cd58f4754c903bdaf14fe6975ff7cda",
+    "files_verified": true
+  },
+  "workflow": {
+    "intake": [
+      {
+        "id": "alpha",
+        "project": "project",
+        "key": "al",
+        "status": "confirmed",
+        "value": {
+          "$symbol": "binary"
+        },
+        "sources": [
+          "brief"
+        ],
+        "rationale": "Brief explicitly requires binary transparency."
+      },
+      {
+        "id": "canvas",
+        "project": "project",
+        "key": "px",
+        "status": "confirmed",
+        "value": [
+          32,
+          32
+        ],
+        "sources": [
+          "brief"
+        ],
+        "rationale": "Brief explicitly requests a 32x32 sprite for this controlled test."
+      },
+      {
+        "id": "palette",
+        "project": "project",
+        "key": "pl",
+        "status": "confirmed",
+        "value": [
+          "#25354A",
+          "#56B5BC",
+          "#F4DDA2"
+        ],
+        "sources": [
+          "brief"
+        ],
+        "rationale": "Brief names this three-color reference palette and asks the sprite to match reference.png; applies only to this controlled test."
+      },
+      {
+        "id": "sampling",
+        "project": "project",
+        "key": "sa",
+        "status": "proposed",
+        "value": {
+          "$symbol": "nearest"
+        },
+        "sources": [],
+        "rationale": "Not specified; nearest-neighbor inspection/display proposed for pixel-art review. No engine integration required."
+      },
+      {
+        "id": "subject",
+        "project": "project",
+        "key": "subject",
+        "status": "confirmed",
+        "value": "front-facing teal robot, two antennae, two yellow eyes, dark outlines, no ground shadow",
+        "sources": [
+          "brief"
+        ],
+        "rationale": "Required subject features stated in the brief."
+      },
+      {
+        "id": "view",
+        "project": "project",
+        "key": "vw",
+        "status": "proposed",
+        "value": {
+          "$symbol": "side"
+        },
+        "sources": [],
+        "rationale": "Brief says front-facing but names no projection; PIXL proposes the flat side/front camera class (provider view=side, direction=south) for this sample only."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "make_robot",
+        "project": "project",
+        "phase": "sample",
+        "state": "done",
+        "blockers": [],
+        "outputs": [
+          {
+            "id": "robot_sprite",
+            "name": "Teal robot sprite PNG",
+            "candidate": "robot_candidate_1",
+            "requirements": [
+              {
+                "id": "q_mechanical",
+                "name": "mechanical",
+                "check": "The PNG is 32x32, uses binary alpha only, and every visible pixel is one of #25354A, #56B5BC, #F4DDA2.",
+                "domain": "mechanical",
+                "mode": "local",
+                "status": "pass",
+                "verdict": "robot_review_1.verdict.0",
+                "reason": "Measured: 32x32, 1 frame, 0 fractional-alpha pixels (binary), 3 visible colors all within #25354A/#56B5BC/#F4DDA2, 0 outside-palette pixels, 390 visible pixels, bbox [7,3,25,28].",
+                "reviewer": "actor",
+                "evidence": [
+                  "robot_review_1.evidence.0"
+                ]
+              },
+              {
+                "id": "q_visual",
+                "name": "visual",
+                "check": "At native and enlarged scale the sprite reads as a front-facing teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and matches reference.png.",
+                "domain": "visual",
+                "mode": "visual",
+                "status": "pass",
+                "verdict": "robot_review_1.verdict.1",
+                "reason": "Viewed all 10 prepared views at native and 8x: symmetric front-facing teal robot, two dark antennae, two yellow (#F4DDA2) eyes, continuous dark outline, no ground shadow, and it matches reference.png. The match exists because the mocked provider returned bytes identical to the reference (sha256 d997cade...); this is a deterministic test response, not evidence of newly generated artwork.",
+                "reviewer": "actor",
+                "evidence": [
+                  "robot_review_1.evidence.1"
+                ]
+              }
+            ],
+            "candidates": [
+              {
+                "id": "robot_candidate_1",
+                "nominated": true,
+                "requirements": [
+                  {
+                    "id": "q_mechanical",
+                    "name": "mechanical",
+                    "check": "The PNG is 32x32, uses binary alpha only, and every visible pixel is one of #25354A, #56B5BC, #F4DDA2.",
+                    "domain": "mechanical",
+                    "mode": "local",
+                    "status": "pass",
+                    "verdict": "robot_review_1.verdict.0",
+                    "reason": "Measured: 32x32, 1 frame, 0 fractional-alpha pixels (binary), 3 visible colors all within #25354A/#56B5BC/#F4DDA2, 0 outside-palette pixels, 390 visible pixels, bbox [7,3,25,28].",
+                    "reviewer": "actor",
+                    "evidence": [
+                      "robot_review_1.evidence.0"
+                    ]
+                  },
+                  {
+                    "id": "q_visual",
+                    "name": "visual",
+                    "check": "At native and enlarged scale the sprite reads as a front-facing teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and matches reference.png.",
+                    "domain": "visual",
+                    "mode": "visual",
+                    "status": "pass",
+                    "verdict": "robot_review_1.verdict.1",
+                    "reason": "Viewed all 10 prepared views at native and 8x: symmetric front-facing teal robot, two dark antennae, two yellow (#F4DDA2) eyes, continuous dark outline, no ground shadow, and it matches reference.png. The match exists because the mocked provider returned bytes identical to the reference (sha256 d997cade...); this is a deterministic test response, not evidence of newly generated artwork.",
+                    "reviewer": "actor",
+                    "evidence": [
+                      "robot_review_1.evidence.1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "ready": [],
+    "format": 2,
+    "revision": 11,
+    "hash": "b12c5402d3d4b1da9f51878cf46ca33a7cd58f4754c903bdaf14fe6975ff7cda",
+    "files_verified": true
+  },
+  "inspection": {
+    "hash": "b12c5402d3d4b1da9f51878cf46ca33a7cd58f4754c903bdaf14fe6975ff7cda",
+    "packets": [
+      {
+        "packet": "robot_packet_1",
+        "candidate": "robot_candidate_1",
+        "output": "robot_sprite",
+        "task": "make_robot",
+        "created_at": "2026-11-07T20:28:16.557057+00:00",
+        "views": [
+          {
+            "background": null,
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.0",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0000.png",
+            "scale": 1,
+            "sha256": "e8e293faa93e7d602dddb3711bdd91e89969ae8d186e44e7b386655dff2234d5",
+            "source": "robot_candidate_1",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.1",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0001.png",
+            "scale": 1,
+            "sha256": "15187fac7fca5834bccebad470c8ab66086b968f0f2ad01cee7cecedffda2a10",
+            "source": "robot_candidate_1",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot_packet_1.view.2",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0002.png",
+            "scale": 8,
+            "sha256": "74ddce2e32b754db8436b51aca2b0bf4adf42ab2473d30feabf56d6fc6e193fd",
+            "source": "robot_candidate_1",
+            "width": 256
+          },
+          {
+            "background": "#202838",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.3",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0003.png",
+            "scale": 1,
+            "sha256": "75ee19760bb3796b45bdaa1cd35766e26e3bf3b377688681032a71ec28f2040f",
+            "source": "robot_candidate_1",
+            "width": 32
+          },
+          {
+            "background": "#202838",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot_packet_1.view.4",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0004.png",
+            "scale": 8,
+            "sha256": "21bc7357e73326e4d8522846995a25a5d8065094167ee94ee0b7e9cd9b71fac5",
+            "source": "robot_candidate_1",
+            "width": 256
+          },
+          {
+            "background": null,
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.5",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0005.png",
+            "scale": 1,
+            "sha256": "e8e293faa93e7d602dddb3711bdd91e89969ae8d186e44e7b386655dff2234d5",
+            "source": "reference",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.6",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0006.png",
+            "scale": 1,
+            "sha256": "15187fac7fca5834bccebad470c8ab66086b968f0f2ad01cee7cecedffda2a10",
+            "source": "reference",
+            "width": 32
+          },
+          {
+            "background": "#ffffff",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot_packet_1.view.7",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0007.png",
+            "scale": 8,
+            "sha256": "74ddce2e32b754db8436b51aca2b0bf4adf42ab2473d30feabf56d6fc6e193fd",
+            "source": "reference",
+            "width": 256
+          },
+          {
+            "background": "#202838",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 32,
+            "id": "robot_packet_1.view.8",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0008.png",
+            "scale": 1,
+            "sha256": "75ee19760bb3796b45bdaa1cd35766e26e3bf3b377688681032a71ec28f2040f",
+            "source": "reference",
+            "width": 32
+          },
+          {
+            "background": "#202838",
+            "context": null,
+            "crop": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "frame": 0,
+            "height": 256,
+            "id": "robot_packet_1.view.9",
+            "path": "pixl/inspections/533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5/views/0009.png",
+            "scale": 8,
+            "sha256": "21bc7357e73326e4d8522846995a25a5d8065094167ee94ee0b7e9cd9b71fac5",
+            "source": "reference",
+            "width": 256
+          }
+        ],
+        "measurements": {
+          "reference": {
+            "engine_import_verified": false,
+            "failures": [],
+            "frame_count": 1,
+            "frames": [
+              {
+                "duration_ms": null,
+                "fractional_alpha_pixels": 0,
+                "height": 32,
+                "index": 0,
+                "opaque_components": 1,
+                "outside_palette": [],
+                "outside_palette_count": 0,
+                "visible_bbox": [
+                  7,
+                  3,
+                  25,
+                  28
+                ],
+                "visible_colors": 3,
+                "visible_pixels": 390,
+                "width": 32
+              }
+            ],
+            "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure.",
+            "pass": true,
+            "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+            "visual_quality_verified": false
+          },
+          "robot_candidate_1": {
+            "engine_import_verified": false,
+            "failures": [],
+            "frame_count": 1,
+            "frames": [
+              {
+                "duration_ms": null,
+                "fractional_alpha_pixels": 0,
+                "height": 32,
+                "index": 0,
+                "opaque_components": 1,
+                "outside_palette": [],
+                "outside_palette_count": 0,
+                "visible_bbox": [
+                  7,
+                  3,
+                  25,
+                  28
+                ],
+                "visible_colors": 3,
+                "visible_pixels": 390,
+                "width": 32
+              }
+            ],
+            "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure.",
+            "pass": true,
+            "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+            "visual_quality_verified": false
+          }
+        },
+        "context_observations": [],
+        "criteria": [
+          {
+            "id": "q_mechanical",
+            "name": "mechanical",
+            "check": "The PNG is 32x32, uses binary alpha only, and every visible pixel is one of #25354A, #56B5BC, #F4DDA2.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "robot_review_1.verdict.0"
+          },
+          {
+            "id": "q_visual",
+            "name": "visual",
+            "check": "At native and enlarged scale the sprite reads as a front-facing teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and matches reference.png.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "robot_review_1.verdict.1"
+          }
+        ],
+        "binding_drift": [],
+        "reviews": [
+          {
+            "coverage": {
+              "complete": true,
+              "missing": [],
+              "observed": [
+                "robot_packet_1.view.0",
+                "robot_packet_1.view.1",
+                "robot_packet_1.view.2",
+                "robot_packet_1.view.3",
+                "robot_packet_1.view.4",
+                "robot_packet_1.view.5",
+                "robot_packet_1.view.6",
+                "robot_packet_1.view.7",
+                "robot_packet_1.view.8",
+                "robot_packet_1.view.9"
+              ],
+              "resized": [],
+              "unknown_size": []
+            },
+            "kind": "review",
+            "observation": {
+              "limitations": [
+                "provider_simulated=true: the PixelLab HTTP transport was mocked; the candidate is byte-identical to reference.png and is not proof of generative output or provider quality.",
+                "Delivered sizes are declared from the host image viewer presenting these small PNGs without visible resizing; no independent viewer transcript is retained.",
+                "Antennae are thick multi-pixel posts rather than thin stalks; accepted as antennae because they match the reference the brief asks to match.",
+                "The #25354A outline has low contrast against very dark backgrounds such as #202838; the brief names no target background, so this is an observation, not a failure.",
+                "No engine import was required or performed."
+              ],
+              "next_action": "Nominate robot_candidate_1 in make_robot.ca and mark the sample task done; no engine integration is required. A real (non-mocked) generation would need a new authorized job and a fresh review.",
+              "observations": [
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Candidate native, transparent: small symmetric front-facing teal robot silhouette with two upright dark protrusions on top and two pale-yellow eyes; reads as a robot head/body at 1x.",
+                  "view": "robot_packet_1.view.0"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Candidate native on white: dark outline separates the teal body clearly; two antennae and two eyes legible.",
+                  "view": "robot_packet_1.view.1"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Candidate 8x nearest on white: crisp square pixels, continuous #25354A outline around teal #56B5BC body, two #F4DDA2 eye blocks, two thick dark antenna posts rising from the top corners; no shadow or pixels below the body; no semi-transparent edge pixels visible.",
+                  "view": "robot_packet_1.view.2"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Candidate native on #202838: teal body and eyes still read, but the dark outline and antennae nearly merge with the dark background.",
+                  "view": "robot_packet_1.view.3"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Candidate 8x on #202838: confirms low contrast between the #25354A outline/antennae and a dark navy background; structure otherwise identical to the white-background view.",
+                  "view": "robot_packet_1.view.4"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Reference native, transparent: same silhouette, features and colors as the candidate.",
+                  "view": "robot_packet_1.view.5"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Reference native on white: matches candidate view.1.",
+                  "view": "robot_packet_1.view.6"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Reference 8x on white: same appearance as candidate view.2 (view hashes also identical).",
+                  "view": "robot_packet_1.view.7"
+                },
+                {
+                  "delivered_size": [
+                    32,
+                    32
+                  ],
+                  "note": "Reference native on #202838: matches candidate view.3, including the same low outline contrast.",
+                  "view": "robot_packet_1.view.8"
+                },
+                {
+                  "delivered_size": [
+                    256,
+                    256
+                  ],
+                  "note": "Reference 8x on #202838: matches candidate view.4.",
+                  "view": "robot_packet_1.view.9"
+                }
+              ],
+              "observed_at": "2026-11-07T20:28:50+00:00",
+              "reviewer": "actor",
+              "verdicts": [
+                {
+                  "criterion": "q_mechanical",
+                  "reason": "Measured: 32x32, 1 frame, 0 fractional-alpha pixels (binary), 3 visible colors all within #25354A/#56B5BC/#F4DDA2, 0 outside-palette pixels, 390 visible pixels, bbox [7,3,25,28].",
+                  "status": "pass",
+                  "supersedes": null
+                },
+                {
+                  "criterion": "q_visual",
+                  "reason": "Viewed all 10 prepared views at native and 8x: symmetric front-facing teal robot, two dark antennae, two yellow (#F4DDA2) eyes, continuous dark outline, no ground shadow, and it matches reference.png. The match exists because the mocked provider returned bytes identical to the reference (sha256 d997cade...); this is a deterministic test response, not evidence of newly generated artwork.",
+                  "status": "pass",
+                  "supersedes": null
+                }
+              ]
+            },
+            "packet": "robot_packet_1",
+            "recorded_at": "2026-11-07T20:29:11.701574+00:00",
+            "review": "robot_review_1",
+            "source_state_sha256": "31b825802f98f1fae8a7b6b590ce177caaa39c4c5485a086fb9f16ce4e500abd",
+            "version": 1
+          }
+        ],
+        "files_verified": true,
+        "visual_quality_verified": false,
+        "engine_import_verified": false
+      }
+    ],
+    "files_verified": true
+  },
+  "measurements": {
+    "pass": true,
+    "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "frame_count": 1,
+    "frames": [
+      {
+        "index": 0,
+        "width": 32,
+        "height": 32,
+        "duration_ms": null,
+        "visible_pixels": 390,
+        "visible_colors": 3,
+        "fractional_alpha_pixels": 0,
+        "outside_palette": [],
+        "outside_palette_count": 0,
+        "opaque_components": 1,
+        "visible_bbox": [
+          7,
+          3,
+          25,
+          28
+        ]
+      }
+    ],
+    "failures": [],
+    "visual_quality_verified": false,
+    "engine_import_verified": false,
+    "measurement_notes": "Components use 4-connectivity and nonzero alpha; fragmentation is a measurement, not automatic aesthetic failure."
+  },
+  "invocation": {
+    "delegations": [
+      {
+        "id": "toolu_01UvymTYJ5AGxnNHX7pZUVsv",
+        "subagent_type": "pixl"
+      }
+    ],
+    "parent_reads": [
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\BRIEF.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\SESSION.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\artifacts\\d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\e8e8e8a9ae69aed2919b92fbb64d844f1e41dd0955ba1d7c12158c6afa8a0810\\manifest.json",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0002.png"
+    ],
+    "specialist_reads": [
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\skills\\pixl\\SKILL.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\resources\\agent\\PROFILE.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\skills\\pixl\\references\\intake-sample.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\skills\\pixl\\references\\provider-recovery.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\skills\\pixl\\references\\inspection.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\resources\\spec\\PIXL-2.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\AGENTS.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\reference.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\runtime\\pixl\\registry-v2.json",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\resources\\examples\\intake\\project.px",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\skills\\pixl\\references\\runtime.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\runtime\\pixl\\service.py",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\state.px",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0002.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0004.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0000.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0001.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0003.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0007.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\.agents\\skills\\pixl-kit\\resources\\spec\\candidate-inspection.md",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0005.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0006.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0008.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\inspections\\533207218ec532a6af9171deedc0aaac8adeee452686ef961c8e636161add6e5\\views\\0009.png",
+      "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\delegated-asset-request\\20261107-claude-03\\project\\pixl\\state.px"
+    ]
+  },
+  "review_basis": "Actual native delegation, one POST and two polls, retained imported candidate, specialist and parent image-viewing records, parent result and current state validation.",
+  "limits": [
+    "Deterministic response equals the reference; this cannot establish generated-art fidelity.",
+    "No target engine was required.",
+    "The provider request translated reference features into text; it did not upload an init/reference image."
+  ]
+}

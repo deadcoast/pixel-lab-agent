@@ -79,6 +79,13 @@ def run(log_dir=None):
             ):
                 if needed not in names:
                     raise RuntimeError(f"wheel missing {needed}")
+            if (
+                archive.read("pixl/resources/agent/PROFILE.md")
+                != (ROOT / ".agents/PROFILE.md").read_bytes()
+            ):
+                raise RuntimeError(
+                    "wheel profile differs from canonical .agents/PROFILE.md"
+                )
             inventory = json.loads(
                 archive.read("pixl/resources/training/source-inventory.json")
             )
@@ -152,6 +159,20 @@ def run(log_dir=None):
                 raise RuntimeError(result.stderr.decode("utf-8"))
             return json.loads(result.stdout) if result.stdout else None
 
+        shutil.copytree(resource_root / "examples/plar-project", cwd / "consumer")
+        plar_packet = cli(
+            [
+                "plar",
+                "read",
+                "--root",
+                str(cwd / "consumer"),
+                "--asset",
+                "queue.working",
+            ]
+        )
+        if plar_packet["asset"]["delivery"]["path"] != "assets/working.png":
+            raise RuntimeError("installed PLAR handoff differs from consumer contract")
+        checks.append({"command": "plar", "status": "pass"})
         for args in (
             ["sources"],
             ["intake", ".px2", "--root", str(cwd), "--brief", "Canvas unresolved"],

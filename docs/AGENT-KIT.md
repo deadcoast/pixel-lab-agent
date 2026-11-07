@@ -30,7 +30,7 @@ Research order on 2026-09-10 (America/Vancouver): inspect installed Codex skill/
 ## Source and bundle layout
 
 ```text
-agent/PROFILE.md                       Shared source profile
+.agents/PROFILE.md                    Shared source profile
 pixl/                                 Python package and normative registry
 spec/PIXL-1.md                         UDL specification
 knowledge/                            Curated source-backed knowledge
@@ -252,3 +252,15 @@ Discovery and validation were performed in two freshly initialized server proces
 Raw command/response evidence was retained under `%TEMP%/pixl-forward-rk010tvr/`: `forward-evidence.json` (SHA-256 `9a80296ac97492c26d3a8e9755b2a50b7e46dc3a638aad31d83024e6d0560935`), `mcp-discovery-evidence.json` (`6cbb22a0cc748463b6d550bd08838babab6652203d9ba81f8e441caa15a0200e`), and `mcp-validation-evidence.json` (`9c46229446e0fa012dcd30cdc84e04589a2a086e94ca5684f54ef4270230a68e`). Those temporary files are session evidence; this document retains the outcomes and reproduction details.
 
 This exercise did not call the platform prepare/job methods or the method-POC command, which were still being completed for the next bundle build. It did not contact PixelLab, use a paid model, visually accept an asset, or test an engine import. The PNG is explicitly a local measurement fixture, not a PixelLab output. No artistic or LLM-performance claim follows from these checks.
+
+## PLAR and current host delegation
+
+Use `$plar` (Codex repository skill) or `/plar` (Claude repository skill) for project-to-asset requirements. The portable Claude plugin exposes `/pixl:plar`. The full plugin now includes `skills/plar/` and the two local PLAR MCP operations. The [format reference](../plugins/pixl/skills/plar/references/format.md) gives focused read/save commands from another project's root.
+
+Codex's repository agent is [pixl.toml](../.codex/agents/pixl.toml); Claude's remains [.claude/agents/pixl.md](../.claude/agents/pixl.md). For another project, use the [Codex agent template](../plugins/pixl/config/codex-agent.example.toml) with the actual installed plugin path. Templates do not modify user configuration. A host can also explicitly delegate through its ordinary native agent tool and load the shared skill without a custom agent registration.
+
+Give the delegate: absolute consumer root, installed skill location, PLAR path and asset ID (or the complete brief), reference paths, relevant user decisions/authorization, and required deliverables. A natural request is: “Delegate to PIXL to produce asset queue.working from this project's plar.txt using PixelLab, inspect it, and return its paths and integration results.” Requirements-only requests stop after allocation; production requests continue through actual generation and delivery.
+
+For a copied plugin in Codex, place the complete kit under `.agents/skills/pixl-kit/` and add discoverable `.agents/skills/plar/SKILL.md` and `.agents/skills/pixl/SKILL.md` wrappers pointing to `../pixl-kit/skills/plar/SKILL.md` and `../pixl-kit/skills/pixl/SKILL.md`. Keep the kit's sibling resources/runtime intact. Alternatively use the host's supported plugin installation. Shared names are not automatically merged.
+
+The canonical profile is explicitly copied from `.agents/PROFILE.md` to the portable `resources/agent/PROFILE.md` location. Both wheel and plugin checks verify those bytes. A source-only wheel provides runtime resources; the complete plugin also provides host skills and agent adapters.

@@ -33,6 +33,8 @@ class SourceInventoryTests(unittest.TestCase):
                 }
             ],
         }
+        (self.root / ".agents").mkdir()
+        (self.root / ".agents/PROFILE.md").write_text("# Fixture profile\n", encoding="utf-8")
         self.write_inventory()
 
     def write_inventory(self):

@@ -1,0 +1,17 @@
+PX2 1
+@actor:A{nm=~4:PIXL;rl=agent}
+@alpha:I{ky=~2:al;pr=@project;so=[@brief];st=confirmed;vl=binary;wh=@user;wy=~46:Brief explicitly requires binary transparency.}
+@brief:S{at=~10:2026-11-07;au=local;dg=~64:1453d35b5fab34f9d94a5e3febfbe21588ea3a8fdeac3e3b7bccb55a87ac4480;ln=[1,1];ur=~8:BRIEF.md}
+@canvas:I{ky=~2:px;pr=@project;so=[@brief];st=confirmed;vl=[32,32];wh=@user;wy=~66:Brief explicitly requests a 32x32 sprite for this controlled test.}
+@make_robot:T{ca=[];dc=[];dp=[];ip=[@reference];kn=[];nm=~47:Generate and review the 32x32 teal robot sample;op=[@robot_sprite];ow=@actor;ph=sample;pr=@project;st=open;vr=[]}
+@palette:I{ky=~2:pl;pr=@project;so=[@brief];st=confirmed;vl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];wh=@user;wy=~128:Brief names this three-color reference palette and asks the sprite to match reference.png; applies only to this controlled test.}
+@project:P{br=~562:Generate one 32x32 front-facing teal robot sprite matching reference.png: two antennae, two yellow eyes, dark outlines and binary transparency, with no ground shadow. The reference palette is #25354A, #56B5BC and #F4DDA2. These requirements apply only to this controlled test. Deliver one PNG and a concise review. No engine integration is required. Provider HTTP calls are mocked; do not call real PixelLab. The mock is expected to return bytes identical to the reference. Accept that as a deterministic test response, never as proof of newly generated artwork.;in=[@canvas,@palette,@alpha,@view,@sampling,@subject];nm=~10:teal-robot;ow=@user;sc=[@brief]}
+@q_mechanical:Q{ck=~102:The PNG is 32x32, uses binary alpha only, and every visible pixel is one of #25354A, #56B5BC, #F4DDA2.;dm=mechanical;md=local;nm=~10:mechanical;so=[@brief];wh=@user}
+@q_visual:Q{ck=~177:At native and enlarged scale the sprite reads as a front-facing teal robot with two antennae, two yellow eyes and dark outlines, has no ground shadow, and matches reference.png.;dm=visual;md=visual;nm=~6:visual;so=[@brief];wh=@user}
+@reference:X{dg=~64:d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7;kd=reference;nm=~22:Supplied reference.png;ur=~13:reference.png}
+@robot_contract:C{al=binary;ch=[@canvas,@palette,@alpha,@view,@sampling,@subject];li=~38:unspecified by brief; no ground shadow;nm=~30:Teal robot 32x32 test contract;pl=[~7:#25354A,~7:#56B5BC,~7:#F4DDA2];px=[32,32];sa=nearest;vw=side}
+@robot_sprite:F{ct=@robot_contract;kd=sprite;nm=~21:Teal robot sprite PNG;rq=[@q_mechanical,@q_visual];tk=@make_robot}
+@sampling:I{ky=~2:sa;pr=@project;so=[];st=proposed;vl=nearest;wh=@actor;wy=~113:Not specified; nearest-neighbor inspection/display proposed for pixel-art review. No engine integration required.}
+@subject:I{ky=~7:subject;pr=@project;so=[@brief];st=confirmed;vl=~87:front-facing teal robot, two antennae, two yellow eyes, dark outlines, no ground shadow;wh=@user;wy=~46:Required subject features stated in the brief.}
+@user:A{nm=~13:Project owner;rl=user}
+@view:I{ky=~2:vw;pr=@project;so=[];st=proposed;vl=side;wh=@actor;wy=~155:Brief says front-facing but names no projection; PIXL proposes the flat side/front camera class (provider view=side, direction=south) for this sample only.}

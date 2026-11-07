@@ -61,7 +61,7 @@ class VerificationTests(unittest.TestCase):
                 "pixl",
                 "spec",
                 "knowledge",
-                "agent",
+                ".agents",
                 "examples",
                 "docs/research",
                 "methods",

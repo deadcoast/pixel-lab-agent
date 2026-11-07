@@ -5,9 +5,9 @@ authority remains the profile, operation skills and versioned specifications.
 Evidence is under `evidence/host-evaluation/`; a host pass never stands in for
 artistic or destination acceptance.
 
-## Next milestone: PX-EVAL-004 — delegated PixelLab integration in both hosts
+## PX-EVAL-004 — delegated PixelLab integration in both hosts
 
-- **Status:** selected next, 2026-11-05; specified, implementation and trials pending.
+- **Status:** complete for the bounded integration milestone, 2026-11-07. Fresh Claude 03 and Codex 05 both delegated, submitted/polled/imported, retained passing sample reviews and delivered files independently inspected by their parents. Earlier blocked and mismatched attempts remain preserved. See [trial outcomes](../evidence/delegated-asset-request/README.md).
 - **WHO:** a parent agent delegates to PIXL in each host; the maintainer reviews
   asserted requests, simulated provider responses, actual artifacts and caller evidence.
 - **WHAT:** a generation request exercises the official PixelLab integration,
@@ -25,9 +25,9 @@ artistic or destination acceptance.
   run evidence identifies mechanisms to keep, simplify or leave optional. Failed
   art or a required unavailable check leaves that host incomplete. Fresh PixelLab
   execution remains unverified; paid generation is not a test prerequisite.
-- **Priority:** this is the next complete operation. Retain the backlog and fix
-  blockers it exposes; do not require completion of all six remaining PX-EVAL-003
-  scenarios or expand unrelated infrastructure before attempting this delivery.
+- **Priority:** use the completed operation and PLAR handoff for the next concrete
+  consumer-project asset request. The remaining PX-EVAL-003 scenarios and actual
+  generated-art quality remain separate acceptance work.
 
 ## PX-EVAL-001 — recorded packaged-profile baseline
 
@@ -222,3 +222,13 @@ artistic or destination acceptance.
   candidates, precise change impact and actual destination evidence where required.
 - **Stopping condition:** report scenario coverage and each production outcome separately;
   retain unavailable checks and avoid claiming general superiority from this matrix.
+
+## PX-PLAR-001 — source-linked project asset requirements
+
+- **Status:** implemented 2026-11-07; verification and behavioral evidence tracked in [PLAR evidence](../evidence/plar-review/README.md).
+- **WHO:** the calling host understands the consumer project; PLAR preserves requirements; PIXL performs PixelLab production and review.
+- **WHAT:** map actual code consumers and backend visual states to stable asset IDs, sourced requirements, existing/missing assets, destinations, dependencies and next actions in `plar.txt`.
+- **WHERE:** common PLAR skill, Claude/Codex wrappers, local MCP/CLI read/save operations, inline production commit and portable examples.
+- **WHY:** reduce source discovery and state-authoring friction without replacing the existing job/inspection mechanisms.
+- **Proof:** required A–E [critical review](../docs/PLAR-REVIEW.md), independent raw-source forward evaluation, source drift/CAS checks and relocated distribution use.
+- **Limits:** an inventory status is not visual acceptance; semantic coverage and exact generated art require project-specific observation. Keep production acceptance and development-harness constraints separate.

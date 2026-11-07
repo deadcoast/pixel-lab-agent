@@ -1,0 +1,2096 @@
+{
+  "version": 1,
+  "methods": [
+    {
+      "id": "representation-owner",
+      "title": "Choose the representation that owns each behavior",
+      "applies_to": [
+        "all asset briefs"
+      ],
+      "requires": [
+        "A brief naming visual, physical, animation and lighting behavior"
+      ],
+      "procedure": [
+        "Classify independently moving matter as cells, shape-preserving parts as attachments, pose-dependent topology as frames, and surface response as channels.",
+        "Record multiple owners when one asset spans systems and name the conversion boundary."
+      ],
+      "checks": [
+        "Every requested behavior has an owner and an explicit input/output contract.",
+        "A decorative effect does not acquire physical simulation merely because it looks granular."
+      ],
+      "pitfalls": [
+        "This classification recommends an architecture; it does not make PixelLab or a renderer implement it.",
+        "A single asset may require several representations."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 20,
+          "end": 29
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1374,
+          "end": 1400
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 1525,
+          "end": 1559
+        }
+      ],
+      "poc": {
+        "kind": "contract-fixture",
+        "procedure": [
+          "Classify a sand pile, hinged cannon, blinking eye, breathing highlight, normal map and wall shadow.",
+          "Expect cell, attachment, frame, cluster, surface-channel and occlusion owners respectively."
+        ],
+        "acceptance": [
+          "All six owners match.",
+          "The shadow cannot be satisfied by the normal map alone."
+        ]
+      }
+    },
+    {
+      "id": "palette-contract",
+      "title": "Declare and validate a scoped palette",
+      "applies_to": [
+        "indexed sprites",
+        "limited-palette styles",
+        "material ramps"
+      ],
+      "requires": [
+        "An approved RGBA palette, color-space choice and transparency policy"
+      ],
+      "procedure": [
+        "Assign stable palette indices and reserve any transparent entry explicitly.",
+        "Validate opaque pixels against the palette; keep lighting-output exemptions separately declared.",
+        "Apply color replacements by semantic ramp rather than unrestricted RGB interpolation."
+      ],
+      "checks": [
+        "Every checked pixel maps to an allowed index.",
+        "Palette changes retain stable semantic meaning and transparency."
+      ],
+      "pitfalls": [
+        "A fixed small palette is optional art direction, not a universal definition of pixel art.",
+        "RGBA data can be palette-constrained without using an indexed file format."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 767,
+          "end": 804
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1538,
+          "end": 1550
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 2677,
+          "end": 2683
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use a 4x4 opaque image whose entries cycle through #101820, #406050, #90B070, #E0D890.",
+          "Replace one pixel with #406051 and run membership validation."
+        ],
+        "acceptance": [
+          "Original has zero palette violations.",
+          "Mutant reports exactly one violating coordinate."
+        ]
+      }
+    },
+    {
+      "id": "semantic-clusters",
+      "title": "Track raster connectivity and semantic clusters separately",
+      "applies_to": [
+        "sprite cleanup",
+        "protected eyes",
+        "material boundaries",
+        "micro-animation"
+      ],
+      "requires": [
+        "A declared 4- or 8-neighbor rule and semantic masks"
+      ],
+      "procedure": [
+        "Extract same-color connected components with the selected rule.",
+        "Label intentional details such as eyes, sparks and stars; these may be legal singletons.",
+        "Use semantic masks across multiple colors when a feature must be edited as a unit."
+      ],
+      "checks": [
+        "Connected-component counts are reproducible.",
+        "Protected feature masks remain present after operations."
+      ],
+      "pitfalls": [
+        "A semantic cluster need not be a single-color connected component.",
+        "Automatically deleting every singleton destroys legitimate detail."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1402,
+          "end": 1445
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 857,
+          "end": 867
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Create an 8x8 image with a 2x2 body, two diagonal pixels and one isolated protected eye.",
+          "Run 4- and 8-neighbor component extraction; then delete the protected eye in a mutant."
+        ],
+        "acceptance": [
+          "The diagonal pair is separate under 4-connectivity and joined under 8-connectivity.",
+          "Only the mutant fails feature preservation."
+        ]
+      }
+    },
+    {
+      "id": "silhouette-readability",
+      "title": "Evaluate identity using silhouette and target backgrounds",
+      "applies_to": [
+        "characters",
+        "inventory icons",
+        "interactive props"
+      ],
+      "requires": [
+        "Intended viewing scale, representative backgrounds and identity landmarks"
+      ],
+      "procedure": [
+        "Render a flat opaque mask before detailing.",
+        "Inspect major proportions, negative spaces and landmark separation at native logical scale.",
+        "Compare the colored asset on representative light, dark and busy backgrounds."
+      ],
+      "checks": [
+        "Named identity landmarks remain visible at the target size.",
+        "Required gaps stay open and interactive forms separate from their surroundings."
+      ],
+      "pitfalls": [
+        "Silhouette alone cannot validate faces, materials or fine symbols.",
+        "No contrast ratio or component count proves aesthetic quality."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 857,
+          "end": 867
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1563,
+          "end": 1573
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11,
+          "end": 15
+        }
+      ],
+      "poc": {
+        "kind": "visual-review-fixture",
+        "procedure": [
+          "Draw a 16x16 key with a ring hole, shaft and two teeth; render mask and colored views on three backgrounds.",
+          "Create a negative example by filling the hole and merging the teeth."
+        ],
+        "acceptance": [
+          "Record native-scale contact sheets and explicit pass/fail for hole, shaft and both teeth.",
+          "Negative example fails the landmark checklist; aesthetic review remains separate."
+        ]
+      }
+    },
+    {
+      "id": "edge-rhythm",
+      "title": "Audit stair-step runs without imposing one contour style",
+      "applies_to": [
+        "clean linework",
+        "small curved forms",
+        "hard silhouettes"
+      ],
+      "requires": [
+        "A contour mask and declared intentional corners or irregular regions"
+      ],
+      "procedure": [
+        "Trace boundary runs and highlight sudden run-length changes.",
+        "Regularize only contours intended to read as smooth.",
+        "Preserve corners, damage and organic asymmetry identified in the brief."
+      ],
+      "checks": [
+        "A supplied straight diagonal retains its declared repeating step pattern.",
+        "No protected corner changes during cleanup."
+      ],
+      "pitfalls": [
+        "Not every uneven run is a jaggy; shape can require an abrupt change.",
+        "Mechanical contour smoothing can erase style and identity."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1402,
+          "end": 1431
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 857,
+          "end": 867
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use an 8x8 45-degree one-pixel staircase and record its unit step sequence.",
+          "Add a one-cell horizontal detour at the midpoint; mark it first accidental, then intentional."
+        ],
+        "acceptance": [
+          "Detour is reported in both cases with its location.",
+          "Only the accidental case is eligible for correction."
+        ]
+      }
+    },
+    {
+      "id": "material-ramps",
+      "title": "Use material-specific value and hue ramps",
+      "applies_to": [
+        "recoloring",
+        "shaded sprites",
+        "palette lighting"
+      ],
+      "requires": [
+        "Named material regions and approved ordered color ramps"
+      ],
+      "procedure": [
+        "Build dark-to-light ramps appropriate to the material and mood.",
+        "Assign each material's pixels to its ramp and retain semantic indices.",
+        "Use hue shifts only where the art direction calls for them; inspect neighboring materials together."
+      ],
+      "checks": [
+        "Ramp lookup never escapes its assigned palette.",
+        "A recolor preserves the declared ordering and region membership."
+      ],
+      "pitfalls": [
+        "Hue shifting and monotonically increasing numerical luminance are choices, not universal requirements.",
+        "Different materials may intentionally share colors or intersect ramps."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 767,
+          "end": 804
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1149,
+          "end": 1178
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Assign three ordered slots to a 3x3 metal sample.",
+          "Remap those slots to a three-color warm metal ramp without changing indices or alpha."
+        ],
+        "acceptance": [
+          "All nine index assignments and alpha values are unchanged.",
+          "Only the three designated output colors occur."
+        ]
+      }
+    },
+    {
+      "id": "selective-edge-aa",
+      "title": "Apply authored edge antialiasing only to selected edges",
+      "applies_to": [
+        "subpixel edges",
+        "curves against known backgrounds"
+      ],
+      "requires": [
+        "Approved edge ramp, edge mask and representative background"
+      ],
+      "procedure": [
+        "Choose intermediate colors from the approved ramp inside the selected boundary region.",
+        "Preserve required hard edges and avoid universal outlines of intermediate color.",
+        "Preview against each allowed background before accepting."
+      ],
+      "checks": [
+        "Changed pixels stay within the selected edge mask and palette.",
+        "Protected hard edges remain byte-identical."
+      ],
+      "pitfalls": [
+        "Background-specific intermediate colors can form halos on different backgrounds.",
+        "This is authored color placement, not a permission to enable bilinear texture filtering."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 590,
+          "end": 632
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 907,
+          "end": 919
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Render a 5x5 diagonal using dark, mid and bright colors with an explicit two-pixel AA mask.",
+          "Apply AA, then repeat with a forbidden interior pixel included by a buggy implementation."
+        ],
+        "acceptance": [
+          "Valid output changes only the two selected pixels.",
+          "The mutant reports the out-of-mask change."
+        ]
+      }
+    },
+    {
+      "id": "dither-coverage",
+      "title": "Count dither coverage and constrain its region",
+      "applies_to": [
+        "limited-palette gradients",
+        "intentional texture",
+        "ordered translucency"
+      ],
+      "requires": [
+        "A tileable threshold matrix, two approved colors and a region mask"
+      ],
+      "procedure": [
+        "Use the 4x4 rank matrix [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]].",
+        "For fraction q, select cells with rank < 16*q when 16*q is integral.",
+        "Keep the pattern phase consistent across adjacent regions unless a discontinuity is intentional."
+      ],
+      "checks": [
+        "Coverage is the actual selected-cell count divided by total cells.",
+        "The pattern changes only within its semantic mask."
+      ],
+      "pitfalls": [
+        "The local source's example percentage labels are incorrect; count cells instead.",
+        "Dither can add noise and is optional; flat clusters may suit an asset better."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 731,
+          "end": 765
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 720,
+          "end": 754
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Threshold the specified 4x4 matrix at 4, 8 and 12.",
+          "Tile each result 3x3 and inspect coverage and boundary continuation."
+        ],
+        "acceptance": [
+          "Selected populations are exactly 4, 8 and 12 of 16.",
+          "Each 12x12 result retains 25%, 50% or 75% coverage."
+        ]
+      }
+    },
+    {
+      "id": "tile-repeat",
+      "title": "Test repeating texture in a neighborhood",
+      "applies_to": [
+        "seamless textures",
+        "floors",
+        "walls",
+        "background fills"
+      ],
+      "requires": [
+        "Tile dimensions and a declared edge-compatibility contract"
+      ],
+      "procedure": [
+        "Design features that continue across wrapped boundaries.",
+        "Render a 3x3 repetition and mark dominant repeated landmarks.",
+        "For exact-match edge contracts compare opposite edge samples; for transition art inspect the declared continuation relation."
+      ],
+      "checks": [
+        "The declared edge relation holds.",
+        "A native-scale neighborhood review checks visible seams and repetition."
+      ],
+      "pitfalls": [
+        "Matching edge bytes is neither necessary nor sufficient for every seamless texture.",
+        "Random interior noise does not automatically hide repetition."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11497,
+          "end": 11499
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11523,
+          "end": 11593
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 12759,
+          "end": 12802
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Build an 8x8 tile with identical opposite borders and a central 2x2 mark.",
+          "Repeat it 3x3; mutate one right-edge pixel."
+        ],
+        "acceptance": [
+          "Original passes exact-border checks.",
+          "Mutant identifies the right/left mismatch; visual review still assesses repeated motifs."
+        ]
+      }
+    },
+    {
+      "id": "terrain-topology",
+      "title": "Choose and exhaustively exercise tile connectivity",
+      "applies_to": [
+        "roads",
+        "fences",
+        "terrain transitions",
+        "autotiles"
+      ],
+      "requires": [
+        "Named terrain labels and explicit edge, corner or mixed topology"
+      ],
+      "procedure": [
+        "Define the bit ordering and which neighbor relations a tile represents.",
+        "Enumerate the supported patterns and any intentional omissions.",
+        "Verify selected tiles satisfy the neighborhood labels instead of guessing topology from an image."
+      ],
+      "checks": [
+        "Every declared pattern resolves or produces an explicit missing-pattern result.",
+        "Adjacent edge or corner labels agree according to the selected topology."
+      ],
+      "pitfalls": [
+        "A 16-tile edge set, 16-tile corner set and 47-tile blob set encode different contracts.",
+        "Do not assume every tile generator emits the same ordering."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11495,
+          "end": 11499
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1538,
+          "end": 1544
+        }
+      ],
+      "poc": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "For binary edge labels use N=1,E=2,S=4,W=8 and generate all masks 0..15.",
+          "Join mask 2 to mask 8 horizontally and mask 4 to mask 1 vertically; also test incompatible pairs."
+        ],
+        "acceptance": [
+          "All 16 masks exist exactly once.",
+          "Both valid joins pass and both mismatched-label joins fail."
+        ]
+      }
+    },
+    {
+      "id": "tile-variants",
+      "title": "Vary interiors while preserving connectivity and lighting",
+      "applies_to": [
+        "repeated terrain",
+        "biome variants",
+        "decorative tile reuse"
+      ],
+      "requires": [
+        "A base topology, allowed transformations and seeded selection policy"
+      ],
+      "procedure": [
+        "Group variants by identical connection labels.",
+        "Change interior details while keeping necessary boundary features compatible.",
+        "Permit flips or rotations only when directional lighting and world meaning remain valid."
+      ],
+      "checks": [
+        "Variant selection never changes the required connection class.",
+        "Same seed and inputs select the same sequence when deterministic generation is requested."
+      ],
+      "pitfalls": [
+        "Mirroring a shaded wall can reverse its light direction.",
+        "Variant weights describe selection policy, not a guarantee of visual variety in a small map."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11497,
+          "end": 11499
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 12797,
+          "end": 12802
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 102,
+          "end": 108
+        }
+      ],
+      "poc": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "Make three 8x8 tiles sharing the same border and distinct 2x2 interior marks.",
+          "Select 64 placements using a fixed documented PRNG seed; include one mutant with a changed border."
+        ],
+        "acceptance": [
+          "Repeated runs produce identical variant IDs.",
+          "All originals preserve edge compatibility; the mutant fails."
+        ]
+      }
+    },
+    {
+      "id": "sheet-metadata",
+      "title": "Make sheet layout and frame identity explicit",
+      "applies_to": [
+        "spritesheets",
+        "tilesets",
+        "atlas import"
+      ],
+      "requires": [
+        "Image dimensions, frame rectangles, offset, spacing, margin and ordering"
+      ],
+      "procedure": [
+        "Store frame rectangles and stable IDs with the sheet.",
+        "Validate in-bounds rectangles, intended overlaps, frame order and trim metadata.",
+        "Extract frames and reconstruct the logical originals before using a sheet in runtime."
+      ],
+      "checks": [
+        "Each referenced frame is present and addressable.",
+        "Round-trip extraction preserves expected pixels and anchors."
+      ],
+      "pitfalls": [
+        "A PNG sheet alone does not communicate playback duration, pivots or tags.",
+        "Packed atlas order can differ from semantic animation order."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 891,
+          "end": 905
+        }
+      ],
+      "poc": {
+        "kind": "import-fixture",
+        "procedure": [
+          "Pack four distinct 3x3 frames into a 2x2 sheet with margin 1 and spacing 1; total dimensions are 9x9.",
+          "Extract at (1,1),(5,1),(1,5),(5,5); test a wrong spacing of 0."
+        ],
+        "acceptance": [
+          "All four correct extractions match their source pixel arrays exactly.",
+          "Wrong-spacing extraction fails the expected image comparison."
+        ]
+      }
+    },
+    {
+      "id": "asset-provenance",
+      "title": "Carry source and adaptation intent into reusable assets",
+      "applies_to": [
+        "reference-derived assets",
+        "legacy snippets",
+        "variant libraries"
+      ],
+      "requires": [
+        "Original source path, creator information if supplied, intended use and adaptation scope"
+      ],
+      "procedure": [
+        "Preserve the original material and record the exact excerpt used as reference.",
+        "Separate original creative examples from third-party imagery, fonts and code.",
+        "Record reuse permission evidence when distributing sourced material; if it is absent, author an original asset from the functional brief."
+      ],
+      "checks": [
+        "Every reused external component has its source and reuse basis recorded.",
+        "Adaptations identify which parts were reused, redrawn or excluded."
+      ],
+      "pitfalls": [
+        "An inspiration URL or a copied snippet is not a license statement.",
+        "Legacy Waylight colors and UI mandates are project-specific, not universal art rules."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 963,
+          "end": 971
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11445,
+          "end": 11454
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 12066,
+          "end": 12080
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 13156,
+          "end": 13160
+        }
+      ],
+      "poc": {
+        "kind": "manifest-fixture",
+        "procedure": [
+          "Create a manifest for an original 8x8 folder icon and a second entry citing the archive's Dusan Cezek attribution.",
+          "Mark the second entry's reuse basis unresolved; attempt release-manifest validation."
+        ],
+        "acceptance": [
+          "The original asset is eligible under its declared original authorship.",
+          "The sourced unresolved entry is identified before redistribution; no external code is executed."
+        ]
+      }
+    },
+    {
+      "id": "crop-and-anchor",
+      "title": "Trim transparent padding while preserving logical anchors",
+      "applies_to": [
+        "background removal",
+        "sprite extraction",
+        "trimmed animation frames"
+      ],
+      "requires": [
+        "Original canvas, alpha policy and an anchor in original logical coordinates"
+      ],
+      "procedure": [
+        "Find the permitted opaque bounds and record trim offset and original size.",
+        "Translate pivot and socket coordinates by the crop origin.",
+        "Keep restoration metadata so each frame can be reconstructed on its original canvas."
+      ],
+      "checks": [
+        "Restored pixels and anchors match the untrimmed source.",
+        "No intentionally translucent edge is discarded without an explicit threshold policy."
+      ],
+      "pitfalls": [
+        "A tighter image rectangle can move the sprite if its trim offset is lost.",
+        "Removing a background requires an actual mask decision, not blindly treating one RGB color as transparent."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 12066,
+          "end": 12080
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 476,
+          "end": 500
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "On a transparent 16x16 canvas place a 4x5 block at (6,7) and anchor (8,11).",
+          "Crop to origin (6,7), store new anchor (2,4), then reconstruct."
+        ],
+        "acceptance": [
+          "Crop is 4x5, trim offset is (6,7), local anchor is (2,4).",
+          "Reconstructed 16x16 pixels and anchor exactly match the original."
+        ]
+      }
+    },
+    {
+      "id": "integer-presentation",
+      "title": "Render at a declared logical grid and inspect device pixels",
+      "applies_to": [
+        "strict-grid games",
+        "pixel previews",
+        "sprite delivery"
+      ],
+      "requires": [
+        "Logical resolution, camera convention and target viewport dimensions"
+      ],
+      "procedure": [
+        "Render or sample at the logical grid, then use a declared integer scale where required.",
+        "Apply nearest sampling to image scaling and account for browser device pixel ratio.",
+        "Inspect the final output, not only a CSS property or import setting."
+      ],
+      "checks": [
+        "A logical pixel expands into a uniform scale-by-scale block in the fixture.",
+        "No new colors appear during opaque nearest-neighbor enlargement."
+      ],
+      "pitfalls": [
+        "Nearest filtering alone does not constrain lighting resolution.",
+        "Noninteger scaling, arbitrary rotation and browser zoom can change displayed pixel widths."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 907,
+          "end": 919
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1293,
+          "end": 1315
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1636,
+          "end": 1638
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Scale a 2x2 image of four opaque distinct colors by 3 to 6x6.",
+          "Inspect every 3x3 quadrant and compare palette membership."
+        ],
+        "acceptance": [
+          "Each quadrant is exactly uniform and matches its source pixel.",
+          "The final image contains exactly four colors."
+        ]
+      }
+    },
+    {
+      "id": "alpha-contract",
+      "title": "Declare alpha and compositing behavior",
+      "applies_to": [
+        "transparent sprites",
+        "glows",
+        "sprite atlases"
+      ],
+      "requires": [
+        "RGBA interpretation, straight or premultiplied alpha, and allowed alpha levels"
+      ],
+      "procedure": [
+        "Keep alpha policy separate from RGB palette membership.",
+        "Use the chosen compositing equation consistently through export, import and display.",
+        "Inspect edges against light and dark backgrounds after round-trip import."
+      ],
+      "checks": [
+        "Binary-alpha assets contain only 0 and 255 unless an exception is declared.",
+        "Composited fixtures agree with the declared alpha model."
+      ],
+      "pitfalls": [
+        "Fully transparent RGB channels can differ without changing visible appearance.",
+        "Multiplying premultiplied RGB by alpha again darkens edges."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 945,
+          "end": 977
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 942,
+          "end": 958
+        }
+      ],
+      "poc": {
+        "kind": "compositing-fixture",
+        "procedure": [
+          "For straight alpha composite red (255,0,0,0.5) over blue (0,0,255) in a declared linear numeric fixture.",
+          "Separately validate binary-alpha pixels [0,255,127]."
+        ],
+        "acceptance": [
+          "Unrounded linear result is (127.5,0,127.5).",
+          "Binary-alpha validation reports only the 127 entry; display color-space conversion is a separate step."
+        ]
+      }
+    },
+    {
+      "id": "frame-timing",
+      "title": "Author duration and event semantics per frame",
+      "applies_to": [
+        "sprite animation",
+        "attacks",
+        "idle loops",
+        "UI feedback"
+      ],
+      "requires": [
+        "Ordered frame IDs, positive durations and loop or one-shot policy"
+      ],
+      "procedure": [
+        "Store durations explicitly rather than assuming uniform FPS.",
+        "Name anticipation, action, impact and settle events where relevant.",
+        "Define half-open time intervals so event and frame boundaries have no ambiguity."
+      ],
+      "checks": [
+        "Every duration is positive and playback reaches the expected frame at boundary times.",
+        "One-shot terminal states and looping wrap behavior are explicit."
+      ],
+      "pitfalls": [
+        "More frames do not automatically improve weight or readability.",
+        "Unspecified preview FPS must not overwrite authored durations."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 869,
+          "end": 905
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 948,
+          "end": 960
+        }
+      ],
+      "poc": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Use frames A,B,C with durations 80,40,120 milliseconds and a looping total of 240.",
+          "Sample t=0,79,80,119,120,239,240 using half-open intervals."
+        ],
+        "acceptance": [
+          "Frame IDs are A,A,B,B,C,C,A.",
+          "An impact event at 120 fires once per loop crossing."
+        ]
+      }
+    },
+    {
+      "id": "animation-anchors",
+      "title": "Track contacts and review loop closure",
+      "applies_to": [
+        "walk cycles",
+        "idle loops",
+        "weapon actions"
+      ],
+      "requires": [
+        "Named anchors, ground line and expected contact intervals"
+      ],
+      "procedure": [
+        "Track contact-point coordinates independently from each frame's crop rectangle.",
+        "Use onion-skin or difference views to compare adjacent poses and last-to-first transition.",
+        "Permit displacement where the action demands it; lock only specified contacts."
+      ],
+      "checks": [
+        "Required planted contacts remain fixed through their contact interval.",
+        "The loop boundary obeys the same motion policy as internal transitions."
+      ],
+      "pitfalls": [
+        "A moving root can coexist with a visually planted foot only after world-space compensation.",
+        "A low pixel-difference score does not prove a convincing animation."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 476,
+          "end": 500
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1552,
+          "end": 1573
+        }
+      ],
+      "poc": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Create three 16x16 frames with a foot anchor at (8,14), varying only a body highlight.",
+          "Mutate the final frame's anchor to (9,14) and inspect last-to-first displacement."
+        ],
+        "acceptance": [
+          "Original has zero foot displacement on every transition.",
+          "Mutant reports a one-pixel contact jump."
+        ]
+      }
+    },
+    {
+      "id": "edge-color-migration",
+      "title": "Encode fractional edge motion with approved colors",
+      "applies_to": [
+        "slow movement",
+        "small contours",
+        "subpixel animation candidates"
+      ],
+      "requires": [
+        "Known background, edge ramp and an edge feature mask"
+      ],
+      "procedure": [
+        "Construct coverage changes for the selected edge while keeping output on integer cells.",
+        "Map coverage to approved ramp entries.",
+        "Measure a luminance- or coverage-weighted centroid and inspect the motion at authored durations."
+      ],
+      "checks": [
+        "Intermediate frames stay in the palette and feature region.",
+        "The chosen motion metric moves in the intended direction."
+      ],
+      "pitfalls": [
+        "Apparent motion depends on contrast and viewing conditions.",
+        "This method does not place a physical sprite at a fractional logical coordinate."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 590,
+          "end": 632
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 582,
+          "end": 622
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use two cells and coverage arrays [1,0], [0.75,0.25], [0.5,0.5], [0.25,0.75], [0,1].",
+          "Map 0,0.25,0.5,0.75,1 to five approved grayscale ramp entries."
+        ],
+        "acceptance": [
+          "Total coverage is 1 in each frame.",
+          "Coverage centroids are 0,0.25,0.5,0.75,1; palette membership holds."
+        ]
+      }
+    },
+    {
+      "id": "cluster-handoff",
+      "title": "Move a feature using a deliberate cluster handoff",
+      "applies_to": [
+        "tiny highlights",
+        "eyes",
+        "one-pixel feature motion"
+      ],
+      "requires": [
+        "Feature mask, permitted temporary area change and connectivity rule"
+      ],
+      "procedure": [
+        "Establish the leading pixels before withdrawing the trailing pixels.",
+        "For narrow features use approved shade transitions if area growth is unacceptable.",
+        "Protect surrounding silhouette and feature identity."
+      ],
+      "checks": [
+        "The feature remains connected under the declared rule.",
+        "Its centroid moves toward the target and any area change stays inside the declared budget."
+      ],
+      "pitfalls": [
+        "Temporary widening changes volume and may be wrong for rigid material.",
+        "A mechanically valid handoff still needs visual timing review."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 634,
+          "end": 670
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 624,
+          "end": 660
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use one-row masks .##.., .###., ..##. with x starting at zero.",
+          "Count cells and compute unweighted centroids."
+        ],
+        "acceptance": [
+          "Areas are 2,3,2; centroids are 1.5,2,2.5.",
+          "Each feature is connected and moves right without disappearing."
+        ]
+      }
+    },
+    {
+      "id": "shading-drift",
+      "title": "Animate internal shading while protecting silhouette",
+      "applies_to": [
+        "breathing idles",
+        "slow turns",
+        "cloth or muscle motion"
+      ],
+      "requires": [
+        "Opaque mask, semantic highlight or shadow mask and approved ramps"
+      ],
+      "procedure": [
+        "Keep the outer occupancy stable for a subtle idle when the brief requires it.",
+        "Shift only selected internal highlights or shadows.",
+        "Review whether shading motion communicates form or incorrectly looks like moving illumination."
+      ],
+      "checks": [
+        "Protected silhouette and identity pixels remain unchanged.",
+        "All changed pixels belong to the declared shading region."
+      ],
+      "pitfalls": [
+        "Highlight movement may imply changing light rather than body motion.",
+        "Silhouette preservation is a local idle constraint, not a general animation rule."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 672,
+          "end": 729
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1563,
+          "end": 1573
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Fill an 8x8 body mask at x=1..6,y=1..6 and add a two-pixel highlight at (2,3),(3,3).",
+          "Move the highlight to (3,3),(4,3) while restoring base color behind it."
+        ],
+        "acceptance": [
+          "Opaque masks are identical and exactly two color samples change.",
+          "Highlight area remains 2 and its centroid moves right by 1."
+        ]
+      }
+    },
+    {
+      "id": "dither-phase-motion",
+      "title": "Animate dither phase with an explicit period",
+      "applies_to": [
+        "water texture",
+        "energy fields",
+        "controlled translucency"
+      ],
+      "requires": [
+        "A fixed threshold matrix, motion direction, region and positive period"
+      ],
+      "procedure": [
+        "Shift the pattern phase deterministically with wrapped coordinates.",
+        "Hold coverage constant when changing phase alone.",
+        "Keep stable regions untouched and preview the result at its intended scale and rate."
+      ],
+      "checks": [
+        "Every phase preserves the specified population.",
+        "After one period the original pattern returns exactly."
+      ],
+      "pitfalls": [
+        "Unseeded per-frame noise causes temporal boil.",
+        "Constant coverage and perfect looping do not prove that flicker is comfortable or artistically useful."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 731,
+          "end": 765
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 13073,
+          "end": 13077
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Take the 4x4 50% threshold mask from dither-coverage.",
+          "Shift x phase by 0,1,2,3,4 using modulo 4."
+        ],
+        "acceptance": [
+          "Every frame has exactly 8 selected samples.",
+          "Phase 4 exactly equals phase 0; no outside-region pixel changes."
+        ]
+      }
+    },
+    {
+      "id": "coverage-candidates",
+      "title": "Generate constrained supersampled in-between candidates",
+      "applies_to": [
+        "subpixel translation",
+        "candidate in-betweens"
+      ],
+      "requires": [
+        "Integer scale factor, source occupancy, approved coverage ramp and cleanup policy"
+      ],
+      "procedure": [
+        "Replicate occupancy to a 4x or 8x coverage grid.",
+        "Apply integer shifts in that grid, average coverage back to logical cells, and quantize to an approved ramp.",
+        "Run feature, palette and silhouette checks before any artistic acceptance."
+      ],
+      "checks": [
+        "Zero shift reconstructs the source occupancy.",
+        "Translation preserves total coverage before clipping and output dimensions remain logical size."
+      ],
+      "pitfalls": [
+        "Supersampling produces candidates; it is not proof of a hand-authored look.",
+        "Clipping at canvas bounds must be explicit; ramp quantization can change apparent volume."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 806,
+          "end": 867
+        }
+      ],
+      "poc": {
+        "kind": "raster-fixture",
+        "procedure": [
+          "Use a single filled cell inside an otherwise empty 5x5 image; replicate at scale 4.",
+          "Shift the high-resolution mask right by 1 sample and average 4x4 blocks."
+        ],
+        "acceptance": [
+          "Coverage splits into 0.75 and 0.25 in adjacent logical cells.",
+          "Total coverage is 1 and no nonapproved ramp color appears after mapping."
+        ]
+      }
+    },
+    {
+      "id": "rig-cutout",
+      "title": "Separate rigid parts from topology-changing attachments",
+      "applies_to": [
+        "large machines",
+        "segmented creatures",
+        "equipment variants"
+      ],
+      "requires": [
+        "A part hierarchy, visible attachment states and intended deformation policy"
+      ],
+      "procedure": [
+        "Identify regions whose pixels remain unchanged during motion.",
+        "Represent those as rigid attachments; redraw joints, faces or openings whose topology changes.",
+        "Keep bone hierarchy and visible attachment selection distinct."
+      ],
+      "checks": [
+        "Every transformed part has a defined parent and pivot.",
+        "Topology-changing poses select explicit artwork rather than relying on accidental resampling."
+      ],
+      "pitfalls": [
+        "Weighted mesh deformation may be valid for a chosen style but does not preserve authored clusters automatically.",
+        "The local Metal Slug-specific rig claim is unverified."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 319,
+          "end": 383
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 578,
+          "end": 582
+        }
+      ],
+      "poc": {
+        "kind": "rig-fixture",
+        "procedure": [
+          "Create a 16x8 chassis, 8x4 turret and two distinct 4x4 jaw states.",
+          "Compose a four-pose sequence by translating the turret and swapping jaw state."
+        ],
+        "acceptance": [
+          "Chassis and turret source pixels stay byte-identical across poses.",
+          "Jaw changes only by the selected attachment ID."
+        ]
+      }
+    },
+    {
+      "id": "rig-sockets",
+      "title": "Define pivot and socket coordinates in logical pixels",
+      "applies_to": [
+        "interchangeable limbs",
+        "weapons",
+        "modular bosses"
+      ],
+      "requires": [
+        "Coordinate origin, pixel-center or pixel-corner convention, parent sockets and child pivots"
+      ],
+      "procedure": [
+        "Store socket and pivot values in the same explicit coordinate convention.",
+        "Position the child so its transformed pivot equals the parent's transformed socket.",
+        "Recalculate attachment pivots when trim offsets change."
+      ],
+      "checks": [
+        "Every valid swap preserves the socket world position within the declared tolerance.",
+        "Unknown sockets or incompatible part tags fail explicitly."
+      ],
+      "pitfalls": [
+        "Integer-valued pivots are not universally correct; even-size centers may be half-integer under a pixel-center convention.",
+        "Mirroring may require semantic left/right socket remapping."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 476,
+          "end": 500
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1447,
+          "end": 1474
+        }
+      ],
+      "poc": {
+        "kind": "rig-fixture",
+        "procedure": [
+          "Use parent socket (12,7). Attachment A has local pivot (2,3), B has pivot (5,1).",
+          "With no rotation, place A at (10,4) and B at (7,6)."
+        ],
+        "acceptance": [
+          "Both transformed pivots equal (12,7).",
+          "A mutant B translation of (8,6) reports a one-pixel mismatch."
+        ]
+      }
+    },
+    {
+      "id": "continuous-state-final-snap",
+      "title": "Keep continuous motion and quantize its final placement",
+      "applies_to": [
+        "pixel rigs",
+        "camera motion",
+        "procedural recoil"
+      ],
+      "requires": [
+        "Floating-point state, logical scale, camera transform and rounding tie policy"
+      ],
+      "procedure": [
+        "Evaluate continuous parent and child transforms first.",
+        "Apply camera transformation before the declared screen-grid quantization boundary.",
+        "Retain unsnapped state for subsequent updates."
+      ],
+      "checks": [
+        "Rendering does not overwrite simulation or animation state.",
+        "Final positions align to the declared grid with bounded rounding error."
+      ],
+      "pitfalls": [
+        "Snapping every bone independently can open seams.",
+        "Tie rounding differs across languages; specify it for deterministic fixtures."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 502,
+          "end": 535
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1636,
+          "end": 1638
+        }
+      ],
+      "poc": {
+        "kind": "transform-fixture",
+        "procedure": [
+          "Advance x by 0.25 for eight updates from 0; use round-half-up via floor(x+0.5) for nonnegative positions.",
+          "Record continuous x and independently snapped render x."
+        ],
+        "acceptance": [
+          "Continuous positions are 0.25,0.5,0.75,1,1.25,1.5,1.75,2.",
+          "Rendered positions are 0,1,1,1,1,2,2,2 and continuous state ends at 2."
+        ]
+      }
+    },
+    {
+      "id": "rotation-policy",
+      "title": "Choose a rotation strategy for each part",
+      "applies_to": [
+        "aiming weapons",
+        "rotating machinery",
+        "directional actors"
+      ],
+      "requires": [
+        "Permitted angles, silhouette tolerance and target logical grid"
+      ],
+      "procedure": [
+        "Choose continuous nearest sampling, quantized angles, hand-drawn directions or an intermediate render target.",
+        "Document which visual changes are acceptable.",
+        "Evaluate extreme and intermediate poses around the actual pivot."
+      ],
+      "checks": [
+        "All rendered angles follow the chosen strategy.",
+        "Every required orientation is covered, and pixel crawl is reviewed where allowed."
+      ],
+      "pitfalls": [
+        "Nearest sampling and a snapped pivot do not make arbitrary rotation lossless.",
+        "A 90-degree rotation can preserve texels while changing directional lighting meaning."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 535,
+          "end": 545
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 371,
+          "end": 383
+        }
+      ],
+      "poc": {
+        "kind": "transform-fixture",
+        "procedure": [
+          "Use an asymmetric 3x3 binary L mask and rotate clockwise by exact quarter-turn coordinate mapping.",
+          "Apply four quarter turns; separately inspect a 45-degree candidate."
+        ],
+        "acceptance": [
+          "Four quarter turns reconstruct the original array exactly.",
+          "The 45-degree result is treated as a new raster requiring review."
+        ]
+      }
+    },
+    {
+      "id": "composed-animation",
+      "title": "Compose independent motion channels with defined ownership",
+      "applies_to": [
+        "boss animation",
+        "weapon actions during locomotion",
+        "damage variants"
+      ],
+      "requires": [
+        "Channel priorities, affected properties and event inputs"
+      ],
+      "procedure": [
+        "Assign locomotion, aim, recoil, damage and secondary motion to named channels.",
+        "Define override or additive behavior when channels affect the same property.",
+        "Keep attachment swaps independent of unrelated loop phase unless the action requires a reset."
+      ],
+      "checks": [
+        "Every animated property has an unambiguous composition rule.",
+        "Changing one channel does not reset unrelated state."
+      ],
+      "pitfalls": [
+        "Independent clips still require coordination for contacts and overlaps.",
+        "Conflicting channel writes create order-dependent results unless resolved explicitly."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 547,
+          "end": 582
+        }
+      ],
+      "poc": {
+        "kind": "timeline-fixture",
+        "procedure": [
+          "Run a four-state tread loop and apply a recoil x offset [0,-2,-1,0] at tick 3.",
+          "Toggle an armor attachment at tick 5 while the tread loop continues."
+        ],
+        "acceptance": [
+          "Tread indices remain 0,1,2,3 repeating without resets.",
+          "Only recoil translation and armor attachment change from the baseline."
+        ]
+      }
+    },
+    {
+      "id": "atlas-reuse-budget",
+      "title": "Atlas compatible parts and measure actual render cost",
+      "applies_to": [
+        "large modular actors",
+        "sprite libraries",
+        "reused animation states"
+      ],
+      "requires": [
+        "Texture formats, atlas bounds, material groups and measured target renderer"
+      ],
+      "procedure": [
+        "Deduplicate identical raster states using content identity.",
+        "Pack compatible parts with deliberate padding and matching companion channels.",
+        "Measure memory, draw calls, texture switches and transform costs on the target integration."
+      ],
+      "checks": [
+        "Source rectangles reconstruct original parts.",
+        "Performance claims include measured conditions and the relevant format or compression settings."
+      ],
+      "pitfalls": [
+        "An atlas does not guarantee one draw call; blending, ordering, shaders and renderer limits can split batches.",
+        "Uncompressed byte arithmetic is an estimate, not resident memory measurement."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 385,
+          "end": 474
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        }
+      ],
+      "poc": {
+        "kind": "storage-fixture",
+        "procedure": [
+          "Compare sixty uncompressed 500x500 RGBA8 frames with twenty 64x64 parts each having eight states.",
+          "State that padding, compression, mipmaps and metadata are excluded."
+        ],
+        "acceptance": [
+          "Raw estimates are 60000000 bytes and 2621440 bytes.",
+          "The result is labeled arithmetic only; runtime batching requires a separate measured scene."
+        ]
+      }
+    },
+    {
+      "id": "normal-direction",
+      "title": "Validate normal encoding and coordinate orientation",
+      "applies_to": [
+        "normal-mapped sprites",
+        "2.5D surfaces"
+      ],
+      "requires": [
+        "Normal axis convention, color-space interpretation and unit-vector decoder"
+      ],
+      "procedure": [
+        "Treat normal channels as direction data under the importer convention.",
+        "Decode and normalize with a defined fallback for degenerate vectors.",
+        "Use a directional fixture to validate handedness and green-channel orientation."
+      ],
+      "checks": [
+        "Decoded vectors are finite and unit length within tolerance.",
+        "A right-facing slope responds more strongly to right-side than left-side light."
+      ],
+      "pitfalls": [
+        "Applying an sRGB transfer curve to normal data changes directions.",
+        "An 8-bit flat normal is approximate; compare with quantization-aware tolerance."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 979,
+          "end": 1037
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1504,
+          "end": 1528
+        }
+      ],
+      "poc": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use exact float normals Nflat=(0,0,1), Nright=normalize(1,0,1), Nup=normalize(0,1,1).",
+          "Evaluate max(0,N dot L) for matching and opposite slope lights; round-trip encode C=(N+1)/2."
+        ],
+        "acceptance": [
+          "Matching slope/light response equals 1; opposing slope response equals 0 within floating tolerance.",
+          "Float encoding round-trips each vector; an 8-bit implementation reports its actual angular error."
+        ]
+      }
+    },
+    {
+      "id": "companion-alignment",
+      "title": "Keep all sampled asset channels aligned",
+      "applies_to": [
+        "diffuse-normal pairs",
+        "height maps",
+        "mask atlases",
+        "animated lighting"
+      ],
+      "requires": [
+        "Shared canvas, frame IDs, trim offsets, pivots and atlas rectangles"
+      ],
+      "procedure": [
+        "Apply the same crop, packing and frame ordering to corresponding channels.",
+        "Represent missing optional channels explicitly.",
+        "Use recognizable calibration marks to check sample correspondence after import."
+      ],
+      "checks": [
+        "Dimensions, original sizes, trim offsets, pivots and frame IDs agree where shared UVs require it.",
+        "A channel sampled at a diffuse feature corresponds to that same feature."
+      ],
+      "pitfalls": [
+        "Equal dimensions alone do not prove alignment.",
+        "Independently packed textures can be valid only when the renderer has an explicit mapping between them."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1276,
+          "end": 1291
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 1226,
+          "end": 1241
+        }
+      ],
+      "poc": {
+        "kind": "import-fixture",
+        "procedure": [
+          "Create paired 8x8 diffuse and normal arrays with a calibration feature at (2,5).",
+          "Shift the normal feature to (3,5) while keeping dimensions identical."
+        ],
+        "acceptance": [
+          "Metadata checks pass dimensions in both cases.",
+          "Pixel correspondence detects the shifted mutant; matching dimensions are not reported as sufficient proof."
+        ]
+      }
+    },
+    {
+      "id": "palette-lighting",
+      "title": "Quantize light response and optionally select palette ramps",
+      "applies_to": [
+        "stylized dynamic lighting",
+        "strict output palettes"
+      ],
+      "requires": [
+        "Finite intensity, K>=2 bands, clamping policy and optional material ramps"
+      ],
+      "procedure": [
+        "Compute or accept continuous light intensity separately from raster color.",
+        "Clamp intensity to the declared range before quantization.",
+        "For strict palette output choose a material ramp entry; multiplying RGB by a band does not itself preserve palette membership."
+      ],
+      "checks": [
+        "Band index remains in 0..K-1 for finite inputs.",
+        "Ramp-output mode emits only declared colors."
+      ],
+      "pitfalls": [
+        "Banding can shimmer as a light moves; inspect temporal transitions.",
+        "Lighting quantization is an optional style decision."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1077,
+          "end": 1178
+        }
+      ],
+      "poc": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "For K=4 use b=floor(clamp(I,0,1)*3+0.5).",
+          "Evaluate I=-1,0,0.2,0.5,0.8,1,2 and select four distinct ramp entries."
+        ],
+        "acceptance": [
+          "Band indices are 0,0,1,2,2,3,3.",
+          "Every output equals one of the four entries; NaN is rejected rather than converted silently."
+        ]
+      }
+    },
+    {
+      "id": "preserve-authored-shading",
+      "title": "Declare how dynamic light combines with baked shading",
+      "applies_to": [
+        "hand-shaded sprites",
+        "hybrid pixel lighting"
+      ],
+      "requires": [
+        "Authored-shade, flat-albedo or hybrid mode and a bounded modulation strength"
+      ],
+      "procedure": [
+        "Record whether volume already exists in the diffuse image.",
+        "Choose dynamic-light modulation appropriate to that mode.",
+        "Compare baseline, neutral-light and opposing-light states to detect double shading."
+      ],
+      "checks": [
+        "Zero modulation reproduces diffuse input.",
+        "Any palette or value clamps are explicit and applied after modulation."
+      ],
+      "pitfalls": [
+        "A generated normal map can interpret painted shadows as geometry.",
+        "Strong dynamic lighting can contradict highlights already painted into the sprite."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1180,
+          "end": 1214
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 945,
+          "end": 977
+        }
+      ],
+      "poc": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use scalar diffuse values [0.2,0.5,0.8] and modulation D*(1+k*(L-0.5)).",
+          "Test k=0 at L=0,0.5,1; then inspect k=0.2 on the same strip."
+        ],
+        "acceptance": [
+          "All k=0 outputs exactly equal diffuse values.",
+          "The k=0.2 outputs are finite and bounded by 0.9D and 1.1D before any explicit clamping."
+        ]
+      }
+    },
+    {
+      "id": "shadow-visibility",
+      "title": "Separate surface response from occlusion",
+      "applies_to": [
+        "shadow-casting props",
+        "walls",
+        "dynamic lights"
+      ],
+      "requires": [
+        "An explicit caster polygon, occupancy field, depth or other visibility representation"
+      ],
+      "procedure": [
+        "Evaluate orientation and visibility as separate terms.",
+        "Require an actual visibility representation when the asset declares shadow casting.",
+        "Choose caster simplification and light-resolution policy appropriate to the game."
+      ],
+      "checks": [
+        "A normal-only asset cannot satisfy a shadow-casting contract.",
+        "Removing the occluder changes visibility while leaving surface normal response unchanged."
+      ],
+      "pitfalls": [
+        "A dark diffuse patch is not evidence of a dynamic cast shadow.",
+        "Normal maps do not encode which other object blocks the light."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1216,
+          "end": 1274
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1549,
+          "end": 1549
+        }
+      ],
+      "poc": {
+        "kind": "visibility-fixture",
+        "procedure": [
+          "Use light (0,0), receiver (4,0), and an opaque vertical segment from (2,-1) to (2,1).",
+          "Trace the light-to-receiver segment with and without the occluder; keep the receiver normal fixed."
+        ],
+        "acceptance": [
+          "Visibility is 0 with the intersection and 1 without it.",
+          "The fixed normal term is identical in both cases."
+        ]
+      }
+    },
+    {
+      "id": "material-channel-budget",
+      "title": "Add height, masks and emission only with defined consumers",
+      "applies_to": [
+        "2.5D assets",
+        "lamps",
+        "lava",
+        "material effects"
+      ],
+      "requires": [
+        "Per-channel meaning, numeric range, coordinate convention and renderer consumer"
+      ],
+      "procedure": [
+        "Keep color, direction, height, response mask and emission distinct.",
+        "Declare packing and whether values are color data or linear data.",
+        "Reject unsupported channels at integration rather than silently treating them as active features."
+      ],
+      "checks": [
+        "Every declared channel has a named consumer and documented fallback.",
+        "Response-mask zero suppresses the masked term; emission follows its own policy."
+      ],
+      "pitfalls": [
+        "Extra channels increase authoring, memory and synchronization work.",
+        "An image generator returning a map does not establish that an engine consumes it correctly."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 945,
+          "end": 977
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1039,
+          "end": 1120
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1504,
+          "end": 1532
+        }
+      ],
+      "poc": {
+        "kind": "lighting-fixture",
+        "procedure": [
+          "Use C=D*(A+M*L)+E with scalar D=0.5,A=0.2,L=0.8,E=0.1.",
+          "Evaluate masks M=0 and M=1, then disable emission."
+        ],
+        "acceptance": [
+          "Outputs are 0.2 and 0.6 with emission, 0.1 and 0.5 without.",
+          "Channel declarations remain separate from this illustrative shader's availability."
+        ]
+      }
+    },
+    {
+      "id": "cell-materials",
+      "title": "Use shared material definitions with per-cell mutable state",
+      "applies_to": [
+        "falling sand",
+        "destructible materials",
+        "cellular worlds"
+      ],
+      "requires": [
+        "Material IDs, behavior table and declared mutable state"
+      ],
+      "procedure": [
+        "Put immutable density or phase thresholds in material definitions.",
+        "Store occupancy, temperature, lifetime and ownership only where the simulation needs them.",
+        "Derive appearance from material and state without conflating render colors with material identity."
+      ],
+      "checks": [
+        "Every nonempty cell resolves to a known material.",
+        "Palette changes cannot change physics merely by changing visible RGB."
+      ],
+      "pitfalls": [
+        "The shared-table layout is a proposed architecture, not a confirmed Noita memory layout.",
+        "Decorative dust may need only a visual effect."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 31,
+          "end": 62
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1476,
+          "end": 1502
+        }
+      ],
+      "poc": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Create material IDs 0=empty,1=sand,2=water and a 4x4 cell array.",
+          "Change sand's display color without changing the ID grid; introduce an unknown ID in a mutant."
+        ],
+        "acceptance": [
+          "The original material and physics state remain identical after recoloring.",
+          "The unknown material ID is rejected with its cell coordinate."
+        ]
+      }
+    },
+    {
+      "id": "deterministic-cell-update",
+      "title": "Bound movement and prevent duplicate updates",
+      "applies_to": [
+        "falling sand",
+        "liquid rules",
+        "replayable cellular simulation"
+      ],
+      "requires": [
+        "Tick identifiers, movement bounds, seeded tie-breaking and conflict resolution"
+      ],
+      "procedure": [
+        "Process gravity rules in a declared scan order.",
+        "Carry update identity with moving material so it cannot move twice unintentionally in one tick.",
+        "Resolve target conflicts deterministically and record boundary behavior."
+      ],
+      "checks": [
+        "Material count is conserved for nonreactive closed-world movement.",
+        "No material entity exceeds its per-tick displacement bound; repeated runs with the same seed match."
+      ],
+      "pitfalls": [
+        "Bottom-up order alone does not prevent all cross-chunk double updates.",
+        "Deterministic ties do not make different algorithms or update orders equivalent."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 64,
+          "end": 128
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1546,
+          "end": 1548
+        }
+      ],
+      "poc": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Use an 8x8 world with a solid floor at y=7 and sand at (3,1),(3,2),(4,1).",
+          "Permit one-cell downward or diagonal movement per tick, assign stable particle IDs, and simulate 20 ticks twice from identical state and seed."
+        ],
+        "acceptance": [
+          "All three sand IDs remain present after every tick.",
+          "No ID moves more than one permitted step per tick and both final states match."
+        ]
+      }
+    },
+    {
+      "id": "dirty-region-wakeup",
+      "title": "Track active regions using rule influence bounds",
+      "applies_to": [
+        "large mostly static cellular worlds"
+      ],
+      "requires": [
+        "Chunk size, complete read/write radius, cross-boundary wake rules and reference full-scan mode"
+      ],
+      "procedure": [
+        "Dirty both source and destination neighborhoods when cells change.",
+        "Expand the dirty region by the complete next-step influence radius.",
+        "Sleep stable regions and wake neighboring chunks for boundary changes."
+      ],
+      "checks": [
+        "Optimized and full-scan outputs agree for the same declared update semantics.",
+        "Boundary activity wakes every region that can be affected."
+      ],
+      "pitfalls": [
+        "64x64 is a source case-study choice, not a universal best chunk size.",
+        "Counting fewer cell visits demonstrates less scanning, not automatically faster wall-clock performance."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 130,
+          "end": 183
+        }
+      ],
+      "poc": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Split a 16x8 grid into two 8x8 chunks and place movable material at x=7 next to the boundary.",
+          "Run the same rule ordering in full-scan and dirty-region modes until stable."
+        ],
+        "acceptance": [
+          "State hashes match after each tick.",
+          "An event crossing x=7 to x=8 wakes the right chunk, and stable regions eventually stop scanning."
+        ]
+      }
+    },
+    {
+      "id": "phased-write-ownership",
+      "title": "Schedule only disjoint writable cellular regions concurrently",
+      "applies_to": [
+        "parallel cellular simulation"
+      ],
+      "requires": [
+        "Exact job write domains, maximum displacement and barrier semantics"
+      ],
+      "procedure": [
+        "Compute each job's possible write domain, including halos and cascaded rule effects.",
+        "Group jobs only when these domains are disjoint.",
+        "Place required barriers between phases and re-evaluate ownership if movement bounds change."
+      ],
+      "checks": [
+        "Every concurrent pair has empty write-domain intersection.",
+        "A serial execution of the same phase ordering agrees with its parallel implementation when deterministic mode is promised."
+      ],
+      "pitfalls": [
+        "Copying four phases is unsafe when a different rule can write farther.",
+        "Rectangular halo estimates may be conservative; smaller shapes need proof, not assumption."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 185,
+          "end": 209
+        }
+      ],
+      "poc": {
+        "kind": "scheduler-fixture",
+        "procedure": [
+          "For 8x8 chunks at origins (0,0),(8,0),(16,0), use a one-cell halo and half-open write rectangles [-1,9)x[-1,9),[7,17)x[-1,9),[15,25)x[-1,9).",
+          "Check pairwise intersections and group only first and third together."
+        ],
+        "acceptance": [
+          "Adjacent chunk pairs conflict.",
+          "First and third are disjoint and may share a phase under this fixture's bound."
+        ]
+      }
+    },
+    {
+      "id": "reaction-tables",
+      "title": "Encode material reactions as bounded data",
+      "applies_to": [
+        "thermal worlds",
+        "material chemistry",
+        "emergent effects"
+      ],
+      "requires": [
+        "Known reactants, conditions, output materials, probability policy and conflict ordering"
+      ],
+      "procedure": [
+        "Separate immutable reaction definitions from live cell state.",
+        "Validate references, probability ranges, temperature conditions and available output space.",
+        "Define reaction priority and accounting rules before combining reactions."
+      ],
+      "checks": [
+        "Unknown materials and invalid probabilities fail validation.",
+        "Reaction outcomes occur only when declared conditions hold."
+      ],
+      "pitfalls": [
+        "Gameplay chemistry need not conserve real chemical mass, but its own accounting must be explicit.",
+        "Different reaction order can change results even with the same seed."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 211,
+          "end": 245
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1476,
+          "end": 1502
+        }
+      ],
+      "poc": {
+        "kind": "simulation-fixture",
+        "procedure": [
+          "Define water -> steam when temperature >=100, with probability 1 and one-cell replacement.",
+          "Run isolated cells at temperatures 99,100,101; add a mutant rule with probability 1.2."
+        ],
+        "acceptance": [
+          "Only 100 and 101 become steam and total cell occupancy is unchanged.",
+          "Probability 1.2 is rejected before simulation."
+        ]
+      }
+    },
+    {
+      "id": "destruction-topology",
+      "title": "Extract components and preserve occupancy at solver boundaries",
+      "applies_to": [
+        "destructible structures",
+        "cell-to-body conversion"
+      ],
+      "requires": [
+        "Connectivity convention, ownership transfer, contour policy and simplification tolerance"
+      ],
+      "procedure": [
+        "Identify connected occupied components after damage.",
+        "Extract boundaries with an explicit treatment of diagonal ambiguity, then simplify within gameplay tolerance.",
+        "Transfer ownership once and retain a mapping back to source cells."
+      ],
+      "checks": [
+        "Component union equals the remaining occupancy with no duplicates.",
+        "Every occupied cell has exactly one owner at the conversion boundary."
+      ],
+      "pitfalls": [
+        "Component extraction alone does not prove stable rigid-body behavior.",
+        "Contour simplification and rerasterization can alter collision shape; measure their error explicitly."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 247,
+          "end": 317
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1609,
+          "end": 1609
+        }
+      ],
+      "poc": {
+        "kind": "topology-fixture",
+        "procedure": [
+          "On a 7x3 mask fill x=0..2 and x=4..6 on every row, plus bridge cell (3,1).",
+          "Use 4-connectivity; remove the bridge and extract components."
+        ],
+        "acceptance": [
+          "Before damage there is one 19-cell component; afterward there are two 9-cell components.",
+          "The two components partition exactly the 18 remaining cells; no solver performance claim is made."
+        ]
+      }
+    },
+    {
+      "id": "pipeline-order",
+      "title": "Validate dependency order across simulation, animation and rendering",
+      "applies_to": [
+        "combined pixel systems",
+        "engine integration"
+      ],
+      "requires": [
+        "Stage dependency graph and ownership transfer points"
+      ],
+      "procedure": [
+        "Name simulation updates, structural conversion, animation evaluation, snapping, lighting and final presentation as separate stages.",
+        "Schedule according to actual dependencies and document any engine-specific feedback cycle.",
+        "Validate declared stage order and require capabilities for each requested output."
+      ],
+      "checks": [
+        "No stage reads data before its producer or ownership transfer completes.",
+        "Continuous animation precedes final snapping; quantized lighting precedes final enlargement when that pipeline is selected."
+      ],
+      "pitfalls": [
+        "The source sequence is a proposal; engine physics order may legitimately differ.",
+        "A metadata declaration is not evidence that any stage ran."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+          "start": 1575,
+          "end": 1609
+        },
+        {
+          "path": "training/original-docs/AGENT-PIXELART-TRAINING.md",
+          "start": 1525,
+          "end": 1559
+        }
+      ],
+      "poc": {
+        "kind": "dependency-fixture",
+        "procedure": [
+          "Create dependencies animation->snap->light->upscale and cells->components->physics.",
+          "Validate a topological ordering and a mutant ordering with upscale before light."
+        ],
+        "acceptance": [
+          "A valid ordering passes all dependency edges.",
+          "The mutant reports the light->upscale violation and cannot claim completed rendering."
+        ]
+      }
+    },
+    {
+      "id": "state-driven-pixel-ui",
+      "title": "Tie pixel UI animation to actual state and input",
+      "applies_to": [
+        "pixel interaction prompts",
+        "health icons",
+        "selected project UI"
+      ],
+      "requires": [
+        "Authoritative input or gameplay state and project-specific styling brief"
+      ],
+      "procedure": [
+        "Map idle, pressed, disabled and health states to explicit visual states.",
+        "Use timing only for the transition the real event triggered.",
+        "Retain static recognizability and adapt scale and color across the surrounding UI."
+      ],
+      "checks": [
+        "The visual state corresponds to the supplied input or health state.",
+        "No decorative timer reports an event or progress that has not occurred."
+      ],
+      "pitfalls": [
+        "The archive's keyboard prompt and Waylight palette rules belong to its original project.",
+        "A CSS demo with blur or continuous motion may conflict with a strict-grid asset profile."
+      ],
+      "sources": [
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 9,
+          "end": 17
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 916,
+          "end": 960
+        },
+        {
+          "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+          "start": 11450,
+          "end": 11458
+        }
+      ],
+      "poc": {
+        "kind": "state-fixture",
+        "procedure": [
+          "For an original 8x8 interaction icon define idle, pressed and disabled masks.",
+          "Feed enabled/down/up/disabled/down events and record selected state."
+        ],
+        "acceptance": [
+          "States are idle,pressed,idle,disabled,disabled.",
+          "Disabled input does not produce a pressed-success visual; source styling is not globally imposed."
+        ]
+      }
+    }
+  ]
+}

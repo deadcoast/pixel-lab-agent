@@ -50,3 +50,7 @@ The durable provider operations are `pixl_job_prepare`, `pixl_job_dispatch`, `pi
 The optional MCP configuration examples live in `../../../config/`. They deliberately contain explicit project and plugin paths, and the manifests do not auto-start the server. Resolve the templates for the current installation and project before use. PixelLab's authenticated remote server is configured separately by the harness; do not store its credentials in the UDL or plugin.
 
 On validation failure, preserve the candidate and report the exact diagnostic. On stale-hash commit failure, reread current state, reconcile the candidate, and validate again. Do not force-write the store. Generated assets and journal records belong under the selected project root, never in the plugin's bundled resources.
+
+## Requirements and direct planning
+
+Use `pixl_plar_read` / `pixl_plar_save` for the consumer project's requirements queue; [PLAR](../../plar/SKILL.md) defines the semantic inventory operation. Use `pixl_commit` with inline `document` for a complete next-revision JSON plan when available. It accepts the same JSON shape as `pixl_encode` and runs the same state validation, without requiring a temporary wire file. Supply exactly one of `document` or `candidate`, along with `store` and the current `expect` hash. CLI equivalent: `commit STORE PLAN.json --json --expect HASH --root PROJECT`.

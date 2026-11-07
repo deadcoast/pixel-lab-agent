@@ -83,6 +83,7 @@ def prepare(destination: Path, host: str) -> dict:
         "exposes pixellab_contract, pixellab_prepare_image, pixellab_submit, pixellab_poll and "
         "pixellab_import_image. These use the real runtime with a mock HTTP transport. "
         "Use pixl_intake and normal saved planning; prepare requires an existing task/output. "
+        "pixl_commit accepts the complete JSON document directly; use this when it avoids a temporary wire file. "
         "The image API uses description and image_size, not the MCP width/height aliases. "
         "For this test, authorization is the stated one mocked request with zero real calls. "
         "Mock polling requires no delay. Retain visual review through the inspection operation. "
@@ -182,6 +183,10 @@ def prepare(destination: Path, host: str) -> dict:
             "-c",
             'web_search="disabled"',
         ]
+        if os.name == "nt":
+            # --ignore-user-config excludes the installed Windows sandbox selection.
+            # Keep workspace confinement and explicitly use the configured backend.
+            command.extend(["-c", 'windows.sandbox="elevated"'])
         for name, server in (("pixl_local", local), ("pixellab_test", provider)):
             # This launcher exposes only local state and socket-blocked mock tools.
             # Approve those tools for the noninteractive test, never a live server.
