@@ -15,6 +15,8 @@ Resolve `../../../scripts/pixl.py` relative to this reference directory and invo
 
 ## Prepare a saved request
 
+Prefer the actual connected official PixelLab MCP operation when it fits the task. Use [operation and reference selection](pixellab-operations.md) first: confirm the native canvas, reference roles and output packaging. Preserve image transport identifiers with their local source hashes. The optional HTTP route below is a selected integration, not a substitute for every MCP workflow.
+
 When the host exposes the optional PixelLab HTTP bridge, use `pixellab_contract`
 to inspect its retained official HTTP schema, source date and simulated/live flag.
 It currently supports one async image operation. This is a dated HTTP contract,

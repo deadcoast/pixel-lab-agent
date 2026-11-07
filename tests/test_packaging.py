@@ -127,6 +127,28 @@ class PackagingTests(unittest.TestCase):
             )
             self.assertEqual(packet["asset"]["delivery"]["path"], "assets/working.png")
             self.assertTrue((plugin / "skills/plar/SKILL.md").is_file())
+            shutil.copytree(
+                plugin / "resources/examples/delegation", cwd / "directions"
+            )
+            reference_packet = cli(
+                [
+                    "plar",
+                    "read",
+                    "--root",
+                    str(cwd / "directions"),
+                    "--asset",
+                    "robot.directions",
+                ]
+            )
+            reference = reference_packet["visual_references"][0]
+            self.assertEqual(reference["role"], "identity")
+            self.assertEqual(reference["binding"], "current")
+            self.assertTrue(
+                Path(reference["absolute_path"]).is_relative_to(cwd / "directions")
+            )
+            self.assertEqual(reference_packet["dependencies"][0]["id"], "robot.base")
+            self.assertTrue(reference_packet["dependencies"][0]["requirements"])
+            self.assertEqual(len(reference_packet["requirements_hash"]), 64)
             for command in (
                 ["sources"],
                 [

@@ -173,6 +173,30 @@ def run(log_dir=None):
         if plar_packet["asset"]["delivery"]["path"] != "assets/working.png":
             raise RuntimeError("installed PLAR handoff differs from consumer contract")
         checks.append({"command": "plar", "status": "pass"})
+        shutil.copytree(resource_root / "examples/delegation", cwd / "directions")
+        reference_packet = cli(
+            [
+                "plar",
+                "read",
+                "--root",
+                str(cwd / "directions"),
+                "--asset",
+                "robot.directions",
+            ]
+        )
+        reference = reference_packet["visual_references"][0]
+        if (
+            reference["role"] != "identity"
+            or reference["binding"] != "current"
+            or not Path(reference["absolute_path"]).is_relative_to(cwd / "directions")
+            or reference_packet["dependencies"][0]["id"] != "robot.base"
+            or not reference_packet["dependencies"][0]["requirements"]
+            or len(reference_packet["requirements_hash"]) != 64
+        ):
+            raise RuntimeError(
+                "installed reference handoff lost its dependency context"
+            )
+        checks.append({"command": "plar reference handoff", "status": "pass"})
         for args in (
             ["sources"],
             ["intake", ".px2", "--root", str(cwd), "--brief", "Canvas unresolved"],

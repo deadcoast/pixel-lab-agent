@@ -1,0 +1,125 @@
+{
+  "status": "plan_only_not_submitted",
+  "asset_id": "robot.directions",
+  "requirements_hash": "3bf04398cf4441a8c981b68a15c5f3dbadfd6294b80e22277fd4fa50819baf1b",
+  "tool": "mcp__pixellab__create_character",
+  "surface": "Official host PixelLab MCP",
+  "request_file": "planning/request-v3-base64.json",
+  "image_binding": {
+    "role": "identity; approved south frame; source of required palette/proportions",
+    "local_path": "assets/robot-base.png",
+    "absolute_local_path": "C:\\Users\\ryanf\\.codex\\visualizations\\2026\\11\\05\\01a1ad70-8a80-7762-a210-de5dbde57aba\\pla-handoff-forward-20261107\\consumer\\assets\\robot-base.png",
+    "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "byte_count": 177,
+    "provider_field": "reference_image_base64",
+    "encoding": "standard base64 of complete PNG file bytes, without data URL prefix",
+    "base64_character_count": 236,
+    "roundtrip_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "transport_status": "Not sent or uploaded; bytes prepared only in local request artifact",
+    "provider_handle": null,
+    "reason": "The exact 32x32 source is small enough for the documented inline image input. The saved argument contains actual encoded pixels, not a filename or description."
+  },
+  "upload_alternative": {
+    "preferred_for_larger_inputs": true,
+    "tool": "mcp__pixellab__get_upload_url",
+    "arguments": {},
+    "steps": [
+      "In a later authorized execution, call get_upload_url and follow its returned upload instructions for the verified local PNG.",
+      "Retain the actual upload:<id> or supported returned URL, source hash and upload receipt.",
+      "Remove reference_image_base64 from the request and set reference_image_url to that actual returned handle; never send both fields."
+    ],
+    "actual_handle": null,
+    "attempted": false
+  },
+  "arguments": {
+    "mode": {
+      "value": "v3",
+      "authority": "documented capability",
+      "reason": "Supplied-sprite rotation and four-cardinal output are supported together."
+    },
+    "n_directions": {
+      "value": 4,
+      "authority": "requirement",
+      "source": "BRIEF.md:3; src/robot.ts:1-5"
+    },
+    "reference_image_base64": {
+      "value_from": "base64(assets/robot-base.png bytes)",
+      "authority": "requirement",
+      "source": "BRIEF.md:3; assignment dependency robot.base"
+    },
+    "view": {
+      "value": "side",
+      "authority": "proposal from visually observed flat front-on source",
+      "reason": "No top plane or perspective cue is visible. The actual game camera is unknown. This choice is not confirmed art direction."
+    },
+    "description": {
+      "authority": "requirements plus explicitly marked camera/hidden-surface interpretation",
+      "source": "BRIEF.md:3-7; visual inspection of assets/robot-base.png"
+    },
+    "name": {
+      "value": "Robot directional reference trial",
+      "authority": "local organizational proposal"
+    }
+  },
+  "omitted_fields": {
+    "size": "Reference is already 32x32. Official v3 reference path keeps native dimensions when size is omitted; verify actual outputs.",
+    "body_type": "No extra anatomy template is needed for this abstract robot. The tool default is humanoid; the reference and prompt must preserve the actual limbless boxlike silhouette. Inspect this risk.",
+    "direction_images": "No approved east, north or west frames exist. South belongs in the reference image input; the live direction_images schema has no south field.",
+    "palette": "Current create_character palette/max_colors controls are Pro-only; v3 cannot enforce exact palette membership with those fields. Preserve through image conditioning and inspect actual colors.",
+    "outline_detail_shading_proportions": "Do not force a generic style or assume these controls preserve this reference.",
+    "seed": "Not a create_character parameter.",
+    "no_background": "Not a create_character parameter. Transparency is a requirement in the prompt and output checks, not an invented tool flag."
+  },
+  "outputs": [
+    {
+      "direction": "south",
+      "path": "assets/robot/south.png",
+      "source": "byte-for-byte local copy of assets/robot-base.png",
+      "size": [
+        32,
+        32
+      ],
+      "format": "PNG",
+      "frames": 1
+    },
+    {
+      "direction": "east",
+      "path": "assets/robot/east.png",
+      "source": "downloaded rotation keyed east",
+      "size": [
+        32,
+        32
+      ],
+      "format": "PNG",
+      "frames": 1
+    },
+    {
+      "direction": "north",
+      "path": "assets/robot/north.png",
+      "source": "downloaded rotation keyed north",
+      "size": [
+        32,
+        32
+      ],
+      "format": "PNG",
+      "frames": 1
+    },
+    {
+      "direction": "west",
+      "path": "assets/robot/west.png",
+      "source": "downloaded rotation keyed west",
+      "size": [
+        32,
+        32
+      ],
+      "format": "PNG",
+      "frames": 1
+    }
+  ],
+  "output_status": "All four paths are planned; none created by this assignment. Map named directions, never array/ZIP position.",
+  "provider_resource_id": null,
+  "provider_job_ids": [],
+  "px2_store": null,
+  "durable_attempt_status": "No lifecycle attempt created. Before future submission, initialize the authorized PX2 production task/output plans and use job-prepare/job-dispatch per the copied kit; this JSON alone is not a durable dispatch claim.",
+  "remote_calls_made": []
+}

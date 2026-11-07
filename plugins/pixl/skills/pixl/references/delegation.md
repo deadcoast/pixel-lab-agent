@@ -1,0 +1,48 @@
+# Agent-to-agent asset work
+
+Use this operation when a calling Claude/Codex agent assigns visual work to PIXL. PIXL is the callable name of pixel-lab-agent (PLA). The profile supplies artistic judgment; this contract carries the assignment and result between agents.
+
+## Caller → specialist
+
+Supply the smallest complete assignment:
+
+| Context | What the specialist needs |
+| --- | --- |
+| Outcome | Asset purpose, requested files and relevant success criteria |
+| Workspace | Absolute consumer root; installed PIXL skill location |
+| Requirements | Selected PLAR asset packet, or a complete direct brief |
+| References | Addressable files/owned resource IDs, their roles and what to preserve |
+| Authority | User decisions, proposals, unresolved choices and established authorization/limits |
+| Resume | Existing store/task/output and pending provider IDs, when present |
+| Integration | Destination, relevant consumers, and authorized code/import work |
+
+For PLAR, call `pixl_plar_read` with `asset_id`. Pass its selected row, transitive dependencies, source bindings, visual references and `requirements_hash`. Queue summaries alone omit production context. The reader supplies absolute paths for this filesystem; if the delegate uses another workspace, rebase paths and verify the same source bytes there.
+
+The caller delegates to the native PIXL agent or a native specialist loading the shared PIXL skill. Keep the caller's model/tool/permission settings unless the assignment requires otherwise. Include the actual assignment in the delegation; naming a skill or saying “make the assets” does not transfer the parent's conversation. Credentials stay in the host's PixelLab connection.
+
+A direct brief can proceed without first manufacturing a PLAR document. Use PLAR when allocation, dependencies or ongoing project work benefit from it. The caller owns application-wide priorities; PIXL owns art direction, appropriate PixelLab operation selection, reference use and visual evaluation within the assignment.
+
+## Specialist → caller while working
+
+Read the actual reference and consumer context. Resolve facts from supplied files and tools before asking the caller. If one consequential choice remains, send a small question with the affected asset, alternatives and what it unlocks. The caller can answer from its context or relay to the user. Continue unaffected work, carrying existing authorization rather than re-requesting it.
+
+Keep creative proposals explicit. Distinguish “the reference contains this” from “the user requires this.” Report a tool/input mismatch with the viable path, not an invented parameter or a silently changed asset size. Progress messages report actual saved plans, job IDs or inspected files.
+
+Resume the same task/state where possible. Check retained provider attempts before another request. A failed or interrupted child is a handoff boundary; it is not permission for the parent to duplicate a potentially submitted generation.
+
+## Specialist → caller at completion
+
+Return a compact structured result (JSON or equivalent named fields):
+
+- `status`: `delivered`, `partial`, `needs_input`, or `blocked`, judged against this assignment.
+- `asset_id` and `requirements_hash` when PLAR supplied them; direct-brief tasks identify their brief.
+- `artifacts`: project-relative paths, role, actual hashes and dimensions/frame metadata as relevant.
+- `checks`: actual mechanical, visual and integration findings, with evidence paths and unavailable checks.
+- `provider`: observed resource/job IDs and the production-state location needed to resume.
+- `questions` or `next`: only outstanding decisions and the next concrete action.
+
+Include only applicable fields. A generation-only task can deliver a reviewed artifact while explicitly leaving engine import unverified. If the assignment requires integration, unavailable integration keeps that part unfinished. Never use a provider's completed status as artistic acceptance.
+
+The caller opens the returned files and checks the relevant result against its original assignment. Compare a fresh selected PLAR packet if source context changed. `requirements_hash` tracks the selected requirements, reference bytes and dependency requirements; status/next-action changes alone do not change it. It is neither a spend authorization nor a readiness verdict. The existing file `hash` still governs PLAR writes.
+
+Keep detailed receipts in project files so the caller receives useful art and decisions rather than an entire transcript or image encoded in text.

@@ -274,6 +274,39 @@
               ],
               "additionalProperties": false
             }
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "role": {
+                  "enum": [
+                    "style",
+                    "identity",
+                    "pose",
+                    "layout",
+                    "palette",
+                    "mask",
+                    "motion"
+                  ]
+                },
+                "instructions": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "source",
+                "role",
+                "instructions"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [

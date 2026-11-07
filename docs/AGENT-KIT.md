@@ -15,7 +15,7 @@ Markdown instructions, JSON plugin manifests, MCP JSON arguments, and TOML confi
 
 | Decision | WHO | WHAT | WHERE | WHY and evidence |
 | --- | --- | --- | --- | --- |
-| Shared artistic authority | PIXL and the user | One profile plus project-specific contracts | `agent/PROFILE.md`, generated bundle copy | Prevent Claude/Codex drift while preserving project intent. This is a project design choice, not a model-quality claim. |
+| Shared artistic authority | PIXL and the user | One profile plus project-specific contracts | `.agents/PROFILE.md`, copied to `resources/agent/PROFILE.md` | Prevent Claude/Codex drift while preserving project intent. This is a project design choice, not a model-quality claim. |
 | Custom state with explicit adapter boundary | Runtime validates; agent authors | Versioned UDL plus thin harness adapters | `spec/PIXL-1.md`, `pixl/registry.json`, skill/agent/manifests | Stable IDs, relationships, and validation need a source contract; harness formats have their own schemas. |
 | Repository Codex discovery | Codex harness | Minimal wrapper skill | `.agents/skills/pixl/SKILL.md` | Official documentation identifies repository `.agents/skills` discovery and explicit skill invocation. [Build skills](https://learn.chatgpt.com/docs/build-skills) |
 | Claude skill and agent | Claude harness | Project wrapper and specialist agent | `.claude/skills/pixl/`, `.claude/agents/pixl.md` | Claude documents separate skills and subagent definitions. Omitted tool restrictions allow the available MCP tools to be inherited; the agent discovers real names. [Skills](https://code.claude.com/docs/en/skills), [Subagents](https://code.claude.com/docs/en/sub-agents) |
@@ -90,6 +90,32 @@ claude --plugin-dir ./plugins/pixl
 
 Invoke `/pixl:pixl` for the plugin skill, or launch the forward-facing plugin agent directly with `claude --plugin-dir ./plugins/pixl --agent pixl:pixl`. In a checkout that also exposes repository wrappers, use the intended entrypoint explicitly; duplicate names do not imply merged instructions. The installed Codex CLI does not expose Claude's `--plugin-dir` flag. Its plugin command uses marketplace-backed installation; the repository skill route works without modifying marketplace or user configuration. No marketplace entry or global plugin installation is performed by this kit.
 
+## Delegate from a consumer project
+
+Install/load the complete kit using the host route above, then let the calling agent delegate to the native PIXL specialist. Supply the actual consumer root and installed skill location. If a `plar.txt` exists, use `pixl_plar_read` with `asset_id` (or `plar read --root CONSUMER --asset ID`) and pass the focused packet. Its full transitive dependencies and reference bindings carry context that a queue summary cannot.
+
+Example caller assignment:
+
+> Use PIXL at the supplied installation to produce the selected asset in this consumer project. Follow the attached requirements packet, inspect its references in their declared roles, and preserve the existing decisions and authorization. Use the official PixelLab tools available to this host. Return the delivered files, actual review findings and provider/state identifiers; send consequential unresolved questions back to me.
+
+A direct brief with the same necessary facts also works. PIXL owns visual design, tool choice and review; the caller supplies application priorities and consumes the returned files. The [delegation contract](../plugins/pixl/skills/pixl/references/delegation.md) defines requests, questions, partial results and resumption. The [worked direction-planning example](../examples/delegation/README.md) demonstrates a reference inherited from an asset dependency.
+
+## Connect official PixelLab
+
+The official server is `https://api.pixellab.ai/mcp`. Include the [complete PixelLab tool overview](https://api.pixellab.ai/mcp/docs) in task context and use the [platform documentation](https://www.pixellab.ai/docs) for design/workflow knowledge. Inspect the tool declaration exposed in the current session before calling it.
+
+Connection templates are examples to merge into the host's configuration; they are not active connections or a request to replace existing settings:
+
+| Host | Template | Authentication supplied by the launching environment |
+| --- | --- | --- |
+| Codex, direct HTTP | [Native HTTP](../plugins/pixl/config/pixellab.codex.http.example.toml) | `PIXELLAB_API_TOKEN` contains the raw token; `bearer_token_env_var` supplies the header |
+| Claude Code, HTTP | [Claude HTTP](../plugins/pixl/config/pixellab.claude.http.example.json) | `PIXELLAB_API_TOKEN` is expanded into the Authorization header |
+| Codex, stdio compatibility bridge | [mcp-remote alternative](../plugins/pixl/config/pixellab.codex.proxy.example.toml) | `AUTH_HEADER` contains the full Bearer header and is forwarded through `env_vars` |
+
+Codex supports native HTTP, so the proxy is an available compatibility choice rather than a required extra process. Claude supports environment expansion in project MCP headers. Keep credential values in the connection environment, outside prompts, source control and production receipts. These templates leave existing host settings untouched. [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp), [Claude MCP configuration](https://code.claude.com/docs/en/mcp).
+
+The authenticated official MCP surface is the primary agent interface. The local PIXL MCP server below supports requirements/state/inspection; the separate optional HTTP adapter supports its documented image operation. Neither substitutes for the full current PixelLab platform.
+
 ## Connect the local runtime for one session
 
 The CLI works without MCP. MCP lets the agent invoke local state operations through structured tools. The templates have explicit replacement paths and are not active configuration. Generate a concrete Claude session file from the current checkout without modifying harness settings:
@@ -113,12 +139,17 @@ claude --plugin-dir ./plugins/pixl --mcp-config ./pixl-mcp.local.json
 
 Choose the intended project directory for `$pixlProject`. Do not pass `--strict-mcp-config` when the existing harness PixelLab connection is needed; that flag excludes other configured servers. Session loading is documented by [Claude's CLI and MCP support](https://code.claude.com/docs/en/mcp).
 
-Codex accepts session-only configuration overrides. This example is concrete for this checkout; set the project root and Python interpreter to your destination before running it:
+Codex accepts session-only configuration overrides. From this checkout, resolve the selected interpreter, runner and consumer root instead of copying a machine-specific installation path:
 
 ```powershell
-codex -C . `
-  -c 'mcp_servers.pixl_local.command="C:/Users/ryanf/github/pixel-lab-docsuite/.venv/Scripts/python.exe"' `
-  -c 'mcp_servers.pixl_local.args=["C:/Users/ryanf/github/pixel-lab-docsuite/plugins/pixl/scripts/pixl.py","mcp","--root","C:/Users/ryanf/github/pixel-lab-docsuite"]' `
+$pixlPython = (Resolve-Path './.venv/Scripts/python.exe').Path
+$pixlRunner = (Resolve-Path './plugins/pixl/scripts/pixl.py').Path
+$pixlProject = (Get-Location).Path
+$pixlCommand = ConvertTo-Json -Compress -InputObject $pixlPython
+$pixlArguments = ConvertTo-Json -Compress -InputObject @($pixlRunner, 'mcp', '--root', $pixlProject)
+codex -C $pixlProject `
+  -c "mcp_servers.pixl_local.command=$pixlCommand" `
+  -c "mcp_servers.pixl_local.args=$pixlArguments" `
   'Use $pixl. Discover the local PIXL tools and report capabilities before remote work.'
 ```
 

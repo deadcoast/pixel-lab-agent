@@ -27,6 +27,8 @@ Examples: prove diagonal tile joins with a repeated neighborhood; prove a walk c
 
 ## Remote operation
 
+Use [PixelLab operation selection](pixellab-operations.md) to match the deliverable and each reference role to supported arguments. Carry actual image data/handles, not merely file names in text. Use [the delegation contract](delegation.md) for work received from and returned to another agent.
+
 Read the tool schemas actually available in the session and the relevant current [PixelLab MCP documentation](https://api.pixellab.ai/mcp/docs). Record which surface is being used and the evidence date; cached examples do not establish current availability. Check prerequisites and map the selected UDL contract to supported tool arguments. Preserve references and values that the selected tool can express; report any constraint requiring later editing or inspection.
 
 Follow the [provider submission and recovery operation](provider-recovery.md) for new PX2 work: save the exact request and plan, claim dispatch locally before one actual PixelLab call, retain returned identifiers and observations, and reconcile unknown outcomes before any new attempt. Import downloaded bytes as candidates, then evaluate them separately. Existing authorization and budget govern real calls. Do not synthesize progress or convert elapsed time into a completed state.

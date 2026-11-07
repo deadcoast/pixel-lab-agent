@@ -1,0 +1,103 @@
+{
+  "status": "delivered",
+  "scope": "Planning only; no remote execution or production sprites requested",
+  "asset_id": "robot.directions",
+  "requirements_hash": "3bf04398cf4441a8c981b68a15c5f3dbadfd6294b80e22277fd4fa50819baf1b",
+  "consumer_root": "C:\\Users\\ryanf\\.codex\\visualizations\\2026\\11\\05\\01a1ad70-8a80-7762-a210-de5dbde57aba\\pla-handoff-forward-20261107\\consumer",
+  "artifacts": [
+    {
+      "path": "planning/production-plan.md",
+      "role": "Production plan, authority account and future acceptance criteria",
+      "sha256": "eabf30bce0863c4deeca946a2816ecc658280b862551a3384ac3f284e89bfd09"
+    },
+    {
+      "path": "planning/provider-input-mapping.json",
+      "role": "Exact source-to-provider binding and controller output mapping",
+      "sha256": "e41529e03133c70602a383b97e0a4f5c6a32f78cbb5de27325a6ba11fac0b688"
+    },
+    {
+      "path": "planning/request-v3-base64.json",
+      "role": "Unsubmitted request containing actual source PNG bytes; proposed side camera",
+      "sha256": "ca754d3f5406f43087b77bb051cda74828cf92c8a96b35518ab455ba42187bcc"
+    },
+    {
+      "path": "planning/provider-tool-declarations.json",
+      "role": "Observed host tool declarations used for selection",
+      "sha256": "8fe16aefd98802b81b07ec4d8faa4ac38df8df16f93396a313e8e81b87acf3ab"
+    },
+    {
+      "path": "planning/source-inspection.json",
+      "role": "Measured source facts and actual visual inspection findings",
+      "sha256": "762ca2eba71b3fe81034324dfb854e9fadc61ac23bb06c030cca9f10082e2dc5"
+    },
+    {
+      "path": "planning/source-native-and-8x.png",
+      "role": "Source inspection composite only; not production artwork",
+      "sha256": "c3055898b28cf6b4e822c4eccca83895c6dfc739ba4e1e71c2daa4c008ac7d09",
+      "dimensions": [
+        672,
+        384
+      ],
+      "frames": 1
+    },
+    {
+      "path": "planning/verification.json",
+      "role": "Local request and source-preservation checks",
+      "sha256": "f3435bd6b7bcc9b9a545e1442b0dfed8a5be11af854fab90857461a4cee2e07f"
+    }
+  ],
+  "checks": {
+    "mechanical": {
+      "status": "passed",
+      "evidence": "planning/verification.json",
+      "findings": [
+        "All three raw source hashes still match the assignment.",
+        "Source PNG is RGBA, 32x32, one frame.",
+        "The 236-character provider base64 field decodes to the exact 177-byte source PNG.",
+        "Prepared argument keys exist in the discovered tool declaration; no local path is used as provider image data.",
+        "No planned delivery PNGs were created."
+      ]
+    },
+    "visual": {
+      "status": "source_inspected",
+      "evidence": "planning/source-inspection.json",
+      "findings": [
+        "Source viewed at native scale and 8x nearest enlargement on light/dark backgrounds.",
+        "Front-on boxlike cyan/navy subject, cream eyes, two upright prongs; no visible humanoid limbs.",
+        "Camera side is a proposal; unseen rear geometry remains unspecified.",
+        "No generated directional candidates exist to accept."
+      ]
+    },
+    "integration": {
+      "status": "unavailable",
+      "evidence": "src/robot.ts",
+      "reason": "Controller path mapping and nearest setting inspected; no runner or engine project supplied."
+    }
+  },
+  "provider": {
+    "surface": "Official host PixelLab MCP",
+    "selected_tool": "mcp__pixellab__create_character",
+    "selected_arguments": {
+      "mode": "v3",
+      "n_directions": 4,
+      "view": "side (proposal)",
+      "reference_image_base64": "actual source bytes in planning/request-v3-base64.json",
+      "size": "omitted: native source dimensions"
+    },
+    "tool_declaration_observed": true,
+    "authentication_tested": false,
+    "upload_performed": false,
+    "remote_execution_performed": false,
+    "resource_ids": [],
+    "job_ids": [],
+    "px2_state_path": null,
+    "resume_from": "planning/production-plan.md",
+    "limitations": [
+      "No remote request accepted and no charge observed.",
+      "V3 does not provide the Pro-only exact palette control; check actual candidate colors against required palette preservation.",
+      "No PX2 attempt was started because this assignment ends at planning. Create durable task/output/request state before a later authorized dispatch."
+    ]
+  },
+  "questions": [],
+  "next": "Calling agent reviews the plan and proposed camera. In a later authorized production assignment, preserve this source binding, save PX2 output criteria and dispatch claim, submit the selected reference-conditioned operation once, inspect the named candidates, copy original south bytes and verify renderer behavior when available."
+}

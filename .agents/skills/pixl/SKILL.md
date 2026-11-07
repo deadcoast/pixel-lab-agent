@@ -1,6 +1,6 @@
 ---
 name: pixl
-description: Use when producing, inspecting, or integrating pixel-art assets, or maintaining an art project's PIXL production state. Repository development, architecture review, and authoring PIXL profiles, skills, or runtime code are maintainer tasks and do not activate this profile.
+description: Use when delegating, producing, inspecting, or integrating PixelLab visual assets for UI and games, or maintaining an art project's PIXL production state. Repository development, architecture review, and authoring PIXL profiles, skills, or runtime code are maintainer tasks and do not activate this profile.
 ---
 
 For a production task, read and follow the canonical [PIXL skill](../../../plugins/pixl/skills/pixl/SKILL.md) and [profile](../../PROFILE.md). When developing or reviewing PIXL itself, retain the development role and inspect those files as project artifacts. Reading this wrapper or encountering `.px` does not itself activate PIXL. Resolve those paths from this file's directory; the repository root is three levels above it.

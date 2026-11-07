@@ -199,3 +199,89 @@ class PLARTests(unittest.TestCase):
             Draft202012Validator(schema).is_valid(dict(args, candidate="unused.px"))
         )
         self.assertTrue(Draft202012Validator(schema).is_valid(args))
+
+    def add_reference(self):
+        source = self.root / "style.txt"
+        source.write_text("Reference bytes for a binding test.", encoding="utf-8")
+        self.document["sources"].append({"id": "style", "path": "style.txt"})
+        # A dependent asset must carry the baseline's visual input even when its
+        # own source locators do not mention that file.
+        self.document["assets"][0]["references"] = [
+            {
+                "source": "style",
+                "role": "identity",
+                "instructions": "Preserve this subject.",
+            }
+        ]
+        plar.save(self.root, self.document, plar.read(self.root)["hash"])
+        return source
+
+    def test_transitive_reference_context_survives_delegation(self):
+        self.add_reference()
+        packet = plar.read(self.root, asset_id="queue.ready")
+        self.assertEqual(packet["project_root"], str(self.root.resolve()))
+        baseline = packet["dependencies"][0]
+        self.assertEqual(baseline["id"], "queue.working")
+        self.assertTrue(baseline["requirements"])
+        self.assertEqual(baseline["references"][0]["role"], "identity")
+        reference = packet["visual_references"][0]
+        self.assertEqual(reference["asset_id"], "queue.working")
+        self.assertEqual(reference["absolute_path"], str(self.root / "style.txt"))
+        self.assertEqual(reference["sha256"], reference["observed_sha256"])
+
+    def test_changed_dependency_reference_is_visible_without_selecting_it(self):
+        source = self.add_reference()
+        before = plar.read(self.root, asset_id="queue.ready")
+        source.write_text(
+            "A different source image would have different bytes.", encoding="utf-8"
+        )
+        after = plar.read(self.root, asset_id="queue.ready")
+        self.assertNotEqual(before["requirements_hash"], after["requirements_hash"])
+        self.assertIn("source style: changed", after["dependencies"][0]["issues"])
+        self.assertEqual(after["visual_references"][0]["binding"], "changed")
+
+    def test_requirements_identity_ignores_progress_but_tracks_dependency_contract(
+        self,
+    ):
+        before = plar.read(self.root, asset_id="queue.ready")
+        self.document["assets"][0]["status"] = "in_progress"
+        self.document["assets"][0]["next"] = "Inspect the generated candidate"
+        self.document["assets"][2]["purpose"] = "Unrelated retry work"
+        plar.save(self.root, self.document, before["hash"])
+        progress = plar.read(self.root, asset_id="queue.ready")
+        self.assertNotEqual(before["hash"], progress["hash"])
+        self.assertEqual(before["requirements_hash"], progress["requirements_hash"])
+        self.assertEqual(progress["dependencies"][0]["status"], "in_progress")
+        self.document["assets"][0]["requirements"][0]["value"] = [128, 16]
+        plar.save(self.root, self.document, progress["hash"])
+        changed = plar.read(self.root, asset_id="queue.ready")
+        self.assertNotEqual(progress["requirements_hash"], changed["requirements_hash"])
+
+    def test_context_can_rebase_without_changing_requirement_identity(self):
+        self.add_reference()
+        before = plar.read(self.root, asset_id="queue.ready")
+        with TemporaryDirectory() as moved:
+            shutil.copytree(self.root, moved, dirs_exist_ok=True)
+            after = plar.read(moved, asset_id="queue.ready")
+            self.assertEqual(before["requirements_hash"], after["requirements_hash"])
+            self.assertNotEqual(before["project_root"], after["project_root"])
+            self.assertNotEqual(
+                before["visual_references"][0]["absolute_path"],
+                after["visual_references"][0]["absolute_path"],
+            )
+
+    def test_unknown_reference_source_or_role_is_rejected(self):
+        self.document["assets"][0]["references"] = [
+            {
+                "source": "absent",
+                "role": "identity",
+                "instructions": "Keep this subject",
+            }
+        ]
+        with self.assertRaises(PixlError):
+            plar.validate(self.document, self.root)
+        self.document["assets"][0]["references"][0].update(
+            source="brief", role="invented"
+        )
+        with self.assertRaises(PixlError):
+            plar.validate(self.document, self.root)

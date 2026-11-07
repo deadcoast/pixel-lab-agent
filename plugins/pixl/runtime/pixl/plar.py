@@ -48,10 +48,7 @@ def validate(document, root):
     for source in sources.values():
         graph.confined(root, source["path"])
     for asset in assets.values():
-        references = {row["source"] for row in asset["consumers"]}
-        references.update(
-            source for row in asset["requirements"] for source in row["sources"]
-        )
+        references = _source_ids(asset)
         if references - sources.keys():
             raise PixlError("plar_source", f"{asset['id']}: unknown source IDs")
         for name in [
@@ -95,96 +92,138 @@ def _load(path):
         raise PixlError("plar_read", str(path)) from error
 
 
-def _source_status(root, row):
+def _source_ids(asset):
+    ids = {row["source"] for row in asset["consumers"]}
+    ids.update(source for row in asset["requirements"] for source in row["sources"])
+    ids.update(row["source"] for row in asset.get("references", []))
+    return ids
+
+
+def _source_binding(root, row):
     path = graph.confined(root, row["path"])
-    if not path.is_file():
-        return "missing"
-    if "sha256" not in row:
-        return "unbound"
-    return "current" if graph.file_hash(path) == row["sha256"] else "changed"
+    actual = graph.file_hash(path) if path.is_file() else None
+    status = (
+        "missing"
+        if actual is None
+        else "unbound"
+        if "sha256" not in row
+        else "current"
+        if actual == row["sha256"]
+        else "changed"
+    )
+    return dict(row, binding=status, observed_sha256=actual, absolute_path=str(path))
+
+
+def _issues(root, asset, sources):
+    issues = [
+        f"source {key}: {sources[key]['binding']}"
+        for key in sorted(_source_ids(asset))
+        if sources[key]["binding"] != "current"
+    ]
+    issues.extend(
+        f"missing {row['role']}: {row['path']}"
+        for row in asset["existing"]
+        if not graph.confined(root, row["path"]).is_file()
+    )
+    issues.extend(
+        f"missing evidence: {row['path']}"
+        for row in asset["evidence"]
+        if not graph.confined(root, row["path"]).is_file()
+    )
+    if (
+        asset["status"] == "integrated"
+        and not graph.confined(root, asset["delivery"]["path"]).exists()
+    ):
+        issues.append("integrated destination is missing")
+    return issues
 
 
 def read(root, path="plar.txt", asset_id=None):
-    """Return queue summaries or one complete selected asset and its inputs."""
+    """Return a queue or a complete source-bound delegation context for one asset."""
     root = Path(root).resolve()
     document, digest = _load(graph.confined(root, path))
     validate(document, root)
     assets = {row["id"]: row for row in document["assets"]}
-    sources = {row["id"]: row for row in document["sources"]}
-    selected = [assets[asset_id]] if asset_id in assets else []
-    if asset_id is not None and not selected:
+    if asset_id is not None and asset_id not in assets:
         raise PixlError("plar_asset", asset_id)
-    if asset_id is None:
-        selected = list(assets.values())
-    source_ids = {row["source"] for asset in selected for row in asset["consumers"]}
-    source_ids.update(
-        source
-        for asset in selected
-        for row in asset["requirements"]
-        for source in row["sources"]
+    dependency_ids = (
+        sorted(
+            graph.closure(
+                {key: set(row["depends_on"]) for key, row in assets.items()},
+                assets[asset_id]["depends_on"],
+            )
+        )
+        if asset_id is not None
+        else []
     )
+    selected = [assets[asset_id]] if asset_id is not None else list(assets.values())
+    context_assets = selected + [assets[key] for key in dependency_ids]
+    source_ids = set().union(*(_source_ids(asset) for asset in context_assets))
     if asset_id is None:
-        source_ids = set(sources)
-    bindings = {
-        key: _source_status(root, row)
-        for key, row in sources.items()
-        if key in source_ids
+        source_ids = {row["id"] for row in document["sources"]}
+    sources = {
+        row["id"]: _source_binding(root, row)
+        for row in document["sources"]
+        if row["id"] in source_ids
     }
+    issues = {row["id"]: _issues(root, row, sources) for row in context_assets}
     result = {
         "hash": digest,
+        "project_root": str(root),
+        "path": path,
         "project": document["project"],
         "coverage": document["coverage"],
-        "sources": [
-            dict(row, binding=bindings[key])
-            for key, row in sources.items()
-            if key in source_ids
+        "sources": list(sources.values()),
+        "queue": [
+            {key: row[key] for key in ("id", "kind", "purpose", "status", "next")}
+            | {"issues": issues[row["id"]], "questions": row["questions"]}
+            for row in selected
         ],
     }
-    summaries = []
-    for asset in selected:
-        ids = {row["source"] for row in asset["consumers"]}
-        ids.update(source for row in asset["requirements"] for source in row["sources"])
-        issues = [
-            f"source {key}: {bindings[key]}"
-            for key in sorted(ids)
-            if bindings[key] != "current"
-        ]
-        issues.extend(
-            f"missing {row['role']}: {row['path']}"
-            for row in asset["existing"]
-            if not graph.confined(root, row["path"]).is_file()
-        )
-        issues.extend(
-            f"missing evidence: {row['path']}"
-            for row in asset["evidence"]
-            if not graph.confined(root, row["path"]).is_file()
-        )
-        if (
-            asset["status"] == "integrated"
-            and not graph.confined(root, asset["delivery"]["path"]).exists()
-        ):
-            issues.append("integrated destination is missing")
-        summaries.append(
-            {key: asset[key] for key in ("id", "kind", "purpose", "status", "next")}
-            | {"issues": issues, "questions": asset["questions"]}
-        )
-    result["queue"] = summaries
     if asset_id is not None:
         result["asset"] = assets[asset_id]
         result["dependencies"] = [
-            {
-                "id": dep,
-                "status": assets[dep]["status"],
-                "next": assets[dep]["next"],
-                "delivery": assets[dep]["delivery"],
-            }
-            for dep in sorted(
-                graph.closure(
-                    {key: set(row["depends_on"]) for key, row in assets.items()},
-                    assets[asset_id]["depends_on"],
-                )
-            )
+            dict(assets[key], issues=issues[key]) for key in dependency_ids
         ]
+        result["visual_references"] = [
+            {
+                **reference,
+                "asset_id": row["id"],
+                "path": sources[reference["source"]]["path"],
+                "absolute_path": sources[reference["source"]]["absolute_path"],
+                "sha256": sources[reference["source"]].get("sha256"),
+                "observed_sha256": sources[reference["source"]]["observed_sha256"],
+                "binding": sources[reference["source"]]["binding"],
+            }
+            for row in context_assets
+            for reference in row.get("references", [])
+        ]
+        # Requirements identity excludes queue progress and installation paths.
+        # Source drift and transitive dependency requirements still change it.
+        semantic = {
+            "project": document["project"],
+            "assets": [
+                {
+                    key: value
+                    for key, value in row.items()
+                    if key not in ("status", "next", "evidence", "production")
+                }
+                for row in sorted(context_assets, key=lambda row: row["id"])
+            ],
+            "sources": [
+                {
+                    key: value
+                    for key, value in sources[id_].items()
+                    if key != "absolute_path"
+                }
+                for id_ in sorted(sources)
+            ],
+        }
+        result["requirements_hash"] = hashlib.sha256(
+            json.dumps(
+                semantic, sort_keys=True, ensure_ascii=False, allow_nan=False
+            ).encode("utf-8")
+        ).hexdigest()
     return result
 
 
