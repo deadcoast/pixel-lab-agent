@@ -21,7 +21,7 @@ Read [the project review](docs/PROJECT-REVIEW.md) for the operational model, obs
 
 - Preserve source-defined meaning and project-specific aesthetics. Do not turn fixture values or examples into universal pixel-art rules.
 - The current supplied documents live in `training/original-docs/`. Inspect their actual bytes and locations. Older root-relative names, hashes, source ranges, and generated copies may describe earlier revisions.
-- `agent/PROFILE.md` is the shared profile source. `plugins/pixl/skills/pixl/` contains the common workflow source; `.agents/` and `.claude/` adapt discovery. `plugins/pixl/runtime/` and `plugins/pixl/resources/` are generated copies, not replacement source authorities.
+- `.agents/PROFILE.md` is the shared profile source. `plugins/pixl/skills/pixl/` contains the common workflow source; `.agents/` and `.claude/` adapt discovery. `plugins/pixl/runtime/` and `plugins/pixl/resources/` are generated copies, not replacement source authorities.
 - Read the affected format's specification and registry together before changing UDL behavior: `spec/PIXL-1.md` / `pixl/registry.json`, or `spec/PIXL-2.md` / `pixl/registry-v2.json`. Preserve existing version semantics; design explicit migrations for changes that affect saved state. A proposed operation in a design document is not existing `.px` syntax.
 - Review the affected workflow, dependencies, failure cases, and verification before implementation. Prefer a complete useful operation over unrelated framework expansion or cosmetic code cleanup.
 - Preserve failed evidence. Re-execute affected proofs after changing their sources; never edit old receipts to imply that a new version was tested.

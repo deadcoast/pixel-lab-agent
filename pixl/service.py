@@ -369,8 +369,23 @@ def call(name, args, root):
     if name == "pixl_jobs":
         return job_report(path("path"), root)
     if name == "pixl_commit":
-        return store.commit(
-            path("store"), load_document(path("candidate")), args["expect"], root=root
+        if ("candidate" in args) == ("document" in args):
+            raise PixlError(
+                "commit_input", "supply exactly one candidate path or document"
+            )
+        candidate = (
+            from_json(args["document"])
+            if "document" in args
+            else load_document(path("candidate"))
+        )
+        return store.commit(path("store"), candidate, args["expect"], root=root)
+    if name in ("pixl_plar_read", "pixl_plar_save"):
+        from . import plar
+
+        if name == "pixl_plar_read":
+            return plar.read(root, args.get("path", "plar.txt"), args.get("asset_id"))
+        return plar.save(
+            root, args["document"], args["expect"], args.get("path", "plar.txt")
         )
     if name == "pixl_catalog":
         return catalog.build(root, args.get("paths"))

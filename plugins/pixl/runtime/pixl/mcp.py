@@ -23,6 +23,16 @@ INT = {"type": "integer", "minimum": 1}
 OBJ = {"type": "object"}
 TOOLS = [
     (
+        "pixl_plar_read",
+        "Read project asset requirements, source drift and next actions; select asset_id for a focused production handoff.",
+        schema({"path": STR, "asset_id": STR}),
+    ),
+    (
+        "pixl_plar_save",
+        "Save a PLAR requirements document with expected file hash (new to create); retain previous bytes and bind new source paths. No provider call.",
+        schema({"path": STR, "document": OBJ, "expect": STR}, ["document", "expect"]),
+    ),
+    (
         "pixl_validate",
         "Validate PIXL state, record bindings and local file hashes.",
         schema({"path": STR}, ["path"]),
@@ -195,10 +205,13 @@ TOOLS = [
     ),
     (
         "pixl_commit",
-        "Publish a local candidate after expected-hash, revision and evidence validation.",
-        schema(
-            {"store": STR, "candidate": STR, "expect": STR},
-            ["store", "candidate", "expect"],
+        "Commit a candidate file or inline JSON document after expected-hash, revision and evidence validation.",
+        dict(
+            schema(
+                {"store": STR, "candidate": STR, "document": OBJ, "expect": STR},
+                ["store", "expect"],
+            ),
+            oneOf=[{"required": ["candidate"]}, {"required": ["document"]}],
         ),
     ),
     (
@@ -322,6 +335,7 @@ def dispatch(request, root):
                             "pixl_init",
                             "pixl_intake",
                             "pixl_commit",
+                            "pixl_plar_save",
                             "pixl_job_prepare",
                             "pixl_job_dispatch",
                             "pixl_job_observe",

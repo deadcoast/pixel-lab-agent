@@ -33,7 +33,6 @@ def build():
     for name in (
         "spec",
         "knowledge",
-        "agent",
         "examples",
         "docs/research",
         "methods",
@@ -44,6 +43,7 @@ def build():
             for path in folder.rglob("*"):
                 if path.is_file() and "__pycache__" not in path.parts:
                     add(path, Path("resources") / path.relative_to(ROOT))
+    add(ROOT / ".agents/PROFILE.md", Path("resources/agent/PROFILE.md"))
     for name in [INVENTORY_PATH, *(row["path"] for row in inventory["documents"])]:
         add(ROOT / name, Path("resources") / name)
         captured[(PLUGIN / "resources" / name).resolve()] = source_snapshots[name]

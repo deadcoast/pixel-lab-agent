@@ -122,10 +122,28 @@ def parser():
     q.add_argument("path")
     q.add_argument("--root", required=True)
     q = sub.add_parser("commit")
+    q.add_argument(
+        "--json",
+        action="store_true",
+        help="Read the candidate as JSON instead of PX wire text.",
+    )
     q.add_argument("store")
     q.add_argument("candidate")
     q.add_argument("--expect", required=True)
     q.add_argument("--root")
+    q = sub.add_parser(
+        "plar", help="Source-linked asset requirements and focused handoffs."
+    )
+    actions = q.add_subparsers(dest="plar_action", required=True)
+    for action in ("read", "save"):
+        action_parser = actions.add_parser(action)
+        action_parser.add_argument("--root", required=True)
+        action_parser.add_argument("--path", default="plar.txt")
+        if action == "read":
+            action_parser.add_argument("--asset", dest="asset_id")
+        else:
+            action_parser.add_argument("document", metavar="DOCUMENT_JSON")
+            action_parser.add_argument("--expect", required=True)
     q = sub.add_parser("catalog")
     q.add_argument("root")
     q.add_argument("--out")
@@ -279,8 +297,21 @@ def main(argv=None):
             output = service.job_report(a.path, a.root)
         elif cmd == "commit":
             output = store.commit(
-                a.store, service.load_document(a.candidate), a.expect, a.root
+                a.store,
+                service.from_json(service.read_json(a.candidate))
+                if a.json
+                else service.load_document(a.candidate),
+                a.expect,
+                a.root,
             )
+        elif cmd == "plar":
+            args = {"path": a.path}
+            if a.plar_action == "read":
+                if a.asset_id:
+                    args["asset_id"] = a.asset_id
+            else:
+                args.update(document=service.read_json(a.document), expect=a.expect)
+            output = service.call("pixl_plar_" + a.plar_action, args, a.root)
         elif cmd == "catalog":
             from .catalog import build
 

@@ -31,7 +31,6 @@ class BuildResources(build_py):
         for name in (
             "spec",
             "knowledge",
-            "agent",
             "examples",
             "docs/research",
             "methods",
@@ -45,6 +44,8 @@ class BuildResources(build_py):
                     dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns("__pycache__"),
                 )
+        (target / "agent").mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / ".agents/PROFILE.md", target / "agent/PROFILE.md")
         for name in [
             INVENTORY_PATH,
             *(row["path"] for row in inventory["documents"]),
