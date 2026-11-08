@@ -23,6 +23,16 @@ INT = {"type": "integer", "minimum": 1}
 OBJ = {"type": "object"}
 TOOLS = [
     (
+        "pixl_plar_handoff",
+        "Save an exact selected-production continuation with agent-authored details; returns immutable path/hash. Keep caller_actions and future_work in details; derived resume/next are preserved unchanged. No acceptance or provider action.",
+        schema({"asset_id": STR, "requirements_hash": STR, "expect": STR, "details": OBJ, "path": STR}, ["asset_id", "requirements_hash", "expect", "details"]),
+    ),
+    (
+        "pixl_request_review",
+        "Read exact candidate request/criteria with hash-bound file-local source excerpts and current production continuation. Reports invalid/unresolved locators; semantic comparison remains the caller's responsibility. Read only.",
+        schema({"packet": STR, "asset_id": STR, "path": STR}, ["packet"]),
+    ),
+    (
         "pixl_retain_library",
         "Retain exact library S-source bytes for a project before a kit update, or recover them from its original kit. Keeps state and receipts unchanged; no new proof or provider action.",
         schema(
@@ -393,6 +403,7 @@ def dispatch(request, root):
                             "pixl_commit",
                             "pixl_plar_save",
                             "pixl_plar_prepare",
+                            "pixl_plar_handoff",
                             "pixl_job_prepare",
                             "pixl_job_dispatch",
                             "pixl_job_observe",

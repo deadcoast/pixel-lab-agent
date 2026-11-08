@@ -1,0 +1,523 @@
+[
+  {
+    "line": 77,
+    "timestamp": "2026-11-08T05:57:22.268Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01YNucfSQU4tQ9LayjvRaocz",
+    "name": "Bash",
+    "public_tool_input": {
+      "command": "cd \"C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project\" && ls -la assets work/queue.ready/rev3 && echo \"--- plar queue.ready grep ---\" && grep -n \"queue.ready\\|ready-confirmed\\|ready.png\" plar.txt | head -60 && echo \"--- hashes ---\" && sha256sum STAGE.md OWNER.md plar.txt .pixl/assets/queue.ready/state.px src/queue.ts src/queue-view.ts BRIEF.md assets/* COLD-RESULT.json PARENT-RESULT.json verify-integration.mjs && node --version",
+      "description": "List assets, rev3 work, PLAR ready rows and hashes"
+    },
+    "tool_result": {
+      "result_line": 78,
+      "timestamp": "2026-11-08T05:57:22.601Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 227,
+    "timestamp": "2026-11-08T06:00:21.255Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01RB6PBgu7WsGyWhJkPVLTt5",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\rev3\\download\\controlled-create-0002.png"
+    },
+    "tool_result": {
+      "result_line": 228,
+      "timestamp": "2026-11-08T06:00:21.287Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 304,
+    "timestamp": "2026-11-08T06:00:54.974Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01T9XnkvxyFTU3uKDy6VGJEP",
+    "name": "mcp__pixl-local__pixl_job_import",
+    "public_tool_input": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "cb90e21b2a9146e7c830cd533c197baceb44598cb2bda4ab3254290f78cb6b8a",
+      "job_id": "r.028f320bf7292612.request",
+      "output_id": "r.028f320bf7292612.output.ready",
+      "candidate_id": "r.028f320bf7292612.candidate.ready",
+      "path": "work/queue.ready/rev3/download/controlled-create-0002.png",
+      "evidence": {
+        "connection": "pixellab-test",
+        "provider_simulated": true,
+        "remote_id": "controlled-create-0002",
+        "tool": "get_image",
+        "image_index": 0,
+        "provider_declared": {
+          "width": 16,
+          "height": 16,
+          "format": "png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "download_url": "http://127.0.0.1:4294/controlled-create-0002.png"
+        },
+        "downloaded": {
+          "path": "work/queue.ready/rev3/download/controlled-create-0002.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "bytes": 210,
+          "sha256_equals_provider_declared": true,
+          "downloaded_at": "2026-11-08T05:58:15.968093+00:00",
+          "ihdr": {
+            "width": 16,
+            "height": 16,
+            "bit_depth": 8,
+            "color_type": 6
+          },
+          "png_text_purpose": "Controlled retrieval fixture, not PixelLab-generated art"
+        },
+        "observation_evidence_file": {
+          "path": "work/queue.ready/rev3/provider-observation-succeeded.json",
+          "sha256": "913ef082448e712830003032b7f659d28654b8367c7123178882e52a698feb8f"
+        },
+        "note": "Evaluator fixture retrieved on the originating controlled connection for the retained job; not upstream PixelLab art. Import associates bytes only; no acceptance, measurement or nomination.",
+        "importer": "actor"
+      }
+    },
+    "tool_result": {
+      "result_line": 306,
+      "timestamp": "2026-11-08T06:00:55.272Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 310,
+    "timestamp": "2026-11-08T06:00:56.675Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01Tw1yueTrSpdjyphUri4dTf",
+    "name": "Bash",
+    "public_tool_input": {
+      "command": "cd \"C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project\" && \"C:/github/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"\nfrom PIL import Image, ImageOps\nsrc='work/queue.ready/rev3/download/controlled-create-0002.png'\nim=Image.open(src).convert('RGBA')\ndef comp(img,bg):\n    b=Image.new('RGBA',img.size,bg); b.alpha_composite(img); return b.convert('RGB')\npanel=(0x17,0x23,0x36,255)\nout='work/queue.ready/caller/'\nc1=comp(im,panel); c1.save(out+'caller-view-1x-172336.png')\nc3=c1.resize((48,48),Image.NEAREST); c3.save(out+'caller-view-3x-172336.png')\nc12=c1.resize((192,192),Image.NEAREST); c12.save(out+'caller-view-12x-172336.png')\ng1=ImageOps.grayscale(c1); g1.save(out+'caller-gray-1x-172336.png')\ng3=g1.resize((48,48),Image.NEAREST); g3.save(out+'caller-gray-3x-172336.png')\ng12=g1.resize((192,192),Image.NEAREST); g12.save(out+'caller-gray-12x-172336.png')\n# contact strip: 1x and 3x side by side on panel with padding, plus start.svg accent swatch\nstrip=Image.new('RGB',(16+8+48+8+16,64),(0x17,0x23,0x36))\nstrip.paste(c1,(0,24)); strip.paste(c3,(24,8)); \nsw=Image.new('RGB',(16,16),(0x70,0xb9,0xed)); strip.paste(sw,(80,24))\nstrip.resize((strip.width*4,strip.height*4),Image.NEAREST).save(out+'caller-contact-1x-3x-swatch-x4.png')\nprint('ok')\n\" && sha256sum work/queue.ready/caller/caller-*.png && echo \"--- pre-delivery consumer check (expected to fail: file absent) ---\" ; node verify-integration.mjs assets/ready-confirmed.png 2>&1 | head -20; echo \"exit=$?\"; ls assets",
+      "description": "Create caller-side derived views and run the consumer check before delivery"
+    },
+    "tool_result": {
+      "result_line": 311,
+      "timestamp": "2026-11-08T06:00:57.147Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 328,
+    "timestamp": "2026-11-08T06:01:03.166Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01DtsxsmsVjU9jBJ2i3MTmmc",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-view-3x-172336.png"
+    },
+    "tool_result": {
+      "result_line": 329,
+      "timestamp": "2026-11-08T06:01:03.201Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 330,
+    "timestamp": "2026-11-08T06:01:04.146Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01GPpuDeVJcsUEzKJznD1fW2",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-view-12x-172336.png"
+    },
+    "tool_result": {
+      "result_line": 331,
+      "timestamp": "2026-11-08T06:01:04.168Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 332,
+    "timestamp": "2026-11-08T06:01:05.055Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01V3DuyU5fcMYZDYBLjNUFi6",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-gray-3x-172336.png"
+    },
+    "tool_result": {
+      "result_line": 333,
+      "timestamp": "2026-11-08T06:01:05.079Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 334,
+    "timestamp": "2026-11-08T06:01:06.031Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01A2UpGASh9LFBpTHLwp3TMQ",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-gray-12x-172336.png"
+    },
+    "tool_result": {
+      "result_line": 335,
+      "timestamp": "2026-11-08T06:01:06.056Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 336,
+    "timestamp": "2026-11-08T06:01:07.006Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01VQeQoHntHGu3dzUjnvwSJC",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-contact-1x-3x-swatch-x4.png"
+    },
+    "tool_result": {
+      "result_line": 337,
+      "timestamp": "2026-11-08T06:01:07.027Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 338,
+    "timestamp": "2026-11-08T06:01:07.936Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_018aT1hC9r5nprxymRWEoowY",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-delivery-01\\project\\work\\queue.ready\\caller\\caller-view-1x-172336.png"
+    },
+    "tool_result": {
+      "result_line": 340,
+      "timestamp": "2026-11-08T06:01:07.961Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 363,
+    "timestamp": "2026-11-08T06:01:31.221Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01FhfpUNtsyeDnyLvfUzHWpy",
+    "name": "mcp__pixl-local__pixl_inspection_prepare",
+    "public_tool_input": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "7eed60da26984169329cac350a9daa498528a9ee51f2bfb00b3f43aa98e0cde8",
+      "candidate_id": "r.028f320bf7292612.candidate.ready",
+      "packet_id": "r.028f320bf7292612.inspect1",
+      "options": {
+        "references": [],
+        "scale": 3,
+        "backgrounds": [
+          "#172336",
+          "checkerboard"
+        ],
+        "max_side": 1024,
+        "contexts": []
+      }
+    },
+    "tool_result": {
+      "result_line": 365,
+      "timestamp": "2026-11-08T06:01:31.560Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 368,
+    "timestamp": "2026-11-08T06:01:40.418Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01EpQaQbmpSg1Mpx67RuaNwo",
+    "name": "mcp__pixl-local__pixl_inspection",
+    "public_tool_input": {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "packet_id": "r.028f320bf7292612.inspect1",
+      "view_ids": [
+        "r.028f320bf7292612.inspect1.view.0",
+        "r.028f320bf7292612.inspect1.view.1",
+        "r.028f320bf7292612.inspect1.view.2",
+        "r.028f320bf7292612.inspect1.view.3",
+        "r.028f320bf7292612.inspect1.view.4"
+      ]
+    },
+    "tool_result": {
+      "result_line": 370,
+      "timestamp": "2026-11-08T06:01:40.570Z",
+      "is_error": false,
+      "image_blocks": 5
+    }
+  },
+  {
+    "line": 395,
+    "timestamp": "2026-11-08T06:02:19.167Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_012qVnyFo7cN2mrAi2vFhDXc",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project/work/queue.ready/rev3/inspection/derived-desaturated-1x-on-172336.png"
+    },
+    "tool_result": {
+      "result_line": 397,
+      "timestamp": "2026-11-08T06:02:19.189Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 398,
+    "timestamp": "2026-11-08T06:02:20.132Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_018nGiEaPL4zqVw4ELVQu4PP",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project/work/queue.ready/rev3/inspection/derived-desaturated-3x-on-172336.png"
+    },
+    "tool_result": {
+      "result_line": 400,
+      "timestamp": "2026-11-08T06:02:20.152Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 401,
+    "timestamp": "2026-11-08T06:02:21.277Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01Vaeu1vKYtHFPknKMjbFZb5",
+    "name": "Read",
+    "public_tool_input": {
+      "file_path": "C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project/work/queue.ready/rev3/inspection/derived-structure-8x-on-172336.png"
+    },
+    "tool_result": {
+      "result_line": 403,
+      "timestamp": "2026-11-08T06:02:21.301Z",
+      "is_error": false,
+      "image_blocks": 1
+    }
+  },
+  {
+    "line": 413,
+    "timestamp": "2026-11-08T06:03:23.949Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01U8Y2HpMcVEyH68rGt8vj3H",
+    "name": "mcp__pixl-local__pixl_inspection_review",
+    "public_tool_input": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "10f6b9b62cc88ba245ccb5f3df81612342c3c939fd8170686260c80c0d37f7f8",
+      "packet_id": "r.028f320bf7292612.inspect1",
+      "review_id": "r.028f320bf7292612.review1",
+      "observation": {
+        "reviewer": "actor",
+        "observed_at": "2026-11-08T06:02:45.768533+00:00",
+        "observations": [
+          {
+            "view": "r.028f320bf7292612.inspect1.view.0",
+            "delivered_size": [
+              16,
+              16
+            ],
+            "note": "Native 1x transparent view delivered by pixl_inspection as an unmodified 16x16 PNG block (sha256 515a100d...). One light sky-blue check mark on transparent ground: a short left arm rising from the vertex to the left and a much longer right arm rising to the upper right. No plate, box, halo or fringe. Host did not report any resizing of the block."
+          },
+          {
+            "view": "r.028f320bf7292612.inspect1.view.1",
+            "delivered_size": [
+              16,
+              16
+            ],
+            "note": "Native 1x on #172336 (the consumer display.background). The blue mark separates cleanly from the navy panel; the check shape and the short-left/long-right asymmetry are legible at native size. No detail merges into the panel colour."
+          },
+          {
+            "view": "r.028f320bf7292612.inspect1.view.2",
+            "delivered_size": [
+              48,
+              48
+            ],
+            "note": "3x nearest on #172336 (the consumer display.scale/filter). Chunky diagonal strokes made of consistent 1-pixel-per-row stair clusters, pointed single-pixel tips at both arm ends, one single-pixel vertex at the bottom. Left arm spans 3 columns and rises 4 rows; right arm spans 7 columns and rises 8 rows. No stray pixels, blur or soft edges."
+          },
+          {
+            "view": "r.028f320bf7292612.inspect1.view.3",
+            "delivered_size": [
+              16,
+              16
+            ],
+            "note": "Native 1x on checkerboard. Confirms a transparent background: the checker shows through everywhere except the 29 mark pixels; no translucent matte or halo visible around the mark."
+          },
+          {
+            "view": "r.028f320bf7292612.inspect1.view.4",
+            "delivered_size": [
+              48,
+              48
+            ],
+            "note": "3x nearest on checkerboard. Same single-colour hard-edged check mark; edges are crisp against both checker tones, confirming binary alpha without fringe pixels."
+          }
+        ],
+        "verdicts": [
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.geometry",
+            "status": "pass",
+            "reason": "Measured: PNG IHDR 16x16, 8-bit RGBA, single frame (frame_count 1, n_frames 1), no horizontal strip or extra canvas (pixl_asset_check width/height 16 pass; pixel-dump size [16,16]).",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.transparent-background",
+            "status": "pass",
+            "reason": "Measured: alpha histogram {0: 227, 255: 29}; every pixel outside the single 29-pixel mark component has alpha 0; all four edge rows/columns fully transparent; no matte, box or fringe (fractional_alpha_pixels 0, opaque_components 1). Checkerboard views 3 and 4 confirm visually.",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.check-mark-asymmetrical-arms",
+            "status": "pass",
+            "reason": "Viewed in views 1 and 2 on #172336 (and 0, 3, 4): the image is a check mark whose left arm (3 columns wide, 4 rows tall, 7 pixels) is clearly shorter and shallower than the right arm (7 columns, 8 rows, 19 pixels); the mark is visibly not mirror-symmetric about its vertex at column 6 (exact mirror test false). The tick form conveys successful completion.",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.ready-meaning",
+            "status": "pass",
+            "reason": "Viewed alone (view 1 at 1x and view 2 at 3x on the panel colour), the single tick reads as done/success. It is not a spinner, dots or loop (activity), not an X or warning (failure), not paired bars (pause), and not the rightward play triangle of assets/start.svg (idle Start).",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.readability-1x-3x",
+            "status": "pass",
+            "reason": "View 1 (16x16 on #172336) and view 2 (48x48 nearest on #172336) both show a readable check silhouette; the short-left/long-right asymmetry remains visible at 1x and is unmistakable at 3x. Nothing is lost into the panel colour (mark luma 169 vs panel luma 34).",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.cool-blue-accent",
+            "status": "pass",
+            "reason": "The mark's only visible colour is sky blue rgba(112,185,237,255) = #70b9ed, the same cool blue as the assets/start.svg fill; viewed on the navy panel it reads as the existing UI accent. Judged as a visual relationship; the exact-hex equality is an observation, not the rule applied.",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.silhouette-without-color",
+            "status": "pass",
+            "reason": "In the derived desaturated views (work/queue.ready/rev3/inspection/derived-desaturated-1x-on-172336.png 16x16 and derived-desaturated-3x-on-172336.png 48x48, luma composite on #172336) the mark remains a distinct, identifiable check shape at both 1x and 3x; its meaning is carried by form. Packet views 0-4 were all observed; the grayscale derivatives are supplementary derived evidence, not candidates.",
+            "supersedes": null
+          },
+          {
+            "criterion": "r.028f320bf7292612.criterion.ready.sample-pixel-craft",
+            "status": "pass",
+            "reason": "Views 2 and 4 at 3x show deliberate construction: one flat colour, hard binary edges, consistent 1px-per-row diagonal stair clusters, pointed tips, one connected component, no stray pixels, blur, anti-aliasing or downscaled-illustration artifacts. The flat single-accent chunky-stroke treatment could plausibly be extended to Working, Retry and Paused; this does not approve the family style.",
+            "supersedes": null
+          }
+        ],
+        "next_action": "All eight saved criteria pass for this candidate: nominate r.028f320bf7292612.candidate.ready via pixl_task_complete for r.028f320bf7292612.task. Delivery to assets/ready-confirmed.png, node verify-integration.mjs and the PLAR row update remain the caller's job; family comparison and style adoption remain later-stage work.",
+        "limitations": [
+          "The candidate is an evaluator fixture retrieved from the controlled pixellab-test connection (provider_simulated true; PNG tEXt purpose 'Controlled retrieval fixture, not PixelLab-generated art'); it is not upstream PixelLab generation.",
+          "No runnable graphical renderer is supplied; renderer/engine behaviour of statusCell/compactStatus is not verified. engine_import_verified remains false.",
+          "Family comparisons against Working, Retry and Paused and the style-approval decision are deferred; passing sample-pixel-craft does not approve the family style.",
+          "Delivery to assets/ready-confirmed.png, the node consumer integration check and the PLAR row update are owned by the caller and were not performed here.",
+          "Delivered sizes are the pixl_inspection payload dimensions of the unmodified PNG blocks; the physical on-screen size of the host viewer is not known. No host resizing was reported.",
+          "The desaturated 1x/3x views and the 8x structural view are Pillow derivatives (ITU-R 601 luma, nearest) kept in work/queue.ready/rev3/inspection/ as evidence only; they are not candidates or deliverables.",
+          "The request asked for one lighter highlight tone; the fixture is a single flat colour. That was a revisable specialist sample choice, not a saved criterion, and did not affect any verdict.",
+          "Reviewer verdicts are declared judgments by the PIXL actor; retention does not attest host viewing beyond this session."
+        ]
+      }
+    },
+    "tool_result": {
+      "result_line": 415,
+      "timestamp": "2026-11-08T06:03:24.281Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 418,
+    "timestamp": "2026-11-08T06:03:31.371Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01RnnAPBRsU3jvr1mDLtcUcJ",
+    "name": "mcp__pixl-local__pixl_task_complete",
+    "public_tool_input": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "4ff91e3c4ceaaff1e3ded1c018ae5afcf6c8de7d1c3a1a0be36b372ec65d10e5",
+      "task_id": "r.028f320bf7292612.task",
+      "candidates": [
+        "r.028f320bf7292612.candidate.ready"
+      ]
+    },
+    "tool_result": {
+      "result_line": 420,
+      "timestamp": "2026-11-08T06:03:31.858Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 421,
+    "timestamp": "2026-11-08T06:03:32.023Z",
+    "parent_tool_use_id": "toolu_01JucJwdd4wqLtKccdZVjpae",
+    "id": "toolu_01FN7frB4mgxBmaDtL4vitz3",
+    "name": "mcp__pixl-local__pixl_inspection",
+    "public_tool_input": {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "packet_id": "r.028f320bf7292612.inspect1"
+    },
+    "tool_result": {
+      "result_line": 423,
+      "timestamp": "2026-11-08T06:03:32.191Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 459,
+    "timestamp": "2026-11-08T06:06:14.493Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01XugVkf3J3qjwgnLGAyS5Vv",
+    "name": "mcp__pixl-local__pixl_inspection",
+    "public_tool_input": {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "packet_id": "r.028f320bf7292612.inspect1"
+    },
+    "tool_result": {
+      "result_line": 460,
+      "timestamp": "2026-11-08T06:06:14.670Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 487,
+    "timestamp": "2026-11-08T06:06:36.344Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_01Jp4AW7EdgxuvyD8FVkhYCZ",
+    "name": "Bash",
+    "public_tool_input": {
+      "command": "cd \"C:/github/pixel-lab-agent/evidence/plar-handoff-delivery/20261108/native/claude-delivery-01/project\" && ls assets && cp .pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png assets/ready-confirmed.png && sha256sum assets/ready-confirmed.png && cmp assets/ready-confirmed.png work/queue.ready/rev3/download/controlled-create-0002.png && echo DELIVERED_IDENTICAL && echo \"delivered_at=$(date -u +%Y-%m-%dT%H:%M:%S.%6N+00:00)\" && echo \"--- node verify-integration ---\" && node verify-integration.mjs assets/ready-confirmed.png > work/queue.ready/caller/integration-check-output.json 2> work/queue.ready/caller/integration-check-stderr.txt; echo \"node_exit=$?\"; cat work/queue.ready/caller/integration-check-output.json; echo \"--- stderr ---\"; cat work/queue.ready/caller/integration-check-stderr.txt; echo \"--- hashes ---\"; sha256sum work/queue.ready/caller/integration-check-output.json verify-integration.mjs; ls -la assets",
+      "description": "Copy candidate to assets/ready-confirmed.png and run the node consumer check"
+    },
+    "tool_result": {
+      "result_line": 488,
+      "timestamp": "2026-11-08T06:06:36.986Z",
+      "is_error": false,
+      "image_blocks": 0
+    }
+  },
+  {
+    "line": 489,
+    "timestamp": "2026-11-08T06:06:37.665Z",
+    "parent_tool_use_id": null,
+    "id": "toolu_015jmgdBrSoTVa2Uk5jf5Gnd",
+    "name": "mcp__pixl-local__pixl_inspection",
+    "public_tool_input": {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "packet_id": "r.028f320bf7292612.inspect1",
+      "view_ids": [
+        "r.028f320bf7292612.inspect1.view.1",
+        "r.028f320bf7292612.inspect1.view.2"
+      ]
+    },
+    "tool_result": {
+      "result_line": 490,
+      "timestamp": "2026-11-08T06:06:37.846Z",
+      "is_error": false,
+      "image_blocks": 2
+    }
+  }
+]

@@ -1,0 +1,575 @@
+{
+  "hash": "e3a76273d917110dbef3e27b3cfc4adc976e66d0087a747a354fddd44e5146c2",
+  "project_root": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Refresh for the Ready update: re-read BRIEF.md (aebe0094...) line 9 and src/queue-view.ts (4d6ee92e...) in full. succeeded now maps to assets/ready-confirmed.png (moved destination, same Ready role and queue.ready ID); Start (assets/start.svg), Working (assets/working.png, 4 frames), Paused (assets/paused.png) and Retry (assets/error-retry.png) rows, display descriptor and earlier brief paragraphs are unchanged. The Ready check mark with asymmetrical arms is now an owner requirement (BRIEF.md line 9) replacing the former sample_motif proposal."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "No executable UI entry point, renderer, importer, package manifest or runtime capture was supplied. Descriptor inspection does not verify rendered behavior, frame cropping, alpha compositing or integration.",
+      "No approved style reference exists. Ready remains the proposed representative sample; Working, Retry and Paused depend on its review before family expansion.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "The supplied SVG was inspected as source only. No artwork was generated, rendered, or visually accepted during allocation or refresh."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\assets\\start.svg"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "next": "Revised request r.028f320bf7292612.request (task r.028f320bf7292612.task, output r.028f320bf7292612.output.ready, store .pixl/assets/queue.ready revision 9) is prepared and NOT dispatched; controlled pixellab-test, provider_simulated=true. Caller: independently compare work/queue.ready/rev3/request-review.json against BRIEF/OWNER/source, reread this row, then claim dispatch of that existing job and submit exactly its saved arguments as the one further authorized controlled request (OWNER.md line 7, still unused); record the actual response. first_request (controlled-create-0001) remains failed with no image; rev2 job r.f9e2fa53f4fcac2a.request was withdrawn locally before dispatch (work/queue.ready/rev2/withdrawal.json). Later: retrieve/import any real candidate, inspect at 1x/3x nearest on #172336 against the eight rev3 criteria, record the Ready style decision before expanding Working/Retry/Paused, then deliver to assets/ready-confirmed.png. Not integrated.",
+      "issues": [
+        "missing Current required Ready destination from the updated view is missing; no reusable Ready image was supplied. The previous assets/ready.png target is superseded by the updated view.: assets/ready-confirmed.png"
+      ],
+      "questions": [
+        "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+      ]
+    }
+  ],
+  "dependency_issues": {},
+  "asset": {
+    "id": "queue.ready",
+    "kind": "static_status_icon",
+    "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+    "status": "in_progress",
+    "consumers": [
+      {
+        "source": "queue-view",
+        "symbol": "statusVisuals.succeeded",
+        "usage": "Maps succeeded to the Ready image path assets/ready-confirmed.png (moved from assets/ready.png) with frames 1."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "statusCell",
+        "usage": "Full status consumer returns the shared succeeded descriptor."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "compactStatus",
+        "usage": "Compact status consumer returns the same succeeded descriptor; reuse one asset."
+      },
+      {
+        "source": "queue-state",
+        "symbol": "stateAfter",
+        "usage": "An ok result transitions to succeeded, which resolves to the Ready visual."
+      }
+    ],
+    "existing": [
+      {
+        "path": "assets/ready-confirmed.png",
+        "role": "Current required Ready destination from the updated view is missing; no reusable Ready image was supplied. The previous assets/ready.png target is superseded by the updated view."
+      }
+    ],
+    "requirements": [
+      {
+        "property": "cell_size_px",
+        "value": [
+          16,
+          16
+        ],
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF fixes logical status cells and display.cell agrees."
+      },
+      {
+        "property": "background",
+        "value": "transparent",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+      },
+      {
+        "property": "pixel_art_readability",
+        "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+      },
+      {
+        "property": "panel_background",
+        "value": "#172336",
+        "authority": "observation",
+        "sources": [
+          "queue-view"
+        ],
+        "reason": "display.background is the supplied dark-panel color; use it for future previews."
+      },
+      {
+        "property": "color_direction",
+        "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+      },
+      {
+        "property": "existing_accent",
+        "value": "#70b9ed",
+        "authority": "observation",
+        "sources": [
+          "start-vector"
+        ],
+        "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+      },
+      {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      {
+        "property": "image_geometry",
+        "value": {
+          "width": 16,
+          "height": 16,
+          "frames": 1
+        },
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "Ready is static and occupies one 16 by 16 logical cell."
+      },
+      {
+        "property": "state_meaning",
+        "value": "Communicate success/completion, distinct from Working activity and Retry failure.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-state",
+          "queue-view"
+        ],
+        "reason": "The succeeded state is Ready, and the working loop must not look like success."
+      },
+      {
+        "property": "family_sample",
+        "value": "Use Ready as the representative sample; review its silhouette, edges and color treatment before expanding Working and Retry.",
+        "authority": "proposal",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF requires a representative status sample first but does not choose which status."
+      },
+      {
+        "property": "completion_mark",
+        "value": "Ready must visibly use a check mark with asymmetrical arms to convey successful completion.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF.md line 9 (current update) makes the asymmetrical-arm check mark an owner requirement; it supersedes the earlier unsourced sample_motif proposal. Which arm is longer, stroke weight and other construction details remain open specialist choices."
+      },
+      {
+        "property": "paused_family_distinction",
+        "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+      }
+    ],
+    "delivery": {
+      "path": "assets/ready-confirmed.png",
+      "checks": [
+        "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+        "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+        "Confirm at 1x and 3x nearest on #172336 that the Ready image visibly uses a check mark with asymmetrical arms conveying successful completion.",
+        "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+        "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+        "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+        "Review and record the representative sample decision before expanding the other status assets; source-bind the approved visual reference for later handoff.",
+        "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry."
+      ]
+    },
+    "depends_on": [],
+    "questions": [
+      "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+    ],
+    "next": "Revised request r.028f320bf7292612.request (task r.028f320bf7292612.task, output r.028f320bf7292612.output.ready, store .pixl/assets/queue.ready revision 9) is prepared and NOT dispatched; controlled pixellab-test, provider_simulated=true. Caller: independently compare work/queue.ready/rev3/request-review.json against BRIEF/OWNER/source, reread this row, then claim dispatch of that existing job and submit exactly its saved arguments as the one further authorized controlled request (OWNER.md line 7, still unused); record the actual response. first_request (controlled-create-0001) remains failed with no image; rev2 job r.f9e2fa53f4fcac2a.request was withdrawn locally before dispatch (work/queue.ready/rev2/withdrawal.json). Later: retrieve/import any real candidate, inspect at 1x/3x nearest on #172336 against the eight rev3 criteria, record the Ready style decision before expanding Working/Retry/Paused, then deliver to assets/ready-confirmed.png. Not integrated.",
+    "evidence": [
+      {
+        "path": "work/queue.ready/request-review.json",
+        "note": "First Ready candidate request/criteria packet (sha256 c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a); prepared job first_request in .pixl/assets/queue.ready, not dispatched; provider_simulated=true; no image, review or integration."
+      },
+      {
+        "path": "work/queue.ready/caller-review.json",
+        "note": "Independent caller comparison of request-review.json (c9f17ecb...) against BRIEF/OWNER/source: consistent, no discrepancies; sha256 15b41fd2e544f838dcb12ca0211b9eddf80004711f104365995efa783216015a."
+      },
+      {
+        "path": "work/queue.ready/provider-response.json",
+        "note": "Actual pixellab-test create_image_pro_flash response and list_jobs: job_id controlled-create-0001, status queued, provider_simulated=true; no image. sha256 da8b5e2dfc905b6023042f4f7b14db6c6e9544db52582c6bacfe500042b553f9."
+      },
+      {
+        "path": "work/queue.ready/submission-comparison.json",
+        "note": "Caller comparison: submitted/echoed arguments equal reviewed provider-arguments.json (48a6a03c...). sha256 802280897255f352770ee556ecb71904448d53f0e3928ac524382b92545838cf."
+      },
+      {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "note": "PX2 store after observation: revision 3, hash 375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2; job first_request submitted; task 'task' open; output.ready has no candidate."
+      },
+      {
+        "path": "work/queue.ready/provider-observation-failed.json",
+        "note": "Caller list_jobs observation on the originating controlled pixellab-test connection: first_request (remote_id controlled-create-0001) failed with no image; provider_simulated=true. Recorded in .pixl/assets/queue.ready state revision 4 (hash b9c3a2f7...), next_action review_failure. sha256 9b6b983b63a60449a604f80fed2c7d009ec69949074025b4ad5d4641732d8619."
+      },
+      {
+        "path": ".pixl/assets/queue.ready/plans/f9e2fa53f4fcac2ae456ef011eb183a5a847a8c087ca6215350b14654511f41a.json",
+        "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance."
+      },
+      {
+        "path": "work/queue.ready/rev2/request-review.json",
+        "note": "Revised Ready request/criteria packet (sha256 fb45d0257536efa98a31d80d9ec3ce02e6d07e31021b39960995a85a27b63f8d), requirements_hash 244f4591...; prepared as job r.f9e2fa53f4fcac2a.request, not dispatched; independent caller comparison not yet performed; provider_simulated=true; no image, review or integration."
+      },
+      {
+        "path": "work/queue.ready/rev2/request-review-report.json",
+        "note": "pixl request-review locator report for the rev2 packet: all cited lines resolved, no diagnostics; not a consistency verdict. sha256 b47baf76eac81251dc4966a2c107845987636515818d812761c0e7949a579a16."
+      },
+      {
+        "path": ".pixl/assets/queue.ready/plans/028f320bf72926123274fb02b8c41dcc194c33a48b063df5581f50816b308378.json",
+        "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance."
+      },
+      {
+        "path": "work/queue.ready/rev2/caller-review.json",
+        "note": "Independent caller comparison of the rev2 packet: changes_requested (check-mark-asymmetrical-arms narrowed 'asymmetrical arms' to unequal length). sha256 07b9aca32fcfccd580acea80c93a215c59ac38365f61ad80cba565d3d2647699."
+      },
+      {
+        "path": "work/queue.ready/rev2/withdrawal.json",
+        "note": "Caller local withdrawal of undispatched rev2 job r.f9e2fa53f4fcac2a.request (no remote identity, not a provider observation). sha256 49bfcc66946b76e3559b43c2d3a452b35ef530faf168a9e4fc50d92a17b35904."
+      },
+      {
+        "path": "work/queue.ready/rev3/request-review.json",
+        "note": "Third-generation Ready request/criteria packet (sha256 38c9c63885d3d409a64f467c540ca0f426584bdfb92a5e2d155919d018c44e55), requirements_hash 244f4591...; corrects only check-mark-asymmetrical-arms; provider arguments byte-identical to rev2; prepared as job r.028f320bf7292612.request, not dispatched; independent caller comparison not yet performed; provider_simulated=true; no image, review or integration."
+      },
+      {
+        "path": "work/queue.ready/rev3/request-review-report.json",
+        "note": "pixl request-review locator report for the rev3 packet: all cited lines resolved, no diagnostics; not a consistency verdict. sha256 5b4d9a125d5c46c0d52ae57a440646c3eedecfcf5c0a8f9d2006b996a7d2dd89."
+      }
+    ],
+    "production": {
+      "store": ".pixl/assets/queue.ready",
+      "task": "r.028f320bf7292612.task",
+      "output": "r.028f320bf7292612.output.ready"
+    }
+  },
+  "dependencies": [],
+  "visual_references": [],
+  "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+  "production": {
+    "store": ".pixl/assets/queue.ready",
+    "link_status": "linked",
+    "status": "available",
+    "state": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\.pixl\\assets\\queue.ready\\state.px",
+    "hash": "4152fa994ab30bb1677cd19653bc74d152bae83e9667cfe887e9b255fd90e1ee",
+    "revision": 9,
+    "task": "r.028f320bf7292612.task",
+    "task_state": "open",
+    "outputs": [
+      {
+        "id": "r.028f320bf7292612.output.ready",
+        "name": "Ready status icon sample (revised)",
+        "candidate": null,
+        "requirements": [
+          {
+            "id": "r.028f320bf7292612.criterion.ready.geometry",
+            "name": "geometry",
+            "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.transparent-background",
+            "name": "transparent-background",
+            "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.check-mark-asymmetrical-arms",
+            "name": "check-mark-asymmetrical-arms",
+            "check": "The image visibly uses a check mark with asymmetrical arms: the mark is not mirror-symmetric about its vertex. Asymmetry may come, for example, from clearly unequal arm lengths or from clearly different arm angles/directions; unequal length is one example, not the required condition. The mark conveys successful completion. Either arm may be the longer one, and stroke weight, colour treatment and construction are not restricted by this criterion.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.ready-meaning",
+            "name": "ready-meaning",
+            "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.readability-1x-3x",
+            "name": "readability-1x-3x",
+            "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail (including the asymmetry of the check-mark arms) lost into the panel colour.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.cool-blue-accent",
+            "name": "cool-blue-accent",
+            "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.silhouette-without-color",
+            "name": "silhouette-without-color",
+            "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.028f320bf7292612.criterion.ready.sample-pixel-craft",
+            "name": "sample-pixel-craft",
+            "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          }
+        ],
+        "candidates": []
+      }
+    ],
+    "selection_bindings": [
+      {
+        "input": "r.028f320bf7292612.selection",
+        "snapshot": ".pixl/assets/queue.ready/plans/028f320bf72926123274fb02b8c41dcc194c33a48b063df5581f50816b308378.json",
+        "asset_id": "queue.ready",
+        "binding": "pixl.plar.selection/1",
+        "plar_path": "plar.txt",
+        "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+        "current_requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+        "selected_for_asset": true,
+        "linked_task": "r.028f320bf7292612.task",
+        "linked_store": ".pixl/assets/queue.ready",
+        "status": "current"
+      }
+    ],
+    "selection_current": true,
+    "jobs": [
+      {
+        "id": "first_request",
+        "state": "failed",
+        "remote_id": "controlled-create-0001",
+        "next_action": "review_failure",
+        "durable": true,
+        "task": "task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T03:47:58.109307+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this session, cross-checked against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      },
+      {
+        "id": "r.028f320bf7292612.request",
+        "state": "prepared",
+        "remote_id": null,
+        "next_action": "dispatch",
+        "durable": true,
+        "task": "r.028f320bf7292612.task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T05:45:51.552848+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash visible in this specialist session, cross-checked field-for-field against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      },
+      {
+        "id": "r.f9e2fa53f4fcac2a.request",
+        "state": "failed",
+        "remote_id": null,
+        "next_action": "review_failure",
+        "durable": true,
+        "task": "r.f9e2fa53f4fcac2a.task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T05:45:51.552848+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash visible in this specialist session, cross-checked field-for-field against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      }
+    ],
+    "pending_jobs": [
+      "r.028f320bf7292612.request"
+    ],
+    "next_action": "dispatch",
+    "continuation": {
+      "store": ".pixl/assets/queue.ready",
+      "state_hash": "4152fa994ab30bb1677cd19653bc74d152bae83e9667cfe887e9b255fd90e1ee",
+      "asset_id": "queue.ready",
+      "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+      "task": "r.028f320bf7292612.task",
+      "action": "dispatch",
+      "jobs": [
+        {
+          "id": "r.028f320bf7292612.request",
+          "task": "r.028f320bf7292612.task",
+          "state": "prepared",
+          "provider": "pixellab-test",
+          "remote_id": null,
+          "next_action": "dispatch"
+        }
+      ],
+      "before_another_request": [
+        {
+          "job": "r.028f320bf7292612.request",
+          "action": "dispatch",
+          "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset."
+        }
+      ],
+      "after_observation": {
+        "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+        "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+        "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+      },
+      "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+      "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+    },
+    "link_action": null,
+    "new_request_allowed": false,
+    "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance."
+  }
+}

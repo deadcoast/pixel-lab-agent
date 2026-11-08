@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "observer": "calling agent",
+  "connection": "pixellab-test (controlled retrieval fixture, no upstream service)",
+  "provider_simulated": true,
+  "job": "r.028f320bf7292612.request",
+  "remote_id": "controlled-create-0002",
+  "assignment": {"path": "STAGE.md", "sha256": "27645d41c854b992d502817066b48705a0026d899a78c8e80d821572c1bf75b5"},
+  "retrieval_schema": {"path": "retrieval-provider-schemas.json", "note": "get_image advertised with job_id and optional index; this file lists the controlled retrieval surface, not a live upstream tools/list."},
+  "calls": [
+    {
+      "sequence": 1,
+      "tool": "mcp__pixellab-test__list_jobs",
+      "arguments": {"include_recent": true},
+      "observed_status_for_remote_id": "queued",
+      "response": {
+        "jobs": [
+          {"job_id": "controlled-create-0001", "status": "failed", "tool": "create_image_pro_flash", "provider_simulated": true, "reason": "Controlled continuation fixture: the original queued attempt has ended without an image."},
+          {"job_id": "controlled-create-0002", "status": "queued", "tool": "create_image_pro_flash", "provider_simulated": true}
+        ],
+        "provider_simulated": true
+      },
+      "argument_echo": "Both jobs echoed description/width/height/no_background equal to their retained reviewed arguments (first: work/queue.ready/provider-arguments.json; revised: work/queue.ready/rev3/provider-arguments.json); not re-transcribed here.",
+      "interpretation": "list_jobs still labels controlled-create-0002 queued; it was not treated as a terminal state. The connection's advertised get_image was then used for the same remote_id."
+    },
+    {
+      "sequence": 2,
+      "tool": "mcp__pixellab-test__get_image",
+      "arguments": {"job_id": "controlled-create-0002"},
+      "response": {
+        "job_id": "controlled-create-0002",
+        "status": "completed",
+        "provider_simulated": true,
+        "images": [
+          {"index": 0, "width": 16, "height": 16, "format": "png", "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "download_url": "http://127.0.0.1:4294/controlled-create-0002.png"}
+        ]
+      },
+      "inline_image": "The tool result also carried one inline PNG image block (a small blue check mark); its bytes were not saved from the inline block. The retained file is the loopback download below.",
+      "interpretation": "Terminal success with one image for this remote_id on its originating connection. 'completed' is the fixture's success label; it is recorded as the PIXL event 'succeeded'."
+    }
+  ],
+  "download": {
+    "mechanism": "curl GET of the returned download_url from the host shell",
+    "url": "http://127.0.0.1:4294/controlled-create-0002.png",
+    "path": "work/queue.ready/rev3/download/controlled-create-0002.png",
+    "headers_path": "work/queue.ready/rev3/download/response-headers.txt",
+    "http_status": 200,
+    "content_type": "image/png",
+    "content_length": 210,
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "sha256_equals_provider_declared": true,
+    "downloaded_at": "2026-11-08T05:58:15.968093+00:00",
+    "ihdr": {"width": 16, "height": 16, "bit_depth": 8, "color_type": 6, "interlace": 0},
+    "chunks": ["IHDR", "tEXt", "IDAT", "IEND"],
+    "text_chunks": [{"key": "purpose", "text": "Controlled retrieval fixture, not PixelLab-generated art"}]
+  },
+  "observed_at": "2026-11-08T05:58:15.968093+00:00",
+  "provenance": "Evaluator fixture image retrieved from the controlled pixellab-test connection for the retained job controlled-create-0002. Not upstream PixelLab generation. No new request was created; the ID must not be retrieved from or reused on a real PixelLab service.",
+  "not_claimed": "Provider success is not mechanical, visual or renderer acceptance. The file is unaccepted until imported as a candidate and reviewed against the eight saved rev3 criteria."
+}

@@ -1,0 +1,304 @@
+{
+  "version": 1,
+  "role": "calling agent",
+  "status": "delivered",
+  "status_scope": "Assigned revised-request stage complete; accepted controlled request retained. Asset remains unaccepted, no image or renderer supplied; current production task remains open.",
+  "provider_simulated": true,
+  "asset_id": "queue.ready",
+  "delegation": {
+    "specialist": "/root/pixl",
+    "skills": [
+      ".agents/skills/pixl-kit/skills/plar/SKILL.md",
+      ".agents/skills/pixl-kit/skills/pixl/SKILL.md"
+    ],
+    "scope": "Source refresh, old-provider reconciliation and exact revised contract; caller independently reviewed, prepared and dispatched."
+  },
+  "original": {
+    "result": {
+      "path": "PARENT-RESULT.json",
+      "sha256": "902c613aa726aa23f865ae72b78a841775779ccbbc7d0fea34209ed1e0bee6c9"
+    },
+    "plar": {
+      "path": "plar.txt",
+      "hash": "0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33",
+      "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+      "history": "Retained PLAR history; original result and work/queue.ready artifacts preserved."
+    },
+    "state": {
+      "store": ".pixl/assets/queue.ready",
+      "path": ".pixl/assets/queue.ready/state.px",
+      "hash_at_resume": "375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2",
+      "task": "task",
+      "output": "output.ready"
+    },
+    "job": {
+      "id": "first_request",
+      "provider": "pixellab-test",
+      "provider_simulated": true,
+      "remote_id": "controlled-create-0001",
+      "state_at_resume": "submitted",
+      "observed_current_provider_status": "failed",
+      "reason": "Controlled continuation fixture: the original queued attempt has ended without an image.",
+      "reconciled_state_hash": "de96861f2c009997f765a776aa3c9f05d642ec8df1fb315e04f9e07df255dee2"
+    },
+    "contract": "work/queue.ready/request-review.json"
+  },
+  "current": {
+    "plar": {
+      "path": "plar.txt",
+      "hash": "4ef23905c7990b66fefb0d4d809b3b62f78c33d7b1cfe7986c040fa4b01a8c28",
+      "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+      "refresh_hash": "654aa918c1195cbe6f3fe8de85e26d7bc4612287113b4cf4034fa2c28538d177",
+      "prepared_link_hash": "ee99a2246f6414d2cf9a474ea46ef3cc82939b7033e0d92a181ba179ef8b844e"
+    },
+    "state": {
+      "store": ".pixl/assets/queue.ready",
+      "path": ".pixl/assets/queue.ready/state.px",
+      "hash": "8b498de532873b6f0050baeebec4effa55b03b21c99a6f79d15ad17a6e118121",
+      "revision": 8,
+      "task": "r.22e90a2a03fe453a.task",
+      "task_state": "open",
+      "output": "r.22e90a2a03fe453a.output.ready",
+      "candidate": null
+    },
+    "job": {
+      "id": "r.22e90a2a03fe453a.request",
+      "provider": "pixellab-test",
+      "provider_simulated": true,
+      "remote_id": "controlled-create-0002",
+      "provider_status": "queued",
+      "local_state": "submitted",
+      "intent_sha256": "cc1cb9089b611a0fc84b540e9caa07048638ea534f824a4621b80c380f3d9144",
+      "request_sha256": "64e34d9c4e28959547852457480650c7e3ef2b482a039a095a3122869dab5099"
+    },
+    "destination": "assets/ready-confirmed.png"
+  },
+  "request_review": {
+    "packet": "work/queue.ready-revision/request-review.json",
+    "packet_sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2",
+    "caller_review": "work/queue.ready-revision/caller-review.json",
+    "source_report": "work/queue.ready-revision/caller-source-report.json",
+    "verdict": "consistent",
+    "independent_review": {
+      "version": 1,
+      "reviewer_role": "calling agent, independent of delegated PIXL specialist",
+      "provider_simulated": true,
+      "packet": {
+        "path": "work/queue.ready-revision/request-review.json",
+        "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+      },
+      "verdict": "consistent",
+      "comparisons": [
+        {
+          "id": "geometry",
+          "source": "BRIEF.md:3,9: 'Status cells are 16 by 16 logical pixels'; 'Ready and Retry are static images'. src/queue-view.ts:6,9 frames:1, cell:[16,16].",
+          "delta": "Exactly 16x16, one frame preserves both requirements; no horizontal strip or extra canvas follows from these.",
+          "alternative_disposition": "An animated or larger canvas is not source conforming. No added restriction.",
+          "finding": "consistent"
+        },
+        {
+          "id": "transparent-background",
+          "source": "BRIEF.md:3,9: 'Use transparent backgrounds'.",
+          "delta": "No opaque matte outside subject operationalizes transparency; partial alpha explicitly permitted.",
+          "alternative_disposition": "A transparent candidate with partially transparent edge pixels remains allowed; no binary alpha rule.",
+          "finding": "consistent"
+        },
+        {
+          "id": "ready-meaning",
+          "source": "BRIEF.md:9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion.' src/queue.ts:3 ok:succeeded; src/queue-view.ts:3,6 idle Start, succeeded Ready.",
+          "delta": "Literal required check and asymmetry retained, with qualitative success outcome. No arm ratio, stroke width, backing-shape or highlight restriction.",
+          "alternative_disposition": "A thin asymmetrical check, a check with different arm ratios, or a check on a transparent-background decorative shape may pass if it communicates completion. A symmetric check is excluded by the owner, not a specialist invention.",
+          "finding": "consistent"
+        },
+        {
+          "id": "readability-1x-3x",
+          "source": "BRIEF.md:3: 'readable silhouettes'; 'Inspect at 1x and 3x nearest display scale on the actual dark panel'. src/queue-view.ts:9 background:'#172336', scale:3, filter:'nearest'.",
+          "delta": "Uses actual display conditions and asks essential detail to remain readable, without pixel geometry thresholds.",
+          "alternative_disposition": "Different readable silhouettes remain allowed. No unsupported quantitative proxy.",
+          "finding": "consistent"
+        },
+        {
+          "id": "cool-blue-accent",
+          "source": "BRIEF.md:3: 'the existing UI’s cool blue accent; a fixed palette is not required' (apostrophe normalized); assets/start.svg:1 fill='#70b9ed'.",
+          "delta": "Dominant cool-blue visual relationship is the interpretation of using existing accent. No exact hex or color-count rule; Start is a color cue, not approved pixel-art style.",
+          "alternative_disposition": "Other cool blues and multiple tones remain admissible. A mostly unrelated-colored icon with a token blue pixel may fail this reasonable interpretation.",
+          "finding": "consistent"
+        },
+        {
+          "id": "sample-pixel-craft",
+          "source": "BRIEF.md:3 'Create coherent pixel-art status assets'; :5 'propose a representative status sample before expanding the family'. Expert basis expressly retained, authority proposal.",
+          "delta": "Clean clusters/edges, no noisy stray pixels/blur/downscaled artifacts and plausible extensibility add expert sample quality requirements.",
+          "alternative_disposition": "An intentionally noisy or blurred but otherwise brief-conforming check could fail. Adopt this narrower expert quality criterion only for this representative candidate; it does not create universal palette, edge-alpha, or construction rules and does not approve style.",
+          "finding": "consistent scoped expert choice"
+        }
+      ],
+      "request_comparison": {
+        "description": "Contains required asymmetrical-arm check and successful completion, 16x16 static, transparency, cool-blue relationship, 1x/3x nearest on #172336. No fixed palette/binary-alpha restriction; no approved style claimed.",
+        "controls": "width=16,height=16,no_background=true. Only description,width,height,no_background supplied; all supported by actual tool declaration and provider-schemas.json. No unadvertised fields or fabricated reference input.",
+        "reference": "Start SVG inspected as text for color/control identity; not a style-approved image reference. Connection supports no reference field; prompt uses observed color cue.",
+        "destination": "plan scope/intent and deferred delivery target assets/ready-confirmed.png match src/queue-view.ts:6. Both consumers remain mapped through statusVisuals.",
+        "scope": "OWNER.md:2-12 authorizes one further controlled request, requires original history/status preservation and ends at accepted request. No image, style approval, integration or live service identity claimed."
+      },
+      "deferred_obligations": [
+        "Working four-frame 100ms activity distinct from success",
+        "Retry and Paused non-color distinctions",
+        "Record sample style decision and bind approved reference before expansion",
+        "Deliver accepted Ready at assets/ready-confirmed.png",
+        "Exercise statusCell and compactStatus in actual renderer"
+      ],
+      "removed_prior_rule": "Standalone grayscale Ready rejection is not owner-required and has been removed; family non-color obligations remain deferred with prerequisites.",
+      "checks": {
+        "all_packet_source_hashes": "verified by request-review report and independent source reads",
+        "locators": "resolved with no diagnostics; semantic comparisons above are caller judgments",
+        "all_rejection_rules_covered": true,
+        "art_acceptance": "unperformed; no image"
+      },
+      "next": "Reread focused PLAR, explicit revise preparation in original store, compare saved dispatch arguments to reviewed arguments, submit once on pixellab-test and record response."
+    }
+  },
+  "submission": {
+    "connection": "pixellab-test",
+    "tool": "create_image_pro_flash",
+    "stage_submissions": 1,
+    "actual_submitted_arguments": {
+      "description": "One static 16x16 pixel-art UI Ready status icon conveying successful completion: visibly use a check mark with asymmetrical arms. Transparent background. Readable silhouette at native 1x and 3x nearest-neighbor scale on dark navy #172336. Use the existing UI cool blue accent direction; #70b9ed is a color cue, not an exact required palette. Deliberate clean pixel clusters and edges. No fixed palette or binary-alpha restriction. Proposed representative sample before expanding the Working, Retry and Paused family; no approved style reference exists yet.",
+      "height": 16,
+      "no_background": true,
+      "width": 16
+    },
+    "response": {
+      "job_id": "controlled-create-0002",
+      "status": "queued",
+      "arguments": {
+        "description": "One static 16x16 pixel-art UI Ready status icon conveying successful completion: visibly use a check mark with asymmetrical arms. Transparent background. Readable silhouette at native 1x and 3x nearest-neighbor scale on dark navy #172336. Use the existing UI cool blue accent direction; #70b9ed is a color cue, not an exact required palette. Deliberate clean pixel clusters and edges. No fixed palette or binary-alpha restriction. Proposed representative sample before expanding the Working, Retry and Paused family; no approved style reference exists yet.",
+        "height": 16,
+        "no_background": true,
+        "width": 16
+      },
+      "tool": "create_image_pro_flash",
+      "provider_simulated": true
+    },
+    "comparison": {
+      "version": 1,
+      "reviewed_packet_sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2",
+      "provider_simulated": true,
+      "connection": "pixellab-test",
+      "tool": "create_image_pro_flash",
+      "remote_id": "controlled-create-0002",
+      "submitted_arguments": {
+        "description": "One static 16x16 pixel-art UI Ready status icon conveying successful completion: visibly use a check mark with asymmetrical arms. Transparent background. Readable silhouette at native 1x and 3x nearest-neighbor scale on dark navy #172336. Use the existing UI cool blue accent direction; #70b9ed is a color cue, not an exact required palette. Deliberate clean pixel clusters and edges. No fixed palette or binary-alpha restriction. Proposed representative sample before expanding the Working, Retry and Paused family; no approved style reference exists yet.",
+        "height": 16,
+        "no_background": true,
+        "width": 16
+      },
+      "provider_echo_arguments": {
+        "description": "One static 16x16 pixel-art UI Ready status icon conveying successful completion: visibly use a check mark with asymmetrical arms. Transparent background. Readable silhouette at native 1x and 3x nearest-neighbor scale on dark navy #172336. Use the existing UI cool blue accent direction; #70b9ed is a color cue, not an exact required palette. Deliberate clean pixel clusters and edges. No fixed palette or binary-alpha restriction. Proposed representative sample before expanding the Working, Retry and Paused family; no approved style reference exists yet.",
+        "height": 16,
+        "no_background": true,
+        "width": 16
+      },
+      "submitted_equals_reviewed": true,
+      "echo_equals_submitted": true
+    },
+    "dispatch_hash": "d624897e02feba56a3e70c59a84da8bf3d28b3a0e37f370b17bed697fc381bdc",
+    "observed_hash": "8b498de532873b6f0050baeebec4effa55b03b21c99a6f79d15ad17a6e118121"
+  },
+  "verification": {
+    "local_state_validation": true,
+    "files_verified": true,
+    "workflow": "Current task open, no candidate; six revised criteria unperformed. Original task/history retained.",
+    "criteria_count": 6,
+    "selection_current": true,
+    "source_drift": [],
+    "start_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+    "levels_exercised": [
+      "Packaged workflow and schema validation",
+      "Recorded controlled-provider request/recovery behavior",
+      "Independent semantic source/request/criterion comparison"
+    ],
+    "outcomes_unperformed": [
+      "image generation/retrieval",
+      "mechanical artifact measurement",
+      "visual review/style approval",
+      "target renderer integration/art acceptance"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "work/queue.ready-revision/caller-review.json",
+      "sha256": "e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255"
+    },
+    {
+      "path": "work/queue.ready-revision/caller-source-report.json",
+      "sha256": "026c375b110b62b4b222d0fafa2452ecb2f80f2c7ef798e69ba2a4f8a84092cf"
+    },
+    {
+      "path": "work/queue.ready-revision/candidate-plan.json",
+      "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"
+    },
+    {
+      "path": "work/queue.ready-revision/connection.json",
+      "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"
+    },
+    {
+      "path": "work/queue.ready-revision/provider-arguments.json",
+      "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3"
+    },
+    {
+      "path": "work/queue.ready-revision/provider-response.json",
+      "sha256": "ed8b4a969011dfa969e850f9db7175cb3558b5d12482fe0a376e1a4adf2ed4d1"
+    },
+    {
+      "path": "work/queue.ready-revision/refreshed-plar.json",
+      "sha256": "1e29fdb2dde0056f34669ef5d379ea1e0d13a1e3847d741d36e266a557251912"
+    },
+    {
+      "path": "work/queue.ready-revision/request-review.json",
+      "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+    },
+    {
+      "path": "work/queue.ready-revision/submission-comparison.json",
+      "sha256": "8957ed6df6e9adde809b09c29db7959d34762d5e823e9ccfa77ca0c37e689cc6"
+    }
+  ],
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state_hash": "8b498de532873b6f0050baeebec4effa55b03b21c99a6f79d15ad17a6e118121",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+    "task": "r.22e90a2a03fe453a.task",
+    "action": "observe",
+    "jobs": [
+      {
+        "id": "r.22e90a2a03fe453a.request",
+        "task": "r.22e90a2a03fe453a.task",
+        "state": "submitted",
+        "provider": "pixellab-test",
+        "remote_id": "controlled-create-0002",
+        "next_action": "observe"
+      }
+    ],
+    "before_another_request": [
+      {
+        "job": "r.22e90a2a03fe453a.request",
+        "action": "observe",
+        "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset."
+      }
+    ],
+    "after_observation": {
+      "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+      "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+      "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+    },
+    "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+    "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+  },
+  "next": "observe",
+  "remaining_work": [
+    "Observe/reconcile controlled-create-0002 on originating pixellab-test connection before another request; keep provider_simulated=true. No further submission is authorized in this stage.",
+    "This request-only connection has no upstream service and supplies no image. Retain limitation; never reuse simulated IDs on another service. Any future image production needs its own authorized provider-bound request after pending resolution.",
+    "When actual image bytes exist, retrieve/import against the appropriate output plan, inspect all six criteria at 1x/3x nearest on #172336, and record explicit verdicts before accepting art or completing the task.",
+    "Record sample style decision and source-bind approved visual reference before expanding Working/Retry/Paused; assess family activity/success and non-color distinctions, including Working four-frame/100ms behavior.",
+    "Deliver accepted Ready at assets/ready-confirmed.png and test statusCell/compactStatus with a supplied renderer."
+  ]
+}

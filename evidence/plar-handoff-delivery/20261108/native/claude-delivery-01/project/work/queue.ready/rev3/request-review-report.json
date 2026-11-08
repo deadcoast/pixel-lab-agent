@@ -1,0 +1,1060 @@
+{
+  "version": 1,
+  "packet": {
+    "path": "work/queue.ready/rev3/request-review.json",
+    "sha256": "38c9c63885d3d409a64f467c540ca0f426584bdfb92a5e2d155919d018c44e55"
+  },
+  "request": {
+    "path": "work/queue.ready/rev3/provider-arguments.json",
+    "sha256": "89a91025e93c434765d32a2dce53eebc14bce5393f142c4ee000e63e89c2d5fa",
+    "tool": "create_image_pro_flash",
+    "arguments": {
+      "description": "16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered check mark with clearly asymmetrical arms: a short left arm meeting a much longer right arm that rises toward the upper right. Chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x and at 3x nearest-neighbor scale on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.",
+      "width": 16,
+      "height": 16,
+      "no_background": true
+    }
+  },
+  "criteria": {
+    "path": "work/queue.ready/rev3/candidate-plan.json",
+    "sha256": "4167b29babdd8a7ab4ccec974ad55ebe89dfe8e731f71a8f71f4d6f21041f677",
+    "scope": "Revised representative Ready status sample (queue.ready, third generation) under the refreshed contract: owner-required check mark with asymmetrical arms; later consumer destination assets/ready-confirmed.png. Only this candidate's own mechanical, meaning, check-mark, readability and accent-relationship checks are required at this stage, plus two scoped specialist sample criteria. Family distinction (Working/Retry/Paused vs Ready), the style-approval decision, placement at assets/ready-confirmed.png and renderer integration of statusCell/compactStatus are deferred later-stage obligations recorded with stage and prerequisites in rev3/request-review.json and PLAR, not rejection rules for this sample.",
+    "comparisons": [
+      {
+        "output": "ready",
+        "id": "geometry",
+        "domain": "mechanical",
+        "mode": "local",
+        "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+        "basis": "Owner brief: 16x16 logical status cells, Ready is static, and the current update keeps the 16x16 canvas and static behavior. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+        "scope": "This Ready candidate file.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "Status cells are 16 by 16 logical pixels; Ready and Retry are static images",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "Current update: keep the existing 16x16 canvas, static behavior",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          {
+            "path": "src/queue-view.ts",
+            "locator": "statusVisuals.succeeded frames 1",
+            "lines": [
+              6,
+              6
+            ]
+          },
+          {
+            "path": "src/queue-view.ts",
+            "locator": "display.cell [16, 16]",
+            "lines": [
+              9,
+              9
+            ]
+          }
+        ],
+        "source_evidence": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "transparent-background",
+        "domain": "mechanical",
+        "mode": "local",
+        "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+        "basis": "Owner brief requires transparent backgrounds and the current update keeps them; it does not restrict alpha to binary values.",
+        "scope": "This Ready candidate file.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "Use transparent backgrounds",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "Current update: keep ... transparent background",
+            "lines": [
+              9,
+              9
+            ]
+          }
+        ],
+        "source_evidence": [
+          4,
+          5
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "check-mark-asymmetrical-arms",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "The image visibly uses a check mark with asymmetrical arms: the mark is not mirror-symmetric about its vertex. Asymmetry may come, for example, from clearly unequal arm lengths or from clearly different arm angles/directions; unequal length is one example, not the required condition. The mark conveys successful completion. Either arm may be the longer one, and stroke weight, colour treatment and construction are not restricted by this criterion.",
+        "basis": "Owner requirement from the current brief update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion.",
+        "scope": "This Ready candidate at 1x and 3x nearest on #172336.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion",
+            "lines": [
+              9,
+              9
+            ]
+          }
+        ],
+        "source_evidence": [
+          6
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "ready-meaning",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+        "basis": "Consumer state mapping ok -> succeeded -> label Ready, while idle uses the Start vector. Brief: the working loop must not look like success, so Ready itself must convey success; the current update requires conveying successful completion. Judging Ready against the actual future Working/Retry/Paused images is deferred.",
+        "scope": "This Ready candidate on its own, plus the already-existing Start vector.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "src/queue.ts",
+            "locator": "stateAfter: ok -> succeeded",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "src/queue-view.ts",
+            "locator": "idle: Start, assets/start.svg",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "src/queue-view.ts",
+            "locator": "succeeded: label Ready",
+            "lines": [
+              6,
+              6
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "The working loop must communicate activity without looking like success",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "Current update: convey successful completion",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          {
+            "path": "assets/start.svg",
+            "locator": "play-triangle path M4 2L14 8L4 14Z",
+            "lines": [
+              1,
+              1
+            ]
+          }
+        ],
+        "source_evidence": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "readability-1x-3x",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail (including the asymmetry of the check-mark arms) lost into the panel colour.",
+        "basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel and the current update keeps the review display conditions; #172336 is the consumer-observed panel colour (display.background).",
+        "scope": "This Ready candidate at the declared display conditions.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "readable silhouettes; Inspect at 1x and 3x nearest display scale on the actual dark panel",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "Current update: keep ... review display conditions",
+            "lines": [
+              9,
+              9
+            ]
+          },
+          {
+            "path": "src/queue-view.ts",
+            "locator": "display scale 3, filter nearest, background #172336",
+            "lines": [
+              9,
+              9
+            ]
+          }
+        ],
+        "source_evidence": [
+          13,
+          14,
+          15
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "cool-blue-accent",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+        "basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+        "scope": "This Ready candidate compared with the existing Start vector.",
+        "authority": "requirement",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "the existing UI's cool blue accent; a fixed palette is not required",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "assets/start.svg",
+            "locator": "fill #70b9ed",
+            "lines": [
+              1,
+              1
+            ]
+          }
+        ],
+        "source_evidence": [
+          16,
+          17
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "silhouette-without-color",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+        "basis": "Specialist sample choice derived from the brief's non-colour distinction requirements for Retry and Paused: a sample whose identity is shape-carried keeps those later distinctions achievable. Checks only the Ready sample's own form; the pairwise family comparison is deferred.",
+        "scope": "This Ready sample only (specialist sample criterion; caller may demote or drop).",
+        "authority": "proposal",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "Error/retry must be distinguishable without color alone",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "Paused distinguishable without relying on color alone",
+            "lines": [
+              7,
+              7
+            ]
+          }
+        ],
+        "source_evidence": [
+          18,
+          19
+        ],
+        "comparison": "unperformed"
+      },
+      {
+        "output": "ready",
+        "id": "sample-pixel-craft",
+        "domain": "visual",
+        "mode": "visual",
+        "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+        "basis": "Specialist expert judgment applying the brief's coherent pixel-art status assets and representative-sample instruction.",
+        "scope": "This Ready sample, assessed for style review; passing does not approve the family style.",
+        "authority": "proposal",
+        "sources": [
+          {
+            "path": "BRIEF.md",
+            "locator": "Create coherent pixel-art status assets",
+            "lines": [
+              3,
+              3
+            ]
+          },
+          {
+            "path": "BRIEF.md",
+            "locator": "propose a representative status sample before expanding the family",
+            "lines": [
+              5,
+              5
+            ]
+          }
+        ],
+        "source_evidence": [
+          20,
+          21
+        ],
+        "comparison": "unperformed"
+      }
+    ]
+  },
+  "candidate_controls": [
+    {
+      "output": "ready",
+      "contract": {
+        "size": [
+          16,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static 16x16 Ready status image for later delivery to the consumer path assets/ready-confirmed.png. Owner requirements: check mark with asymmetrical arms conveying successful completion, transparent background, cool blue accent, no fixed palette (partial alpha permitted). Specialist sample choices, revisable at style review: short left arm with longer right arm, chunky ~2px strokes, sky blue near #70b9ed with one lighter highlight, no backing plate or shadow."
+      }
+    }
+  ],
+  "choices": [
+    {
+      "id": "sample-asset",
+      "choice": "Ready remains the representative family sample.",
+      "authority": "PLAR proposal (family_sample) under BRIEF line 5",
+      "where": "candidate-plan scope",
+      "reason": "Static, single frame, no dependency on other statuses."
+    },
+    {
+      "id": "arm-orientation",
+      "choice": "Short left arm meeting a longer right arm rising to the upper right.",
+      "authority": "specialist choice",
+      "where": "provider-arguments description; contract intent",
+      "reason": "Conventional check-mark orientation that satisfies the owner's asymmetrical-arms requirement; the criterion does not require this orientation, so a mirrored asymmetric mark is not rejected."
+    },
+    {
+      "id": "motif-construction",
+      "choice": "Single centered check mark, chunky ~2px strokes, no backing circle/badge plate, no drop shadow.",
+      "authority": "specialist choice",
+      "where": "provider-arguments description; contract intent",
+      "reason": "Chunky strokes survive 1x at 16x16 while leaving room for a visibly unequal arm length; no plate keeps transparency simple and leaves room for later family marks. Revisable at style review; not a rejection rule."
+    },
+    {
+      "id": "colour-treatment",
+      "choice": "Cool sky blue close to #70b9ed plus one lighter highlight tone; no fixed palette.",
+      "authority": "specialist choice implementing owner 'cool blue accent' direction",
+      "where": "provider-arguments description",
+      "reason": "Relates to the observed Start fill without making the hex a rejection rule; a lighter tone keeps contrast on #172336."
+    },
+    {
+      "id": "operation",
+      "choice": "create_image_pro_flash, width 16, height 16, no_background true, seed omitted.",
+      "authority": "specialist choice within the discovered schema",
+      "where": "provider-arguments",
+      "reason": "Only advertised generation tool; native 16x16 avoids downscaling (fixture default is 64x64, so explicit); no_background matches transparency; no seed specified or needed."
+    },
+    {
+      "id": "alpha",
+      "choice": "Contract alpha 'full' and empty palette.",
+      "authority": "derived from brief (transparent, no fixed palette)",
+      "where": "candidate-plan contract",
+      "reason": "Avoids manufacturing a binary-alpha or fixed-palette rule."
+    },
+    {
+      "id": "extra-criteria",
+      "choice": "silhouette-without-color and sample-pixel-craft are specialist sample criteria (authority proposal).",
+      "authority": "specialist choice",
+      "where": "candidate-plan criteria",
+      "reason": "Support later owner non-colour and coherence obligations while judging only this sample; caller may demote or drop them."
+    },
+    {
+      "id": "output-id",
+      "choice": "Plan output id 'ready' reused for the revised generation.",
+      "authority": "specialist choice",
+      "where": "candidate-plan outputs[0].id",
+      "reason": "Same visual role; the runtime assigns the generation's task/output/job IDs, which are reported from the prepare result."
+    }
+  ],
+  "source_evidence": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Status cells are 16 by 16 logical pixels; Ready and Retry are static images",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Current update: keep the existing 16x16 canvas, static behavior",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "locator": "statusVisuals.succeeded frames 1",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "line_count": 14,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            6,
+            6
+          ],
+          "text": "  succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 },\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "locator": "display.cell [16, 16]",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "line_count": 14,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "export const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Use transparent backgrounds",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Current update: keep ... transparent background",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "locator": "stateAfter: ok -> succeeded",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue.ts",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "line_count": 4,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "  return { started: \"running\", ok: \"succeeded\", error: \"failed\", pause: \"paused\" }[result] as QueueState;\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "locator": "idle: Start, assets/start.svg",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "line_count": 14,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "  idle: { label: \"Start\", path: \"assets/start.svg\", frames: 1 },\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "locator": "succeeded: label Ready",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "line_count": 14,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            6,
+            6
+          ],
+          "text": "  succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 },\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "The working loop must communicate activity without looking like success",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Current update: convey successful completion",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "locator": "play-triangle path M4 2L14 8L4 14Z",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\assets\\start.svg",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "line_count": 1,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            1
+          ],
+          "text": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\"><path fill=\"#70b9ed\" d=\"M4 2L14 8L4 14Z\"/></svg>\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "readable silhouettes; Inspect at 1x and 3x nearest display scale on the actual dark panel",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Current update: keep ... review display conditions",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "locator": "display scale 3, filter nearest, background #172336",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "line_count": 14,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            9,
+            9
+          ],
+          "text": "export const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "the existing UI's cool blue accent; a fixed palette is not required",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "locator": "fill #70b9ed",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\assets\\start.svg",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "line_count": 1,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            1
+          ],
+          "text": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\"><path fill=\"#70b9ed\" d=\"M4 2L14 8L4 14Z\"/></svg>\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Error/retry must be distinguishable without color alone",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Paused distinguishable without relying on color alone",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            7,
+            7
+          ],
+          "text": "Update: the queue now supports a paused state. Its status image must be distinguishable from activity, completion and retry without relying on color alone. Keep the existing style and display requirements. The failure visual moved to the path in the updated view; its purpose is unchanged.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "Create coherent pixel-art status assets",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            3,
+            3
+          ],
+          "text": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": "propose a representative status sample before expanding the family",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            5,
+            5
+          ],
+          "text": "Assets belong at the paths already used by the view. Account badges are provided by a server registry and are outside this local asset request. No approved style reference exists yet: propose a representative status sample before expanding the family.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison."
+    }
+  ],
+  "diagnostics": [],
+  "production": {
+    "store": ".pixl/assets/queue.ready",
+    "link_status": "linked",
+    "status": "available",
+    "state": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\.pixl\\assets\\queue.ready\\state.px",
+    "hash": "d4edd839dceb09279859e3913a46f7c7d8c6b6c48aff4e22ec853059ce68e8cb",
+    "revision": 7,
+    "task": "r.f9e2fa53f4fcac2a.task",
+    "task_state": "open",
+    "outputs": [
+      {
+        "id": "r.f9e2fa53f4fcac2a.output.ready",
+        "name": "Ready status icon sample (revised)",
+        "candidate": null,
+        "requirements": [
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.geometry",
+            "name": "geometry",
+            "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.transparent-background",
+            "name": "transparent-background",
+            "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.check-mark-asymmetrical-arms",
+            "name": "check-mark-asymmetrical-arms",
+            "check": "The image visibly uses a check mark whose two arms are of clearly unequal length (asymmetrical), and that mark conveys successful completion. Either arm may be the longer one, and stroke weight, colour treatment and construction are not restricted by this criterion.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.ready-meaning",
+            "name": "ready-meaning",
+            "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.readability-1x-3x",
+            "name": "readability-1x-3x",
+            "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail (including the asymmetry of the check-mark arms) lost into the panel colour.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.cool-blue-accent",
+            "name": "cool-blue-accent",
+            "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.silhouette-without-color",
+            "name": "silhouette-without-color",
+            "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "r.f9e2fa53f4fcac2a.criterion.ready.sample-pixel-craft",
+            "name": "sample-pixel-craft",
+            "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          }
+        ],
+        "candidates": []
+      }
+    ],
+    "selection_bindings": [
+      {
+        "input": "r.f9e2fa53f4fcac2a.selection",
+        "snapshot": ".pixl/assets/queue.ready/plans/f9e2fa53f4fcac2ae456ef011eb183a5a847a8c087ca6215350b14654511f41a.json",
+        "asset_id": "queue.ready",
+        "binding": "pixl.plar.selection/1",
+        "plar_path": "plar.txt",
+        "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+        "current_requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+        "selected_for_asset": true,
+        "linked_task": "r.f9e2fa53f4fcac2a.task",
+        "linked_store": ".pixl/assets/queue.ready",
+        "status": "current"
+      }
+    ],
+    "selection_current": true,
+    "jobs": [
+      {
+        "id": "first_request",
+        "state": "failed",
+        "remote_id": "controlled-create-0001",
+        "next_action": "review_failure",
+        "durable": true,
+        "task": "task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T03:47:58.109307+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this session, cross-checked against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      },
+      {
+        "id": "r.f9e2fa53f4fcac2a.request",
+        "state": "failed",
+        "remote_id": null,
+        "next_action": "review_failure",
+        "durable": true,
+        "task": "r.f9e2fa53f4fcac2a.task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T05:45:51.552848+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash visible in this specialist session, cross-checked field-for-field against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      }
+    ],
+    "pending_jobs": [],
+    "next_action": "inspect_or_revise",
+    "continuation": {
+      "store": ".pixl/assets/queue.ready",
+      "state_hash": "d4edd839dceb09279859e3913a46f7c7d8c6b6c48aff4e22ec853059ce68e8cb",
+      "asset_id": "queue.ready",
+      "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+      "task": "r.f9e2fa53f4fcac2a.task",
+      "action": "inspect_or_revise",
+      "jobs": [
+        {
+          "id": "r.f9e2fa53f4fcac2a.request",
+          "task": "r.f9e2fa53f4fcac2a.task",
+          "state": "failed",
+          "provider": "pixellab-test",
+          "remote_id": null,
+          "next_action": "review_failure"
+        }
+      ],
+      "before_another_request": [],
+      "after_observation": {
+        "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+        "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+        "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+      },
+      "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+      "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+    },
+    "link_action": null,
+    "new_request_allowed": true,
+    "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance."
+  },
+  "caller_comparison": "unperformed",
+  "consistent": null,
+  "scope": "Read-only exact evidence. Resolved lines do not establish semantic entailment, contract consistency, execution or asset acceptance."
+}

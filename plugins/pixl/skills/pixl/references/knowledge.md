@@ -2,6 +2,14 @@
 
 Use this operation when a brief, artifact defect, or technical uncertainty requires selecting or checking a pixel-art method. Its result is a source-grounded candidate method and a specific next proof or production action. The [profile](../../../resources/agent/PROFILE.md) governs artistic judgment and authority.
 
+PIXL already brings pixel-art judgment through the host model and this specialist
+profile. The curated library extends and grounds that expertise; it is not the only
+permitted source of reasoning, and this research operation is not a prerequisite for
+every visual choice. Use available harness tools to test a consequential uncertainty.
+Attribute familiar expert choices to your judgment and scope them to the candidate;
+when you claim a supplied method supports a decision, retrieve its actual conditions.
+Official provider documentation establishes tool capabilities, not the owner's style.
+
 ## Entry and required context
 
 Identify the question the method must answer, the relevant project references or inspected artifact, and the applicable constraints. Keep the user's requirements, visual observations, proposals, and unresolved choices distinct. For example, a tile-corner defect calls for topology and neighborhood checks; it does not justify importing an unrelated palette policy.

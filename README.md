@@ -48,7 +48,7 @@ Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also 
 - **Pixel-art knowledge:** 43 curated methods with 93 reviewed current source locators and 39 freshly executed reference checks. The compiled [PIXL library](knowledge/library.px) contains prerequisites, procedures, checks, pitfalls, sources and bound proof receipts. The [knowledge operation](plugins/pixl/skills/pixl/references/knowledge.md) takes a production question through source discovery, exact retrieval, applicability assessment and a specific next proof. [Coverage](methods/method-proof-coverage.json) states each reference proof's limits.
 - **PixelLab preparation:** a historical snapshot of 100 documented MCP tools and 454 parameters, dated official documentation, exact caller-supplied schema validation, cross-field rules, deterministic intent identity and observation-based job journaling.
 - **Optional PixelLab HTTP adapter:** one official async image endpoint, exact retained OpenAPI schema, durable submission/polling and PNG import. A separate opt-in MCP bridge exposes it; tests replace its HTTP transport and block sockets.
-- **Agent kit:** one shared PIXL expert profile, Claude/Codex adapters, a portable runtime, and 32 local MCP tools. The actual authenticated PixelLab connection remains with the host harness.
+- **Agent kit:** one shared PIXL expert profile, Claude/Codex adapters, a portable runtime, and 34 local MCP tools. The actual authenticated PixelLab connection remains with the host harness.
 
 ## Source and evidence
 

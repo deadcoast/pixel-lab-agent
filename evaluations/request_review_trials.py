@@ -95,7 +95,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         shutil.copytree(resume / "project", project, ignore=shutil.ignore_patterns("pixl-kit", "__pycache__"))
     else:
         project.mkdir()
-        if case not in ("mcp-edit", "plar-start", "plar-resume"):
+        if case not in ("mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff"):
             seed(project, case)
     package = project / ".agents/skills/pixl-kit"
     shutil.copytree(ROOT / "plugins/pixl", package, ignore=shutil.ignore_patterns("__pycache__"))
@@ -118,7 +118,15 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         from evaluations import plar_resume_case
         extra_server = plar_resume_case.setup(project, destination, python, resume)
         guidance, prompt = plar_resume_case.GUIDANCE, plar_resume_case.PROMPT
-    if resume and case != "plar-resume":
+    elif case == "plar-delivery":
+        from evaluations import plar_delivery_case
+        extra_server = plar_delivery_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_delivery_case.GUIDANCE, plar_delivery_case.PROMPT
+    elif case == "plar-handoff":
+        from evaluations import plar_handoff_case
+        extra_server = plar_handoff_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_handoff_case.GUIDANCE, plar_handoff_case.PROMPT
+    if resume and case not in ("plar-resume", "plar-delivery", "plar-handoff"):
         prompt = ("You are the calling agent resuming the saved consumer project. Delegate a cold status/recovery check to PIXL. "
                   "Inspect its saved contracts, jobs, candidate reviews and delivered file. Recover the next action without repeating "
                   "completed submissions. Save COLD-RESULT.json with actual observed state and evidence. "
@@ -173,7 +181,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
                 "runner_sha256": sha(Path(__file__)), "package_files": inventory(package),
                 "inputs": inventory(project, ("pixl-kit",)), "prompt_sha256": sha(destination / "prompt.txt"),
                 "predecessor": str(resume) if resume else None,
-                "scope": "Native delegation/contract review and, for mcp-edit/plar-start, controlled provider execution; no upstream service."})
+                "scope": "Native delegation/contract review and, for provider cases, controlled provider execution; no upstream service."})
     shutil.copyfile(Path(__file__), destination / "runner.py.txt")
     shutil.copytree(project, destination / "input-project", ignore=shutil.ignore_patterns("pixl-kit"))
 
@@ -240,7 +248,7 @@ def run(destination: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("claude", "codex"), required=True)
-    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start", "plar-resume"), required=True)
+    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff"), required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", type=Path)

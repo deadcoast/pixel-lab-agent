@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent, independent of the delegated PIXL specialist",
+  "date": "2026-11-07",
+  "round": 2,
+  "predecessor": {"path": "work/queue.ready-handoff/caller-review.json", "sha256": "bfb6f0cf561d6fffcfa91d7ebf7e9f6920326c5a6f1f225b498500ed8be9b1ad", "verdict": "changes_requested (C1-C3)"},
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "provider_simulated": true,
+  "reviewed_artifacts": {
+    "v2_packet": {"path": "work/queue.ready-handoff/request-review.v2.json", "sha256": "b9071aaa308f96e53e4af33839b74961cb6ffcc000186b3cb8633e6889b59c3d"},
+    "v2_plan": {"path": "work/queue.ready-handoff/candidate-plan.v2.json", "sha256": "58ca2f15cb5cd84438afcddabf53f7f6420e5f311aa8634b1bcbe7fb15259f0f"},
+    "v2_report": {"path": "work/queue.ready-handoff/request-review.v2.report.json", "sha256": "db8aebfdb96ce54007e8b618dd843cc169aee7f9eec4bf13045fe2bc05acebb2"},
+    "plar_candidate_v2": {"path": "work/queue.ready-handoff/plar-candidate.v2.json", "sha256": "4512d6ce5017f95ee1a9080cea487f2ffb8e4c7334c1237cd822a5273cd27e25", "note": "byte-equal to saved plar.txt"},
+    "final_handoff": {"path": ".pixl/handoffs/51a3c31256ce02bac7ca6d604cb4b03e4f131ea0f4124bc077d9c5bbdce0f942.json", "sha256": "51a3c31256ce02bac7ca6d604cb4b03e4f131ea0f4124bc077d9c5bbdce0f942"},
+    "plar": {"path": "plar.txt", "sha256_before_round2": "e26ed3eaa397f4c24ab76ce777cce26356849c4fa700ceda4c4e043505674b6e", "sha256_after_round2": "4512d6ce5017f95ee1a9080cea487f2ffb8e4c7334c1237cd822a5273cd27e25"}
+  },
+  "verdict": "consistent",
+  "verdict_scope": "C1, C2 and C3 are resolved as requested. The v2 corrected contract is adopted as the final corrected future contract for comparison purposes only. This is not provider execution, art acceptance, style/family adoption or authorization for a new request.",
+  "resolution_checks": [
+    {
+      "id": "C1",
+      "requested": "restore historical intent verbatim or disclose the edit; new files; round-1 files kept",
+      "verified": "candidate-plan.v2.json contract block equals the historical contract block exactly (intent 'One static 16x16 Ready candidate for later assets/ready-confirmed.png. …'). With the top-level scope statement and the criterion sources arrays removed, the v2 plan is identical to the historical plan e7f85aa1…. The v2 pointer arrays are identical to the round-1 pointer arrays already verified line by line in round 1. The v2 scope statement and the v2 packet criteria.note both disclose the round-1 intent edit and its reversal. Round-1 files 48cf27c9… and e58e0e3e… remain byte-identical.",
+      "result": "resolved"
+    },
+    {
+      "id": "C2",
+      "requested": "final handoff with details.caller_actions populated and request_review pointing to the final packet",
+      "verified": "Final handoff 51a3c312… details.caller_actions has six entries: round-1 caller review (bfb6f0cf…, changes_requested, what was verified), independent node verify-integration (exit 0, fc5e43ae…), independent pixl_request_review on round-1 packet (diagnostics [], 35/35), independent asset check and viewing, preservation check (hash list), caller PLAR position. details.request_review.final_packet points to the v2 packet b9071aaa… / v2 plan 58ca2f15…; round1_predecessors_retained names 48cf27c9…, e58e0e3e… and bfb6f0cf…; historical_packet f7e968bd… / e7f85aa1… unchanged. details.predecessor_handoff names the round-1 handoff 26a46b6c…, which is still present with its original hash.",
+      "result": "resolved"
+    },
+    {
+      "id": "C3",
+      "requested": "sha256 for the plar-candidate.json artifact entry",
+      "verified": "Final handoff details.delivered_artifacts lists work/queue.ready-handoff/plar-candidate.json with sha256 e26ed3eaa397f4c24ab76ce777cce26356849c4fa700ceda4c4e043505674b6e, matching the file.",
+      "result": "resolved"
+    }
+  ],
+  "independent_evidence": {
+    "request_review_v2": {"method": "bundled runner `pixl.py request-review work/queue.ready-handoff/request-review.v2.json --asset queue.ready --root .` executed by the caller", "diagnostics": [], "source_evidence": "35 resolved of 35", "request_provider": "pixellab-test", "provider_simulated_assertion": true, "connection": "work/queue.ready-revision/connection.json e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8", "criteria": "work/queue.ready-handoff/candidate-plan.v2.json 58ca2f15…, 6 comparisons", "production": "7a97831f… revision 14, task r.22e90a2a03fe453a.task done"},
+    "v2_packet_vs_round1_packet": "Differs only in: criteria (now v2 plan), correction (adds round1_corrected_packet block with caller review and resolution), review_status (adds round-1 caller review and pending v2 verification), resume.next (text). sources, request, authority_map, choices, deferred_obligations and preserved are identical to round 1.",
+    "plar_diff_round2": "Semantic diff of plar.txt against retained .pixl/plar-history/e26ed3ea….json: only assets[queue.ready].next text changed and four evidence entries were appended (caller-review.json, request-review.v2.json, candidate-plan.v2.json, request-review.v2.report.json; 19 -> 23). No requirement-bearing field changed.",
+    "plar_fresh_read": {"hash": "4512d6ce5017f95ee1a9080cea487f2ffb8e4c7334c1237cd822a5273cd27e25", "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673", "selection_current": true, "production_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81", "revision": 14, "task_state": "done", "pending_jobs": [], "next_action": "review_delivery"},
+    "final_handoff_vs_fresh_plar": "Handoff resume.state_hash 7a97831f…, requirements_hash 806a1f2d…, task r.22e90a2a03fe453a.task, action review_delivery, job r.22e90a2a03fe453a.request succeeded controlled-create-0002, selection {plar.txt, 4512d6ce…, current true} all equal the fresh focused PLAR read.",
+    "state": "pixl_validate: valid, format 2, revision 14, hash 7a97831f…, 87 records, files_verified true. No record under .pixl/assets/queue.ready changed in either round.",
+    "preservation": "sha256 re-verified after round 2 for state.px, assets/ready-confirmed.png, assets/start.svg, all work/queue.ready-revision and work/queue.ready-delivery files listed in round 1, work/PIXL-DELIVERY.json, DELIVERY-RESULT.json, COLD-RESULT.json, PARENT-RESULT.json, BRIEF.md, OWNER.md, STAGE.md, PHASE.md, src/queue.ts, src/queue-view.ts and all round-1 handoff-stage files: all unchanged."
+  },
+  "observations": [
+    "The final handoff was saved before this verification, so its details.request_review.final_packet.caller_verification reads 'pending'. This file is that verification; HANDOFF-RESULT.json links both. No further handoff snapshot is needed because state, requirements and selection hashes are unchanged.",
+    "The specialist performed the round-2 PLAR save through the bundled runner CLI instead of the MCP tool because of document size; both are the same local runtime and the result was verified by an independent pixl_plar_read. Prior bytes are retained in .pixl/plar-history.",
+    "The host cannot resume a finished subagent, so round 2 used a fresh instance of the same native pixl specialist definition briefed with its round-1 artifacts and this caller's discrepancy list. All artifacts are attributed to the PIXL specialist role."
+  ],
+  "unresolved_obligations_confirmed": [
+    "Family/style adoption decision and source-bound baseline (owner/caller).",
+    "Working (4 frames, 100 ms), Retry at assets/error-retry.png, Paused at assets/paused.png; grayscale/non-colour family comparison at 1x/3x.",
+    "Graphical renderer acceptance: full and compact displays, nearest sampling at device pixel ratio, alpha compositing on #172336.",
+    "Historical connection.json nested OWNER.md bounds [2,12]: re-discover the connection before any future request; do not edit the historical artifact.",
+    "Optional PLAR refresh of existing[0].role and delivery.checks[4] (changes requirements_hash and the selection binding)."
+  ],
+  "next": "Save HANDOFF-RESULT.json linking the final handoff 51a3c312…, this verification and the round-1 caller review."
+}

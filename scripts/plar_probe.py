@@ -1,5 +1,6 @@
 """Installed/copyable PLAR refresh and first-request probe, with local fixture observations."""
 
+import hashlib
 import json
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -51,6 +52,7 @@ def run_plar_probe(cli, root):
                             {
                                 "path": "BRIEF.md",
                                 "locator": "Activity, display and style requirements",
+                                "lines": [3, 3],
                             }
                         ],
                     }
@@ -75,6 +77,25 @@ def run_plar_probe(cli, root):
         "choices": [],
     }
     write("probe/request-review.json", review)
+    resolved = cli(
+        [
+            "request-review",
+            "probe/request-review.json",
+            "--root",
+            str(root),
+            "--asset",
+            "queue.working",
+        ]
+    )
+    if (
+        resolved["request"]["arguments"] != arguments
+        or resolved["source_evidence"][0]["status"] != "resolved"
+        or resolved["consistent"] is not None
+    ):
+        raise RuntimeError(
+            "installed request/criteria evidence resolution lost identity or claimed acceptance"
+        )
+
     connection = {
         "provider": "pixellab",
         "schema": {
@@ -122,9 +143,21 @@ def run_plar_probe(cli, root):
     packet = cli(["plar", "read", "--root", str(root), "--asset", "queue.working"])
     if (
         packet["production"]["pending_jobs"] != [prepared["job"]["id"]]
+        or packet["production"]["continuation"]["before_another_request"][0]["job"]
+        != prepared["job"]["id"]
         or prepared["allocation"]["status"] != "linked"
     ):
         raise RuntimeError("prepared work was not connected to its allocation")
+    write("probe/handoff-details.json", {"status": "partial", "future_work": ["Inspect the actual candidate"]})
+    handoff = cli(["plar", "handoff", str(root / "probe/handoff-details.json"),
+                   "--root", str(root), "--asset", "queue.working",
+                   "--requirements", packet["requirements_hash"], "--expect", prepared["hash"]])
+    handoff_bytes = (root / handoff["path"]).read_bytes()
+    handoff_document = json.loads(handoff_bytes)
+    if (hashlib.sha256(handoff_bytes).hexdigest() != handoff["sha256"]
+            or handoff_document["resume"] != packet["production"]["continuation"]
+            or handoff_document["next"] != packet["production"]["next_action"]):
+        raise RuntimeError("installed handoff lost the exact continuation")
     write("probe/preparation.json", prepared)
     document = json.loads((root / "plar.txt").read_text(encoding="utf-8"))
     working = next(r for r in document["assets"] if r["id"] == "queue.working")
@@ -338,6 +371,9 @@ def run_plar_probe(cli, root):
         "status": "pass",
         "checks": [
             "selected artifact to exact prepared request",
+            "exact source excerpts for independent caller comparison without automatic consistency",
+            "provider-bound pending prerequisite in resumable handoff",
+            "immutable exact handoff preserves continuation and expert details",
             "populated production/evidence links survive unrelated scoped refresh",
             "prepared state unchanged by unrelated allocation update",
             "unchanged preparation resumes without duplicate",

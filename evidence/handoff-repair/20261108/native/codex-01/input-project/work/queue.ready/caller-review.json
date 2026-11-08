@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent (independent of the PIXL specialist that authored the packet)",
+  "reviewed_at": "2026-11-08T03:51:13+00:00",
+  "packet": {"path": "work/queue.ready/request-review.json", "sha256": "c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a"},
+  "verified_hashes": {
+    "work/queue.ready/provider-arguments.json": "48a6a03c0e1ab1294f08460cca4cc03f6f909e35a7093d1fb4f6a8bf47f70b7a",
+    "work/queue.ready/candidate-plan.json": "aeb1ab7a5589c6931c9fc70c4e0e87d6b710692261558b4de7f89f64992a3dcd",
+    "work/queue.ready/connection.json": "071cf42d618f2359d7eb445fa602db36d1783d35c1a0090b6edda55cd72e6300",
+    "BRIEF.md": "5955da4dd9079d0d13dc1b01feff4ed82f86628a42b0f79305f6bc68bbc6c7df",
+    "OWNER.md": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a",
+    "src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+    "src/queue-view.ts": "01ee53761bce9cb9dbf41c7df3cb709397bebfb27f96cd738d84971aa6b190fa",
+    "assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+    "requirements_hash(queue.ready)": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8"
+  },
+  "method": "Read BRIEF.md, OWNER.md, src/queue.ts, src/queue-view.ts, assets/start.svg, provider-schemas.json and the focused pixl_plar_read row for queue.ready myself; recomputed file hashes; read the complete provider arguments, candidate plan and connection; checked each cited line locator against the individual file; compared the durable job intent (.pixl/assets/queue.ready/jobs/ca8a9e84...json) arguments and schema to the reviewed files programmatically (equal); diffed plar.txt against retained history 3901a2e7... (only queue.ready status/production/next/evidence changed; all five allocation IDs retained).",
+  "source_survival": [
+    {"requirement": "16x16 logical cell, static single frame", "source": "BRIEF.md line 3; src/queue-view.ts lines 6, 9", "request": "width 16, height 16, 'single static image'", "criteria": "geometry", "finding": "survives"},
+    {"requirement": "transparent background, no binary-alpha restriction", "source": "BRIEF.md line 3", "request": "no_background true; 'Transparent background'", "criteria": "transparent-background (partial alpha allowed); contract alpha full", "finding": "survives, not strengthened"},
+    {"requirement": "readable silhouettes at 1x and 3x nearest on actual dark panel", "source": "BRIEF.md line 3; src/queue-view.ts line 9 (#172336, scale 3, nearest)", "request": "prose 'read clearly at 1x on a dark navy panel (#172336)' (schema cannot express display conditions)", "criteria": "readability-1x-3x", "finding": "survives; 3x is evaluated in criteria rather than prose, acceptable since 3x is a nearest display transform"},
+    {"requirement": "existing UI cool blue accent; no fixed palette", "source": "BRIEF.md line 3; assets/start.svg fill #70b9ed (observation)", "request": "'cool sky blue close to #70b9ed'", "criteria": "cool-blue-accent (relationship, not exact hex); palette []", "finding": "survives; hex kept as observation, not a rejection rule"},
+    {"requirement": "Ready conveys success (ok -> succeeded -> Ready); working must not look like success", "source": "src/queue.ts line 3; src/queue-view.ts line 6; BRIEF.md line 3", "request": "'Ready (task completed successfully) state'", "criteria": "ready-meaning; family-working-not-success deferred", "finding": "survives; pairwise part correctly deferred"},
+    {"requirement": "Retry and Paused distinguishable without color alone", "source": "BRIEF.md lines 3, 7", "request": "n/a for Ready", "criteria": "deferred family-retry-non-color, family-paused-non-color; also retained in PLAR queue.ready delivery checks", "finding": "deferred with stage and prerequisites, not dropped; not a rejection rule on this sample (correct dependency order)"},
+    {"requirement": "representative sample before expansion; no approved style", "source": "BRIEF.md line 5; OWNER.md lines 3-5", "request": "Ready sample only", "criteria": "scope; deferred style-decision", "finding": "survives"},
+    {"requirement": "destination assets/ready.png; statusCell/compactStatus integration", "source": "BRIEF.md line 5; src/queue-view.ts lines 6, 10-11", "criteria": "deferred destination-delivery, renderer-integration; PLAR delivery checks unchanged", "finding": "deferred to delivery/integration stage, retained"},
+    {"requirement": "preserve Start vector and allocation IDs; badges excluded; do not mark integrated", "source": "BRIEF.md lines 3, 5; OWNER.md lines 5, 12", "finding": "start.svg hash unchanged; IDs unchanged; status in_progress (not integrated); no badge work"},
+    {"requirement": "use actual discovered schema; one submission authorized", "source": "OWNER.md lines 8-9; provider-schemas.json", "request": "keys description,width,height,no_background subset of schema; values within bounds (16 multipleOf 4); seed omitted", "finding": "valid against host declaration mcp__pixellab-test__create_image_pro_flash and provider-schemas.json (identical)"}
+  ],
+  "criterion_comparisons": [
+    {"id": "geometry", "source": "BRIEF.md line 3 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'; queue-view.ts line 6 frames 1", "adds_or_omits": "nothing", "finding": "consistent"},
+    {"id": "transparent-background", "source": "BRIEF.md line 3 'Use transparent backgrounds'", "adds_or_omits": "Operationalizes as alpha 0 outside subject and no matte; explicitly permits partial alpha. A brief-conforming transparent icon with anti-aliased edges passes.", "finding": "consistent"},
+    {"id": "ready-meaning", "source": "queue.ts line 3; queue-view.ts lines 3, 6; BRIEF.md line 3", "adds_or_omits": "Judged on Ready alone plus existing Start; family comparison deferred", "finding": "consistent and satisfiable now"},
+    {"id": "readability-1x-3x", "source": "BRIEF.md line 3 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; queue-view.ts line 9", "adds_or_omits": "nothing", "finding": "consistent"},
+    {"id": "cool-blue-accent", "source": "BRIEF.md line 3 'the existing UI's cool blue accent; a fixed palette is not required'; start.svg fill", "adds_or_omits": "Uses #70b9ed only as comparison anchor; no exact-hex/palette-count test. A different cool blue would pass.", "finding": "consistent"},
+    {"id": "silhouette-without-color", "source": "expert choice (specialist), motivated by BRIEF.md lines 3/7 non-color family requirements and 'readable silhouettes'", "adds_or_omits": "Slightly stricter than the source for Ready alone: brief only requires Retry/Paused to be distinguishable without color. Brief-conforming alternative tested: any Ready with a readable silhouette (check, dot, bar) has an identifiable grayscale shape and passes; only a candidate whose form is unreadable without hue fails, which would also fail readable-silhouettes. Basis correctly attributed to specialist, scoped to this sample.", "finding": "accepted as specialist sample criterion; not an owner requirement"},
+    {"id": "sample-pixel-craft", "source": "expert judgment applying BRIEF.md line 3 'coherent pixel-art status assets' and line 5 representative sample", "adds_or_omits": "Rejects noise/blur/downscaled-illustration artifacts; does not ban deliberate anti-aliasing or partial alpha; 'extendable to family' is a judgment about this sample, not a requirement that Working/Retry/Paused exist.", "finding": "accepted as specialist sample criterion; satisfiable now"}
+  ],
+  "request_choice_findings": [
+    "Checkmark motif, ~2px strokes, no backing plate, no drop shadow, one lighter highlight, 'no anti-aliased blur' are prompt-level specialist choices (OWNER.md line 4 assigns motif to expert judgment). None is promoted to a rejection rule; revisable at style review.",
+    "Schema cannot express palette, reference image, alpha mode or display scale; packet states these are evaluated after retrieval. No invented parameters.",
+    "Explicit width/height 16 needed because the fixture default canvas is 64x64; native size avoids downscaling."
+  ],
+  "discrepancies": [],
+  "verdict": "consistent",
+  "scope_note": "consistent means the planned request and criteria match this assignment; it is not provider execution, image retrieval or art acceptance.",
+  "next_action": "Reread PLAR to confirm requirements_hash unchanged, claim job first_request with pixl_job_dispatch, submit the returned arguments once to pixellab-test, compare submitted arguments to this review, and record the observed response."
+}

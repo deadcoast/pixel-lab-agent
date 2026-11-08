@@ -1,5 +1,23 @@
 # Verification and limits
 
+## Exact handoff and authority repair, 2026-11-08
+
+The [post-knowledge-clarification verifier](../evidence/verification-runs/20261108T064547.892746Z/result.json) passes **524 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel/copied-plugin installation. Six new regressions check complete handoff preservation, idempotence/corruption, stale state/requirements, missing production, authored/derived separation and CLI/MCP parity. Each installed PLAR probe has fourteen checks. Ruff, Mypy and both skill validators pass.
+
+[Current evidence](../evidence/handoff-repair/README.md) distinguishes native contract/handoff repair, independent forward review, explicit expert-knowledge applicability and actual generated-art quality. Native kits predate a later clarification of the silhouette method's source support; the initial full receipt remains preserved. [Checks and identities](../evidence/handoff-repair/checks.json) identifies each tested version. No source-range or fixture pass establishes general artistic expertise or graphical renderer acceptance.
+
+## Exact handoff evidence and selected-generation delivery, 2026-11-08
+
+The [final full verifier](../evidence/verification-runs/20261108T061236.723524Z/result.json) passes **518 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel and copied-plugin installations. Seventeen new regressions exercise exact source/locator evidence, reviewed connection identity and retention, provider-bound continuation, same-job MCP/HTTP retrieval and execution of the actual TypeScript source consumers. Each installed PLAR probe performs thirteen checks. Source/generated Ruff, runtime/evaluation Mypy and both skill format checks pass.
+
+[Current evidence](../evidence/plar-handoff-delivery/README.md) retains both corrected request-stage operations and their remaining color-authority findings, plus same-generation native delivery results. Later runtime corrections are distinguished from the frozen native kits. [Checks and identities](../evidence/plar-handoff-delivery/checks.json) records all 117 checked inputs, 152 bundle entries and archived native/independent evidence. Actual image viewing, immutable-byte delivery and Node source execution do not establish upstream PixelLab generation quality or graphical renderer acceptance.
+
+## PLAR allocation and production cohesion, 2026-11-08
+
+The [final full verifier](../evidence/verification-runs/20261108T052631.521552Z/result.json) passes **501 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel and copied-plugin installations. Twenty new workflow regressions plus one continuation-fixture regression exercise production linking, interruption/CAS recovery, revised generations, pending ownership, current-consumer readiness/completion, accepted-history preservation and legacy source-order reuse. Each installed PLAR probe now performs eleven checks. Source/generated Ruff, runtime/evaluation Mypy and both shared skill format checks pass.
+
+[Current cohesion evidence](../evidence/plar-cohesion/README.md) records two controlled cold native continuations and their remaining criterion/locator/handoff failures. Later runtime corrections have separate verification from their frozen native kits. The preceding 498-pass full run and the retry interrupted by a Windows receipt-replacement error remain preserved. Exact final input, bundle and archive identities are in [checks.json](../evidence/plar-cohesion/checks.json). These checks do not establish actual PixelLab-generated quality or renderer acceptance.
+
 ## PLAR allocation/update and first-request preparation, 2026-11-08
 
 The [corrected full verifier](../evidence/verification-runs/20261108T034254.703857Z/result.json) passes **480 tests, one Windows symlink-privilege skip and 39 reference checks**. The 21 added regressions cover allocation impact, selected preparation/recovery and the controlled request fixture. Fresh wheel/copied-plugin checks exercise the selected asset through preparation, unrelated allocation refresh, dispatch and observation after source drift, with actual populated history links. The preceding package-schema omission remains in its failed receipt.

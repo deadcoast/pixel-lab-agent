@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent, independent of the delegated PIXL specialist",
+  "date": "2026-11-07",
+  "assignment": {
+    "path": "PHASE.md",
+    "sha256": "0bcf5dbd3c97ae2ae67acf6bb3ed100332ea023cb1f6d0962e9cdfbee54f7a60",
+    "summary": "Reassess retained Ready contract/result against BRIEF.md and consumer sources; correct contract/citation defects in new artifacts; preserve history; independent caller comparison; exact resumable handoff; no new generation."
+  },
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "provider_simulated": true,
+  "reviewed_artifacts": {
+    "corrected_packet": {"path": "work/queue.ready-handoff/request-review.json", "sha256": "48cf27c9ada1d53f120f6b7c2a0a2f7d2d8d20c2cc1f1dce5d5f7bd1fadffc7e"},
+    "corrected_plan": {"path": "work/queue.ready-handoff/candidate-plan.json", "sha256": "e58e0e3ebe7fbaa303515022c46efd9fc44b1b5c80f6c21273585f9eb0c08db0"},
+    "specialist_assessment": {"path": "work/queue.ready-handoff/specialist-assessment.json", "sha256": "16b67c641243fec102a085141fd4d300fa685f1f2ee5bef95377e9936b8ea717"},
+    "integration_recheck": {"path": "work/queue.ready-handoff/integration-recheck.json", "sha256": "de6a5efa2fca0a98bcdb15f84d8029f8f6c2435200e825d1c0805962dc4339a3"},
+    "plar_candidate": {"path": "work/queue.ready-handoff/plar-candidate.json", "sha256": "e26ed3eaa397f4c24ab76ce777cce26356849c4fa700ceda4c4e043505674b6e", "note": "byte-equal to saved plar.txt"},
+    "handoff_round1": {"path": ".pixl/handoffs/26a46b6ce136936b4e6439d2502ab75a965ac5ccba4ef4fceb88798bd3aea4b3.json", "sha256": "26a46b6ce136936b4e6439d2502ab75a965ac5ccba4ef4fceb88798bd3aea4b3"},
+    "plar": {"path": "plar.txt", "sha256_before": "1794e17cdc7b3c0dac61f4c6aa1c711091a4f66468d4dff39b6795b4a5542606", "sha256_after": "e26ed3eaa397f4c24ab76ce777cce26356849c4fa700ceda4c4e043505674b6e"},
+    "historical_packet": {"path": "work/queue.ready-revision/request-review.json", "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"},
+    "historical_plan": {"path": "work/queue.ready-revision/candidate-plan.json", "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"}
+  },
+  "verdict": "changes_requested",
+  "verdict_scope": "The corrected contract is source-consistent and the historical record is preserved. Three small discrepancies in the returned artifacts need a second specialist round before the handoff is final. None affects criterion outcomes, provider history or acceptance.",
+  "methods": [
+    "sha256sum over all retained artifacts, state, sources and new files",
+    "semantic JSON diff of plar.txt against retained prior bytes .pixl/plar-history/1794e17c….json",
+    "pixl_request_review on the corrected packet (independent run)",
+    "python -I script: historical vs corrected candidate-plan field comparison; every corrected pointer's lines checked against its locator range and quoted phrases against the actual file lines; packet source bounds and sha256 checked",
+    "pixl_plar_read asset queue.ready (fresh), pixl_validate, pixl_jobs, pixl_inspection, pixl_workflow",
+    "pixl_asset_check assets/ready-confirmed.png width=16 height=16 alpha=full regions=[#70b9ed]",
+    "Read (host image viewer) of assets/ready-confirmed.png and inspections/0126fe96…/views/0002.png",
+    "node verify-integration.mjs assets/ready-confirmed.png (independent run, exit 0)"
+  ],
+  "preservation_check": {
+    "result": "all unchanged",
+    "verified_sha256": {
+      ".pixl/assets/queue.ready/state.px": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81 (revision 14, pixl_validate valid, 87 records, files_verified)",
+      "assets/ready-confirmed.png": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "work/queue.ready-revision/request-review.json": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2",
+      "work/queue.ready-revision/candidate-plan.json": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6",
+      "work/queue.ready-revision/provider-arguments.json": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3",
+      "work/queue.ready-revision/connection.json": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8",
+      "work/queue.ready-revision/caller-review.json": "e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255",
+      "work/queue.ready-delivery/caller-review.json": "8f8049a1dd6e7509a5af001e0f52c7991f3432ad800e20893ae47547526dda24",
+      "work/queue.ready-delivery/production-continuation.json": "d0697090fd18f8b3407b0469bf7786745a6fece42062a950f74e0b1b61e21930",
+      "work/queue.ready-delivery/integration.json": "692216185452f9ccca8ff58af84a756c05763de65c50be4dfd90765a590a34ab",
+      "work/queue.ready-delivery/retrieval.json": "0d8948d3c6a9f20051c3942e702a980c10d2520328e6b5cf7e7e70eb30980d60",
+      "work/queue.ready-delivery/downloaded.png": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "work/PIXL-DELIVERY.json": "7e226aaa1fd292bf75788157cfe24ae64a26515d55a67752e33cd6a4586de0e8",
+      "DELIVERY-RESULT.json": "2f32346b177c6e27da1f579d1e18064f123f4f8ff27ef91537a116034c450253",
+      "COLD-RESULT.json": "6b38569fd4ae4a6a4627ca1759792a19f49423fb7901225696386c39bfe29aa7",
+      "PARENT-RESULT.json": "902c613aa726aa23f865ae72b78a841775779ccbbc7d0fea34209ed1e0bee6c9",
+      "BRIEF.md": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "OWNER.md": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+      "STAGE.md": "27645d41c854b992d502817066b48705a0026d899a78c8e80d821572c1bf75b5",
+      "src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "src/queue-view.ts": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "verify-integration.mjs": "8b1714c8f246087fa71cd10ab91690fd9b7df2f358758af6a94fc97ee1dfd0d2"
+    },
+    "state": "pixl_workflow: task r.22e90a2a03fe453a.task done, candidate ready.retained nominated, six pass verdicts ready.delivery.review.verdict.0..5 unchanged; historical task 'task' open/superseded with first_request failed; pixl_jobs pending []; pixl_inspection binding_drift []; no new job, dispatch, observation, import, candidate, verdict or acceptance record was created.",
+    "plar_history": "Prior plar.txt bytes retained at .pixl/plar-history/1794e17cdc7b3c0dac61f4c6aa1c711091a4f66468d4dff39b6795b4a5542606.json."
+  },
+  "plar_diff": {
+    "changed_paths": ["assets[queue.ready].next (text)", "assets[queue.ready].evidence[15..18] (four appended entries for the four new work/queue.ready-handoff files)"],
+    "unchanged": "project, coverage, sources, all requirements, existing, delivery, consumers, questions, IDs, other rows (none exist), production links",
+    "requirements_hash_after": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673 (unchanged; pixl_plar_read selection_current true)",
+    "stale_requirement_bearing_text_left_in_place": [
+      "existing[0].role: 'Current Ready destination is missing…' (stale: file exists, sha256 fc5e43ae…)",
+      "delivery.checks[4]: '…no delivered art has yet been reviewed.' (stale: reviewed in delivery stage)"
+    ],
+    "caller_position": "Agree with leaving these as recorded proposals. Changing them alters requirements_hash and the current selection binding; that is an owner/caller decision outside this review stage."
+  },
+  "corrected_packet_evidence": {
+    "pixl_request_review": {"diagnostics": [], "source_evidence_resolved": "35 of 35", "request_provider": "pixellab-test", "provider_simulated_assertion": true, "connection_bound": "work/queue.ready-revision/connection.json e137fb43…", "production_hash": "7a97831f… revision 14"},
+    "pointer_check": "All 19 criterion source pointers: lines equal the range named in the locator; every quoted phrase appears in those exact lines (the two 'Keep the existing ... X' ellipsis locators were checked fragment by fragment against BRIEF.md line 9).",
+    "packet_source_locators": "All 17 packet source locators are within file bounds and each source sha256 matches the current file bytes. provider-schemas.json lines 2-33 open and close the create_image_pro_flash object; provider-contract-origin.json line 4 is the scope entry; OWNER.md has 11 lines; STAGE.md 15; PHASE.md 11.",
+    "request_identity": "provider-arguments.json fd0fa324… is the reviewed/dispatched request; store request_sha256 64e34d9c… recorded in pixl_jobs for r.22e90a2a03fe453a.request matches the packet note. Arguments use only description/width/height/no_background, all declared in the bound schema."
+  },
+  "historical_defects_independently_confirmed": [
+    {"id": "D1", "confirmed": true, "evidence": "pixl_request_review on historical packet: provider-schemas.json locator 'create_image_pro_flash' status unresolved_locator"},
+    {"id": "D2", "confirmed": true, "evidence": "same report: provider-contract-origin.json locator 'scope' unresolved_locator"},
+    {"id": "D3", "confirmed": true, "evidence": "same report: OWNER.md 'lines 2-12' invalid_locator; wc -l OWNER.md = 11"},
+    {"id": "D4", "confirmed": true, "evidence": "same report: request.provider null, connection null, although work/queue.ready-revision/connection.json existed"},
+    {"id": "D5", "confirmed": true, "evidence": "historical candidate-plan pointers: BRIEF.md [3,9] for 'line 3' claims (6 criteria); src/queue-view.ts [3,11] for single-line claims (3 criteria); src/queue.ts [1,4] for 'line 3'; sample-pixel-craft cites 'line 5' with no [5,5] pointer"},
+    {"id": "D6", "confirmed": true, "evidence": "historical packet resume: state_hash de96861f…, task 'task', job first_request, remote controlled-create-0001; current state is 7a97831f… rev 14, r.22e90a2a03fe453a.* done/succeeded"},
+    {"id": "D7", "confirmed": true, "evidence": "historical packet names OWNER.md as current authorization; STAGE.md and PHASE.md post-date it"},
+    {"id": "D8", "confirmed": true, "evidence": "work/queue.ready-revision/connection.json authorization.evidence.lines [2,12] vs OWNER.md 11 lines; also echoed without diagnostic by pixl_request_review on the corrected packet. Correctly left unedited and disclosed."}
+  ],
+  "criterion_comparisons": [
+    {
+      "id": "geometry",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:3 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'; BRIEF.md:9 'Keep the existing 16x16 canvas, static behavior'; src/queue-view.ts:6 frames: 1; :9 cell: [16, 16]",
+      "pointers": "historical [3,9]+[3,11] -> corrected [3,3],[9,9],[6,6],[9,9]; each verified against file lines",
+      "delta": "No restriction added or removed. 'No horizontal strip, no extra canvas' is the mechanical form of static 16x16.",
+      "alternative_disposition": "Any 16x16 single-frame construction remains eligible.",
+      "finding": "consistent"
+    },
+    {
+      "id": "transparent-background",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:3 'Use transparent backgrounds'; BRIEF.md:9 '…transparent background…'",
+      "pointers": "historical [3,9] -> corrected [3,3],[9,9]",
+      "delta": "Partial alpha explicitly permitted; no binary-alpha rule.",
+      "alternative_disposition": "A candidate with anti-aliased subject edges over alpha 0 passes.",
+      "finding": "consistent"
+    },
+    {
+      "id": "ready-meaning",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'; BRIEF.md:3 'The working loop must communicate activity without looking like success'; src/queue.ts:3 ok -> succeeded; src/queue-view.ts:3 idle Start / :6 succeeded Ready; assets/start.svg:1 triangle M4 2L14 8L4 14Z",
+      "pointers": "historical [1,4],[3,11],[3,9],[1,1],[9,9] -> corrected [9,9],[3,3],[3,3],[3,3],[6,6],[1,1]",
+      "delta": "Owner-required motif and asymmetry retained; no arm ratio, stroke width, plate or highlight rule.",
+      "alternative_disposition": "Thin or thick asymmetrical checks with any arm ratio pass; a symmetric check fails by owner wording, not specialist choice.",
+      "finding": "consistent"
+    },
+    {
+      "id": "readability-1x-3x",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:3 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; BRIEF.md:9 '…review display conditions'; src/queue-view.ts:9 scale 3, nearest, #172336",
+      "pointers": "historical [3,9]+[3,11] -> corrected [3,3],[9,9],[9,9]",
+      "delta": "Uses observed display conditions; no pixel-count threshold.",
+      "alternative_disposition": "Any readable silhouette passes; no quantitative proxy imposed.",
+      "finding": "consistent"
+    },
+    {
+      "id": "cool-blue-accent",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:3 'the existing UI’s cool blue accent; a fixed palette is not required'; assets/start.svg:1 fill #70b9ed",
+      "pointers": "historical [3,9]+[1,1] -> corrected [3,3],[1,1]",
+      "delta": "Visual relationship judgement; #70b9ed is an observation, not an exact-hex rule.",
+      "alternative_disposition": "Other cool blues and multi-tone treatments pass.",
+      "finding": "consistent"
+    },
+    {
+      "id": "sample-pixel-craft",
+      "literal_check_unchanged_from_historical": true,
+      "source_wording": "BRIEF.md:3 'Create coherent pixel-art status assets'; BRIEF.md:5 'propose a representative status sample before expanding the family'",
+      "pointers": "historical [3,9] -> corrected [3,3],[5,5]",
+      "delta": "Expert quality bar, authority proposal, scoped to this sample; passing does not adopt a family style.",
+      "alternative_disposition": "A noisy or blurred brief-conforming check could fail this scoped expert criterion; retained as an explicit expert choice.",
+      "finding": "consistent scoped expert choice"
+    }
+  ],
+  "artifact_comparison": {
+    "pixl_asset_check": {"pass": true, "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "size": [16, 16], "frames": 1, "visible_pixels": 29, "visible_colors": 1, "color": "#70b9edff", "fractional_alpha_pixels": 0, "opaque_components": 1, "visible_bbox_zero_based_exclusive": [3, 4, 14, 13]},
+    "caller_viewing": "Opened assets/ready-confirmed.png (native) and inspections/0126fe96…/views/0002.png (3x on #172336). A light-blue check with a short descending left arm and a longer ascending right arm, clean 45-degree steps, no stray pixels; reads as completion, not as the Start triangle, bars or a loop. Agrees with the retained verdicts and with the specialist's fresh reading. No verdict record is changed by this viewing.",
+    "integration": {"command": "node verify-integration.mjs assets/ready-confirmed.png", "exit_code": 0, "sha256_reported": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "consumers": "statusCell and compactStatus both -> assets/ready-confirmed.png frames 1 for ok -> succeeded", "equals_specialist_recheck": true, "limits": "source-module execution only; no graphical renderer, DPR sampling or alpha compositing"}
+  },
+  "pixel_art_reasoning_review": {
+    "methods_cited_exist_in_knowledge_index": ["silhouette-readability", "edge-rhythm", "semantic-clusters", "integer-presentation", "alpha-contract", "state-driven-pixel-ui"],
+    "assessment": "Method applications in specialist-assessment.json match the index descriptions and the measured facts (one component, binary alpha, uniform 1-px staircases, exact nearest 3x view, static mapping for succeeded). The 7.41:1 contrast figure and the 1-px right/down offset are correctly labelled information, not criteria.",
+    "attribution_agreement": "Owner requirements, consumer observations and specialist choices as listed in the corrected packet's authority_map agree with my reading of BRIEF.md lines 3, 5, 7, 9 and the two source modules. The family-extensibility vocabulary (flat tone, 3-px strokes, tapered caps) is correctly labelled a proposal and is not adopted by this review."
+  },
+  "discrepancies_for_specialist": [
+    {
+      "id": "C1",
+      "artifact": "work/queue.ready-handoff/candidate-plan.json (outputs[0].contract.intent) and request-review.json criteria.note",
+      "finding": "contract.intent changed from the historical 'One static 16x16 Ready candidate for later assets/ready-confirmed.png.' to '…for assets/ready-confirmed.png.' (word 'later' removed), while the plan's scope statement and the packet's criteria.note say only citation locators were repaired.",
+      "requested": "Either restore the historical intent verbatim or keep the edit and disclose it in the scope statement and criteria.note. Save as new files; keep the round-1 files (48cf27c9…, e58e0e3e…) in place because PLAR evidence and the round-1 handoff reference them."
+    },
+    {
+      "id": "C2",
+      "artifact": ".pixl/handoffs/26a46b6c….json (details.caller_actions)",
+      "finding": "caller_actions is empty. The delegation contract keeps completed caller actions with evidence in details.caller_actions.",
+      "requested": "After resolving C1, reread focused PLAR and save a final pixl_plar_handoff whose details.caller_actions records this caller review (path and sha256) and the independent integration recheck, and whose request_review links point to the final corrected packet. The round-1 handoff remains readable."
+    },
+    {
+      "id": "C3",
+      "artifact": ".pixl/handoffs/26a46b6c….json (details.delivered_artifacts[plar-candidate.json])",
+      "finding": "Entry has no sha256; the file equals plar.txt e26ed3ea….",
+      "requested": "Include the hash in the final handoff."
+    }
+  ],
+  "observations_no_change_requested": [
+    "Historical caller reviews (work/queue.ready-revision/caller-review.json; work/queue.ready-delivery/caller-review.json) recorded 'no diagnostics' for the historical packet, while the installed pixl_request_review now reports three locator diagnostics on the same bytes. Whether the tool gained locator diagnostics after those reviews or they were missed cannot be determined inside this consumer. Those reviews are historical evidence and are not rewritten.",
+    "D8 (connection.json nested OWNER.md [2,12]) is correctly disclosed rather than edited; a fresh connection discovery is required before any future request.",
+    "The corrected packet binds request.connection to the historical connection.json for identity; it states it is not an authorization. Agreed: the pixellab-test connection is absent from this session and no request is authorized."
+  ],
+  "unresolved_obligations_confirmed": [
+    "Family/style adoption decision and source-bound baseline (owner/caller).",
+    "Working (4 frames, 100 ms), Retry at assets/error-retry.png, Paused at assets/paused.png; grayscale/non-colour family comparison at 1x/3x.",
+    "Graphical renderer acceptance: full and compact displays, nearest sampling at device pixel ratio, alpha compositing on #172336.",
+    "Optional PLAR refresh of existing[0].role and delivery.checks[4] (changes requirements_hash)."
+  ],
+  "next": "Return C1-C3 to the same PIXL specialist; verify its new packet/plan/handoff; then save HANDOFF-RESULT.json."
+}

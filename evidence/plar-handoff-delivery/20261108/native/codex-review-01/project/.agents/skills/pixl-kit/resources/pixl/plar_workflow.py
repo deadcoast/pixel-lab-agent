@@ -1,0 +1,266 @@
+"""Connect PLAR requirements to retained production without inventing acceptance."""
+
+from . import codec, graph, jobs, lifecycle, store
+from .codec import PixlError
+
+
+def owned_tasks(document, root, path, asset_id):
+    """Select explicit asset bindings; never infer ownership from a task name."""
+    result = []
+    for task in document.records.values():
+        if task.kind != "T":
+            continue
+        for reference in task.fields["ip"]:
+            metadata = document.records[reference.id].fields.get("mt", {})
+            if (
+                metadata.get("binding") == "pixl.plar.selection/1"
+                and metadata.get("asset_id") == asset_id
+                and isinstance(metadata.get("plar_path"), str)
+                and graph.confined(root, metadata["plar_path"])
+                == graph.confined(root, path)
+            ):
+                result.append(task.id)
+                break
+    return result
+
+
+def current_bindings(document, task_id, root, folder=None):
+    from .plar import selection_bindings
+
+    bindings = selection_bindings(document, task_id, root, folder)
+    changed = [
+        b
+        for b in bindings
+        if b["status"] != "current" or not b.get("selected_for_asset", True)
+    ]
+    if changed:
+        raise PixlError(
+            "plar_selection",
+            f"{task_id}: current consumer requirements differ or are unavailable; retain the old review and compare a revised contract",
+        )
+    return bindings
+
+
+def report(root, selected, path):
+    """Read one asset's production, including interrupted link publication."""
+    asset = selected["asset"]
+    link = asset.get("production")
+    relative = link["store"] if link else f".pixl/assets/{asset['id']}"
+    folder = graph.confined(root, relative)
+    result = {"store": relative, "link_status": "linked" if link else "unlinked"}
+    if not (folder / "state.px").is_file():
+        return {
+            **result,
+            "status": "missing" if link else "not_started",
+            "next_action": "restore_linked_state" if link else "prepare",
+            "new_request_allowed": not bool(link),
+        }
+    try:
+        document = store.load(folder)
+        graph.validate(document, root)
+        if document.format != 2:
+            raise PixlError("plar_production", "linked production must be PX2")
+        owned = owned_tasks(document, root, path, asset["id"])
+        if link:
+            task_id = link["task"]
+            task = document.records.get(task_id)
+            output = document.records.get(link["output"])
+            if (
+                task is None
+                or task.kind != "T"
+                or output is None
+                or output.kind != "F"
+                or output.fields["tk"].id != task_id
+            ):
+                raise PixlError(
+                    "plar_production",
+                    "linked task/output do not describe the same production work",
+                )
+            # Legacy authored projects may have no opt-in selection input.
+            tagged = any(
+                document.records[r.id].fields.get("mt", {}).get("binding")
+                == "pixl.plar.selection/1"
+                for r in task.fields["ip"]
+            )
+            if tagged and task_id not in owned:
+                raise PixlError(
+                    "plar_production", "linked task belongs to another asset selection"
+                )
+            owned = sorted(set(owned) | {task_id})
+        elif len(owned) == 1:
+            task_id = owned[0]
+            result["link_status"] = "discovered"
+        else:
+            raise PixlError(
+                "plar_production",
+                "unlinked state has no unique owned task; inspect and explicitly link the retained work",
+            )
+        from .plar import selection_bindings
+
+        task = document.records[task_id]
+        bindings = selection_bindings(document, task_id, root, folder)
+        current = bool(bindings) and all(
+            b["status"] == "current" and b.get("selected_for_asset", True)
+            for b in bindings
+        )
+        report_jobs = jobs.report(document, root, folder)["jobs"]
+        relevant = [
+            j for j in report_jobs if document.records[j["id"]].fields["tk"].id in owned
+        ]
+        pending = [j for j in relevant if j["state"] in jobs.PENDING]
+        rows = []
+        for job in relevant:
+            request = job.get("request", {})
+            rows.append(
+                {
+                    k: job[k]
+                    for k in ("id", "state", "remote_id", "next_action", "durable")
+                }
+                | {
+                    "task": document.records[job["id"]].fields["tk"].id,
+                    "provider": request.get("provider"),
+                    "tool": request.get("tool"),
+                    "discovery": request.get("discovery"),
+                    "stale": job.get("stale", []),
+                    "blockers": job.get("blockers", []),
+                    "candidates": job.get("candidates", []),
+                }
+            )
+        action = "review_contract" if not current else "inspect_or_revise"
+        active_jobs = [
+            j for j in relevant if document.records[j["id"]].fields["tk"].id == task_id
+        ]
+        successful = [j for j in active_jobs if j["state"] == "succeeded"]
+        if current and successful:
+            action = (
+                "review_candidates"
+                if any(j.get("candidates") for j in successful)
+                else "retrieve_and_import"
+            )
+        if task.fields["st"].value == "done" and current:
+            action = "review_delivery"
+        if pending:
+            action = (
+                "reconcile"
+                if any(j["state"] == "unknown" for j in pending)
+                else "observe"
+                if any(j["state"] in {"submitted", "running"} for j in pending)
+                else "dispatch"
+                if current and all(j["next_action"] == "dispatch" for j in pending)
+                else "resolve_prepared_intent"
+            )
+        workflow = next(
+            t for t in lifecycle.report(document)["tasks"] if t["id"] == task_id
+        )
+        return {
+            **result,
+            "status": "available",
+            "state": str(folder / "state.px"),
+            "hash": codec.digest(document),
+            "revision": document.revision,
+            "task": task_id,
+            "task_state": task.fields["st"].value,
+            "outputs": workflow["outputs"],
+            "selection_bindings": bindings,
+            "selection_current": current,
+            "jobs": rows,
+            "pending_jobs": [j["id"] for j in pending],
+            "next_action": action,
+            "continuation": {
+                "store": relative,
+                "state_hash": codec.digest(document),
+                "asset_id": asset["id"],
+                "requirements_hash": selected["requirements_hash"],
+                "task": task_id,
+                "action": action,
+                "jobs": [
+                    {
+                        k: row[k]
+                        for k in (
+                            "id",
+                            "task",
+                            "state",
+                            "provider",
+                            "remote_id",
+                            "next_action",
+                        )
+                    }
+                    for row in rows
+                    if row["id"] in {j["id"] for j in pending} or row["task"] == task_id
+                ],
+                "before_another_request": [
+                    {
+                        "job": j["id"],
+                        "action": j["next_action"],
+                        "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset.",
+                    }
+                    for j in pending
+                ],
+                "after_observation": {
+                    "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+                    "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+                    "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity.",
+                },
+                "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+                "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict.",
+            },
+            "link_action": "save_production_link" if not link else None,
+            "new_request_allowed": current and not pending,
+            "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance.",
+        }
+    except (PixlError, OSError, ValueError) as error:
+        return {
+            **result,
+            "status": "unavailable",
+            "reason": str(error),
+            "next_action": "inspect_retained_state",
+            "new_request_allowed": False,
+        }
+
+
+def synchronize(root, selected, path, folder, task_id, outputs, marker_path):
+    """CAS link one output after its job exists; preserve all unrelated allocation data."""
+    from . import plar
+
+    if len(outputs) != 1:
+        return {
+            "status": "needs_output_link",
+            "reason": "Multiple outputs: explicitly choose the PLAR delivery output; all task outputs remain required.",
+        }
+    link = {
+        "store": folder.relative_to(root).as_posix(),
+        "task": task_id,
+        "output": outputs[0],
+    }
+    if selected["asset"].get("production") == link:
+        return {"status": "unchanged", "production": link}
+    try:
+        document, digest = plar._load(graph.confined(root, path))
+        if digest != selected["hash"]:
+            raise PixlError(
+                "stale_write",
+                "allocation changed during preparation; reread before linking the retained job",
+            )
+        asset = next(
+            a for a in document["assets"] if a["id"] == selected["asset"]["id"]
+        )
+        asset.update(
+            production=link,
+            status="in_progress",
+            next="Read this asset's production status; use its retained job action before another request.",
+        )
+        evidence = {
+            "path": marker_path,
+            "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance.",
+        }
+        if evidence not in asset["evidence"]:
+            asset["evidence"].append(evidence)
+        saved = plar.save(root, document, digest, path)
+        return {"status": "linked", "hash": saved["hash"], "production": link}
+    except (PixlError, OSError) as error:
+        return {
+            "status": "needs_reconciliation",
+            "production": link,
+            "reason": str(error),
+            "next": "The plan/job are retained. Reread PLAR and link this work; do not create another job.",
+        }

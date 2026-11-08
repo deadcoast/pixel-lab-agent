@@ -1,0 +1,987 @@
+[
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && ls -la && cat OWNER.md && ls -R .agents | head -50 && cat provider-schemas.json",
+      "description": "List project and read owner file and schemas"
+    },
+    "timestamp": "2026-11-08T05:05:14.790Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && cat AGENTS.md SESSION.md BRIEF.md SOURCE-MAP.md provider-contract-origin.json PARENT-RESULT.json && ls -R src assets work .pixl | head -80 && git status --short . | head; git log --oneline -3 -- .",
+      "description": "Read session, brief, source map, parent result"
+    },
+    "timestamp": "2026-11-08T05:05:19.221Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && sha256sum OWNER.md BRIEF.md src/*.ts assets/start.svg provider-schemas.json plar.txt && cat src/queue.ts src/queue-view.ts && ls .agents/skills/pixl-kit/skills/ && cat .agents/skills/pixl-kit/agents/pixl.md | head -60",
+      "description": "Hash sources and read code"
+    },
+    "timestamp": "2026-11-08T05:05:23.248Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && I=.pixl/assets/queue.ready/inputs; diff $I/af42*.md OWNER.md; diff $I/5955*.md BRIEF.md; diff $I/01ee*.ts src/queue-view.ts; ls .agents/skills/pixl-kit/skills/*; wc -c .agents/skills/pixl-kit/skills/*/SKILL.md",
+      "description": "Diff retained inputs against current sources"
+    },
+    "timestamp": "2026-11-08T05:05:28.609Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills\" && cat plar/SKILL.md pixl/SKILL.md && ls plar/references pixl/references",
+      "description": "Read PLAR and PIXL skill instructions"
+    },
+    "timestamp": "2026-11-08T05:05:32.695Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills\" && cat plar/references/prepare.md pixl/references/request-review.md pixl/references/delegation.md pixl/references/provider-recovery.md",
+      "description": "Read prepare, review, delegation, recovery references"
+    },
+    "timestamp": "2026-11-08T05:05:36.254Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\.claude\\projects\\C--Users-ryanf-github-gh-pixel-lab-agent-evidence-plar-cohesion-20261108-native-claude-cold-01-project\\10a641fc-8d6a-4077-8b82-3614888c1634\\tool-results\\bheog64so.txt"
+    },
+    "timestamp": "2026-11-08T05:05:39.444Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixellab-test__list_jobs",
+    "arguments": {
+      "include_recent": true
+    },
+    "timestamp": "2026-11-08T05:05:43.965Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_read",
+    "arguments": {
+      "asset_id": "queue.ready"
+    },
+    "timestamp": "2026-11-08T05:05:44.353Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_jobs",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:05:44.651Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && mkdir -p work/queue.ready/rev2 && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"\nimport json,datetime\nr={'jobs':[{'job_id':'controlled-create-0001','status':'failed','arguments':{'description':'16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered checkmark silhouette with chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.','width':16,'height':16,'no_background':True},'tool':'create_image_pro_flash','provider_simulated':True,'reason':'Controlled continuation fixture: the original queued attempt has ended without an image.'}],'provider_simulated':True}\ndoc={'version':1,'connection':'pixellab-test','tool':'list_jobs','call_arguments':{'include_recent':True},'observed_at':datetime.datetime.now(datetime.UTC).isoformat(),'observer':'calling agent','provider_simulated':True,'response':r,'note':'Verbatim response of mcp__pixellab-test__list_jobs at resume, before any new request. Originating connection of first_request.'}\njson.dump(doc,open('work/queue.ready/rev2/original-status.json','w'),indent=2)\nprint(doc['observed_at'])\" && sha256sum work/queue.ready/rev2/original-status.json",
+      "description": "Retain original job status response as evidence"
+    },
+    "timestamp": "2026-11-08T05:05:53.951Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_job_observe",
+    "arguments": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2",
+      "job_id": "first_request",
+      "event": "failed",
+      "evidence": {
+        "connection": "pixellab-test",
+        "tool": "list_jobs",
+        "observed_at": "2026-11-08T05:05:54.259395+00:00",
+        "provider_simulated": true,
+        "response": {
+          "job_id": "controlled-create-0001",
+          "status": "failed",
+          "reason": "Controlled continuation fixture: the original queued attempt has ended without an image."
+        },
+        "response_file": {
+          "path": "work/queue.ready/rev2/original-status.json",
+          "sha256": "7d0e1b38718e6bed9740a175e47798f3e409469c9295818dfaf75ff4f0f10bab"
+        },
+        "observer": "calling agent",
+        "note": "Observed on the originating controlled connection; no image was produced."
+      }
+    },
+    "timestamp": "2026-11-08T05:06:00.134Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Agent",
+    "arguments": {
+      "subagent_type": "pixl",
+      "description": "Refresh PLAR and prepare revised Ready request",
+      "run_in_background": false,
+      "prompt": "You are PIXL, the pixel-art production specialist, assigned by a calling agent. Load the packaged skills from the consumer project (not any other install): read `.agents/skills/pixl-kit/skills/pixl/SKILL.md`, `.agents/skills/pixl-kit/resources/agent/PROFILE.md`, `.agents/skills/pixl-kit/skills/plar/SKILL.md`, `plar/references/format.md`, `plar/references/prepare.md` (especially the revision path, `revise: true`), `pixl/references/request-review.md`, `pixl/references/delegation.md`, `pixl/references/provider-recovery.md`, and `pixl/references/intake-sample.md` as needed.\n\n## Workspace\nAbsolute consumer root: C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\nWork only inside it. Put all your new artifacts under `work/queue.ready/rev2/` (already exists; it contains the caller's `original-status.json` \u2014 do not modify it). Do NOT modify or delete any existing file under `work/queue.ready/` (first-generation artifacts must be preserved). Selected Python: C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe (bundled runner: .agents/skills/pixl-kit/scripts/pixl.py). Local pixl-local MCP tools are available (paths relative to the root). No installs, credentials, host changes or external services.\n\n## Assignment (from OWNER.md, sha256 c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7 \u2014 read it yourself)\nThe source brief and view changed since the retained first request. Refresh PLAR against the actual source, preserving existing IDs, other asset history and the Start control. Continue queue.ready through one newly reviewed request under the updated contract and retain resumable state. Deliverable ends at the accepted revised request: no image or renderer exists, no style is approved; integration and art acceptance are future work. Do not fabricate images, provider observations, acceptance or a live-service identity.\n\n## What changed (verify yourself against the files)\n- BRIEF.md now sha256 aebe0094\u2026; new final paragraph \"Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\" PLAR binding is to 5955da4d\u2026 (retained at .pixl/assets/queue.ready/inputs/5955\u2026.md for diffing).\n- src/queue-view.ts now sha256 4d6ee92e\u2026: succeeded path moved from assets/ready.png to assets/ready-confirmed.png. Prior bytes retained at .pixl/assets/queue.ready/inputs/01ee5376\u2026.ts.\n- src/queue.ts, assets/start.svg, provider-schemas.json unchanged.\n\n## Current state\n- plar.txt hash 0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33; queue.ready focused requirements_hash currently 7170e026\u2026 (bindings stale, will change after refresh). Rows: queue.ready, queue.working, queue.retry, queue.start, queue.paused \u2014 preserve IDs and unaffected rows/history.\n- PX2 store .pixl/assets/queue.ready, revision 4, hash 47ef2326e8420a8db6369384c5eaf847cc07afd9474e37522a556c6689d71864. Task `task` open, output `output.ready`, no candidate. Job `first_request` (remote_id controlled-create-0001, pixellab-test, provider_simulated=true) is now terminal `failed`: the caller observed it via pixellab-test list_jobs and recorded it (evidence work/queue.ready/rev2/original-status.json). Do not re-observe or alter that job.\n- First-generation packet/criteria: work/queue.ready/request-review.json, candidate-plan.json, provider-arguments.json, connection.json (7 criteria). Reuse what still holds; revise what the new requirement changes.\n\n## Provider\nControlled request-only connection `pixellab-test`, tool `create_image_pro_flash`; advertised schema in provider-schemas.json (description required; width/height 16\u2013256 multipleOf 4; no_background; seed; additionalProperties false). It has no upstream service; keep provider_simulated=true everywhere. Authorization: OWNER.md line 7 \"The connection supports one further controlled request in this stage.\" Dispatch and submission are owned by the CALLER after its independent review \u2014 you must NOT call pixl_job_dispatch or any mcp__pixellab-test__ tool.\n\n## Do\n1. Refresh plar.txt via pixl_plar_save (expected hash) \u2014 rebind changed sources after inspecting them; move queue.ready destination/existing/delivery to assets/ready-confirmed.png (moved destination, same visual role and ID); add the asymmetrical-arms check-mark requirement with authority requirement sourced to BRIEF; reconcile the old sample_motif proposal accordingly; update coverage; keep other rows' requirements intact (check whether anything else is genuinely affected). Update queue.ready next to reflect the failed first attempt and pending revision.\n2. Re-read the focused row to get the new requirements_hash.\n3. Write new rev2 artifacts: provider-arguments.json (exact complete arguments), candidate-plan.json (criteria scoped to this sample; the asymmetrical-arms requirement must be carried as an owner requirement with an acceptance criterion; keep deferred family/destination/renderer obligations explicit with later stage), connection.json (discovery from the actual host tool declaration with actual host clock time; authorization citing current OWNER.md hash/line), request-review.json (sources with actual hashes + per-file locators, request, criteria, choices, resume links to the existing store/task/output/failed job, requirements_hash).\n4. Run pixl_plar_prepare with revise: true and expect = current store hash, packet and connection as project-relative paths. Verify the returned new task/output/job IDs and PLAR allocation link.\n5. Stop before dispatch. Do NOT write any caller-review file; that is the caller's.\n\n## Return\nCompact JSON: status; asset_id; new requirements_hash; plar old/new hash; store hash/revision after prepare; new task/output/job IDs; paths+sha256 of each rev2 artifact; list of criteria IDs with authority; consequential specialist choices; anything unresolved."
+    },
+    "timestamp": "2026-11-08T05:06:28.591Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && ls -la && ls -R work .agents/skills/pixl-kit/skills | head -80 && cat OWNER.md && sha256sum OWNER.md BRIEF.md src/* assets/* plar.txt provider-schemas.json",
+      "description": "List project and read OWNER.md with hashes"
+    },
+    "timestamp": "2026-11-08T05:06:33.404Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit\" && cat skills/pixl/SKILL.md resources/agent/PROFILE.md skills/plar/SKILL.md",
+      "description": "Read PIXL and PLAR skills and profile"
+    },
+    "timestamp": "2026-11-08T05:06:36.262Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit\" && cat skills/plar/references/format.md skills/plar/references/prepare.md",
+      "description": "Read PLAR format and prepare references"
+    },
+    "timestamp": "2026-11-08T05:06:37.005Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit\" && cat skills/pixl/references/request-review.md skills/pixl/references/delegation.md; cat resources/spec/asset-preparation.md | head -150",
+      "description": "Read request-review, delegation and asset-preparation spec"
+    },
+    "timestamp": "2026-11-08T05:06:40.373Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && cat AGENTS.md SESSION.md SOURCE-MAP.md BRIEF.md provider-schemas.json provider-contract-origin.json; echo ----; cat src/queue-view.ts; echo ----; diff .pixl/assets/queue.ready/inputs/01ee5376*.ts src/queue-view.ts; diff .pixl/assets/queue.ready/inputs/5955*.md BRIEF.md; echo; cat src/queue.ts",
+      "description": "Read project docs, sources, and diffs"
+    },
+    "timestamp": "2026-11-08T05:06:42.060Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_read",
+    "arguments": {
+      "asset_id": "queue.ready"
+    },
+    "timestamp": "2026-11-08T05:06:44.992Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && file src/queue-view.ts .pixl/assets/queue.ready/inputs/01ee5376*.ts BRIEF.md; cat work/queue.ready/rev2/original-status.json; echo; for f in request-review candidate-plan provider-arguments connection; do echo \"== $f\"; cat work/queue.ready/$f.json; echo; done",
+      "description": "Read first-generation artifacts and status evidence"
+    },
+    "timestamp": "2026-11-08T05:06:46.688Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && grep -n \"\" BRIEF.md | cut -c1-80; grep -n \"\" src/queue-view.ts | cut -c1-90; grep -n \"ready\" plar.txt | cut -c1-220; ls .pixl .pixl/assets .pixl/assets/queue.ready .pixl/plar-history 2>/dev/null",
+      "description": "Line numbers and ready references in plar.txt"
+    },
+    "timestamp": "2026-11-08T05:06:53.558Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\plar.txt",
+      "offset": 255
+    },
+    "timestamp": "2026-11-08T05:06:56.289Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\plar.txt",
+      "limit": 255
+    },
+    "timestamp": "2026-11-08T05:06:59.188Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_jobs",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready"
+    },
+    "timestamp": "2026-11-08T05:07:13.986Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && sha256sum SOURCE-MAP.md provider-contract-origin.json; ls assets; cat assets/start.svg; git -C . status --short . 2>/dev/null | head",
+      "description": "Check other source hashes and assets"
+    },
+    "timestamp": "2026-11-08T05:07:15.174Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_jobs",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:07:17.155Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\work\\queue.ready\\rev2\\build_plar_refresh.py",
+      "content": "\"\"\"Derive the refreshed plar.txt document for the queue.ready rev2 update.\n\nReads the current plar.txt, changes only: brief/queue-view source hashes, coverage\nlines for this refresh, and the queue.ready row (destination move, new owner\nrequirement, motif reconciliation, checks, next, evidence). Other rows untouched.\nWrites work/queue.ready/rev2/plar-refresh.json for `plar save --expect`.\n\"\"\"\nimport copy\nimport json\nimport sys\nfrom pathlib import Path\n\nroot = Path(sys.argv[1])\ndoc = json.loads((root / \"plar.txt\").read_text(encoding=\"utf-8\"))\nbefore = copy.deepcopy(doc)\n\nNEW = {\"brief\": \"aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab\",\n       \"queue-view\": \"4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49\"}\nfor s in doc[\"sources\"]:\n    if s[\"id\"] in NEW:\n        s[\"sha256\"] = NEW[s[\"id\"]]\n\ncov = doc[\"coverage\"]\ncov[\"included\"][0] = (\"Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief (current update paragraph, line 9) \"\n                      \"and changed queue-view (statusVisuals.succeeded, line 6) for this refresh; queue-state, start.svg and SOURCE-MAP.md are byte-unchanged.\")\ncov[\"included\"][3] = (\"Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; \"\n                      \"verify the four current PNG destinations (working.png, paused.png, ready-confirmed.png, error-retry.png) are absent.\")\ncov[\"included\"].insert(5, \"Reconcile the Ready destination move from assets/ready.png to assets/ready-confirmed.png while preserving its queue.ready ID, \"\n                          \"unchanged success/completion purpose and existing production history; add the brief's asymmetrical-arm check-mark requirement to queue.ready only.\")\ncov[\"unresolved\"][1] = (\"No approved style reference exists. Ready remains the proposed representative sample (now required to use an asymmetrical-arm check mark); \"\n                        \"Working, Retry and Paused depend on its review before family expansion.\")\n\nready = next(a for a in doc[\"assets\"] if a[\"id\"] == \"queue.ready\")\nready[\"consumers\"][0][\"usage\"] = \"Maps succeeded to the Ready label, current assets/ready-confirmed.png path and one static frame.\"\nready[\"existing\"] = [{\"path\": \"assets/ready-confirmed.png\",\n                      \"role\": \"Current required Ready destination is missing; the previous assets/ready.png target is superseded by the updated view. No reusable Ready image was supplied.\"}]\n\nreqs = ready[\"requirements\"]\nidx = {r[\"property\"]: i for i, r in enumerate(reqs)}\nreqs[idx[\"sample_motif\"]] = {\n    \"property\": \"sample_motif\",\n    \"value\": (\"The check-mark form is now an owner requirement (see ready_check_mark). Remaining motif details are proposals for style review: \"\n              \"stroke weight, arm proportions and orientation, highlight treatment and the absence of a backing plate or badge.\"),\n    \"authority\": \"proposal\",\n    \"sources\": [],\n    \"reason\": \"The current brief fixes a check mark with asymmetrical arms but not its stroke weight, exact proportions, orientation, shading or framing.\"}\nreqs.insert(idx[\"state_meaning\"] + 1, {\n    \"property\": \"ready_check_mark\",\n    \"value\": \"Ready visibly uses a check mark with asymmetrical arms to convey successful completion.\",\n    \"authority\": \"requirement\",\n    \"sources\": [\"brief\"],\n    \"reason\": \"The brief's current update requires this specific mark; the exact arm ratio, orientation and stroke weight are not specified.\"})\nreqs.append({\n    \"property\": \"destination_update\",\n    \"value\": \"The current Ready destination is assets/ready-confirmed.png; the established queue.ready asset identity, success/completion purpose and production history are unchanged.\",\n    \"authority\": \"observation\",\n    \"sources\": [\"brief\", \"queue-view\"],\n    \"reason\": \"The current brief says the destination follows the updated view; statusVisuals.succeeded supplies the new path. Previous allocation bytes remain in PLAR history.\"})\n\nready[\"delivery\"] = {\n    \"path\": \"assets/ready-confirmed.png\",\n    \"checks\": [\n        \"Decode the delivered PNG and confirm the row-specific dimensions and frame count.\",\n        \"Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.\",\n        \"Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.\",\n        \"Inspect at 1x and 3x nearest on #172336 that the mark is visibly a check mark with asymmetrical arms conveying successful completion.\",\n        \"Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.\",\n        \"Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.\",\n        \"Review and record the representative sample decision before expanding the other status assets; source-bind the approved visual reference for later handoff.\",\n        \"Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.\",\n        \"Confirm statusVisuals.succeeded resolves assets/ready-confirmed.png; do not deliver new Ready art to the superseded assets/ready.png path.\"]}\n\nready[\"next\"] = (\"First attempt first_request (pixellab-test, remote_id controlled-create-0001, provider_simulated=true) is terminal failed without an image, \"\n                 \"observed by the caller on its originating connection (work/queue.ready/rev2/original-status.json). The brief and view changed: Ready now needs an \"\n                 \"asymmetrical-arm check mark at assets/ready-confirmed.png. Next: specialist prepares the revised packet in work/queue.ready/rev2/ and a revised \"\n                 \"generation in .pixl/assets/queue.ready via plar prepare --revise; caller independently compares it, then claims dispatch and submits the one further \"\n                 \"controlled pixellab-test request. No image, style approval or integration exists. Not integrated.\")\nready[\"evidence\"].append({\n    \"path\": \"work/queue.ready/rev2/original-status.json\",\n    \"note\": \"Caller's pixellab-test list_jobs observation at resume: controlled-create-0001 failed without an image (provider_simulated=true); recorded on job first_request (store revision 4, hash 47ef2326...). sha256 7d0e1b38718e6bed9740a175e47798f3e409469c9295818dfaf75ff4f0f10bab.\"})\n\n# Guard: every other row must be byte-identical in JSON terms.\nfor a, b in zip(before[\"assets\"], doc[\"assets\"]):\n    if a[\"id\"] != \"queue.ready\":\n        assert a == b, a[\"id\"]\nassert [a[\"id\"] for a in before[\"assets\"]] == [a[\"id\"] for a in doc[\"assets\"]]\n\nout = root / \"work/queue.ready/rev2/plar-refresh.json\"\nout.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + \"\\n\", encoding=\"utf-8\")\nprint(out)\n"
+    },
+    "timestamp": "2026-11-08T05:07:45.607Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && PY=C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe && R=\"$PWD\" && $PY -I work/queue.ready/rev2/build_plar_refresh.py \"$R\" && $PY .agents/skills/pixl-kit/scripts/pixl.py plar save \"$R/work/queue.ready/rev2/plar-refresh.json\" --root \"$R\" --expect 0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33 | head -c 4000; echo; sha256sum plar.txt",
+      "description": "Build refreshed PLAR and save with expected hash"
+    },
+    "timestamp": "2026-11-08T05:07:51.821Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_read",
+    "arguments": {
+      "since": "0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33"
+    },
+    "timestamp": "2026-11-08T05:07:55.993Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe .agents/skills/pixl-kit/scripts/pixl.py plar read --root \"$PWD\" --asset queue.ready > work/queue.ready/rev2/focused-read.json; C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe -I -c \"\nimport json,sys;d=json.load(open(sys.argv[1]));print(d['requirements_hash']);p=d['production'];print(p['next_action'],p['new_request_allowed'],p['pending_jobs'],p['selection_current'],p['hash'],p['revision'])\" work/queue.ready/rev2/focused-read.json; ls .agents/skills/pixl-kit/runtime/pixl/ | grep -i schema",
+      "description": "Focused read for new requirements hash"
+    },
+    "timestamp": "2026-11-08T05:08:01.233Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && grep -n \"\" OWNER.md; grep -n \"\" src/queue.ts; cat .agents/skills/pixl-kit/runtime/pixl/asset-plan.schema.json | head -80; date -u +%Y-%m-%dT%H:%M:%S%z",
+      "description": "Line-number OWNER.md and read plan schema"
+    },
+    "timestamp": "2026-11-08T05:08:18.973Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\work\\queue.ready\\rev2\\provider-arguments.json",
+      "content": "{\n  \"description\": \"16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered check mark with clearly asymmetrical arms: a short arm rising up-left from the bottom point and a much longer arm rising up-right, like a classic tick. Chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.\",\n  \"width\": 16,\n  \"height\": 16,\n  \"no_background\": true\n}\n"
+    },
+    "timestamp": "2026-11-08T05:08:25.012Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\work\\queue.ready\\rev2\\candidate-plan.json",
+      "content": "{\n  \"version\": 1,\n  \"scope\": \"Revised representative Ready status sample (queue.ready, rev2) for style review before family expansion, under the current brief (asymmetrical-arm check mark) and updated view (destination assets/ready-confirmed.png). Only this candidate's own mechanical, meaning, check-mark form, readability and accent-relationship checks are required at this stage. Family distinction (Working/Retry/Paused vs Ready), renderer integration of statusCell/compactStatus, the style-approval decision and placement at assets/ready-confirmed.png are deferred later-stage obligations recorded in rev2/request-review.json and PLAR, not rejection rules for this sample.\",\n  \"outputs\": [\n    {\n      \"id\": \"ready\",\n      \"name\": \"Ready status icon sample (rev2)\",\n      \"kind\": \"sprite\",\n      \"contract\": {\n        \"size\": [16, 16],\n        \"palette\": [],\n        \"view\": \"ui\",\n        \"sampling\": \"nearest\",\n        \"alpha\": \"full\",\n        \"intent\": \"One static 16x16 Ready status image for later destination assets/ready-confirmed.png (current consumer path; assets/ready.png is superseded). Owner requirement: a visible check mark with asymmetrical arms conveying successful completion. Transparent background, no fixed palette, partial alpha permitted (brief: transparent backgrounds, fixed palette not required). Short-left/long-right tick orientation, chunky ~2px strokes, cool blue near #70b9ed with a lighter highlight and no backing plate are specialist sample choices, revisable at style review.\"\n      },\n      \"criteria\": [\n        {\n          \"id\": \"geometry\",\n          \"domain\": \"mechanical\",\n          \"mode\": \"local\",\n          \"check\": \"Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).\",\n          \"basis\": \"Owner/consumer requirement. Brief: 16x16 logical status cells, Ready is static, and the current update keeps the 16x16 canvas and static behavior. Consumer: succeeded maps to frames 1 and display.cell is [16,16].\",\n          \"scope\": \"This Ready candidate file.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'; line 9: 'Keep the existing 16x16 canvas, static behavior'\"},\n            {\"path\": \"src/queue-view.ts\", \"locator\": \"line 6 (succeeded: frames 1) and line 9 (display.cell [16, 16])\"}\n          ]\n        },\n        {\n          \"id\": \"transparent-background\",\n          \"domain\": \"mechanical\",\n          \"mode\": \"local\",\n          \"check\": \"The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.\",\n          \"basis\": \"Owner requirement: transparent backgrounds, reaffirmed by the current update; neither restricts alpha to binary values.\",\n          \"scope\": \"This Ready candidate file.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'Use transparent backgrounds'; line 9: 'Keep the existing ... transparent background'\"}\n          ]\n        },\n        {\n          \"id\": \"ready-meaning\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.\",\n          \"basis\": \"Owner/consumer requirement. Consumer state mapping ok -> succeeded -> label Ready, while idle uses the Start vector. Brief: Ready conveys successful completion and the working loop must not look like success. Judging Ready against the actual future Working/Retry/Paused images is deferred.\",\n          \"scope\": \"This Ready candidate on its own, plus the already-existing Start vector.\",\n          \"sources\": [\n            {\"path\": \"src/queue.ts\", \"locator\": \"line 3: ok -> succeeded\"},\n            {\"path\": \"src/queue-view.ts\", \"locator\": \"line 3 (idle: Start, assets/start.svg) and line 6 (succeeded: label Ready)\"},\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'The working loop must communicate activity without looking like success'; line 9: 'to convey successful completion'\"},\n            {\"path\": \"assets/start.svg\", \"locator\": \"line 1: play-triangle path M4 2L14 8L4 14Z\"}\n          ]\n        },\n        {\n          \"id\": \"asymmetric-check-mark\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"At 1x and at 3x nearest-neighbor scale on #172336, the mark is visibly a check mark whose two arms are clearly unequal in length (asymmetrical), so that it reads as successful completion. The criterion does not fix the arm ratio, orientation (left/right), stroke weight or colour; a symmetric V, a cross, a circle-only badge or an indistinct blob fails.\",\n          \"basis\": \"Owner requirement from the brief's current update. Display conditions come from the brief's review conditions and the consumer display descriptor.\",\n          \"scope\": \"This Ready candidate at the declared display conditions.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion' / 'review display conditions'\"},\n            {\"path\": \"src/queue-view.ts\", \"locator\": \"line 9: scale 3, filter nearest, background #172336\"}\n          ]\n        },\n        {\n          \"id\": \"readability-1x-3x\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.\",\n          \"basis\": \"Owner requirement: readable silhouettes inspected at 1x and 3x nearest on the actual dark panel (review display conditions kept by the current update); #172336 is the consumer-observed panel colour (display.background).\",\n          \"scope\": \"This Ready candidate at the declared display conditions.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; line 9: 'review display conditions'\"},\n            {\"path\": \"src/queue-view.ts\", \"locator\": \"line 9: scale 3, filter nearest, background #172336\"}\n          ]\n        },\n        {\n          \"id\": \"cool-blue-accent\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.\",\n          \"basis\": \"Owner requirement: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.\",\n          \"scope\": \"This Ready candidate compared with the existing Start vector.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'the existing UI's cool blue accent; a fixed palette is not required'\"},\n            {\"path\": \"assets/start.svg\", \"locator\": \"line 1: fill #70b9ed\"}\n          ]\n        },\n        {\n          \"id\": \"silhouette-without-color\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).\",\n          \"basis\": \"Specialist sample choice derived from the brief's non-colour distinction requirements for Retry and Paused: a sample whose identity is shape-carried keeps those later distinctions achievable. Checks only the Ready sample's own form; the pairwise family comparison is deferred.\",\n          \"scope\": \"This Ready sample only (specialist sample criterion).\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'Error/retry must be distinguishable without color alone' and line 7: paused 'without relying on color alone'\"}\n          ]\n        },\n        {\n          \"id\": \"sample-pixel-craft\",\n          \"domain\": \"visual\",\n          \"mode\": \"visual\",\n          \"check\": \"As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.\",\n          \"basis\": \"Specialist expert judgment applying the brief's 'coherent pixel-art status assets' and representative-sample instruction.\",\n          \"scope\": \"This Ready sample, assessed for style review; passing does not approve the family style.\",\n          \"sources\": [\n            {\"path\": \"BRIEF.md\", \"locator\": \"line 3: 'Create coherent pixel-art status assets' and line 5: 'propose a representative status sample before expanding the family'\"}\n          ]\n        }\n      ]\n    }\n  ]\n}\n"
+    },
+    "timestamp": "2026-11-08T05:08:47.254Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe -I - <<'EOF'\nimport json, datetime\nnow = datetime.datetime.now(datetime.timezone.utc).isoformat()\nschema = {\"type\":\"object\",\"properties\":{\"description\":{\"type\":\"string\",\"minLength\":1},\"width\":{\"type\":\"integer\",\"minimum\":16,\"maximum\":256,\"multipleOf\":4},\"height\":{\"type\":\"integer\",\"minimum\":16,\"maximum\":256,\"multipleOf\":4},\"no_background\":{\"type\":\"boolean\"},\"seed\":{\"type\":\"integer\",\"minimum\":0}},\"required\":[\"description\"],\"additionalProperties\":False}\nps = json.load(open(\"provider-schemas.json\"))[\"create_image_pro_flash\"]\nassert ps == schema, \"schema mismatch\"\ndoc = {\n \"provider\": \"pixellab-test\",\n \"schema\": schema,\n \"discovery\": {\n  \"source\": \"Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this specialist session (rev2), cross-checked equal to provider-schemas.json#create_image_pro_flash\",\n  \"observed_at\": now,\n  \"evidence\": {\n   \"connection\": \"pixellab-test\",\n   \"tool\": \"create_image_pro_flash\",\n   \"host_tool_name\": \"mcp__pixellab-test__create_image_pro_flash\",\n   \"host_declaration_text\": \"Controlled request-only fixture using documented PixelLab create_image_pro_flash fields. Queues one request; default canvas 64x64, no_background true. Return is a simulated acceptance, with no generated image or upstream provider. The assigned stage ends after retaining this job identity.\",\n   \"schema_file\": \"provider-schemas.json\",\n   \"schema_file_sha256\": \"e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c\",\n   \"schema_equals_host_declaration\": True,\n   \"contract_origin_file\": \"provider-contract-origin.json\",\n   \"contract_origin_sha256\": \"f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09\",\n   \"provider_simulated\": True,\n   \"specialist_called_provider\": False\n  }\n },\n \"authorization\": {\n  \"scope\": \"Exactly one further submission, of this revised queue.ready rev2 request, to the controlled pixellab-test connection (create_image_pro_flash), after the caller's independent comparison. No other provider, credentials, installs or host changes.\",\n  \"evidence\": {\n   \"source\": \"OWNER.md\",\n   \"source_sha256\": \"c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7\",\n   \"locator\": \"line 7: 'The connection supports one further controlled request in this stage.'\",\n   \"provider_simulated\": True,\n   \"dispatch_owner\": \"caller, after its independent request/criteria comparison\",\n   \"prior_attempt\": \"first_request (remote_id controlled-create-0001) is terminal failed per caller observation work/queue.ready/rev2/original-status.json; it is not re-submitted\"\n  }\n }\n}\nopen(\"work/queue.ready/rev2/connection.json\",\"w\",encoding=\"utf-8\",newline=\"\\n\").write(json.dumps(doc,indent=2)+\"\\n\")\nprint(now)\nEOF\nsha256sum work/queue.ready/rev2/*.json",
+      "description": "Write connection.json with host clock; hash rev2 files"
+    },
+    "timestamp": "2026-11-08T05:08:59.982Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe -I - <<'EOF'\nimport json, hashlib, jsonschema\nH = lambda p: hashlib.sha256(open(p,\"rb\").read()).hexdigest()\nR = \"work/queue.ready/rev2/\"\nargs = json.load(open(R+\"provider-arguments.json\"))\nconn = json.load(open(R+\"connection.json\"))\njsonschema.validate(args, conn[\"schema\"])\nplan = json.load(open(R+\"candidate-plan.json\"))\njsonschema.validate(plan, json.load(open(\".agents/skills/pixl-kit/runtime/pixl/asset-plan.schema.json\")))\nRH = \"b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c\"\ndoc = {\n \"version\": 1,\n \"asset_id\": \"queue.ready\",\n \"generation\": \"rev2 (revision of the first-generation packet work/queue.ready/request-review.json)\",\n \"requirements_hash\": RH,\n \"plar\": {\"path\": \"plar.txt\", \"sha256\": H(\"plar.txt\"), \"asset_id\": \"queue.ready\", \"requirements_hash\": RH,\n          \"previous\": {\"sha256\": \"0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33\", \"requirements_hash\": \"7170e02602daf79f77b8c039439182fdb6d6fcb5feab971c3d729d719e7f0302\", \"first_request_bound_requirements_hash\": \"79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8\"},\n          \"focused_read\": {\"path\": R+\"focused-read.json\", \"sha256\": H(R+\"focused-read.json\")}},\n \"sources\": [\n  {\"path\": \"BRIEF.md\", \"sha256\": H(\"BRIEF.md\"), \"role\": \"owner asset brief (current; previous bytes 5955da4d... retained at .pixl/assets/queue.ready/inputs/)\", \"locators\": [\n    \"line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color\",\n    \"line 5: destination paths from view, badges excluded, no approved style, representative sample first\",\n    \"line 7: paused distinguishable from activity/completion/retry without color\",\n    \"line 9 (new): Ready must visibly use a check mark with asymmetrical arms to convey successful completion; destination follows updated view; keep 16x16 canvas, static behavior, transparent background and review display conditions\"]},\n  {\"path\": \"OWNER.md\", \"sha256\": H(\"OWNER.md\"), \"role\": \"owner stage assignment and authorization (current)\", \"locators\": [\n    \"lines 2-4: refresh PLAR against actual source, preserve existing IDs, other asset history and the Start control\",\n    \"lines 4-5: continue queue.ready through one newly reviewed request and retain resumable state\",\n    \"lines 5-6: original request belongs to pixellab-test; inspect its actual status before acting\",\n    \"line 7: one further controlled request supported in this stage\",\n    \"lines 7-8: preserve original attempts and contracts\",\n    \"lines 8-11: deliverable ends at accepted revised request; no image/renderer, no approved style; integration and art acceptance future; no fabrication\"]},\n  {\"path\": \"src/queue.ts\", \"sha256\": H(\"src/queue.ts\"), \"role\": \"consumer state transitions (unchanged)\", \"locators\": [\"line 3: ok -> succeeded\"]},\n  {\"path\": \"src/queue-view.ts\", \"sha256\": H(\"src/queue-view.ts\"), \"role\": \"consumer visual mapping and display descriptor (current; previous bytes 01ee5376... retained at .pixl/assets/queue.ready/inputs/)\", \"locators\": [\n    \"line 3: idle -> Start assets/start.svg\",\n    \"line 6: succeeded -> Ready assets/ready-confirmed.png frames 1 (moved from assets/ready.png)\",\n    \"line 9: display cell [16,16], scale 3, nearest, frameMs 100, background #172336\",\n    \"lines 10-11: statusCell and compactStatus share statusVisuals\"]},\n  {\"path\": \"assets/start.svg\", \"sha256\": H(\"assets/start.svg\"), \"role\": \"preserved existing Start vector (unchanged); accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference\", \"locators\": [\"line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z\"]},\n  {\"path\": \"provider-schemas.json\", \"sha256\": H(\"provider-schemas.json\"), \"role\": \"advertised pixellab-test schema (cross-check of host declaration; unchanged)\", \"locators\": [\"create_image_pro_flash\"]},\n  {\"path\": \"provider-contract-origin.json\", \"sha256\": H(\"provider-contract-origin.json\"), \"role\": \"controlled connection origin/scope note (unchanged)\", \"locators\": [\"scope\"]},\n  {\"path\": R+\"original-status.json\", \"sha256\": H(R+\"original-status.json\"), \"role\": \"caller's actual pixellab-test list_jobs observation: first_request controlled-create-0001 failed, no image\", \"locators\": [\"response.jobs[0].status = failed; reason\"]}\n ],\n \"request\": {\n  \"path\": R+\"provider-arguments.json\", \"sha256\": H(R+\"provider-arguments.json\"),\n  \"kind\": \"provider_arguments\", \"provider\": \"pixellab-test\", \"tool\": \"create_image_pro_flash\",\n  \"connection\": {\"path\": R+\"connection.json\", \"sha256\": H(R+\"connection.json\")},\n  \"provider_simulated\": True,\n  \"schema_validated\": \"Arguments validate against connection.json schema (equal to provider-schemas.json#create_image_pro_flash and the host declaration).\",\n  \"changes_from_first_generation\": {\n    \"previous\": {\"path\": \"work/queue.ready/provider-arguments.json\", \"sha256\": H(\"work/queue.ready/provider-arguments.json\")},\n    \"changed\": \"description now requires a check mark with clearly asymmetrical arms (short up-left arm, much longer up-right arm, classic tick) instead of an unspecified checkmark silhouette\",\n    \"unchanged\": \"width 16, height 16, no_background true, seed omitted; colour, stroke, edge, panel, transparency, no-text/no-plate/no-shadow and static wording\"},\n  \"not_expressible_by_schema\": \"Readability on #172336, 1x/3x nearest inspection, check-mark arm asymmetry, cool-blue relationship and non-colour silhouette are stated in description prose only; the schema has no palette, reference-image, alpha-mode or style controls. These are evaluated by the candidate-plan criteria after a real image exists.\"\n },\n \"criteria\": {\n  \"path\": R+\"candidate-plan.json\", \"sha256\": H(R+\"candidate-plan.json\"),\n  \"schema_validated\": \"Validates against runtime/pixl/asset-plan.schema.json.\",\n  \"authority_summary\": {\n   \"owner_or_consumer_requirement\": [\"geometry\", \"transparent-background\", \"ready-meaning\", \"asymmetric-check-mark\", \"readability-1x-3x\", \"cool-blue-accent\"],\n   \"specialist_sample_choice\": [\"silhouette-without-color\", \"sample-pixel-craft\"],\n   \"observations_used_as_reference_not_rules\": [\"#70b9ed (assets/start.svg fill)\", \"#172336 (src/queue-view.ts display.background, used as composite panel)\"]},\n  \"changes_from_first_generation\": {\n   \"previous\": {\"path\": \"work/queue.ready/candidate-plan.json\", \"sha256\": H(\"work/queue.ready/candidate-plan.json\")},\n   \"added\": [\"asymmetric-check-mark (owner requirement, BRIEF.md line 9)\"],\n   \"revised\": [\"geometry, transparent-background, readability-1x-3x, ready-meaning: added BRIEF.md line 9 locators; ready-meaning and geometry cite queue-view line 6 at its current content\", \"contract.intent: destination assets/ready-confirmed.png; check mark now owner-required; tick orientation stated as specialist choice\", \"scope: rev2 and moved destination\"],\n   \"unchanged\": [\"cool-blue-accent\", \"silhouette-without-color\", \"sample-pixel-craft\"]}\n },\n \"choices\": [\n  {\"id\": \"sample-asset\", \"choice\": \"Ready remains the representative family sample.\", \"authority\": \"PLAR proposal (family_sample) carried from the first generation; brief line 5 requires a sample first without choosing the status\", \"where\": \"candidate-plan scope\", \"reason\": \"Static, single frame, no dependency on other statuses; the owner update keeps it the active asset.\"},\n  {\"id\": \"tick-orientation\", \"choice\": \"Short arm up-left from the bottom point, much longer arm up-right (classic tick).\", \"authority\": \"specialist choice implementing the owner's 'asymmetrical arms' requirement\", \"where\": \"provider-arguments description; contract intent\", \"reason\": \"The conventional, most recognisable completion tick in LTR UIs. The asymmetric-check-mark criterion deliberately does not fix ratio or orientation, so a mirrored or differently proportioned asymmetric tick still passes.\"},\n  {\"id\": \"motif-details\", \"choice\": \"Chunky ~2px strokes, centered, no backing circle/badge plate, no drop shadow.\", \"authority\": \"specialist choice (PLAR sample_motif proposal)\", \"where\": \"provider-arguments description; contract intent\", \"reason\": \"Chunky strokes survive 1x at 16x16 and keep the arm-length difference legible; no plate keeps transparency simple and leaves room for family marks. Revisable at style review; not rejection rules.\"},\n  {\"id\": \"colour-treatment\", \"choice\": \"Cool sky blue close to #70b9ed plus one lighter highlight tone; no fixed palette.\", \"authority\": \"specialist choice implementing owner 'cool blue accent' direction\", \"where\": \"provider-arguments description\", \"reason\": \"Relates to the observed Start fill without making the hex a rejection rule; a lighter tone keeps contrast against #172336.\"},\n  {\"id\": \"operation\", \"choice\": \"create_image_pro_flash, width 16, height 16, no_background true, seed omitted.\", \"authority\": \"specialist choice within the discovered schema\", \"where\": \"provider-arguments\", \"reason\": \"Only advertised generation tool; native 16x16 avoids downscaling (fixture default is 64x64, so width/height are explicit); no_background matches the transparent requirement; no seed specified or needed (the failed first attempt produced no image to reproduce).\"},\n  {\"id\": \"alpha\", \"choice\": \"Contract alpha 'full' and empty palette.\", \"authority\": \"derived from brief (transparent, no fixed palette)\", \"where\": \"candidate-plan contract\", \"reason\": \"Avoids manufacturing a binary-alpha or fixed-palette rule.\"},\n  {\"id\": \"extra-criteria\", \"choice\": \"silhouette-without-color and sample-pixel-craft remain specialist sample criteria.\", \"authority\": \"specialist choice\", \"where\": \"candidate-plan criteria\", \"reason\": \"Support the later owner non-colour and coherence obligations while judging only this sample; caller may demote or drop them.\"},\n  {\"id\": \"other-rows\", \"choice\": \"No requirement change to queue.working, queue.retry, queue.paused or queue.start.\", \"authority\": \"specialist PLAR refresh judgment\", \"where\": \"plar.txt\", \"reason\": \"The changed sources are file-level inputs to every row, but the actual changes (brief line 9, view line 6) concern only Ready. Their existing comparisons against 'the reviewed Ready sample' already cover the new mark. Start remains byte-unchanged.\"}\n ],\n \"deferred_obligations\": [\n  {\"id\": \"family-working-not-success\", \"obligation\": \"Working 4-frame loop communicates activity without looking like Ready/success (now an asymmetrical check mark).\", \"source\": \"BRIEF.md line 3, line 9\", \"stage\": \"family expansion after Ready sample approval\", \"prerequisites\": [\"approved Ready sample\", \"Working candidate (queue.working)\"]},\n  {\"id\": \"family-retry-non-color\", \"obligation\": \"Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.\", \"source\": \"BRIEF.md lines 3, 7\", \"stage\": \"family expansion/collective review\", \"prerequisites\": [\"approved Ready sample\", \"Retry candidate\"]},\n  {\"id\": \"family-paused-non-color\", \"obligation\": \"Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.\", \"source\": \"BRIEF.md line 7; PLAR queue.ready delivery checks\", \"stage\": \"family collective review\", \"prerequisites\": [\"approved Ready sample\", \"Working, Retry and Paused candidates\"]},\n  {\"id\": \"style-decision\", \"obligation\": \"Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.\", \"source\": \"BRIEF.md line 5; PLAR queue.ready next/questions\", \"stage\": \"after retrieval and inspection of a real Ready candidate\", \"prerequisites\": [\"retrieved candidate image (the controlled pixellab-test connection returns none)\"]},\n  {\"id\": \"destination-delivery\", \"obligation\": \"Place the accepted Ready image at assets/ready-confirmed.png (not the superseded assets/ready.png); decode and confirm dimensions/frames/transparency there.\", \"source\": \"BRIEF.md lines 5, 9; src/queue-view.ts line 6\", \"stage\": \"delivery after art acceptance\", \"prerequisites\": [\"accepted candidate\"]},\n  {\"id\": \"renderer-integration\", \"obligation\": \"Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.\", \"source\": \"src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks\", \"stage\": \"integration/live acceptance\", \"prerequisites\": [\"delivered asset\", \"a renderer or UI entry point (none supplied)\"]}\n ],\n \"resume\": {\n  \"store\": \".pixl/assets/queue.ready\",\n  \"state_before_revision\": {\"hash\": \"47ef2326e8420a8db6369384c5eaf847cc07afd9474e37522a556c6689d71864\", \"revision\": 4},\n  \"previous_generation\": {\"task\": \"task\", \"task_state\": \"open\", \"output\": \"output.ready\", \"candidate\": None,\n    \"job\": {\"id\": \"first_request\", \"state\": \"failed\", \"remote_id\": \"controlled-create-0001\", \"provider\": \"pixellab-test\", \"provider_simulated\": True, \"evidence\": R+\"original-status.json\"},\n    \"packet\": {\"path\": \"work/queue.ready/request-review.json\", \"sha256\": H(\"work/queue.ready/request-review.json\")}},\n  \"revision_operation\": \"pixl_plar_prepare with revise: true and expect = state_before_revision.hash; returned task/output/job IDs are the current ones\"\n },\n \"preserved\": {\n  \"start_vector\": {\"path\": \"assets/start.svg\", \"sha256\": H(\"assets/start.svg\"), \"note\": \"Unmodified; no Start production in scope.\"},\n  \"plar_ids\": \"No PLAR allocation IDs added, removed or renamed; only queue.ready requirements/destination/next/evidence, source hashes and coverage changed.\",\n  \"first_generation\": \"work/queue.ready/* first-generation files untouched; first_request job and its events untouched.\"\n },\n \"review_status\": {\"specialist_self_review\": \"Specialist validated arguments against the discovered schema and the plan against asset-plan.schema.json, and checked cited locators; this is self-review only.\", \"independent_caller_review\": \"not yet performed (caller owns it)\"}\n}\nopen(R+\"request-review.json\",\"w\",encoding=\"utf-8\",newline=\"\\n\").write(json.dumps(doc,indent=2)+\"\\n\")\nprint(H(R+\"request-review.json\"))\nEOF",
+      "description": "Validate artifacts and write request-review.json"
+    },
+    "timestamp": "2026-11-08T05:09:46.587Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\work\\queue.ready\\rev2\\build_request_review.py",
+      "content": "\"\"\"Validate rev2 artifacts and write work/queue.ready/rev2/request-review.json with actual hashes.\n\nUsage: python -I build_request_review.py PROJECT_ROOT REQUIREMENTS_HASH\n\"\"\"\nimport hashlib\nimport json\nimport os\nimport sys\n\nimport jsonschema\n\nos.chdir(sys.argv[1])\nRH = sys.argv[2]\nR = \"work/queue.ready/rev2/\"\n\n\ndef H(p):\n    with open(p, \"rb\") as f:\n        return hashlib.sha256(f.read()).hexdigest()\n\n\nargs = json.load(open(R + \"provider-arguments.json\", encoding=\"utf-8\"))\nconn = json.load(open(R + \"connection.json\", encoding=\"utf-8\"))\njsonschema.validate(args, conn[\"schema\"])\nplan = json.load(open(R + \"candidate-plan.json\", encoding=\"utf-8\"))\njsonschema.validate(plan, json.load(open(\".agents/skills/pixl-kit/runtime/pixl/asset-plan.schema.json\", encoding=\"utf-8\")))\n\ndoc = {\n    \"version\": 1,\n    \"asset_id\": \"queue.ready\",\n    \"generation\": \"rev2 (revision of the first-generation packet work/queue.ready/request-review.json)\",\n    \"requirements_hash\": RH,\n    \"plar\": {\n        \"path\": \"plar.txt\", \"sha256\": H(\"plar.txt\"), \"asset_id\": \"queue.ready\", \"requirements_hash\": RH,\n        \"previous\": {\n            \"sha256\": \"0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33\",\n            \"requirements_hash\": \"7170e02602daf79f77b8c039439182fdb6d6fcb5feab971c3d729d719e7f0302\",\n            \"first_request_bound_requirements_hash\": \"79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8\"},\n        \"focused_read\": {\"path\": R + \"focused-read.json\", \"sha256\": H(R + \"focused-read.json\")},\n    },\n    \"sources\": [\n        {\"path\": \"BRIEF.md\", \"sha256\": H(\"BRIEF.md\"),\n         \"role\": \"owner asset brief (current; previous bytes 5955da4d... retained under .pixl/assets/queue.ready/inputs/)\",\n         \"locators\": [\n             \"line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color\",\n             \"line 5: destination paths from view, badges excluded, no approved style, representative sample first\",\n             \"line 7: paused distinguishable from activity/completion/retry without color\",\n             \"line 9 (new): Ready must visibly use a check mark with asymmetrical arms to convey successful completion; destination follows updated view; keep 16x16 canvas, static behavior, transparent background and review display conditions\"]},\n        {\"path\": \"OWNER.md\", \"sha256\": H(\"OWNER.md\"), \"role\": \"owner stage assignment and authorization (current)\",\n         \"locators\": [\n             \"lines 2-4: refresh PLAR against actual source, preserve existing IDs, other asset history and the Start control\",\n             \"lines 4-5: continue queue.ready through one newly reviewed request and retain resumable state\",\n             \"lines 5-6: original request belongs to pixellab-test; inspect its actual status before acting\",\n             \"line 7: one further controlled request supported in this stage\",\n             \"lines 7-8: preserve original attempts and contracts\",\n             \"lines 8-11: deliverable ends at accepted revised request; no image/renderer, no approved style; integration and art acceptance future; no fabrication\"]},\n        {\"path\": \"src/queue.ts\", \"sha256\": H(\"src/queue.ts\"), \"role\": \"consumer state transitions (unchanged)\",\n         \"locators\": [\"line 3: ok -> succeeded\"]},\n        {\"path\": \"src/queue-view.ts\", \"sha256\": H(\"src/queue-view.ts\"),\n         \"role\": \"consumer visual mapping and display descriptor (current; previous bytes 01ee5376... retained under .pixl/assets/queue.ready/inputs/)\",\n         \"locators\": [\n             \"line 3: idle -> Start assets/start.svg\",\n             \"line 6: succeeded -> Ready assets/ready-confirmed.png frames 1 (moved from assets/ready.png)\",\n             \"line 9: display cell [16,16], scale 3, nearest, frameMs 100, background #172336\",\n             \"lines 10-11: statusCell and compactStatus share statusVisuals\"]},\n        {\"path\": \"assets/start.svg\", \"sha256\": H(\"assets/start.svg\"),\n         \"role\": \"preserved existing Start vector (unchanged); accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference\",\n         \"locators\": [\"line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z\"]},\n        {\"path\": \"provider-schemas.json\", \"sha256\": H(\"provider-schemas.json\"),\n         \"role\": \"advertised pixellab-test schema (cross-check of host declaration; unchanged)\", \"locators\": [\"create_image_pro_flash\"]},\n        {\"path\": \"provider-contract-origin.json\", \"sha256\": H(\"provider-contract-origin.json\"),\n         \"role\": \"controlled connection origin/scope note (unchanged)\", \"locators\": [\"scope\"]},\n        {\"path\": R + \"original-status.json\", \"sha256\": H(R + \"original-status.json\"),\n         \"role\": \"caller's actual pixellab-test list_jobs observation: first_request controlled-create-0001 failed, no image\",\n         \"locators\": [\"response.jobs[0].status = failed; response.jobs[0].reason\"]},\n    ],\n    \"request\": {\n        \"path\": R + \"provider-arguments.json\", \"sha256\": H(R + \"provider-arguments.json\"),\n        \"kind\": \"provider_arguments\", \"provider\": \"pixellab-test\", \"tool\": \"create_image_pro_flash\",\n        \"connection\": {\"path\": R + \"connection.json\", \"sha256\": H(R + \"connection.json\")},\n        \"provider_simulated\": True,\n        \"schema_validated\": \"Arguments validate against connection.json schema (equal to provider-schemas.json#create_image_pro_flash and the host declaration).\",\n        \"changes_from_first_generation\": {\n            \"previous\": {\"path\": \"work/queue.ready/provider-arguments.json\", \"sha256\": H(\"work/queue.ready/provider-arguments.json\")},\n            \"changed\": \"description now requires a check mark with clearly asymmetrical arms (short up-left arm, much longer up-right arm, classic tick) instead of an unspecified checkmark silhouette\",\n            \"unchanged\": \"width 16, height 16, no_background true, seed omitted; colour, stroke, edge, panel, transparency, no-text/no-plate/no-shadow and static wording\"},\n        \"not_expressible_by_schema\": \"Readability on #172336, 1x/3x nearest inspection, check-mark arm asymmetry, cool-blue relationship and non-colour silhouette are stated in description prose only; the schema has no palette, reference-image, alpha-mode or style controls. They are evaluated by the candidate-plan criteria once a real image exists.\",\n    },\n    \"criteria\": {\n        \"path\": R + \"candidate-plan.json\", \"sha256\": H(R + \"candidate-plan.json\"),\n        \"schema_validated\": \"Validates against runtime/pixl/asset-plan.schema.json.\",\n        \"authority_summary\": {\n            \"owner_or_consumer_requirement\": [\"geometry\", \"transparent-background\", \"ready-meaning\", \"asymmetric-check-mark\", \"readability-1x-3x\", \"cool-blue-accent\"],\n            \"specialist_sample_choice\": [\"silhouette-without-color\", \"sample-pixel-craft\"],\n            \"observations_used_as_reference_not_rules\": [\"#70b9ed (assets/start.svg fill)\", \"#172336 (src/queue-view.ts display.background, used as composite panel)\"]},\n        \"changes_from_first_generation\": {\n            \"previous\": {\"path\": \"work/queue.ready/candidate-plan.json\", \"sha256\": H(\"work/queue.ready/candidate-plan.json\")},\n            \"added\": [\"asymmetric-check-mark (owner requirement, BRIEF.md line 9)\"],\n            \"revised\": [\n                \"geometry, transparent-background, readability-1x-3x, ready-meaning: added BRIEF.md line 9 locators; queue-view line 6 cited at its current content\",\n                \"contract.intent: destination assets/ready-confirmed.png; check mark now owner-required; tick orientation stated as specialist choice\",\n                \"scope and output name: rev2 and moved destination\"],\n            \"unchanged\": [\"cool-blue-accent\", \"silhouette-without-color\", \"sample-pixel-craft\"]},\n    },\n    \"choices\": [\n        {\"id\": \"sample-asset\", \"choice\": \"Ready remains the representative family sample.\",\n         \"authority\": \"PLAR proposal (family_sample) carried from the first generation; BRIEF line 5 requires a sample first without choosing the status\",\n         \"where\": \"candidate-plan scope\", \"reason\": \"Static, single frame, no dependency on other statuses; the owner update keeps it the active asset.\"},\n        {\"id\": \"tick-orientation\", \"choice\": \"Short arm up-left from the bottom point, much longer arm up-right (classic tick).\",\n         \"authority\": \"specialist choice implementing the owner asymmetrical-arms requirement\",\n         \"where\": \"provider-arguments description; contract intent\",\n         \"reason\": \"The conventional, most recognisable completion tick in left-to-right UIs. The asymmetric-check-mark criterion deliberately does not fix ratio or orientation, so a mirrored or differently proportioned asymmetric tick still passes.\"},\n        {\"id\": \"motif-details\", \"choice\": \"Chunky ~2px strokes, centered, no backing circle/badge plate, no drop shadow.\",\n         \"authority\": \"specialist choice (PLAR sample_motif proposal)\", \"where\": \"provider-arguments description; contract intent\",\n         \"reason\": \"Chunky strokes survive 1x at 16x16 and keep the arm-length difference legible; no plate keeps transparency simple and leaves room for family marks. Revisable at style review; not rejection rules.\"},\n        {\"id\": \"colour-treatment\", \"choice\": \"Cool sky blue close to #70b9ed plus one lighter highlight tone; no fixed palette.\",\n         \"authority\": \"specialist choice implementing owner cool-blue-accent direction\", \"where\": \"provider-arguments description\",\n         \"reason\": \"Relates to the observed Start fill without making the hex a rejection rule; a lighter tone keeps contrast against #172336.\"},\n        {\"id\": \"operation\", \"choice\": \"create_image_pro_flash, width 16, height 16, no_background true, seed omitted.\",\n         \"authority\": \"specialist choice within the discovered schema\", \"where\": \"provider-arguments\",\n         \"reason\": \"Only advertised generation tool; native 16x16 avoids downscaling (fixture default is 64x64, so width/height are explicit); no_background matches the transparent requirement; no seed is specified or needed (the failed first attempt produced no image to reproduce).\"},\n        {\"id\": \"alpha\", \"choice\": \"Contract alpha 'full' and empty palette.\", \"authority\": \"derived from brief (transparent, no fixed palette)\",\n         \"where\": \"candidate-plan contract\", \"reason\": \"Avoids manufacturing a binary-alpha or fixed-palette rule.\"},\n        {\"id\": \"extra-criteria\", \"choice\": \"silhouette-without-color and sample-pixel-craft remain specialist sample criteria.\",\n         \"authority\": \"specialist choice\", \"where\": \"candidate-plan criteria\",\n         \"reason\": \"Support the later owner non-colour and coherence obligations while judging only this sample; caller may demote or drop them.\"},\n        {\"id\": \"other-rows\", \"choice\": \"No requirement change to queue.working, queue.retry, queue.paused or queue.start.\",\n         \"authority\": \"specialist PLAR refresh judgment\", \"where\": \"plar.txt\",\n         \"reason\": \"The changed sources are file-level inputs to every row, but the actual changes (BRIEF line 9, queue-view line 6) concern only Ready. Their existing comparisons against the reviewed Ready sample already cover the new mark. Start remains byte-unchanged.\"},\n    ],\n    \"deferred_obligations\": [\n        {\"id\": \"family-working-not-success\", \"obligation\": \"Working 4-frame loop communicates activity without looking like Ready/success (now an asymmetrical check mark).\",\n         \"source\": \"BRIEF.md lines 3, 9\", \"stage\": \"family expansion after Ready sample approval\",\n         \"prerequisites\": [\"approved Ready sample\", \"Working candidate (queue.working)\"]},\n        {\"id\": \"family-retry-non-color\", \"obligation\": \"Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.\",\n         \"source\": \"BRIEF.md lines 3, 7\", \"stage\": \"family expansion/collective review\", \"prerequisites\": [\"approved Ready sample\", \"Retry candidate\"]},\n        {\"id\": \"family-paused-non-color\", \"obligation\": \"Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.\",\n         \"source\": \"BRIEF.md line 7; PLAR queue.ready delivery checks\", \"stage\": \"family collective review\",\n         \"prerequisites\": [\"approved Ready sample\", \"Working, Retry and Paused candidates\"]},\n        {\"id\": \"style-decision\", \"obligation\": \"Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.\",\n         \"source\": \"BRIEF.md line 5; PLAR queue.ready next/questions\", \"stage\": \"after retrieval and inspection of a real Ready candidate\",\n         \"prerequisites\": [\"retrieved candidate image (the controlled pixellab-test connection returns none)\"]},\n        {\"id\": \"destination-delivery\", \"obligation\": \"Place the accepted Ready image at assets/ready-confirmed.png (not the superseded assets/ready.png); decode and confirm dimensions/frames/transparency there.\",\n         \"source\": \"BRIEF.md lines 5, 9; src/queue-view.ts line 6\", \"stage\": \"delivery after art acceptance\", \"prerequisites\": [\"accepted candidate\"]},\n        {\"id\": \"renderer-integration\", \"obligation\": \"Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.\",\n         \"source\": \"src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks\", \"stage\": \"integration/live acceptance\",\n         \"prerequisites\": [\"delivered asset\", \"a renderer or UI entry point (none supplied)\"]},\n    ],\n    \"resume\": {\n        \"store\": \".pixl/assets/queue.ready\",\n        \"state_before_revision\": {\"hash\": \"47ef2326e8420a8db6369384c5eaf847cc07afd9474e37522a556c6689d71864\", \"revision\": 4},\n        \"previous_generation\": {\n            \"task\": \"task\", \"task_state\": \"open\", \"output\": \"output.ready\", \"candidate\": None,\n            \"job\": {\"id\": \"first_request\", \"state\": \"failed\", \"remote_id\": \"controlled-create-0001\", \"provider\": \"pixellab-test\",\n                    \"provider_simulated\": True, \"evidence\": R + \"original-status.json\"},\n            \"packet\": {\"path\": \"work/queue.ready/request-review.json\", \"sha256\": H(\"work/queue.ready/request-review.json\")}},\n        \"revision_operation\": \"pixl_plar_prepare with revise: true and expect = state_before_revision.hash; the returned task/output/job IDs are the current ones\",\n    },\n    \"preserved\": {\n        \"start_vector\": {\"path\": \"assets/start.svg\", \"sha256\": H(\"assets/start.svg\"), \"note\": \"Unmodified; no Start production in scope.\"},\n        \"plar_ids\": \"No PLAR allocation IDs added, removed or renamed; only queue.ready requirements/destination/next/evidence, two source hashes and coverage changed.\",\n        \"first_generation\": \"work/queue.ready/* first-generation files untouched; first_request job and its events untouched.\",\n    },\n    \"review_status\": {\n        \"specialist_self_review\": \"Specialist validated arguments against the discovered schema and the plan against asset-plan.schema.json, and checked cited locators; this is self-review only.\",\n        \"independent_caller_review\": \"not yet performed (caller owns it)\"},\n}\nwith open(R + \"request-review.json\", \"w\", encoding=\"utf-8\", newline=\"\\n\") as f:\n    f.write(json.dumps(doc, indent=2, ensure_ascii=False) + \"\\n\")\nprint(H(R + \"request-review.json\"))\n"
+    },
+    "timestamp": "2026-11-08T05:10:30.594Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe -I work/queue.ready/rev2/build_request_review.py \"$PWD\" b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c",
+      "description": "Validate artifacts and write request-review packet"
+    },
+    "timestamp": "2026-11-08T05:10:33.905Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_prepare",
+    "arguments": {
+      "asset_id": "queue.ready",
+      "requirements_hash": "b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c",
+      "packet": "work/queue.ready/rev2/request-review.json",
+      "connection": "work/queue.ready/rev2/connection.json",
+      "revise": true,
+      "expect": "47ef2326e8420a8db6369384c5eaf847cc07afd9474e37522a556c6689d71864"
+    },
+    "timestamp": "2026-11-08T05:10:39.368Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && PY=C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe; $PY .agents/skills/pixl-kit/scripts/pixl.py plar read --root \"$PWD\" --asset queue.ready > work/queue.ready/rev2/focused-read-after-prepare.json; $PY -I -c \"\nimport json,sys;d=json.load(open(sys.argv[1]));p=d['production'];a=d['asset']\nprint(d['hash'],d['requirements_hash']);print(a['status'],a['production'])\nprint({k:p[k] for k in ['task','task_state','hash','revision','next_action','new_request_allowed','selection_current','link_action']})\nprint([ (b['input'],b['selected_for_asset'],b['status']) for b in p['selection_bindings']])\nprint([(j['id'],j['state'],j['remote_id'],j['next_action'],j['blockers']) for j in p['jobs']]); print('pending',[j['id'] if isinstance(j,dict) else j for j in p['pending_jobs']])\nprint([o['id'] for o in p['outputs']]); print(a['evidence'][-1])\" work/queue.ready/rev2/focused-read-after-prepare.json; sha256sum plar.txt work/queue.ready/*.json | head -20",
+      "description": "Re-read focused row after prepare"
+    },
+    "timestamp": "2026-11-08T05:10:51.067Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_validate",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:10:51.370Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && PY=C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe; $PY -I -c \"\nimport json\nd=json.load(open('plar.txt',encoding='utf-8'))\na=next(x for x in d['assets'] if x['id']=='queue.ready')\na['next']=('First attempt first_request (pixellab-test, remote_id controlled-create-0001, provider_simulated=true) is terminal failed without an image (caller observation work/queue.ready/rev2/original-status.json). Revised generation prepared in .pixl/assets/queue.ready (revision 6): task r.926cff0e8f7acca0.task, output r.926cff0e8f7acca0.output.ready, job r.926cff0e8f7acca0.request (prepared, not dispatched) for the asymmetrical-arm check mark at assets/ready-confirmed.png; packet work/queue.ready/rev2/request-review.json (sha256 39b727bd...). Next: caller independently compares the rev2 packet with BRIEF/OWNER/source, rereads PLAR, then claims dispatch of r.926cff0e8f7acca0.request and submits its exact arguments as the one further controlled pixellab-test request. No image, style approval or integration exists. Not integrated.')\nopen('work/queue.ready/rev2/plar-next-update.json','w',encoding='utf-8',newline='\\n').write(json.dumps(d,indent=2,ensure_ascii=False)+'\\n')\n\" && $PY .agents/skills/pixl-kit/scripts/pixl.py plar save \"$PWD/work/queue.ready/rev2/plar-next-update.json\" --root \"$PWD\" --expect 17f779adc81cac58b5a0b95f37311c60caeac54aa0c2fe3267aef4595907ae3c > /dev/null && $PY .agents/skills/pixl-kit/scripts/pixl.py plar read --root \"$PWD\" --asset queue.ready | $PY -I -c \"import json,sys;d=json.load(sys.stdin);p=d['production'];print(d['hash'],d['requirements_hash'],p['next_action'],p['selection_current'],p['hash'],d['asset']['production'])\"; sha256sum work/queue.ready/rev2/*",
+      "description": "Update queue.ready next and verify hashes"
+    },
+    "timestamp": "2026-11-08T05:11:04.310Z",
+    "parent": "toolu_01FtJQMknTFDz1mQen45ifjq"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && sha256sum work/queue.ready/rev2/* plar.txt .pixl/assets/queue.ready/state.px && git status --short . && cd work/queue.ready && sha256sum *.json && cat rev2/provider-arguments.json && echo && cat rev2/candidate-plan.json",
+      "description": "Verify artifact hashes and read arguments and criteria"
+    },
+    "timestamp": "2026-11-08T05:11:51.607Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && cat -n BRIEF.md | cut -c1-140; cat -n assets/start.svg | cut -c1-200; cat -n OWNER.md | sed -n 6,8p; cat work/queue.ready/rev2/request-review.json; echo; cat work/queue.ready/rev2/connection.json",
+      "description": "Check locators and read packet and connection"
+    },
+    "timestamp": "2026-11-08T05:11:58.566Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && ls .pixl/plar-history && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,glob,hashlib\ndef load(p): return json.load(open(p,encoding='utf-8'))\ncur=load('plar.txt')\nold=None\nfor p in glob.glob('.pixl/plar-history/*.json'):\n    if hashlib.sha256(open(p,'rb').read()).hexdigest()=='0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33': old=load(p);print('old',p)\nif old is None: print('old not in history by hash; trying names')\nob={a['id']:a for a in old['assets']} if 'assets' in old else None\nprint(list(cur.keys()))\nEOF",
+      "description": "Locate retained prior PLAR version"
+    },
+    "timestamp": "2026-11-08T05:12:20.852Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json\nL=lambda p: json.load(open(p,encoding='utf-8'))\nold=L('.pixl/plar-history/0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33.json'); cur=L('plar.txt')\nob={a['id']:a for a in old['assets']}; cb={a['id']:a for a in cur['assets']}\nprint('ids', sorted(ob)==sorted(cb), sorted(cb))\nfor k in ob:\n    if k!='queue.ready': print(k, 'identical' if ob[k]==cb[k] else 'CHANGED')\nprint('sources', json.dumps(cur['sources'],indent=0))\no,c=ob['queue.ready'],cb['queue.ready']\nfor f in sorted(set(o)|set(c)):\n    if o.get(f)!=c.get(f): print('\\n== field',f); print('OLD:',json.dumps(o.get(f),indent=0)[:3000]); print('NEW:',json.dumps(c.get(f),indent=0)[:3500])\nEOF",
+      "description": "Diff PLAR rows against prior version"
+    },
+    "timestamp": "2026-11-08T05:12:27.870Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,datetime\nB=\"BRIEF.md line 3\"\nrev={\n\"version\":1,\"reviewer\":\"calling agent (independent of PIXL specialist)\",\"reviewed_at\":datetime.datetime.now(datetime.UTC).isoformat(),\n\"packet\":{\"path\":\"work/queue.ready/rev2/request-review.json\",\"sha256\":\"39b727bda069fb1983f1c74c1eb9a0b1966aa146ad4e194c498eaea4a97385de\"},\n\"request\":{\"path\":\"work/queue.ready/rev2/provider-arguments.json\",\"sha256\":\"bef2510035113048070b25172b4b042633a2c7e4dca950915afa5b0aedeefdae\"},\n\"criteria\":{\"path\":\"work/queue.ready/rev2/candidate-plan.json\",\"sha256\":\"fff991e0f14699bbb14df51f3cadbb66f912f08b01b3ec3b7ca5f6be37650f5b\"},\n\"connection\":{\"path\":\"work/queue.ready/rev2/connection.json\",\"sha256\":\"86fd154ec0a9ad081381d88d132df98a1d04dd0e67e98c800bb9113c6acc3d88\"},\n\"sources_verified\":{\"BRIEF.md\":\"aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab\",\"OWNER.md\":\"c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7\",\"src/queue-view.ts\":\"4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49\",\"src/queue.ts\":\"de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08\",\"assets/start.svg\":\"ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3\",\"provider-schemas.json\":\"e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c\"},\n\"verdict\":\"changes_requested\",\n\"criterion_comparisons\":[\n {\"id\":\"geometry\",\"source\":\"BRIEF l3 '16 by 16 logical pixels','Ready and Retry are static'; l9 'Keep the existing 16x16 canvas, static behavior'; queue-view l6 frames 1, l9 cell [16,16]\",\"adds_or_omits\":\"none\",\"finding\":\"consistent\"},\n {\"id\":\"transparent-background\",\"source\":\"BRIEF l3 'Use transparent backgrounds'; l9 'transparent background'\",\"adds_or_omits\":\"explicitly permits partial alpha (no binary-alpha rule added)\",\"finding\":\"consistent\"},\n {\"id\":\"ready-meaning\",\"source\":\"BRIEF l9 'to convey successful completion'; l3 working must not look like success; queue.ts l3 ok->succeeded; queue-view l6 label Ready\",\"adds_or_omits\":\"comparison against Working/Retry/Paused images deferred (they do not exist yet)\",\"finding\":\"consistent; deferral retained in packet deferred_obligations and PLAR delivery checks\"},\n {\"id\":\"asymmetric-check-mark\",\"source\":\"BRIEF l9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'\",\"adds_or_omits\":\"ADDS: narrows 'asymmetrical' to 'clearly unequal in length'. A brief-conforming check mark whose arms differ in angle/direction but are equal in length would be rejected. Correctly leaves ratio, orientation, stroke and colour open; correct failure examples (symmetric V, cross, blob).\",\"finding\":\"stricter than source - change requested\"},\n {\"id\":\"readability-1x-3x\",\"source\":\"BRIEF l3 'readable silhouettes','Inspect at 1x and 3x nearest display scale on the actual dark panel'; l9 'review display conditions'; queue-view l9 background #172336\",\"adds_or_omits\":\"none\",\"finding\":\"consistent\"},\n {\"id\":\"cool-blue-accent\",\"source\":\"BRIEF l3 'existing UI's cool blue accent; a fixed palette is not required'; start.svg l1 fill #70b9ed\",\"adds_or_omits\":\"#70b9ed used as observed relationship, not exact-hex rule\",\"finding\":\"consistent\"},\n {\"id\":\"silhouette-without-color\",\"source\":\"expert choice; BRIEF l3/l7 non-colour requirements apply to Retry and Paused, not Ready\",\"adds_or_omits\":\"adds a sample-scoped rule. Tested alternative: any brief-conforming asymmetrical check mark carries its meaning by form, so it satisfies this rule; it rejects no source-conforming candidate. Largely overlaps asymmetric-check-mark.\",\"finding\":\"acceptable as attributed specialist choice\"},\n {\"id\":\"sample-pixel-craft\",\"source\":\"expert judgment; BRIEF l3 'coherent pixel-art status assets', l5 representative sample\",\"adds_or_omits\":\"quality rule attributed to expert judgment, scoped to sample\",\"finding\":\"acceptable as attributed specialist choice\"}\n],\n\"other_findings\":[\n \"Request (provider-arguments): schema-valid against my own session's mcp__pixellab-test__create_image_pro_flash declaration (description, width 16, height 16, no_background true; no unsupported fields). Asymmetry requirement survives in the description; tick orientation (short up-left, long up-right) is a specialist prompt choice and correctly not a rejection rule.\",\n \"Connection: schema equals host declaration and provider-schemas.json; authorization cites OWNER.md c1999159 line 7, which I verified; provider_simulated=true.\",\n \"PLAR: IDs unchanged; queue.working/retry/start/paused rows byte-equal in JSON to prior version 0abd74f7; queue.ready destination moved to assets/ready-confirmed.png with ready.png superseded; ready_check_mark requirement wording matches BRIEF l9; sources rebound to current bytes.\",\n \"Deferred obligations (family distinctions, style decision, destination delivery, renderer integration) are scheduled with stage and prerequisites; none dropped.\",\n \"First-generation artifacts and first_request history preserved (hashes verified).\"\n],\n\"requested_change\":\"In candidate-plan criterion asymmetric-check-mark, replace 'two arms are clearly unequal in length (asymmetrical)' with wording that matches the brief: the two arms are visibly asymmetrical (for example differing in length and/or angle). Keep the rest of the criterion. No other artifact change is required except packet/plan hashes and the revision bookkeeping.\",\n\"next_action\":\"Return to specialist; the prepared rev2 job r.926cff0e8f7acca0.request (never dispatched) must be retired with honest local evidence and a new revision prepared; then re-review.\"\n}\njson.dump(rev,open('work/queue.ready/rev2/caller-review.json','w'),indent=2)\nEOF\nsha256sum work/queue.ready/rev2/caller-review.json",
+      "description": "Write caller review requesting criterion change"
+    },
+    "timestamp": "2026-11-08T05:13:06.139Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Agent",
+    "arguments": {
+      "subagent_type": "pixl",
+      "description": "Fix criterion and re-prepare revision",
+      "run_in_background": false,
+      "prompt": "You are PIXL, the pixel-art production specialist, assigned by a calling agent. This continues an earlier PIXL session whose context you do not have. Load the packaged skills in the consumer project: `.agents/skills/pixl-kit/skills/pixl/SKILL.md`, `resources/agent/PROFILE.md`, `skills/plar/references/prepare.md` (revision path), `skills/pixl/references/request-review.md`, `skills/pixl/references/provider-recovery.md`.\n\nAbsolute consumer root: C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project \u2014 work only inside it. Selected Python: C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe (runner .agents/skills/pixl-kit/scripts/pixl.py). pixl-local MCP tools available. No installs/credentials/external services.\n\n## Situation\nAsset queue.ready. The owner assignment is OWNER.md (sha256 c1999159\u2026): continue queue.ready through one newly reviewed revised request; deliverable ends at the accepted revised request; no image/renderer/style approval exists; do not fabricate provider observations or acceptance.\nA previous PIXL session refreshed plar.txt and prepared a revision: store .pixl/assets/queue.ready revision 6 hash d85b0b659367261b4d651b22dc391e8d031ac8e6bc006ee57491e1167c310f87; task r.926cff0e8f7acca0.task, output r.926cff0e8f7acca0.output.ready, job r.926cff0e8f7acca0.request (state prepared, NEVER dispatched, no remote call). Packet: work/queue.ready/rev2/request-review.json (39b727bd\u2026), criteria work/queue.ready/rev2/candidate-plan.json (fff991e0\u2026), args work/queue.ready/rev2/provider-arguments.json (bef25100\u2026), connection work/queue.ready/rev2/connection.json (86fd154e\u2026). plar.txt currently 61ab8ae4\u2026, requirements_hash b0b8bb6f\u2026.\nThe original job first_request (controlled-create-0001) is terminal failed \u2014 leave it alone.\n\n## Caller review: changes_requested\nRead work/queue.ready/rev2/caller-review.json (sha256 f0ab72906afce249a74ef20be918f2bb302b1625bf3888086c9ba687238f8fa1). Single discrepancy: criterion `asymmetric-check-mark` says \"two arms are clearly unequal in length (asymmetrical)\". BRIEF.md line 9 says only \"Ready must visibly use a check mark with asymmetrical arms to convey successful completion\". The criterion would reject a brief-conforming check mark whose arms are asymmetrical in angle/direction but equal in length. Revise it so the arms must be visibly asymmetrical (for example differing in length and/or angle); keep everything else in that criterion (1x/3x on #172336, ratio/orientation/stroke/colour open, symmetric V / cross / circle-only badge / blob fail). All other criteria, provider arguments and connection were found consistent \u2014 do not change them (provider-arguments.json may be reused as-is; its tick-orientation prompt is an accepted specialist choice).\n\n## Do\n1. Preserve every existing file (do not modify or delete anything under work/queue.ready/ or work/queue.ready/rev2/). Write new artifacts under work/queue.ready/rev3/ (create it): candidate-plan.json (revised), request-review.json (new packet pointing to the reused rev2 provider-arguments.json and connection.json by path/hash or to byte-identical copies; record changes_from rev2 and reference the caller-review), and any helper scripts.\n2. The prepared rev2 job r.926cff0e8f7acca0.request was never dispatched and is now obsolete because its criteria were rejected in caller review. Per provider-recovery (\"Prepared, plan drift \u2026 abandon obsolete intent with an evidenced failed observation if appropriate\"), retire it with honest local evidence (e.g. pixl_job_observe event failed, evidence stating: never dispatched, no remote call, retired before dispatch because caller review f0ab7290\u2026 requested a criterion change; no provider observation). Do not invent a remote_id or provider response. If the runtime offers a more appropriate supported way, use it and explain.\n3. Confirm plar.txt requirements_hash is still b0b8bb6f\u2026 (requirements unchanged \u2014 this is a criteria change only). Then run pixl_plar_prepare with revise: true, expect = current store hash, packet work/queue.ready/rev3/request-review.json, connection (project-relative). Verify returned task/output/job IDs, the PLAR allocation link, and that the saved job request arguments equal provider-arguments.json. If PLAR `next` needs updating, use plar save with expected hash and only change `next`/evidence.\n4. Stop before dispatch. Do NOT call pixl_job_dispatch or any mcp__pixellab-test__ tool. Do NOT write a caller review.\n\n## Return\nCompact JSON: status; store hash/revision; new task/output/job IDs and state; how rev2 job was retired (event + evidence); rev3 artifact paths + sha256; plar hash and requirements_hash; exact diff of the changed criterion; anything unresolved."
+    },
+    "timestamp": "2026-11-08T05:13:26.484Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && ls -la && ls work/queue.ready work/queue.ready/rev2 && sha256sum OWNER.md plar.txt work/queue.ready/rev2/* && wc -c .agents/skills/pixl-kit/skills/pixl/SKILL.md .agents/skills/pixl-kit/resources/agent/PROFILE.md .agents/skills/pixl-kit/skills/plar/references/prepare.md .agents/skills/pixl-kit/skills/pixl/references/request-review.md .agents/skills/pixl-kit/skills/pixl/references/provider-recovery.md",
+      "description": "List project and hash artifacts"
+    },
+    "timestamp": "2026-11-08T05:13:31.036Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills/plar/references/prepare.md"
+    },
+    "timestamp": "2026-11-08T05:13:34.285Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills/pixl/references/provider-recovery.md"
+    },
+    "timestamp": "2026-11-08T05:13:34.744Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills/pixl/references/request-review.md"
+    },
+    "timestamp": "2026-11-08T05:13:35.742Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/skills/pixl/SKILL.md"
+    },
+    "timestamp": "2026-11-08T05:13:36.387Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/.agents/skills/pixl-kit/resources/agent/PROFILE.md"
+    },
+    "timestamp": "2026-11-08T05:13:37.079Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && cat work/queue.ready/rev2/caller-review.json; echo ----; cat work/queue.ready/rev2/request-review.json; echo ----; cat work/queue.ready/rev2/candidate-plan.json; echo ----; cat work/queue.ready/rev2/build_request_review.py; echo ---; cat BRIEF.md OWNER.md; ls .pixl/assets/queue.ready",
+      "description": "Show review, packet, plan, builder, brief"
+    },
+    "timestamp": "2026-11-08T05:13:40.742Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev2/caller-review.json",
+      "offset": 30
+    },
+    "timestamp": "2026-11-08T05:13:43.910Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev2/build_request_review.py"
+    },
+    "timestamp": "2026-11-08T05:13:44.592Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Read",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev2/candidate-plan.json"
+    },
+    "timestamp": "2026-11-08T05:13:47.131Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_jobs",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:13:47.532Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_read",
+    "arguments": {
+      "asset_id": "queue.ready"
+    },
+    "timestamp": "2026-11-08T05:13:47.770Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"from datetime import datetime,UTC;print(datetime.now(UTC).isoformat())\"",
+      "description": "Capture host UTC clock"
+    },
+    "timestamp": "2026-11-08T05:13:57.750Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_job_observe",
+    "arguments": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "d85b0b659367261b4d651b22dc391e8d031ac8e6bc006ee57491e1167c310f87",
+      "job_id": "r.926cff0e8f7acca0.request",
+      "event": "failed",
+      "evidence": {
+        "origin": "local_retirement_before_dispatch",
+        "meaning": "Obsolete prepared intent retired locally. Never dispatched: no dispatch claim was made, no remote call was sent, no provider observation exists and no remote_id was assigned. This is not a provider failure.",
+        "reason": "Caller review changes_requested on the rev2 criteria (criterion asymmetric-check-mark narrowed 'asymmetrical' to 'clearly unequal in length'); the saved criteria are obsolete, so this request will not be dispatched.",
+        "caller_review": {
+          "path": "work/queue.ready/rev2/caller-review.json",
+          "sha256": "f0ab72906afce249a74ef20be918f2bb302b1625bf3888086c9ba687238f8fa1",
+          "verdict": "changes_requested"
+        },
+        "reviewed_packet": {
+          "path": "work/queue.ready/rev2/request-review.json",
+          "sha256": "39b727bda069fb1983f1c74c1eb9a0b1966aa146ad4e194c498eaea4a97385de"
+        },
+        "procedure": "provider-recovery: Prepared, plan drift -> abandon obsolete intent with an evidenced failed observation, then prepare a new request ID",
+        "replacement": "rev3 revision via pixl_plar_prepare revise=true with packet work/queue.ready/rev3/request-review.json",
+        "remote_executed": false,
+        "provider_called": false,
+        "provider_simulated": true,
+        "recorded_by": "PIXL specialist",
+        "observed_at": "2026-11-08T05:13:58.089717+00:00"
+      }
+    },
+    "timestamp": "2026-11-08T05:14:05.843Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev3/build_rev3.py",
+      "content": "\"\"\"Derive rev3 candidate-plan.json and request-review.json from the rev2 artifacts.\n\nOnly the caller-requested criterion change (asymmetric-check-mark) plus revision\nbookkeeping (scope/name labels) differ from rev2. Provider arguments and connection\nare reused by path/hash from rev2 (not copied, not modified).\n\nUsage: python -I build_rev3.py PROJECT_ROOT REQUIREMENTS_HASH STATE_HASH STATE_REVISION\n\"\"\"\nimport copy\nimport difflib\nimport hashlib\nimport json\nimport os\nimport sys\n\nimport jsonschema\n\nos.chdir(sys.argv[1])\nRH, STATE_HASH, STATE_REV = sys.argv[2], sys.argv[3], int(sys.argv[4])\nR2 = \"work/queue.ready/rev2/\"\nR3 = \"work/queue.ready/rev3/\"\n\n\ndef H(p):\n    with open(p, \"rb\") as f:\n        return hashlib.sha256(f.read()).hexdigest()\n\n\ndef load(p):\n    with open(p, encoding=\"utf-8\") as f:\n        return json.load(f)\n\n\ndef dump(p, doc):\n    with open(p, \"w\", encoding=\"utf-8\", newline=\"\\n\") as f:\n        f.write(json.dumps(doc, indent=2, ensure_ascii=False) + \"\\n\")\n\n\nEXPECT = {\n    R2 + \"candidate-plan.json\": \"fff991e0f14699bbb14df51f3cadbb66f912f08b01b3ec3b7ca5f6be37650f5b\",\n    R2 + \"request-review.json\": \"39b727bda069fb1983f1c74c1eb9a0b1966aa146ad4e194c498eaea4a97385de\",\n    R2 + \"provider-arguments.json\": \"bef2510035113048070b25172b4b042633a2c7e4dca950915afa5b0aedeefdae\",\n    R2 + \"connection.json\": \"86fd154ec0a9ad081381d88d132df98a1d04dd0e67e98c800bb9113c6acc3d88\",\n    R2 + \"caller-review.json\": \"f0ab72906afce249a74ef20be918f2bb302b1625bf3888086c9ba687238f8fa1\",\n}\nfor p, h in EXPECT.items():\n    assert H(p) == h, (p, H(p))\n\nOLD_CHECK = (\"At 1x and at 3x nearest-neighbor scale on #172336, the mark is visibly a check mark whose two arms \"\n             \"are clearly unequal in length (asymmetrical), so that it reads as successful completion. The criterion \"\n             \"does not fix the arm ratio, orientation (left/right), stroke weight or colour; a symmetric V, a cross, \"\n             \"a circle-only badge or an indistinct blob fails.\")\nNEW_CHECK = (\"At 1x and at 3x nearest-neighbor scale on #172336, the mark is visibly a check mark whose two arms \"\n             \"are visibly asymmetrical (for example differing in length and/or angle), so that it reads as successful \"\n             \"completion. The criterion does not fix the arm ratio, orientation (left/right), stroke weight or colour; \"\n             \"a symmetric V, a cross, a circle-only badge or an indistinct blob fails.\")\n\nplan2 = load(R2 + \"candidate-plan.json\")\nplan3 = copy.deepcopy(plan2)\nplan3[\"scope\"] = plan2[\"scope\"].replace(\"(queue.ready, rev2)\", \"(queue.ready, rev3)\").replace(\n    \"recorded in rev2/request-review.json\", \"recorded in rev3/request-review.json\")\nassert plan3[\"scope\"] != plan2[\"scope\"]\nout = plan3[\"outputs\"][0]\nout[\"name\"] = out[\"name\"].replace(\"(rev2)\", \"(rev3)\")\ncrit = [c for c in out[\"criteria\"] if c[\"id\"] == \"asymmetric-check-mark\"]\nassert len(crit) == 1 and crit[0][\"check\"] == OLD_CHECK\ncrit[0][\"check\"] = NEW_CHECK\njsonschema.validate(plan3, load(\".agents/skills/pixl-kit/runtime/pixl/asset-plan.schema.json\"))\n\n# Every other criterion and the contract must be identical to rev2.\nfor a, b in zip(plan2[\"outputs\"][0][\"criteria\"], out[\"criteria\"]):\n    if a[\"id\"] != \"asymmetric-check-mark\":\n        assert a == b, a[\"id\"]\n    else:\n        assert {k: v for k, v in a.items() if k != \"check\"} == {k: v for k, v in b.items() if k != \"check\"}\nassert plan2[\"outputs\"][0][\"contract\"] == out[\"contract\"]\ndump(R3 + \"candidate-plan.json\", plan3)\n\nargs = load(R2 + \"provider-arguments.json\")\nconn = load(R2 + \"connection.json\")\njsonschema.validate(args, conn[\"schema\"])\n\npkt2 = load(R2 + \"request-review.json\")\n# Source bytes must be unchanged since rev2.\nfor s in pkt2[\"sources\"]:\n    assert H(s[\"path\"]) == s[\"sha256\"], s[\"path\"]\nassert H(\"plar.txt\") == pkt2[\"plar\"][\"sha256\"]\n\npkt = copy.deepcopy(pkt2)\npkt[\"generation\"] = (\"rev3 (revision of rev2 packet work/queue.ready/rev2/request-review.json after caller review \"\n                     \"changes_requested; criteria-only change)\")\npkt[\"requirements_hash\"] = RH\npkt[\"plar\"][\"requirements_hash\"] = RH\npkt[\"sources\"].append({\n    \"path\": R2 + \"caller-review.json\", \"sha256\": H(R2 + \"caller-review.json\"),\n    \"role\": \"independent caller review of the rev2 packet (changes_requested) that this revision answers\",\n    \"locators\": [\"criterion_comparisons[id=asymmetric-check-mark]\", \"requested_change\", \"next_action\"]})\n\nreq = pkt[\"request\"]\nreq[\"path\"] = R2 + \"provider-arguments.json\"\nreq[\"sha256\"] = H(R2 + \"provider-arguments.json\")\nreq[\"connection\"] = {\"path\": R2 + \"connection.json\", \"sha256\": H(R2 + \"connection.json\")}\nreq.pop(\"changes_from_first_generation\", None)\nreq[\"reused_from_rev2\"] = (\"Provider arguments and connection are the rev2 files, byte-unchanged and referenced in place; \"\n                           \"caller review f0ab7290... found them consistent and the tick-orientation prompt an accepted \"\n                           \"specialist choice.\")\nreq[\"changes_from_rev2\"] = \"none\"\n\ncrit_doc = pkt[\"criteria\"]\ncrit_doc[\"path\"] = R3 + \"candidate-plan.json\"\ncrit_doc[\"sha256\"] = H(R3 + \"candidate-plan.json\")\ncrit_doc.pop(\"changes_from_first_generation\", None)\ncrit_doc[\"changes_from_rev2\"] = {\n    \"previous\": {\"path\": R2 + \"candidate-plan.json\", \"sha256\": H(R2 + \"candidate-plan.json\")},\n    \"caller_review\": {\"path\": R2 + \"caller-review.json\", \"sha256\": H(R2 + \"caller-review.json\"),\n                      \"verdict\": \"changes_requested\"},\n    \"revised\": [{\n        \"id\": \"asymmetric-check-mark\", \"field\": \"check\",\n        \"before\": OLD_CHECK, \"after\": NEW_CHECK,\n        \"reason\": (\"Caller review: 'clearly unequal in length' was stricter than BRIEF.md line 9 ('a check mark with \"\n                   \"asymmetrical arms') and would reject a brief-conforming mark whose arms differ in angle/direction \"\n                   \"but are equal in length. Display conditions, open ratio/orientation/stroke/colour and the failure \"\n                   \"examples are kept.\"),\n        \"diff\": list(difflib.unified_diff([OLD_CHECK], [NEW_CHECK], \"rev2\", \"rev3\", lineterm=\"\", n=0))}],\n    \"bookkeeping\": [\"scope: '(queue.ready, rev2)' -> '(queue.ready, rev3)' and deferred-obligation pointer \"\n                    \"rev2/request-review.json -> rev3/request-review.json\",\n                    \"outputs[0].name: '(rev2)' -> '(rev3)'\"],\n    \"unchanged\": [\"contract\", \"geometry\", \"transparent-background\", \"ready-meaning\", \"readability-1x-3x\",\n                  \"cool-blue-accent\", \"silhouette-without-color\", \"sample-pixel-craft\",\n                  \"asymmetric-check-mark basis/scope/sources/domain/mode\"]}\n\nfor c in pkt[\"choices\"]:\n    if c[\"id\"] == \"tick-orientation\":\n        c[\"reason\"] = (\"The conventional, most recognisable completion tick in left-to-right UIs. The asymmetric-check-mark \"\n                       \"criterion requires only visibly asymmetrical arms (length and/or angle) and does not fix ratio or \"\n                       \"orientation, so a mirrored, differently proportioned or equal-length/unequal-angle asymmetric tick \"\n                       \"still passes. Accepted by caller review f0ab7290... as a prompt choice, not a rejection rule.\")\n\npkt[\"resume\"] = {\n    \"store\": \".pixl/assets/queue.ready\",\n    \"state_before_revision\": {\"hash\": STATE_HASH, \"revision\": STATE_REV},\n    \"previous_generations\": [\n        {\"generation\": \"first\", \"task\": \"task\", \"output\": \"output.ready\", \"candidate\": None,\n         \"job\": {\"id\": \"first_request\", \"state\": \"failed\", \"remote_id\": \"controlled-create-0001\",\n                 \"provider\": \"pixellab-test\", \"provider_simulated\": True, \"evidence\": R2 + \"original-status.json\"},\n         \"packet\": {\"path\": \"work/queue.ready/request-review.json\", \"sha256\": H(\"work/queue.ready/request-review.json\")}},\n        {\"generation\": \"rev2\", \"task\": \"r.926cff0e8f7acca0.task\", \"output\": \"r.926cff0e8f7acca0.output.ready\",\n         \"candidate\": None,\n         \"job\": {\"id\": \"r.926cff0e8f7acca0.request\", \"state\": \"failed\", \"remote_id\": None, \"provider_simulated\": True,\n                 \"retirement\": (\"Local failed observation recorded before any dispatch claim (store revision 7): never \"\n                                \"dispatched, no remote call, no provider observation; retired because caller review \"\n                                \"f0ab7290... requested a criterion change.\")},\n         \"packet\": {\"path\": R2 + \"request-review.json\", \"sha256\": H(R2 + \"request-review.json\")}}],\n    \"revision_operation\": (\"pixl_plar_prepare with revise: true and expect = state_before_revision.hash; the returned \"\n                           \"task/output/job IDs are the current ones\"),\n}\npkt.pop(\"state_before_revision\", None)\npkt[\"preserved\"][\"first_generation\"] = (\"work/queue.ready/* and work/queue.ready/rev2/* files untouched; first_request \"\n                                        \"and r.926cff0e8f7acca0.request jobs and their events preserved.\")\npkt[\"review_status\"] = {\n    \"specialist_self_review\": (\"Specialist validated the reused arguments against the connection schema, the rev3 plan \"\n                               \"against asset-plan.schema.json, and asserted every other criterion and the contract are \"\n                               \"identical to rev2; self-review only.\"),\n    \"previous_caller_review\": {\"path\": R2 + \"caller-review.json\", \"sha256\": H(R2 + \"caller-review.json\"),\n                               \"verdict\": \"changes_requested\"},\n    \"independent_caller_review\": \"not yet performed for rev3 (caller owns it)\"}\ndump(R3 + \"request-review.json\", pkt)\nprint(json.dumps({\"plan\": H(R3 + \"candidate-plan.json\"), \"packet\": H(R3 + \"request-review.json\")}))\n"
+    },
+    "timestamp": "2026-11-08T05:14:42.791Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I work/queue.ready/rev3/build_rev3.py \"$PWD\" b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c fc5ed7f6f2c3a1e6ac6847d716efb9e842421522d2c8ddeb326beaea0b36c853 7 && diff work/queue.ready/rev2/candidate-plan.json work/queue.ready/rev3/candidate-plan.json",
+      "description": "Build rev3 plan and packet, diff plans"
+    },
+    "timestamp": "2026-11-08T05:14:46.986Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Edit",
+    "arguments": {
+      "replace_all": false,
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev3/build_rev3.py",
+      "old_string": "assert H(\"plar.txt\") == pkt2[\"plar\"][\"sha256\"]\n\npkt = copy.deepcopy(pkt2)",
+      "new_string": "assert pkt2[\"plar\"][\"requirements_hash\"] == RH  # requirements unchanged since rev2\n\npkt = copy.deepcopy(pkt2)\npkt[\"plar\"][\"sha256\"] = H(\"plar.txt\")\npkt[\"plar\"][\"previous\"] = {\n    \"sha256\": pkt2[\"plar\"][\"sha256\"], \"requirements_hash\": pkt2[\"plar\"][\"requirements_hash\"],\n    \"note\": (\"plar.txt bytes bound by the rev2 packet; the later change was the post-prepare queue.ready next/evidence \"\n             \"update only (requirements_hash unchanged).\"),\n    \"earlier\": pkt2[\"plar\"][\"previous\"]}"
+    },
+    "timestamp": "2026-11-08T05:14:53.586Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"import json;print(json.load(open('work/queue.ready/rev2/request-review.json'))['plar'])\"",
+      "description": "Show rev2 packet plar binding"
+    },
+    "timestamp": "2026-11-08T05:14:54.922Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I work/queue.ready/rev3/build_rev3.py \"$PWD\" b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c fc5ed7f6f2c3a1e6ac6847d716efb9e842421522d2c8ddeb326beaea0b36c853 7 && diff work/queue.ready/rev2/candidate-plan.json work/queue.ready/rev3/candidate-plan.json; sha256sum work/queue.ready/rev2/*",
+      "description": "Build rev3, diff plans, recheck rev2 hashes"
+    },
+    "timestamp": "2026-11-08T05:15:00.068Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_prepare",
+    "arguments": {
+      "asset_id": "queue.ready",
+      "requirements_hash": "b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c",
+      "packet": "work/queue.ready/rev3/request-review.json",
+      "connection": "work/queue.ready/rev2/connection.json",
+      "revise": true,
+      "expect": "fc5ed7f6f2c3a1e6ac6847d716efb9e842421522d2c8ddeb326beaea0b36c853",
+      "store": ".pixl/assets/queue.ready",
+      "path": "plar.txt"
+    },
+    "timestamp": "2026-11-08T05:15:06.227Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_plar_read",
+    "arguments": {
+      "asset_id": "queue.ready"
+    },
+    "timestamp": "2026-11-08T05:15:13.427Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I .agents/skills/pixl-kit/scripts/pixl.py jobs .pixl/assets/queue.ready/state.px --root \"$PWD\" > work/queue.ready/rev3/jobs-after-prepare.json; \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"\nimport json,hashlib\nd=json.load(open('work/queue.ready/rev3/jobs-after-prepare.json',encoding='utf-8'))\na=json.load(open('work/queue.ready/rev2/provider-arguments.json',encoding='utf-8'))\nprint(d['hash'],d['revision'])\nfor j in d['jobs']:\n  print(j['id'],j['state'],j['remote_id'],j['next_action'],j['blockers'],[ (b['selected_for_asset'],b['linked_task'],b['status']) for b in j['selection_bindings']])\n  if j['id']=='r.725292e0867932c7.request': print('args_equal',j['request']['arguments']==a)\n\"; sha256sum plar.txt work/queue.ready/rev3/*",
+      "description": "Reread jobs and compare saved arguments"
+    },
+    "timestamp": "2026-11-08T05:15:16.961Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && head -c 300 plar.txt; echo; \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"\nimport json;d=json.load(open('plar.txt',encoding='utf-8'));print(list(d.keys()));a=[x for x in d['assets'] if x['id']=='queue.ready'][0] if 'assets' in d else None;print(list(a.keys()) if a else None)\"",
+      "description": "Inspect plar.txt structure"
+    },
+    "timestamp": "2026-11-08T05:15:24.778Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project/work/queue.ready/rev3/build_plar_next.py",
+      "content": "\"\"\"Write work/queue.ready/rev3/plar-next-update.json: plar.txt with only queue.ready next/evidence changed.\n\nUsage: python -I build_plar_next.py PROJECT_ROOT EXPECTED_PLAR_SHA256\n\"\"\"\nimport copy\nimport hashlib\nimport json\nimport os\nimport sys\n\nos.chdir(sys.argv[1])\n\n\ndef H(p):\n    with open(p, \"rb\") as f:\n        return hashlib.sha256(f.read()).hexdigest()\n\n\nassert H(\"plar.txt\") == sys.argv[2]\nwith open(\"plar.txt\", encoding=\"utf-8\") as f:\n    doc = json.load(f)\norig = copy.deepcopy(doc)\na = [x for x in doc[\"assets\"] if x[\"id\"] == \"queue.ready\"][0]\nassert a[\"production\"] == {\"store\": \".pixl/assets/queue.ready\", \"task\": \"r.725292e0867932c7.task\",\n                           \"output\": \"r.725292e0867932c7.output.ready\"}\na[\"next\"] = (\n    \"First attempt first_request (pixellab-test, remote_id controlled-create-0001, provider_simulated=true) is terminal \"\n    \"failed without an image. Rev2 job r.926cff0e8f7acca0.request was never dispatched (no remote call) and was retired \"\n    \"locally with a failed observation after caller review work/queue.ready/rev2/caller-review.json (f0ab7290...) \"\n    \"requested a criterion change. Rev3 generation prepared in .pixl/assets/queue.ready (revision 9): task \"\n    \"r.725292e0867932c7.task, output r.725292e0867932c7.output.ready, job r.725292e0867932c7.request (prepared, not \"\n    \"dispatched; arguments equal work/queue.ready/rev2/provider-arguments.json bef25100...); packet \"\n    \"work/queue.ready/rev3/request-review.json (de88a037...). Next: caller independently compares the rev3 packet \"\n    \"(criterion asymmetric-check-mark revised) with BRIEF/OWNER/source, rereads PLAR, then claims dispatch of \"\n    \"r.725292e0867932c7.request and submits its exact arguments as the one further controlled pixellab-test request. \"\n    \"No image, style approval or integration exists. Not integrated.\")\na[\"evidence\"].append({\n    \"path\": \"work/queue.ready/rev3/request-review.json\",\n    \"note\": (\"Rev3 request/criteria packet (sha256 de88a037a349305e2e29b34bac160aaff069e677ed690cc0dd1f3401eac251c8): \"\n             \"criteria-only revision of rev2 answering caller review f0ab7290...; prepared job r.725292e0867932c7.request, \"\n             \"not dispatched; provider_simulated=true; no image, review or integration.\")})\n# Only next/evidence of queue.ready may differ.\nfor k in orig:\n    if k != \"assets\":\n        assert orig[k] == doc[k]\nfor o, n in zip(orig[\"assets\"], doc[\"assets\"]):\n    if o[\"id\"] != \"queue.ready\":\n        assert o == n\n    else:\n        assert {k: v for k, v in o.items() if k not in (\"next\", \"evidence\")} == \\\n               {k: v for k, v in n.items() if k not in (\"next\", \"evidence\")}\nwith open(\"work/queue.ready/rev3/plar-next-update.json\", \"w\", encoding=\"utf-8\", newline=\"\\n\") as f:\n    f.write(json.dumps(doc, indent=2, ensure_ascii=False) + \"\\n\")\nprint(H(\"work/queue.ready/rev3/plar-next-update.json\"))\n"
+    },
+    "timestamp": "2026-11-08T05:15:36.255Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I work/queue.ready/rev3/build_plar_next.py \"$PWD\" ec91d1eca569b5c5400c0f34cb4aba639542c23b5f5ca67363214f0c11f93b7c",
+      "description": "Build PLAR next-update document"
+    },
+    "timestamp": "2026-11-08T05:15:37.854Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I .agents/skills/pixl-kit/scripts/pixl.py plar save --help",
+      "description": "Show plar save CLI usage"
+    },
+    "timestamp": "2026-11-08T05:15:41.655Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I .agents/skills/pixl-kit/scripts/pixl.py plar save work/queue.ready/rev3/plar-next-update.json --root \"$PWD\" --path plar.txt --expect ec91d1eca569b5c5400c0f34cb4aba639542c23b5f5ca67363214f0c11f93b7c | head -c 1500; echo; sha256sum plar.txt",
+      "description": "Save PLAR next update with expected hash"
+    },
+    "timestamp": "2026-11-08T05:15:45.749Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && P=\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\"; R=.agents/skills/pixl-kit/scripts/pixl.py; $P -I $R plar read --root \"$PWD\" --asset queue.ready > work/queue.ready/rev3/focused-read-after-prepare.json; $P -I -c \"\nimport json;d=json.load(open('work/queue.ready/rev3/focused-read-after-prepare.json',encoding='utf-8'))\np=d['asset']['production'] if 'production' in d['asset'] else None\nprint(d['hash'],d['requirements_hash']);pr=d['production'];print(pr['link_status'],pr['hash'],pr['revision'],pr['task'],pr['next_action'],pr['pending_jobs'],pr['selection_current'])\"; $P -I $R validate .pixl/assets/queue.ready/state.px --root \"$PWD\" | head -c 400; echo; git status --short -- work/queue.ready | grep -v rev3 ; sha256sum work/queue.ready/*.json work/queue.ready/rev3/*",
+      "description": "Verify PLAR link, store validity, preservation"
+    },
+    "timestamp": "2026-11-08T05:15:51.998Z",
+    "parent": "toolu_01Qtthztxuk1E5G5S8mxFvun"
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && sha256sum work/queue.ready/*.json work/queue.ready/rev2/* work/queue.ready/rev3/* plar.txt .pixl/assets/queue.ready/state.px && git status --short . | grep -v '^A ' ; \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json\nL=lambda p: json.load(open(p,encoding='utf-8'))\na=L('work/queue.ready/rev2/candidate-plan.json'); b=L('work/queue.ready/rev3/candidate-plan.json')\nprint('scope differs only rev label:', a['scope'].replace('rev2','rev3')==b['scope'])\noa,ob=a['outputs'][0],b['outputs'][0]\nprint('contract equal', oa['contract']==ob['contract'], 'ids', oa['id']==ob['id'], oa['name'],'|',ob['name'])\nca={c['id']:c for c in oa['criteria']}; cb={c['id']:c for c in ob['criteria']}\nprint('criteria ids equal', list(ca)==list(cb))\nfor k in ca:\n    if ca[k]!=cb[k]:\n        for f in ca[k]:\n            if ca[k][f]!=cb[k].get(f): print(k,f,'\\nOLD',ca[k][f],'\\nNEW',cb[k][f])\nrr=L('work/queue.ready/rev3/request-review.json')\nprint(json.dumps({k:rr[k] for k in ('requirements_hash','request','criteria')},indent=1)[:2500])\nprint('resume', json.dumps(rr.get('resume'),indent=1)[:1500])\nEOF",
+      "description": "Verify rev3 hashes and diff criteria"
+    },
+    "timestamp": "2026-11-08T05:16:33.184Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_workflow",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:16:37.971Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && P=\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\"; R=\"$(pwd)/.agents/skills/pixl-kit/scripts/pixl.py\"; \"$P\" \"$R\" plar read --root . --asset queue.ready > work/queue.ready/rev3/caller-plar-read.json 2>&1; \"$P\" \"$R\" jobs .pixl/assets/queue.ready/state.px --root . > work/queue.ready/rev3/caller-jobs.json 2>&1; \"$P\" -I - <<'EOF'\nimport json\nr=json.load(open('work/queue.ready/rev3/caller-plar-read.json',encoding='utf-8'))\nprint('plar hash',r['hash'],'req',r['requirements_hash'])\npr=r['production']; print({k:pr.get(k) for k in ('task','task_state','pending_jobs','next_action','new_request_allowed','selection_current','hash','revision')})\nprint([ (s['id'],s['binding']) for s in r['sources']])\nj=json.load(open('work/queue.ready/rev3/caller-jobs.json',encoding='utf-8'))\nargs=json.load(open('work/queue.ready/rev2/provider-arguments.json',encoding='utf-8'))\nfor x in j['jobs']:\n    print(x['id'],x['state'],x.get('remote_id'),x['next_action'],x['blockers'],'args==reviewed' if x['request']['arguments']==args else 'args differ', x['request']['request_sha256'])\nEOF",
+      "description": "Reread PLAR and job report as caller"
+    },
+    "timestamp": "2026-11-08T05:16:43.312Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,datetime\nprev=json.load(open('work/queue.ready/rev2/caller-review.json'))\ncomps=[dict(c) for c in prev['criterion_comparisons']]\nfor c in comps:\n    if c['id']=='asymmetric-check-mark':\n        c.update(source=\"BRIEF l9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'; l9 'review display conditions'; queue-view l9\",\n                 adds_or_omits=\"Now 'visibly asymmetrical (for example differing in length and/or angle)'; leaves ratio/orientation/stroke/colour open. Tested alternatives: equal-length different-angle tick and mirrored tick both pass; symmetric V fails, which matches the source.\",\n                 finding=\"consistent (rev2 discrepancy resolved)\")\nrev={\"version\":1,\"reviewer\":\"calling agent (independent of PIXL specialist)\",\"reviewed_at\":datetime.datetime.now(datetime.UTC).isoformat(),\n\"packet\":{\"path\":\"work/queue.ready/rev3/request-review.json\",\"sha256\":\"de88a037a349305e2e29b34bac160aaff069e677ed690cc0dd1f3401eac251c8\"},\n\"request\":{\"path\":\"work/queue.ready/rev2/provider-arguments.json\",\"sha256\":\"bef2510035113048070b25172b4b042633a2c7e4dca950915afa5b0aedeefdae\",\"note\":\"unchanged from rev2, already reviewed\"},\n\"criteria\":{\"path\":\"work/queue.ready/rev3/candidate-plan.json\",\"sha256\":\"707bd4794435e9c3420c1e1f3c859704bb84880e8ab36e6c5cdb24d3b0063989\"},\n\"connection\":{\"path\":\"work/queue.ready/rev2/connection.json\",\"sha256\":\"86fd154ec0a9ad081381d88d132df98a1d04dd0e67e98c800bb9113c6acc3d88\"},\n\"previous_review\":{\"path\":\"work/queue.ready/rev2/caller-review.json\",\"sha256\":\"f0ab72906afce249a74ef20be918f2bb302b1625bf3888086c9ba687238f8fa1\",\"verdict\":\"changes_requested\"},\n\"verdict\":\"consistent\",\n\"criterion_comparisons\":comps,\n\"other_findings\":[\n \"My semantic diff of the rev2 and rev3 candidate-plans shows the contract and 7 criteria are equal. The only changes are the asymmetric-check-mark check text and the rev2->rev3 labels in scope and name.\",\n \"Durable job r.725292e0867932c7.request (state prepared, request_sha256 0a333891...) saves arguments equal to the reviewed provider-arguments.json (I checked this in the caller jobs report, work/queue.ready/rev3/caller-jobs.json).\",\n \"I reread PLAR (caller-plar-read.json). Hash edbe5d2d, requirements_hash b0b8bb6f unchanged, all source bindings current, selection current, pending job is only the rev3 request, next_action dispatch.\",\n \"Rev2 job r.926cff0e8f7acca0.request was retired with a local failed event. Its evidence states it was never dispatched and no remote call was made. No remote_id or provider response was fabricated. I accept this as the documented route because the runtime has no other way to abandon a prepared job.\",\n \"Minor wording note, not consequential: the reused connection.json authorization scope says 'this revised queue.ready rev2 request'. The rev2 job was never sent, so this rev3 submission is still the single 'one further controlled request' authorized by OWNER.md line 7. The arguments are identical.\",\n \"Earlier generations, the first_request history and all first-generation and rev2 files are preserved. I verified their hashes.\"\n],\n\"next_action\":\"Caller claims dispatch of r.725292e0867932c7.request (expect baee0e58...) and submits its exact returned arguments once to pixellab-test create_image_pro_flash.\"}\njson.dump(rev,open('work/queue.ready/rev3/caller-review.json','w'),indent=2)\nEOF\nsha256sum work/queue.ready/rev3/caller-review.json",
+      "description": "Write consistent caller review for rev3"
+    },
+    "timestamp": "2026-11-08T05:17:03.847Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_job_dispatch",
+    "arguments": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "baee0e582af7e15ad76b1e82779ad25aef664019c362f21ab15d2e688655f4c4",
+      "job_id": "r.725292e0867932c7.request"
+    },
+    "timestamp": "2026-11-08T05:17:04.872Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixellab-test__create_image_pro_flash",
+    "arguments": {
+      "description": "16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered check mark with clearly asymmetrical arms: a short arm rising up-left from the bottom point and a much longer arm rising up-right, like a classic tick. Chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.",
+      "height": 16,
+      "no_background": true,
+      "width": 16
+    },
+    "timestamp": "2026-11-08T05:17:10.307Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixellab-test__list_jobs",
+    "arguments": {
+      "include_recent": true
+    },
+    "timestamp": "2026-11-08T05:17:12.493Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,datetime,hashlib\nnow=datetime.datetime.now(datetime.UTC).isoformat()\nargs=json.load(open('work/queue.ready/rev2/provider-arguments.json',encoding='utf-8'))\ncreate={\"job_id\":\"controlled-create-0002\",\"status\":\"queued\",\"arguments\":dict(args),\"tool\":\"create_image_pro_flash\",\"provider_simulated\":True}\nold_args={\"description\":\"16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered checkmark silhouette with chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.\",\"width\":16,\"height\":16,\"no_background\":True}\nlst={\"jobs\":[{\"job_id\":\"controlled-create-0001\",\"status\":\"failed\",\"arguments\":old_args,\"tool\":\"create_image_pro_flash\",\"provider_simulated\":True,\"reason\":\"Controlled continuation fixture: the original queued attempt has ended without an image.\"},{\"job_id\":\"controlled-create-0002\",\"status\":\"queued\",\"arguments\":dict(args),\"tool\":\"create_image_pro_flash\",\"provider_simulated\":True}],\"provider_simulated\":True}\nresp={\"version\":1,\"connection\":\"pixellab-test\",\"provider_simulated\":True,\"observer\":\"calling agent\",\"observed_at\":now,\n \"create_call\":{\"tool\":\"create_image_pro_flash\",\"arguments\":args,\"response\":create},\n \"list_jobs_call\":{\"arguments\":{\"include_recent\":True},\"response\":lst},\n \"note\":\"Responses copied verbatim (as JSON values) from this session's host calls. This is a simulated queued acceptance with no image and no upstream service. controlled-create-0002 belongs to pixellab-test only.\"}\njson.dump(resp,open('work/queue.ready/rev3/provider-response.json','w'),indent=2)\nsub=json.load(open('.pixl/assets/queue.ready/state.px.tmp','r')) if False else None\ncmp={\"version\":1,\"reviewer\":\"calling agent\",\"compared_at\":now,\n \"reviewed\":{\"path\":\"work/queue.ready/rev2/provider-arguments.json\",\"sha256\":hashlib.sha256(open('work/queue.ready/rev2/provider-arguments.json','rb').read()).hexdigest()},\n \"dispatch_request_equals_reviewed\":True,\"submitted_equals_reviewed\":create[\"arguments\"]==args,\"echo_create_equals_reviewed\":create[\"arguments\"]==args,\"echo_list_jobs_equals_reviewed\":lst[\"jobs\"][1][\"arguments\"]==args,\n \"durable_job\":\"r.725292e0867932c7.request\",\"request_sha256\":\"0a333891b63d147e3377c2af9c9568f8a6cdeeb61913b2bf15e6d0be52261396\",\"remote_id\":\"controlled-create-0002\",\"submissions\":1}\njson.dump(cmp,open('work/queue.ready/rev3/submission-comparison.json','w'),indent=2)\nprint(now, cmp)\nEOF\nsha256sum work/queue.ready/rev3/provider-response.json work/queue.ready/rev3/submission-comparison.json",
+      "description": "Retain provider response and submission comparison"
+    },
+    "timestamp": "2026-11-08T05:17:24.798Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && cat > work/queue.ready/rev3/echo-create.json <<'EOF'\n{\"job_id\":\"controlled-create-0002\",\"status\":\"queued\",\"arguments\":{\"description\":\"16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered check mark with clearly asymmetrical arms: a short arm rising up-left from the bottom point and a much longer arm rising up-right, like a classic tick. Chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.\",\"height\":16,\"no_background\":true,\"width\":16},\"tool\":\"create_image_pro_flash\",\"provider_simulated\":true}\nEOF\ncat > work/queue.ready/rev3/echo-list-jobs.json <<'EOF'\n{\"jobs\":[{\"job_id\":\"controlled-create-0001\",\"status\":\"failed\",\"arguments\":{\"description\":\"16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered checkmark silhouette with chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.\",\"width\":16,\"height\":16,\"no_background\":true},\"tool\":\"create_image_pro_flash\",\"provider_simulated\":true,\"reason\":\"Controlled continuation fixture: the original queued attempt has ended without an image.\"},{\"job_id\":\"controlled-create-0002\",\"status\":\"queued\",\"arguments\":{\"description\":\"16x16 pixel-art UI status icon for the Ready (task completed successfully) state of a queue. One bold, centered check mark with clearly asymmetrical arms: a short arm rising up-left from the bottom point and a much longer arm rising up-right, like a classic tick. Chunky 2-pixel-wide strokes, filled in a cool sky blue close to #70b9ed with one lighter blue highlight tone, crisp hard pixel edges, no anti-aliased blur, no stray pixels. Must read clearly at 1x on a dark navy panel (#172336). Transparent background, no text, no circle or badge plate behind the mark, no drop shadow, single static image.\",\"height\":16,\"no_background\":true,\"width\":16},\"tool\":\"create_image_pro_flash\",\"provider_simulated\":true}],\"provider_simulated\":true}\nEOF\n\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,hashlib\nd='work/queue.ready/rev3/'\nL=lambda p: json.load(open(p,encoding='utf-8'))\nargs=L('work/queue.ready/rev2/provider-arguments.json'); c=L(d+'echo-create.json'); l=L(d+'echo-list-jobs.json')\njobs=L(d+'caller-jobs.json')\nsaved=[j for j in jobs['jobs'] if j['id']=='r.725292e0867932c7.request'][0]['request']['arguments']\nh=lambda p: hashlib.sha256(open(p,'rb').read()).hexdigest()\nr={'create':c['arguments']==args,'list':l['jobs'][1]['arguments']==args,'saved':saved==args,'orig_status_unchanged':l['jobs'][0]['status']=='failed'}\nprint(r)\nresp=L(d+'provider-response.json'); resp['create_call']['response']=c; resp['list_jobs_call']['response']=l\nresp['raw_files']={'echo-create.json':h(d+'echo-create.json'),'echo-list-jobs.json':h(d+'echo-list-jobs.json')}\nresp['note']=\"The caller pasted the host tool outputs literally into echo-create.json and echo-list-jobs.json; the response fields in this file are parsed from those files. This is a simulated queued acceptance with no image and no upstream service. controlled-create-0002 belongs to pixellab-test only.\"\njson.dump(resp,open(d+'provider-response.json','w'),indent=2)\ncmp=L(d+'submission-comparison.json')\ncmp.update({'saved_job_arguments_equals_reviewed':r['saved'],'echo_create_equals_reviewed':r['create'],'echo_list_jobs_equals_reviewed':r['list'],'submitted_equals_reviewed':r['create'] and r['list'],\n 'method':'Compared the parsed JSON values of the pasted host outputs (echo-create.json, echo-list-jobs.json) and the saved job arguments (caller-jobs.json) with the reviewed provider-arguments.json. This replaces an earlier draft that compared the reviewed arguments with copies of themselves.',\n 'raw_files':resp['raw_files']})\njson.dump(cmp,open(d+'submission-comparison.json','w'),indent=2)\nEOF\nsha256sum work/queue.ready/rev3/provider-response.json work/queue.ready/rev3/submission-comparison.json",
+      "description": "Compare literal echoed outputs to reviewed arguments"
+    },
+    "timestamp": "2026-11-08T05:17:44.473Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_job_observe",
+    "arguments": {
+      "store": ".pixl/assets/queue.ready",
+      "expect": "e50400da8df1a6d79ce108bb7df73e4817431d21cc277183eb82badacb1b4794",
+      "job_id": "r.725292e0867932c7.request",
+      "event": "submitted",
+      "remote_id": "controlled-create-0002",
+      "evidence": {
+        "connection": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "observed_at": "2026-11-08T05:17:25.154536+00:00",
+        "provider_simulated": true,
+        "observer": "calling agent",
+        "response": {
+          "job_id": "controlled-create-0002",
+          "status": "queued",
+          "tool": "create_image_pro_flash",
+          "provider_simulated": true
+        },
+        "response_file": {
+          "path": "work/queue.ready/rev3/provider-response.json",
+          "sha256": "00c58d27215d0a66442c6f140e4e441c13d4461b5103cb0024e86d9bbcbe946b"
+        },
+        "argument_comparison": {
+          "path": "work/queue.ready/rev3/submission-comparison.json",
+          "sha256": "041a908f25adfe4d11ca882ea3b91cafa3af3045777e941ff173c15953202d00",
+          "echo_equals_reviewed": true
+        },
+        "note": "Simulated queued acceptance from a request-only fixture; no image delivered, no upstream service."
+      }
+    },
+    "timestamp": "2026-11-08T05:17:51.263Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && P=\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\"; R=\"$(pwd)/.agents/skills/pixl-kit/scripts/pixl.py\"; \"$P\" \"$R\" plar save --help 2>&1 | head -20; cat work/queue.ready/rev3/build_plar_next.py | head -40",
+      "description": "Check plar save CLI usage"
+    },
+    "timestamp": "2026-11-08T05:17:57.491Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && mkdir -p work/queue.ready/caller && cat > work/queue.ready/caller/build_plar_submitted.py <<'EOF'\n\"\"\"Caller helper: plar.txt copy with only queue.ready next/evidence changed after rev3 submission.\nUsage: python -I build_plar_submitted.py PROJECT_ROOT EXPECTED_PLAR_SHA256 OUT_JSON\"\"\"\nimport copy, hashlib, json, os, sys\nos.chdir(sys.argv[1])\nassert hashlib.sha256(open(\"plar.txt\",\"rb\").read()).hexdigest()==sys.argv[2]\ndoc=json.load(open(\"plar.txt\",encoding=\"utf-8\")); orig=copy.deepcopy(doc)\na=[x for x in doc[\"assets\"] if x[\"id\"]==\"queue.ready\"][0]\na[\"next\"]=(\"Revised request accepted by the controlled connection: job r.725292e0867932c7.request in .pixl/assets/queue.ready \"\n \"(task r.725292e0867932c7.task, output r.725292e0867932c7.output.ready) is submitted with remote_id controlled-create-0002 on \"\n \"pixellab-test (provider_simulated=true, queued, no image). Earlier attempts are preserved: first_request \"\n \"(controlled-create-0001) failed without an image, and r.926cff0e8f7acca0.request was retired before dispatch. \"\n \"Neither simulated ID may be retrieved from or reused on a real service. Next: a separately authorized live PixelLab \"\n \"connection must run its own job under the rev3 contract (or a re-reviewed one). Then retrieve and import the candidate \"\n \"and inspect it at 1x/3x nearest on #172336 against the 8 saved criteria, including asymmetric-check-mark. Record the \"\n \"Ready style decision before expanding Working/Retry/Paused, deliver to assets/ready-confirmed.png and exercise \"\n \"statusCell/compactStatus. Not integrated.\")\na[\"evidence\"]+= [\n {\"path\":\"work/queue.ready/rev3/caller-review.json\",\"note\":\"Independent caller comparison of rev3 packet de88a037...: consistent (the rev2 discrepancy is resolved). sha256 bfae332bf3b30c40a1564c3c80109f9c91efa501c05c091db181ca3318ac2f45.\"},\n {\"path\":\"work/queue.ready/rev3/provider-response.json\",\"note\":\"Actual pixellab-test create_image_pro_flash and list_jobs responses: controlled-create-0002 queued, controlled-create-0001 failed; provider_simulated=true; no image. sha256 00c58d27215d0a66442c6f140e4e441c13d4461b5103cb0024e86d9bbcbe946b.\"},\n {\"path\":\"work/queue.ready/rev3/submission-comparison.json\",\"note\":\"Submitted, echoed and saved job arguments equal the reviewed rev2/provider-arguments.json (bef25100...). sha256 041a908f25adfe4d11ca882ea3b91cafa3af3045777e941ff173c15953202d00.\"},\n {\"path\":\".pixl/assets/queue.ready/state.px\",\"note\":\"PX2 store after the submitted observation: revision 11, hash 2e63e48d79cb4bb5b4b863f689320db38139f51a918d9cf2e2ff01ec7d539970; job r.725292e0867932c7.request submitted; task open; no candidate.\"}]\n# assert nothing else changed\nfor k in orig:\n    if k!=\"assets\": assert orig[k]==doc[k],k\nfor o,n in zip(orig[\"assets\"],doc[\"assets\"]):\n    if o[\"id\"]!=\"queue.ready\": assert o==n\n    else: assert {k:v for k,v in o.items() if k not in(\"next\",\"evidence\")}=={k:v for k,v in n.items() if k not in(\"next\",\"evidence\")}\njson.dump(doc,open(sys.argv[3],\"w\",encoding=\"utf-8\"),indent=2)\nEOF\nP=\"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\"; R=\"$(pwd)/.agents/skills/pixl-kit/scripts/pixl.py\"\n\"$P\" -I work/queue.ready/caller/build_plar_submitted.py \"$(pwd)\" edbe5d2da8fa6915fdf265c30b9c12c2ff067b9d472a04ad02fc109b1da5eacb work/queue.ready/caller/plar-submitted.json && \"$P\" \"$R\" plar save --root . --expect edbe5d2da8fa6915fdf265c30b9c12c2ff067b9d472a04ad02fc109b1da5eacb work/queue.ready/caller/plar-submitted.json | head -c 600; echo; sha256sum plar.txt; \"$P\" \"$R\" plar read --root . --asset queue.ready > work/queue.ready/caller/plar-read-final.json; \"$P\" -I -c \"\nimport json;r=json.load(open('work/queue.ready/caller/plar-read-final.json',encoding='utf-8'));p=r['production']\nprint(r['hash'],r['requirements_hash'],p['task'],p['pending_jobs'],p['next_action'],p['selection_current'],p['revision'])\"",
+      "description": "Update PLAR next and evidence, then reread"
+    },
+    "timestamp": "2026-11-08T05:18:15.760Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "mcp__pixl-local__pixl_validate",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px"
+    },
+    "timestamp": "2026-11-08T05:18:21.176Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && ls .pixl/plar-history; sha256sum PARENT-RESULT.json assets/start.svg work/queue.ready/*.json | cut -c1-20; git status --short . | grep -v '^A ' ",
+      "description": "Check history and preservation"
+    },
+    "timestamp": "2026-11-08T05:18:22.517Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I - <<'EOF'\nimport json,hashlib\nh=lambda p: hashlib.sha256(open(p,'rb').read()).hexdigest()\nF=lambda p,**k: dict(path=p,sha256=h(p),**k)\nargs=json.load(open('work/queue.ready/rev2/provider-arguments.json',encoding='utf-8'))\ndoc={\n\"version\":1,\"role\":\"calling agent\",\"assignment\":F(\"OWNER.md\"),\"status\":\"delivered\",\n\"status_scope\":\"Delivered for this stage only. The revised queue.ready request was independently reviewed, accepted by the controlled pixellab-test connection, and its state is resumable. The asset is still unaccepted: no image exists, no style is approved, the PX2 task is open and nothing is integrated.\",\n\"provider_simulated\":True,\"asset_id\":\"queue.ready\",\n\"original\":{\n \"parent_result\":F(\"PARENT-RESULT.json\"),\n \"state\":{\"store\":\".pixl/assets/queue.ready\",\"revision\":3,\"hash\":\"375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2\",\"retained\":\".pixl/assets/queue.ready/history/375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2.px\"},\n \"task\":\"task\",\"output\":\"output.ready\",\n \"job\":{\"id\":\"first_request\",\"remote_id\":\"controlled-create-0001\",\"state_at_parent\":\"submitted (queued)\",\"state_now\":\"failed (observed on pixellab-test at resume; no image)\",\"intent_sha256\":\"7bf8c84aefae983040f9a8cd7677a6b1d80db773898cd6c5995bb087c7990435\",\"request_sha256\":\"b546e4a7bd6b7242242c1fad2c3859425f0bce8837c797884eb6be2a1379ecc0\",\"status_evidence\":F(\"work/queue.ready/rev2/original-status.json\")},\n \"plar\":{\"hash\":\"0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33\",\"requirements_hash_bound\":\"79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8\",\"retained\":\".pixl/plar-history/0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33.json\"},\n \"contract\":{\"packet\":\"work/queue.ready/request-review.json (c9f17ecb...)\",\"criteria\":\"work/queue.ready/candidate-plan.json (aeb1ab7a...)\",\"arguments\":\"work/queue.ready/provider-arguments.json (48a6a03c...)\",\"caller_review\":\"work/queue.ready/caller-review.json (15b41fd2...)\",\"all_first_generation_files_byte_unchanged\":True}},\n\"source_changes_detected\":[\n \"BRIEF.md 5955da4d -> aebe0094: added line 9. Ready must visibly use a check mark with asymmetrical arms, and the destination follows the updated view.\",\n \"src/queue-view.ts 01ee5376 -> 4d6ee92e: line 6 succeeded path assets/ready.png -> assets/ready-confirmed.png (line endings also changed).\",\n \"OWNER.md af42e782 -> c1999159: new stage assignment authorizing one further controlled request.\",\n \"src/queue.ts, assets/start.svg, provider-schemas.json: unchanged.\"],\n\"current\":{\n \"state\":{\"store\":\".pixl/assets/queue.ready\",\"path\":\".pixl/assets/queue.ready/state.px\",\"revision\":11,\"hash\":h('.pixl/assets/queue.ready/state.px'),\"validated\":True,\"records\":97,\n  \"revision_log\":[\"4 47ef2326: first_request failed (caller observation)\",\"6 d85b0b65: rev2 generation prepared (specialist, plar_prepare revise)\",\"7 fc5ed7f6: rev2 job retired before dispatch (local failed event, no remote call)\",\"9 baee0e58: rev3 generation prepared (specialist, plar_prepare revise)\",\"10 e50400da: caller dispatch claim\",\"11 2e63e48d: caller submitted observation\"]},\n \"task\":{\"id\":\"r.725292e0867932c7.task\",\"state\":\"open\",\"phase\":\"sample\"},\n \"output\":{\"id\":\"r.725292e0867932c7.output.ready\",\"candidate\":None,\"criteria\":\"8 saved, all unperformed\"},\n \"job\":{\"id\":\"r.725292e0867932c7.request\",\"state\":\"submitted\",\"remote_id\":\"controlled-create-0002\",\"next_action\":\"observe\",\"intent_sha256\":\"3c11747ac07e35861a14e29d98a87294091186e5508e2426a54cfe91d66708e6\",\"request_sha256\":\"0a333891b63d147e3377c2af9c9568f8a6cdeeb61913b2bf15e6d0be52261396\",\"events\":[\"dispatch (local claim)\",\"submitted (observed)\"]},\n \"superseded_generation\":{\"task\":\"r.926cff0e8f7acca0.task (open, blocked as superseded)\",\"job\":\"r.926cff0e8f7acca0.request: failed locally before dispatch. It was never sent and has no remote_id. Retired after caller review requested changes.\"},\n \"first_generation\":{\"task\":\"task (open, blocked as superseded)\",\"job\":\"first_request failed\"},\n \"plar\":{\"path\":\"plar.txt\",\"hash\":h('plar.txt'),\"requirements_hash\":\"b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c\",\n  \"history\":[\"0abd74f7 (parent)\",\"82868161 (specialist refresh)\",\"17f779ad (rev2 prepare link)\",\"61ab8ae4 (rev2 next)\",\"ec91d1ec (rev3 prepare link)\",\"edbe5d2d (rev3 next)\",\"c5164aad (caller: submitted next/evidence)\"],\n  \"queue.ready\":{\"status\":\"in_progress\",\"destination\":\"assets/ready-confirmed.png\",\"production\":{\"store\":\".pixl/assets/queue.ready\",\"task\":\"r.725292e0867932c7.task\",\"output\":\"r.725292e0867932c7.output.ready\"},\"new_requirement\":\"ready_check_mark (authority requirement, brief)\",\"integrated\":False},\n  \"unchanged\":\"All asset IDs. The queue.working, queue.retry, queue.start and queue.paused rows are identical to 0abd74f7. assets/start.svg ee2ba2fe is unchanged.\",\n  \"final_read\":F(\"work/queue.ready/caller/plar-read-final.json\")}},\n\"delegation\":[\n {\"agent\":\"PIXL specialist (native 'pixl' type)\",\"task\":\"Refresh PLAR, prepare the rev2 packet, run plar_prepare with revise=true\",\"result\":\"rev2 prepared; stopped before dispatch; did not write the caller review\"},\n {\"agent\":\"PIXL specialist (native 'pixl' type, fresh)\",\"task\":\"Address the caller's changes_requested, retire the undispatched rev2 job, prepare the rev3 revision\",\"result\":\"rev3 prepared; stopped before dispatch\"}],\n\"independent_review\":{\n \"rev2\":{\"review\":F(\"work/queue.ready/rev2/caller-review.json\"),\"packet\":\"work/queue.ready/rev2/request-review.json (39b727bd...)\",\"verdict\":\"changes_requested\",\n   \"finding\":\"asymmetric-check-mark required arms 'clearly unequal in length'. BRIEF.md line 9 says only 'asymmetrical arms', so a tick with equal-length arms at different angles fits the brief but would have been rejected. All other criteria, the arguments, the connection and the PLAR refresh were consistent.\"},\n \"rev3\":{\"review\":F(\"work/queue.ready/rev3/caller-review.json\"),\"packet\":F(\"work/queue.ready/rev3/request-review.json\"),\"criteria\":F(\"work/queue.ready/rev3/candidate-plan.json\"),\"verdict\":\"consistent\",\n   \"method\":\"Verified every hash. Read BRIEF, OWNER, queue.ts, queue-view.ts and start.svg at the cited lines. Diffed the rev2 and rev3 plans semantically (only the asymmetric-check-mark text and labels changed). Compared each of the 8 rejection rules with the source wording and tested brief-conforming alternatives. Checked the arguments against my own session's tool declaration. Diffed PLAR against 0abd74f7. Checked that deferred obligations are still scheduled.\",\n   \"criteria_authority\":{\"owner_or_consumer\":[\"geometry\",\"transparent-background\",\"ready-meaning\",\"asymmetric-check-mark\",\"readability-1x-3x\",\"cool-blue-accent\"],\"specialist_choice_attributed\":[\"silhouette-without-color\",\"sample-pixel-craft\"]},\n   \"noted\":[\"connection.json authorization scope text says 'rev2 request'. The rev2 job was never sent, so this is still the single further request OWNER.md line 7 authorizes. Not consequential.\",\n     \"The tick orientation (short up-left, long up-right), ~2px strokes, the colour near #70b9ed and the absence of a plate are specialist prompt choices. None of them is a rejection rule.\",\n     \"Display conditions, the palette relationship and non-colour form cannot be expressed in the schema. They are carried in the prompt and checked by criteria after retrieval.\",\n     \"My first submission-comparison draft compared the reviewed arguments with copies of themselves, so it proved nothing. I redid it against the literal echoed host outputs (rev3/echo-*.json) before recording the observation.\"]},\n \"deferred_obligations_retained\":[\"family-working-not-success\",\"family-retry-non-color\",\"family-paused-non-color\",\"style-decision\",\"destination-delivery (assets/ready-confirmed.png)\",\"renderer-integration (statusCell/compactStatus)\"]},\n\"submitted\":{\n \"connection\":\"pixellab-test (controlled request-only fixture, no upstream service)\",\"tool\":\"create_image_pro_flash\",\"submissions_this_stage\":1,\n \"arguments\":args,\"arguments_file\":F(\"work/queue.ready/rev2/provider-arguments.json\"),\n \"response\":{\"job_id\":\"controlled-create-0002\",\"status\":\"queued\",\"provider_simulated\":True},\n \"response_evidence\":F(\"work/queue.ready/rev3/provider-response.json\"),\n \"raw_echoes\":[F(\"work/queue.ready/rev3/echo-create.json\"),F(\"work/queue.ready/rev3/echo-list-jobs.json\")],\n \"comparison\":F(\"work/queue.ready/rev3/submission-comparison.json\",submitted_equals_reviewed=True,saved_job_equals_reviewed=True),\n \"note\":\"This is a simulated acceptance only. controlled-create-0002 and controlled-create-0001 belong to pixellab-test and must not be used against a real PixelLab service.\"},\n\"not_done\":[\"No image was generated or retrieved. The controlled connection returns only a queued simulation.\",\n \"There is no candidate import, inspection, criterion verdict, art acceptance, style decision or task completion.\",\n \"Nothing was delivered to assets/ready-confirmed.png and nothing was integrated into a renderer.\",\n \"Nothing was submitted to a real PixelLab service.\",\n \"The superseded PX2 tasks 'task' and 'r.926cff0e8f7acca0.task' remain open (blocked). Their disposition is future bookkeeping.\"],\n\"remaining_work\":[\"A separately authorized live PixelLab connection must run its own job for r.725292e0867932c7.output.ready under the rev3 contract or a re-reviewed one. Do not retrieve or reuse controlled-create-0002 there.\",\n \"Retrieve and import the candidate (pixl_job_import). Inspect it at 1x and 3x nearest on #172336 and record verdicts for all 8 criteria, including asymmetric-check-mark. Complete the task only if every criterion passes.\",\n \"Record the Ready style decision and source-bind the approved reference in PLAR before expanding queue.working, queue.retry and queue.paused.\",\n \"Run the family distinction reviews, deliver to assets/ready-confirmed.png (not ready.png) and exercise statusCell/compactStatus in a real renderer.\"],\n\"helpers_and_scratch\":[\"work/queue.ready/rev2/build_*.py, plar-refresh.json, plar-next-update.json, focused-read*.json (specialist)\",\"work/queue.ready/rev3/build_*.py, plar-next-update.json, jobs-after-prepare.json, focused-read-after-prepare.json (specialist)\",\"work/queue.ready/rev3/caller-plar-read.json, caller-jobs.json (caller)\",\"work/queue.ready/caller/build_plar_submitted.py, plar-submitted.json, plar-read-final.json (caller)\"]\n}\njson.dump(doc,open('COLD-RESULT.json','w',encoding='utf-8'),indent=2)\nEOF\nsha256sum COLD-RESULT.json",
+      "description": "Write COLD-RESULT.json"
+    },
+    "timestamp": "2026-11-08T05:19:04.565Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Write",
+    "arguments": {
+      "file_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\work\\queue.ready\\caller\\build_cold_result.py",
+      "content": "\"\"\"Caller helper: write COLD-RESULT.json. Usage: python -I build_cold_result.py PROJECT_ROOT\"\"\"\nimport hashlib\nimport json\nimport os\nimport sys\n\nos.chdir(sys.argv[1])\n\n\ndef h(p):\n    with open(p, \"rb\") as f:\n        return hashlib.sha256(f.read()).hexdigest()\n\n\ndef F(p, **k):\n    return dict(path=p, sha256=h(p), **k)\n\n\nwith open(\"work/queue.ready/rev2/provider-arguments.json\", encoding=\"utf-8\") as f:\n    args = json.load(f)\n\ndoc = {\n    \"version\": 1,\n    \"role\": \"calling agent\",\n    \"assignment\": F(\"OWNER.md\"),\n    \"status\": \"delivered\",\n    \"status_scope\": \"Delivered for this stage only. The revised queue.ready request was independently reviewed, accepted by the controlled pixellab-test connection, and its state is resumable. The asset is still unaccepted: no image exists, no style is approved, the PX2 task is open and nothing is integrated.\",\n    \"provider_simulated\": True,\n    \"asset_id\": \"queue.ready\",\n    \"original\": {\n        \"parent_result\": F(\"PARENT-RESULT.json\"),\n        \"state\": {\"store\": \".pixl/assets/queue.ready\", \"revision\": 3,\n                  \"hash\": \"375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2\",\n                  \"retained\": \".pixl/assets/queue.ready/history/375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2.px\"},\n        \"task\": \"task\",\n        \"output\": \"output.ready\",\n        \"job\": {\"id\": \"first_request\", \"remote_id\": \"controlled-create-0001\",\n                \"state_at_parent\": \"submitted (queued)\",\n                \"state_now\": \"failed (observed on pixellab-test at resume; no image)\",\n                \"intent_sha256\": \"7bf8c84aefae983040f9a8cd7677a6b1d80db773898cd6c5995bb087c7990435\",\n                \"request_sha256\": \"b546e4a7bd6b7242242c1fad2c3859425f0bce8837c797884eb6be2a1379ecc0\",\n                \"status_evidence\": F(\"work/queue.ready/rev2/original-status.json\")},\n        \"plar\": {\"hash\": \"0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33\",\n                 \"requirements_hash_bound\": \"79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8\",\n                 \"retained\": \".pixl/plar-history/0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33.json\"},\n        \"contract\": {\"packet\": \"work/queue.ready/request-review.json (c9f17ecb...)\",\n                     \"criteria\": \"work/queue.ready/candidate-plan.json (aeb1ab7a...)\",\n                     \"arguments\": \"work/queue.ready/provider-arguments.json (48a6a03c...)\",\n                     \"caller_review\": \"work/queue.ready/caller-review.json (15b41fd2...)\",\n                     \"all_first_generation_files_byte_unchanged\": True},\n    },\n    \"source_changes_detected\": [\n        \"BRIEF.md 5955da4d -> aebe0094: added line 9. Ready must visibly use a check mark with asymmetrical arms, and the destination follows the updated view.\",\n        \"src/queue-view.ts 01ee5376 -> 4d6ee92e: line 6 succeeded path assets/ready.png -> assets/ready-confirmed.png (line endings also changed).\",\n        \"OWNER.md af42e782 -> c1999159: new stage assignment authorizing one further controlled request.\",\n        \"src/queue.ts, assets/start.svg, provider-schemas.json: unchanged.\",\n    ],\n    \"current\": {\n        \"state\": {\"store\": \".pixl/assets/queue.ready\", \"path\": \".pixl/assets/queue.ready/state.px\", \"revision\": 11,\n                  \"hash\": h(\".pixl/assets/queue.ready/state.px\"), \"validated\": True, \"records\": 97,\n                  \"revision_log\": [\n                      \"4 47ef2326: first_request failed (caller observation)\",\n                      \"6 d85b0b65: rev2 generation prepared (specialist, plar_prepare revise)\",\n                      \"7 fc5ed7f6: rev2 job retired before dispatch (local failed event, no remote call)\",\n                      \"9 baee0e58: rev3 generation prepared (specialist, plar_prepare revise)\",\n                      \"10 e50400da: caller dispatch claim\",\n                      \"11 2e63e48d: caller submitted observation\"]},\n        \"task\": {\"id\": \"r.725292e0867932c7.task\", \"state\": \"open\", \"phase\": \"sample\"},\n        \"output\": {\"id\": \"r.725292e0867932c7.output.ready\", \"candidate\": None, \"criteria\": \"8 saved, all unperformed\"},\n        \"job\": {\"id\": \"r.725292e0867932c7.request\", \"state\": \"submitted\", \"remote_id\": \"controlled-create-0002\",\n                \"next_action\": \"observe\",\n                \"intent_sha256\": \"3c11747ac07e35861a14e29d98a87294091186e5508e2426a54cfe91d66708e6\",\n                \"request_sha256\": \"0a333891b63d147e3377c2af9c9568f8a6cdeeb61913b2bf15e6d0be52261396\",\n                \"events\": [\"dispatch (local claim)\", \"submitted (observed)\"]},\n        \"superseded_generation\": {\"task\": \"r.926cff0e8f7acca0.task (open, blocked as superseded)\",\n                                  \"job\": \"r.926cff0e8f7acca0.request: failed locally before dispatch. It was never sent and has no remote_id. Retired after caller review requested changes.\"},\n        \"first_generation\": {\"task\": \"task (open, blocked as superseded)\", \"job\": \"first_request failed\"},\n        \"plar\": {\"path\": \"plar.txt\", \"hash\": h(\"plar.txt\"),\n                 \"requirements_hash\": \"b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c\",\n                 \"history\": [\"0abd74f7 (parent)\", \"82868161 (specialist refresh)\", \"17f779ad (rev2 prepare link)\",\n                             \"61ab8ae4 (rev2 next)\", \"ec91d1ec (rev3 prepare link)\", \"edbe5d2d (rev3 next)\",\n                             \"c5164aad (caller: submitted next/evidence)\"],\n                 \"queue.ready\": {\"status\": \"in_progress\", \"destination\": \"assets/ready-confirmed.png\",\n                                 \"production\": {\"store\": \".pixl/assets/queue.ready\", \"task\": \"r.725292e0867932c7.task\",\n                                                \"output\": \"r.725292e0867932c7.output.ready\"},\n                                 \"new_requirement\": \"ready_check_mark (authority requirement, brief)\",\n                                 \"integrated\": False},\n                 \"unchanged\": \"All asset IDs. The queue.working, queue.retry, queue.start and queue.paused rows are identical to 0abd74f7. assets/start.svg ee2ba2fe is unchanged.\",\n                 \"final_read\": F(\"work/queue.ready/caller/plar-read-final.json\")},\n    },\n    \"delegation\": [\n        {\"agent\": \"PIXL specialist (native 'pixl' type)\", \"task\": \"Refresh PLAR, prepare the rev2 packet, run plar_prepare with revise=true\",\n         \"result\": \"rev2 prepared; stopped before dispatch; did not write the caller review\"},\n        {\"agent\": \"PIXL specialist (native 'pixl' type, fresh)\", \"task\": \"Address the caller's changes_requested, retire the undispatched rev2 job, prepare the rev3 revision\",\n         \"result\": \"rev3 prepared; stopped before dispatch\"},\n    ],\n    \"independent_review\": {\n        \"rev2\": {\"review\": F(\"work/queue.ready/rev2/caller-review.json\"),\n                 \"packet\": \"work/queue.ready/rev2/request-review.json (39b727bd...)\",\n                 \"verdict\": \"changes_requested\",\n                 \"finding\": \"asymmetric-check-mark required arms 'clearly unequal in length'. BRIEF.md line 9 says only 'asymmetrical arms', so a tick with equal-length arms at different angles fits the brief but would have been rejected. All other criteria, the arguments, the connection and the PLAR refresh were consistent.\"},\n        \"rev3\": {\"review\": F(\"work/queue.ready/rev3/caller-review.json\"),\n                 \"packet\": F(\"work/queue.ready/rev3/request-review.json\"),\n                 \"criteria\": F(\"work/queue.ready/rev3/candidate-plan.json\"),\n                 \"verdict\": \"consistent\",\n                 \"method\": \"Verified every hash. Read BRIEF, OWNER, queue.ts, queue-view.ts and start.svg at the cited lines. Diffed the rev2 and rev3 plans semantically (only the asymmetric-check-mark text and labels changed). Compared each of the 8 rejection rules with the source wording and tested brief-conforming alternatives. Checked the arguments against my own session's tool declaration. Diffed PLAR against 0abd74f7. Checked that deferred obligations are still scheduled.\",\n                 \"criteria_authority\": {\"owner_or_consumer\": [\"geometry\", \"transparent-background\", \"ready-meaning\", \"asymmetric-check-mark\", \"readability-1x-3x\", \"cool-blue-accent\"],\n                                        \"specialist_choice_attributed\": [\"silhouette-without-color\", \"sample-pixel-craft\"]},\n                 \"noted\": [\n                     \"connection.json authorization scope text says 'rev2 request'. The rev2 job was never sent, so this is still the single further request OWNER.md line 7 authorizes. Not consequential.\",\n                     \"The tick orientation (short up-left, long up-right), ~2px strokes, the colour near #70b9ed and the absence of a plate are specialist prompt choices. None of them is a rejection rule.\",\n                     \"Display conditions, the palette relationship and non-colour form cannot be expressed in the schema. They are carried in the prompt and checked by criteria after retrieval.\",\n                     \"My first submission-comparison draft compared the reviewed arguments with copies of themselves, so it proved nothing. I redid it against the literal echoed host outputs (rev3/echo-*.json) before recording the observation.\"]},\n        \"deferred_obligations_retained\": [\"family-working-not-success\", \"family-retry-non-color\", \"family-paused-non-color\",\n                                          \"style-decision\", \"destination-delivery (assets/ready-confirmed.png)\",\n                                          \"renderer-integration (statusCell/compactStatus)\"],\n    },\n    \"submitted\": {\n        \"connection\": \"pixellab-test (controlled request-only fixture, no upstream service)\",\n        \"tool\": \"create_image_pro_flash\",\n        \"submissions_this_stage\": 1,\n        \"arguments\": args,\n        \"arguments_file\": F(\"work/queue.ready/rev2/provider-arguments.json\"),\n        \"response\": {\"job_id\": \"controlled-create-0002\", \"status\": \"queued\", \"provider_simulated\": True},\n        \"response_evidence\": F(\"work/queue.ready/rev3/provider-response.json\"),\n        \"raw_echoes\": [F(\"work/queue.ready/rev3/echo-create.json\"), F(\"work/queue.ready/rev3/echo-list-jobs.json\")],\n        \"comparison\": F(\"work/queue.ready/rev3/submission-comparison.json\", submitted_equals_reviewed=True, saved_job_equals_reviewed=True),\n        \"note\": \"This is a simulated acceptance only. controlled-create-0002 and controlled-create-0001 belong to pixellab-test and must not be used against a real PixelLab service.\",\n    },\n    \"not_done\": [\n        \"No image was generated or retrieved. The controlled connection returns only a queued simulation.\",\n        \"There is no candidate import, inspection, criterion verdict, art acceptance, style decision or task completion.\",\n        \"Nothing was delivered to assets/ready-confirmed.png and nothing was integrated into a renderer.\",\n        \"Nothing was submitted to a real PixelLab service.\",\n        \"The superseded PX2 tasks 'task' and 'r.926cff0e8f7acca0.task' remain open (blocked). Their disposition is future bookkeeping.\",\n    ],\n    \"remaining_work\": [\n        \"A separately authorized live PixelLab connection must run its own job for r.725292e0867932c7.output.ready under the rev3 contract or a re-reviewed one. Do not retrieve or reuse controlled-create-0002 there.\",\n        \"Retrieve and import the candidate (pixl_job_import). Inspect it at 1x and 3x nearest on #172336 and record verdicts for all 8 criteria, including asymmetric-check-mark. Complete the task only if every criterion passes.\",\n        \"Record the Ready style decision and source-bind the approved reference in PLAR before expanding queue.working, queue.retry and queue.paused.\",\n        \"Run the family distinction reviews, deliver to assets/ready-confirmed.png (not ready.png) and exercise statusCell/compactStatus in a real renderer.\",\n    ],\n    \"helpers_and_scratch\": [\n        \"work/queue.ready/rev2/build_*.py, plar-refresh.json, plar-next-update.json, focused-read*.json (specialist)\",\n        \"work/queue.ready/rev3/build_*.py, plar-next-update.json, jobs-after-prepare.json, focused-read-after-prepare.json (specialist)\",\n        \"work/queue.ready/rev3/caller-plar-read.json, caller-jobs.json, echo-*.json (caller)\",\n        \"work/queue.ready/caller/build_plar_submitted.py, plar-submitted.json, plar-read-final.json, build_cold_result.py (caller)\",\n    ],\n}\nwith open(\"COLD-RESULT.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(doc, f, indent=2)\n"
+    },
+    "timestamp": "2026-11-08T05:19:44.841Z",
+    "parent": null
+  },
+  {
+    "type": "tool_use",
+    "name": "Bash",
+    "arguments": {
+      "command": "cd \"C:/Users/ryanf/github/gh/pixel-lab-agent/evidence/plar-cohesion/20261108/native/claude-cold-01/project\" && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I work/queue.ready/caller/build_cold_result.py \"$(pwd)\" && sha256sum COLD-RESULT.json && \"C:/Users/ryanf/github/gh/pixel-lab-agent/.venv/Scripts/python.exe\" -I -c \"import json;d=json.load(open('COLD-RESULT.json'));print(d['current']['state']['hash'],d['current']['plar']['hash'])\"",
+      "description": "Generate and verify COLD-RESULT.json"
+    },
+    "timestamp": "2026-11-08T05:19:48.818Z",
+    "parent": null
+  }
+]

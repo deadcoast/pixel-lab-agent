@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "reviewer": "calling agent (independent of the PIXL specialist)",
+  "reviewed_packet": {"path": "work/queue.ready/rev3/request-review.json", "sha256": "38c9c63885d3d409a64f467c540ca0f426584bdfb92a5e2d155919d018c44e55"},
+  "reviewed_request": {"path": "work/queue.ready/rev3/provider-arguments.json", "sha256": "89a91025e93c434765d32a2dce53eebc14bce5393f142c4ee000e63e89c2d5fa"},
+  "reviewed_criteria": {"path": "work/queue.ready/rev3/candidate-plan.json", "sha256": "4167b29babdd8a7ab4ccec974ad55ebe89dfe8e731f71a8f71f4d6f21041f677"},
+  "reviewed_connection": {"path": "work/queue.ready/rev3/connection.json", "sha256": "2e13f3746b4ffcb8ff0276e0b5892bfbb36cc099830ba5147372e5b867efde30"},
+  "locator_report": {"path": "work/queue.ready/rev3/request-review-report.json", "sha256": "5b4d9a125d5c46c0d52ae57a440646c3eedecfcf5c0a8f9d2006b996a7d2dd89", "diagnostics": []},
+  "prior_review": {"path": "work/queue.ready/rev2/caller-review.json", "sha256": "07b9aca32fcfccd580acea80c93a215c59ac38365f61ad80cba565d3d2647699", "verdict": "changes_requested"},
+  "method": "Programmatic diff of the rev3 plan against rev2: the criterion id list and order are identical, the output contract is identical, and only check-mark-asymmetrical-arms.check changed (plus editorial scope pointers). Provider arguments and connection are byte-identical to the rev2 versions reviewed in work/queue.ready/rev2/caller-review.json. Their comparisons with BRIEF.md, OWNER.md, src/queue.ts, src/queue-view.ts, assets/start.svg and provider-schemas.json at the same hashes carry forward unchanged.",
+  "verdict": "consistent",
+  "criterion_comparisons": [
+    {"id": "check-mark-asymmetrical-arms", "source": "BRIEF.md:9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion.'", "delta": "The rev3 condition is 'the mark is not mirror-symmetric about its vertex'; unequal length and differing angle/direction are given as examples only. Every mark with asymmetrical arms satisfies it, and a mark with symmetrical arms fails it. That matches the source and neither narrows nor weakens it. 'Visibly' and 'conveys successful completion' are preserved.", "alternative_tested": "A check mark with similar-length arms at clearly different angles now passes. A mirrored (long-left) mark passes. A symmetric V fails, which the source requires.", "finding": "consistent; rev2 discrepancy resolved"},
+    {"id": "readability-1x-3x", "delta": "Text unchanged; 'asymmetry of the check-mark arms' now refers to the broadened definition", "finding": "consistent"},
+    {"id": "geometry, transparent-background, ready-meaning, cool-blue-accent", "delta": "byte-identical to rev2", "finding": "consistent (see rev2 caller-review comparisons)"},
+    {"id": "silhouette-without-color, sample-pixel-craft", "delta": "byte-identical; labelled proposal", "finding": "consistent as scoped specialist sample criteria"}
+  ],
+  "other_findings": [
+    {"area": "provider arguments", "finding": "Unchanged from rev2 and valid against the advertised schema. The short-left/long-right description is a recorded specialist prompt choice (choices.arm-orientation) and is not a rejection rule."},
+    {"area": "noted, non-blocking", "finding": "The reason text for choices.motif-construction still mentions 'visibly unequal arm length'. It is explanatory only and not a rejection condition."},
+    {"area": "resume", "finding": "Lists both failed earlier jobs, first_request (controlled-create-0001) and r.f9e2fa53f4fcac2a.request (withdrawn, no remote id), plus the two earlier open tasks."},
+    {"area": "deferred obligations", "finding": "Unchanged from rev2: family distinctions, style decision, delivery to assets/ready-confirmed.png and renderer integration, each with a stage and prerequisites."}
+  ],
+  "next_action": "Reread focused PLAR (requirements_hash 244f4591… must be unchanged), claim dispatch of r.028f320bf7292612.request, submit exactly the returned arguments once to pixellab-test create_image_pro_flash, compare them with rev3/provider-arguments.json and record the actual response."
+}

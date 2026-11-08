@@ -1,0 +1,155 @@
+{
+  "hash": "e3a76273d917110dbef3e27b3cfc4adc976e66d0087a747a354fddd44e5146c2",
+  "project_root": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Refresh for the Ready update: re-read BRIEF.md (aebe0094...) line 9 and src/queue-view.ts (4d6ee92e...) in full. succeeded now maps to assets/ready-confirmed.png (moved destination, same Ready role and queue.ready ID); Start (assets/start.svg), Working (assets/working.png, 4 frames), Paused (assets/paused.png) and Retry (assets/error-retry.png) rows, display descriptor and earlier brief paragraphs are unchanged. The Ready check mark with asymmetrical arms is now an owner requirement (BRIEF.md line 9) replacing the former sample_motif proposal."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "No executable UI entry point, renderer, importer, package manifest or runtime capture was supplied. Descriptor inspection does not verify rendered behavior, frame cropping, alpha compositing or integration.",
+      "No approved style reference exists. Ready remains the proposed representative sample; Working, Retry and Paused depend on its review before family expansion.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "The supplied SVG was inspected as source only. No artwork was generated, rendered, or visually accepted during allocation or refresh."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\BRIEF.md"
+    },
+    {
+      "id": "source-map",
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "binding": "current",
+      "observed_sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\SOURCE-MAP.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\plar-handoff-delivery\\20261108\\native\\claude-review-01\\project\\assets\\start.svg"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "next": "Revised request r.028f320bf7292612.request (task r.028f320bf7292612.task, output r.028f320bf7292612.output.ready, store .pixl/assets/queue.ready revision 9) is prepared and NOT dispatched; controlled pixellab-test, provider_simulated=true. Caller: independently compare work/queue.ready/rev3/request-review.json against BRIEF/OWNER/source, reread this row, then claim dispatch of that existing job and submit exactly its saved arguments as the one further authorized controlled request (OWNER.md line 7, still unused); record the actual response. first_request (controlled-create-0001) remains failed with no image; rev2 job r.f9e2fa53f4fcac2a.request was withdrawn locally before dispatch (work/queue.ready/rev2/withdrawal.json). Later: retrieve/import any real candidate, inspect at 1x/3x nearest on #172336 against the eight rev3 criteria, record the Ready style decision before expanding Working/Retry/Paused, then deliver to assets/ready-confirmed.png. Not integrated.",
+      "issues": [
+        "missing Current required Ready destination from the updated view is missing; no reusable Ready image was supplied. The previous assets/ready.png target is superseded by the updated view.: assets/ready-confirmed.png"
+      ],
+      "questions": [
+        "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+      ]
+    },
+    {
+      "id": "queue.working",
+      "kind": "animated_status_sprite_strip",
+      "purpose": "Communicate ongoing work in both full and compact status cells without implying success.",
+      "status": "todo",
+      "next": "After the Ready sample is reviewed and bound as a style reference, specify and produce the four-frame Working strip at assets/working.png, then review the timed loop in the actual renderer.",
+      "issues": [
+        "missing Required consumer destination is currently missing; no animation frames were supplied.: assets/working.png"
+      ],
+      "questions": [
+        "Which activity motif and frame placement should be adopted after the representative Ready sample is reviewed?",
+        "Where is the executable renderer that crops and advances the four-frame strip?"
+      ]
+    },
+    {
+      "id": "queue.retry",
+      "kind": "static_status_icon",
+      "purpose": "Show failed work and the Retry action in both full and compact status cells with a shape that remains distinguishable without color.",
+      "status": "todo",
+      "next": "After the Ready sample is reviewed and bound as a style reference, produce the distinct static Retry icon at assets/error-retry.png and assess its silhouette alongside Working and Paused.",
+      "issues": [
+        "missing Current required failure/retry destination is missing; the previous assets/retry.png target is superseded by the updated view.: assets/error-retry.png"
+      ],
+      "questions": [
+        "Which Retry silhouette best distinguishes failure/retry from the reviewed Ready sample and the planned Working motion?"
+      ]
+    },
+    {
+      "id": "queue.start",
+      "kind": "existing_vector_control",
+      "purpose": "Retain the existing idle Start control shared by both status consumers.",
+      "status": "deferred",
+      "next": "Preserve the existing vector file and idle mapping during future status integration; no new Start asset is allocated.",
+      "issues": [],
+      "questions": []
+    },
+    {
+      "id": "queue.paused",
+      "kind": "static_status_icon",
+      "purpose": "Show paused work in both full and compact status cells, distinguishable from activity, completion and retry without color alone.",
+      "status": "todo",
+      "next": "After the Ready sample is reviewed and bound as a style reference, produce the static 16x16 Paused icon at assets/paused.png and compare its silhouette with Working, Ready and Retry before integration.",
+      "issues": [
+        "missing New required consumer destination is missing; no reusable Paused image was supplied.: assets/paused.png"
+      ],
+      "questions": [
+        "Does the proposed pause-bar silhouette remain distinct from the reviewed Ready sample, planned Working loop and Retry icon without color alone?",
+        "Where is the executable renderer for the actual pause transition and display checks?"
+      ]
+    }
+  ],
+  "changes": {
+    "baseline_hash": "f43b994aeb16a183eaafe0047365170c9e5e3a0022ea2f9b3ddee21da3398bfe",
+    "changed_sources": [],
+    "direct_assets": [],
+    "affected_assets": [],
+    "unaffected_assets": [
+      "queue.paused",
+      "queue.ready",
+      "queue.retry",
+      "queue.start",
+      "queue.working"
+    ],
+    "added_assets": [],
+    "removed_assets": [],
+    "coverage_changed": false,
+    "scope": "Tracked source bindings and declarations only; inspect source/coverage for newly introduced or dynamic consumers."
+  }
+}

@@ -1,0 +1,464 @@
+{
+  "version": 1,
+  "reviewer": {
+    "role": "independent calling-agent forward evaluator",
+    "task": "Compare exact revised contract to original consumer brief and derive current resumption",
+    "independence": "No prior review or findings outside the supplied consumer were opened. Existing caller-review.json files, COLD-RESULT.json and PARENT-RESULT.json were not opened. PLAR evidence notes were visible while reading required state; their consistency claims were not used as proof."
+  },
+  "saved_at": "2026-11-08T05:45:44.061941+00:00",
+  "asset_id": "queue.ready",
+  "reviewed_packet": {
+    "path": "work/queue.ready/revised/request-review.json",
+    "sha256": "8a724519250df065706c873716d9100e4fe112c420b11f58ede98bcbfbd921ce"
+  },
+  "reviewed_request": {
+    "path": "work/queue.ready/revised/provider-arguments.json",
+    "sha256": "31303517f81b02d8a18ba0c905ad90050a8c7f69d3eee719be2925908df6fe48",
+    "kind": "provider_arguments",
+    "provider": "pixellab-test",
+    "tool": "create_image_pro_flash",
+    "connection": {
+      "path": "work/queue.ready/revised/connection.json",
+      "sha256": "8f16370912a26b621245282246895e0b71a9af4b9ca6c76010b2b1fbf0a26b7b"
+    },
+    "provider_simulated": true,
+    "not_expressible_by_schema": "Readability on #172336, 1x/3x nearest inspection, cool-blue relationship and non-colour silhouette are stated in description prose only; the schema has no palette, reference-image, alpha-mode or style controls. These are evaluated by the candidate-plan criteria after retrieval."
+  },
+  "reviewed_criteria": {
+    "path": "work/queue.ready/revised/candidate-plan.json",
+    "sha256": "13f687f0fe1f6c209fa7e476730b52fdd9a485ae7bbf7d291d3b6e186ed9a9d7",
+    "authority_summary": {
+      "owner_or_consumer_requirement": [
+        "geometry",
+        "transparent-background",
+        "ready-meaning",
+        "readability-1x-3x",
+        "cool-blue-accent",
+        "check-mark-asymmetrical-arms"
+      ],
+      "specialist_sample_choice": [
+        "silhouette-without-color",
+        "sample-pixel-craft"
+      ],
+      "observations_used_as_reference_not_rules": [
+        "#70b9ed (assets/start.svg fill)",
+        "#172336 (src/queue-view.ts display.background, used as composite panel)"
+      ]
+    }
+  },
+  "requirements_hash": "08522cb2873b812aec762e19f0c213dcc90a8471b8e95f0da78a4a390c7f1b40",
+  "status": "changes_requested",
+  "per_criterion_comparisons": [
+    {
+      "criterion_id": "geometry",
+      "exact_check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+      "declared_basis": "Owner brief: 16x16 logical status cells and Ready is static. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+      "declared_scope": "This Ready candidate file.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+        },
+        {
+          "path": "src/queue-view.ts",
+          "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+          "lines": [
+            6,
+            6
+          ],
+          "quote": "  succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 },"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "export const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };"
+        }
+      ],
+      "criterion_delta": "Preserves explicit 16x16 canvas and static Ready output. The current brief line 9 makes native canvas size explicit; source code agrees about the logical cell and one frame.",
+      "source_conforming_alternative": "No relevant narrower construction is imposed beyond the specified canvas/static behavior.",
+      "finding": "consistent",
+      "disposition": "Retain. Include BRIEF.md lines [9,9] as direct canvas support when correcting locators."
+    },
+    {
+      "criterion_id": "transparent-background",
+      "exact_check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+      "declared_basis": "Owner brief requires transparent backgrounds; it does not restrict alpha to binary values.",
+      "declared_scope": "This Ready candidate file.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+        }
+      ],
+      "criterion_delta": "Defines transparent empty background without imposing binary alpha on subject pixels. An opaque matte filling the cell would contradict the requested background.",
+      "source_conforming_alternative": "Partially transparent edge pixels remain allowed.",
+      "finding": "consistent",
+      "disposition": "Retain; subject identification still requires judgment, so a raw alpha measurement alone is not a full visual review."
+    },
+    {
+      "criterion_id": "ready-meaning",
+      "exact_check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+      "declared_basis": "Consumer state mapping ok -> succeeded -> label Ready, while idle uses the Start vector. Brief: the working loop must not look like success, so Ready itself must convey success. Judging Ready against the actual future Working/Retry/Paused images is deferred.",
+      "declared_scope": "This Ready candidate on its own, plus the already-existing Start vector.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+        },
+        {
+          "path": "src/queue.ts",
+          "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "  return { started: \"running\", ok: \"succeeded\", error: \"failed\", pause: \"paused\" }[result] as QueueState;"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "  idle: { label: \"Start\", path: \"assets/start.svg\", frames: 1 },"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+          "lines": [
+            6,
+            6
+          ],
+          "quote": "  succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 },"
+        }
+      ],
+      "criterion_delta": "Preserves successful-completion identity. Own-image meaning and existing Start comparison can be reviewed before future Working/Retry/Paused candidates exist.",
+      "source_conforming_alternative": "Several readable check-mark constructions can express success; no complete family is demanded here.",
+      "finding": "consistent",
+      "disposition": "Retain. Keep collective family checks deferred and scheduled."
+    },
+    {
+      "criterion_id": "check-mark-asymmetrical-arms",
+      "exact_check": "The Ready image visibly uses a check mark with asymmetrical arms (one shorter and one longer arm) to convey successful completion. A symmetric-arm mark does not pass. No exact pixel lengths or arm ratio are prescribed.",
+      "declared_basis": "Current owner brief explicitly requires a check mark with asymmetrical arms.",
+      "declared_scope": "This revised Ready candidate at 1x and 3x nearest on #172336.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+        }
+      ],
+      "criterion_delta": "The source requires a visibly asymmetrical check mark. The literal parenthetical one shorter and one longer arm adds a specific length construction and the criterion presents the whole rule as an owner requirement. No exact ratio being prescribed does not remove this inequality constraint. The cited line 11 does not exist.",
+      "source_conforming_alternative": "A recognizable completion check whose arms have equal path lengths but unequal inclinations or stroke profiles could visibly be asymmetrical. The source does not disallow it; the one-shorter/one-longer rule would reject it solely for equal length. This is a logical contract counterexample, not a claim that such an image has been generated or accepted.",
+      "finding": "changes_requested",
+      "disposition": "Preserve the required visible check-mark/asymmetry/success outcome. Remove the unequal-length construction from the owner rejection rule, or explicitly identify it as a revisable expert sample choice in both request and criteria for caller assessment. Correct source bounds to BRIEF.md [9,9]; preserve the historical packet and submitted job."
+    },
+    {
+      "criterion_id": "readability-1x-3x",
+      "exact_check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+      "declared_basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel; #172336 is the consumer-observed panel colour (display.background).",
+      "declared_scope": "This Ready candidate at the declared display conditions.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "src/queue-view.ts",
+          "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+          "lines": [
+            9,
+            9
+          ],
+          "quote": "export const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };"
+        }
+      ],
+      "criterion_delta": "Preserves both required scales and nearest sampling. #172336 is the actual display descriptor value used to instantiate the required dark-panel test, not an invented aesthetic restriction.",
+      "source_conforming_alternative": "Different colors, stroke widths and geometry can pass if the silhouette remains readable under the required conditions.",
+      "finding": "consistent",
+      "disposition": "Retain. No rendered result is available now; consumer descriptor inspection cannot certify readability."
+    },
+    {
+      "criterion_id": "cool-blue-accent",
+      "exact_check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+      "declared_basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+      "declared_scope": "This Ready candidate compared with the existing Start vector.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "assets/start.svg",
+          "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+          "lines": [
+            1,
+            1
+          ],
+          "quote": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\"><path fill=\"#70b9ed\" d=\"M4 2L14 8L4 14Z\"/></svg>"
+        }
+      ],
+      "criterion_delta": "The requirement is to use the existing cool-blue accent without a fixed palette. The word dominant introduces a color-composition condition absent from the owner text. Relating to observed #70b9ed is suitable guidance, but dominance should not be attributed to the owner.",
+      "source_conforming_alternative": "A mostly neutral light check with a visible cool-blue accent could satisfy use of the UI accent without making blue dominate its color treatment. A strict reading of dominant colour treatment risks rejecting it.",
+      "finding": "changes_requested",
+      "disposition": "Remove dominant from the owner-required check, or explicitly scope dominance to this expert sample. Retain the required cool-blue relationship and freedom from exact-hex or palette-count gates."
+    },
+    {
+      "criterion_id": "silhouette-without-color",
+      "exact_check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+      "declared_basis": "Specialist choice derived from the brief's non-colour distinction requirements for Retry and Paused: a sample whose identity is shape-carried keeps those later distinctions achievable. Checks only the Ready sample's own form; the pairwise family comparison is deferred.",
+      "declared_scope": "This Ready sample only (specialist sample criterion).",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            7,
+            7
+          ],
+          "quote": "Update: the queue now supports a paused state. Its status image must be distinguishable from activity, completion and retry without relying on color alone. Keep the existing style and display requirements. The failure visual moved to the path in the updated view; its purpose is unchanged."
+        }
+      ],
+      "criterion_delta": "Adds a Ready-only grayscale diagnostic as an explicit specialist sample criterion. Owner non-color requirements concern Retry and Paused; the plan does not falsely label this direct owner wording. It does not require nonexistent family candidates.",
+      "source_conforming_alternative": "A source-conforming Ready could rely more heavily on hue; this sample criterion deliberately selects a shape-carried construction for later family differentiation and is declared as such.",
+      "finding": "consistent_as_scoped_expert_choice",
+      "disposition": "Retain as sample-specific expert judgment; a pass does not establish the actual future pairwise family distinctions."
+    },
+    {
+      "criterion_id": "sample-pixel-craft",
+      "exact_check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+      "declared_basis": "Specialist expert judgment applying the brief's 'coherent pixel-art status assets' and representative-sample instruction.",
+      "declared_scope": "This Ready sample, assessed for style review; passing does not approve the family style.",
+      "original_source_evidence": [
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            3,
+            3
+          ],
+          "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone."
+        },
+        {
+          "path": "BRIEF.md",
+          "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+          "lines": [
+            5,
+            5
+          ],
+          "quote": "Assets belong at the paths already used by the view. Account badges are provided by a server registry and are outside this local asset request. No approved style reference exists yet: propose a representative status sample before expanding the family."
+        }
+      ],
+      "criterion_delta": "Operationalizes coherent pixel-art and representative-sample quality through explicitly attributed expert judgment. No fixed pixel measurements, palette, exact stroke width or completed-family prerequisite are introduced.",
+      "source_conforming_alternative": "Other deliberate pixel-art treatments remain possible; clean-cluster/artifact judgments apply to this proposed sample and do not claim an owner-specified universal technique.",
+      "finding": "consistent_as_scoped_expert_choice",
+      "disposition": "Retain at this sample stage. Assess output appearance; do not infer or prohibit a production process from an unmeasured artifact proxy."
+    }
+  ],
+  "request_comparisons": [
+    {
+      "location": "provider-arguments.json $.width / $.height / $.no_background",
+      "finding": "consistent",
+      "comparison": "16/16/true preserves native canvas and transparent-background intent and validates against the supplied controlled-connection schema."
+    },
+    {
+      "location": "provider-arguments.json $.description sentence 2",
+      "finding": "changes_requested",
+      "comparison": "One shorter arm and one longer rising arm narrows BRIEF.md line 9. Retain as a clearly attributed sample recipe only if the caller adopts that recipe; it is not the literal owner rule."
+    },
+    {
+      "location": "provider-arguments.json $.description sample-treatment sentence; request-review.json $.choices[sample-treatment]",
+      "finding": "consistent_as_scoped_expert_choice",
+      "comparison": "Centered, bold, unadorned, no text/plate/shadow and optional lighter shading are sample treatment choices; they are not universal owner constraints. Palette and stroke width remain open."
+    },
+    {
+      "location": "request-review.json $.request.not_expressible_by_schema; connection.json $.schema",
+      "finding": "consistent_with_recorded_schema_only",
+      "comparison": "The supplied schema has description, width, height, no_background and optional seed, with no reference input. No fictional reference handle, alpha-mode or palette parameter appears. Qualitative goals remain prompt prose plus later checks. No live schema or provider connection was queried in this evaluation."
+    },
+    {
+      "location": "candidate-plan.json $.outputs[0].contract.intent; request-review.json $.deferred_obligations",
+      "finding": "consistent",
+      "comparison": "Current destination assets/ready-confirmed.png is retained for later delivery; the same asset serves statusCell and compactStatus. Start is preserved, server badges excluded, no approved style claimed."
+    }
+  ],
+  "other_findings": [
+    {
+      "id": "invalid-brief-locator",
+      "status": "changes_requested",
+      "location": "request-review.json $.sources[BRIEF.md].locators and $.choices[motif].authority; candidate-plan.json check-mark-asymmetrical-arms.sources",
+      "evidence": {
+        "path": "BRIEF.md",
+        "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+        "lines": [
+          9,
+          9
+        ],
+        "quote": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+      },
+      "finding": "The brief has 9 lines. All line-11 motif citations are invalid even though the quoted requirement exists at line 9. The runtime request-review report independently reports invalid_locator."
+    },
+    {
+      "id": "invalid-owner-range",
+      "status": "changes_requested",
+      "location": "request-review.json $.sources[OWNER.md].locators[1]",
+      "evidence": {
+        "path": "OWNER.md",
+        "sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+        "lines": [
+          9,
+          11
+        ],
+        "quote": "no image or renderer is supplied, no style is already approved, and integration and\nart acceptance remain future work. Do not fabricate images, provider observations,\nacceptance or a live-service identity. Work inside this consumer only."
+      },
+      "finding": "OWNER.md has 11 lines, so lines 9-12 extends beyond the file. Correct to the actual supporting [9,11] range."
+    },
+    {
+      "id": "historical-packet-resume",
+      "status": "use_current_state",
+      "location": "request-review.json $.resume",
+      "finding": "The packet retains the pre-revision hash and original failed job. It is historical contract evidence, not the latest next action. Fresh selected PLAR binds revision 8 and the submitted revised job; do not follow revision_next to create or dispatch another request."
+    },
+    {
+      "id": "matching-bytes-do-not-prove-consistency",
+      "status": "verified",
+      "finding": "All 10 packet-linked source/request/criteria/connection identities match. Current durable arguments and retained response echo equal the reviewed JSON. All eight retained criterion checks equal the plan. These prove exactness, not semantic sufficiency; the restrictions above are present in actual retained state."
+    },
+    {
+      "id": "deferred-family-obligations",
+      "status": "retained",
+      "finding": "Packet and PLAR retain later Working/Retry/Paused distinction, sample style decision, delivery and renderer checks. Working PLAR retains four horizontal 16x16 frames (64x16 strip), playback at 100 ms, and activity-vs-success review. Family assets depend on reviewed Ready. These are not prerequisites for first-sample acceptance."
+    }
+  ],
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state_hash": "552c03196c891a0445538ff222377c413bdbf0504e182bf387a27e6321697bfb",
+    "asset_id": "queue.ready",
+    "requirements_hash": "08522cb2873b812aec762e19f0c213dcc90a8471b8e95f0da78a4a390c7f1b40",
+    "task": "r.e3924db2642e50c7.task",
+    "action": "observe",
+    "jobs": [
+      {
+        "id": "r.e3924db2642e50c7.request",
+        "task": "r.e3924db2642e50c7.task",
+        "state": "submitted",
+        "provider": "pixellab-test",
+        "remote_id": "controlled-create-0002",
+        "next_action": "observe"
+      }
+    ],
+    "before_another_request": [
+      {
+        "job": "r.e3924db2642e50c7.request",
+        "action": "observe",
+        "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset."
+      }
+    ],
+    "after_observation": {
+      "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+      "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+      "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+    },
+    "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+    "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+  },
+  "provider": {
+    "name": "pixellab-test",
+    "provider_simulated": true,
+    "pending_job": "r.e3924db2642e50c7.request",
+    "remote_id": "controlled-create-0002",
+    "saved_state": "submitted",
+    "saved_response_status": "queued",
+    "original_job": "first_request",
+    "original_remote_id": "controlled-create-0001",
+    "original_saved_state": "failed",
+    "fresh_provider_observation_performed": false
+  },
+  "next": "Observe/reconcile controlled-create-0002 on its originating simulated pixellab-test connection and record supported evidence, then reread focused PLAR. No provider action is authorized in this evaluation. Do not submit another request or treat simulated identity as a live PixelLab resource.",
+  "future_prerequisites": [
+    "Preserve both attempts and their exact contract history. Resolve the pending revised attempt on its originating connection before any further request for this asset; changing task/output IDs does not bypass it.",
+    "If status remains pending/unknown, continue observation/reconciliation of that same attempt. A terminal failure must be retained before considering a retry. If success yields an actual image, retrieve/import against this saved output plan and review it before deciding whether another request is needed.",
+    "The fixture has no upstream service or image production. If it cannot provide an image, retain that limitation. Any genuinely separate real-production context needs its own actual provider, source-grounded corrected/reviewed contract and authorization; do not relabel this simulated request as live.",
+    "Correct the restriction attribution and file-local source locators in newly versioned review artifacts. Do not silently edit the arguments/criteria beneath a submitted job or rewrite old review evidence.",
+    "The original request-only stage authorized one further controlled request, already consumed by controlled-create-0002. No new submission is authorized here. A future new request needs applicable scope/authorization after pending resolution.",
+    "Obtain an actual candidate and perform mechanical plus visual checks at 1x/3x nearest on #172336 under the reviewed contract. Record the sample/style decision and source-bound approved reference before expanding Working, Retry or Paused.",
+    "Deliver accepted Ready art to assets/ready-confirmed.png and later verify the shared statusCell/compactStatus renderer behavior. A runnable renderer is absent, so integration remains unperformed."
+  ],
+  "checks": {
+    "identity_and_payload_verification": "independent-forward/identity-and-payload-verification.json",
+    "source_resolution": "independent-forward/request-review-relative-report.json",
+    "selected_asset": "independent-forward/selected-asset-final.json",
+    "workflow": "independent-forward/workflow-report.json",
+    "jobs": "independent-forward/jobs-report.json",
+    "candidate_count": 0,
+    "all_eight_required_reviews": "unperformed",
+    "visual_review_performed": false,
+    "integration_performed": false,
+    "provider_calls": 0,
+    "generation": false,
+    "asset_acceptance": false
+  },
+  "scope": "Contract consistency review and retained-state resumption only. No source, contract, PLAR, PX2, provider or asset mutations."
+}

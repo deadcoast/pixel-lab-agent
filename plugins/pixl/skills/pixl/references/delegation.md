@@ -54,4 +54,27 @@ Include only applicable fields. A generation-only task can deliver a reviewed ar
 
 The caller opens the returned files and checks the relevant result against its original assignment. Compare a fresh selected PLAR packet if source context changed. `requirements_hash` tracks the selected requirements, reference bytes and dependency requirements; status/next-action changes alone do not change it. It is neither a spend authorization nor a readiness verdict. The existing file `hash` still governs PLAR writes.
 
+For a PLAR-bound result, reread the selected asset after the last state change, then
+use `pixl_plar_handoff` with its `asset_id`, `requirements_hash`, production `hash` as
+`expect`, and your `details` object. CLI: `plar handoff DETAILS_JSON --asset ID
+--requirements HASH --expect STATE_HASH --root PROJECT`. The operation saves the
+complete derived continuation and immediate `next` unchanged in an immutable file.
+Return that file's path/hash as `handoff`; the caller opens it and compares its state
+identity with fresh focused PLAR. Do not copy selected fields into a rewritten resume.
+Older handoffs remain readable; their original bytes are not migrated or relabelled.
+
+`details` contains your assignment status, delivered artifacts, request-review links,
+expert reasoning, actual checks, unresolved issues and future work. Keep completed
+caller actions with evidence in `details.caller_actions`, and subsequent goals in
+`details.future_work`. A completed caller review can be reported there while the
+runtime still derives `review_delivery`; it does not replace that derived action.
+The snapshot records both facts without inventing a new acceptance event. The runtime
+does not decide whether your artistic judgment or assignment-status claim is correct.
+
+On a cold resume, read the saved handoff and current focused PLAR. Changed state or
+requirements require a fresh snapshot; matching hashes preserve the original job and
+its originating connection. Resolve pending work, then retrieve/import and review its
+actual result before proposing another generation. The caller's normal response can
+explain later work in prose while linking the exact resumable artifact.
+
 Keep detailed receipts in project files so the caller receives useful art and decisions rather than an entire transcript or image encoded in text.

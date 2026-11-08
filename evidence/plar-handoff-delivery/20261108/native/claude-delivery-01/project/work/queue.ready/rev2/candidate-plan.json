@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "scope": "Revised representative Ready status sample (queue.ready, second generation) under the refreshed contract: owner-required check mark with asymmetrical arms; later consumer destination assets/ready-confirmed.png. Only this candidate's own mechanical, meaning, check-mark, readability and accent-relationship checks are required at this stage, plus two scoped specialist sample criteria. Family distinction (Working/Retry/Paused vs Ready), the style-approval decision, placement at assets/ready-confirmed.png and renderer integration of statusCell/compactStatus are deferred later-stage obligations recorded with stage and prerequisites in rev2/request-review.json and PLAR, not rejection rules for this sample.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready status icon sample (revised)",
+      "kind": "sprite",
+      "contract": {
+        "size": [16, 16],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static 16x16 Ready status image for later delivery to the consumer path assets/ready-confirmed.png. Owner requirements: check mark with asymmetrical arms conveying successful completion, transparent background, cool blue accent, no fixed palette (partial alpha permitted). Specialist sample choices, revisable at style review: short left arm with longer right arm, chunky ~2px strokes, sky blue near #70b9ed with one lighter highlight, no backing plate or shadow."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+          "basis": "Owner brief: 16x16 logical status cells, Ready is static, and the current update keeps the 16x16 canvas and static behavior. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+          "scope": "This Ready candidate file.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Status cells are 16 by 16 logical pixels; Ready and Retry are static images", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "Current update: keep the existing 16x16 canvas, static behavior", "lines": [9, 9]},
+            {"path": "src/queue-view.ts", "locator": "statusVisuals.succeeded frames 1", "lines": [6, 6]},
+            {"path": "src/queue-view.ts", "locator": "display.cell [16, 16]", "lines": [9, 9]}
+          ]
+        },
+        {
+          "id": "transparent-background",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+          "basis": "Owner brief requires transparent backgrounds and the current update keeps them; it does not restrict alpha to binary values.",
+          "scope": "This Ready candidate file.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Use transparent backgrounds", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "Current update: keep ... transparent background", "lines": [9, 9]}
+          ]
+        },
+        {
+          "id": "check-mark-asymmetrical-arms",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The image visibly uses a check mark whose two arms are of clearly unequal length (asymmetrical), and that mark conveys successful completion. Either arm may be the longer one, and stroke weight, colour treatment and construction are not restricted by this criterion.",
+          "basis": "Owner requirement from the current brief update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion.",
+          "scope": "This Ready candidate at 1x and 3x nearest on #172336.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion", "lines": [9, 9]}
+          ]
+        },
+        {
+          "id": "ready-meaning",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+          "basis": "Consumer state mapping ok -> succeeded -> label Ready, while idle uses the Start vector. Brief: the working loop must not look like success, so Ready itself must convey success; the current update requires conveying successful completion. Judging Ready against the actual future Working/Retry/Paused images is deferred.",
+          "scope": "This Ready candidate on its own, plus the already-existing Start vector.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "src/queue.ts", "locator": "stateAfter: ok -> succeeded", "lines": [3, 3]},
+            {"path": "src/queue-view.ts", "locator": "idle: Start, assets/start.svg", "lines": [3, 3]},
+            {"path": "src/queue-view.ts", "locator": "succeeded: label Ready", "lines": [6, 6]},
+            {"path": "BRIEF.md", "locator": "The working loop must communicate activity without looking like success", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "Current update: convey successful completion", "lines": [9, 9]},
+            {"path": "assets/start.svg", "locator": "play-triangle path M4 2L14 8L4 14Z", "lines": [1, 1]}
+          ]
+        },
+        {
+          "id": "readability-1x-3x",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail (including the asymmetry of the check-mark arms) lost into the panel colour.",
+          "basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel and the current update keeps the review display conditions; #172336 is the consumer-observed panel colour (display.background).",
+          "scope": "This Ready candidate at the declared display conditions.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "readable silhouettes; Inspect at 1x and 3x nearest display scale on the actual dark panel", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "Current update: keep ... review display conditions", "lines": [9, 9]},
+            {"path": "src/queue-view.ts", "locator": "display scale 3, filter nearest, background #172336", "lines": [9, 9]}
+          ]
+        },
+        {
+          "id": "cool-blue-accent",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+          "basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+          "scope": "This Ready candidate compared with the existing Start vector.",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "the existing UI's cool blue accent; a fixed palette is not required", "lines": [3, 3]},
+            {"path": "assets/start.svg", "locator": "fill #70b9ed", "lines": [1, 1]}
+          ]
+        },
+        {
+          "id": "silhouette-without-color",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+          "basis": "Specialist sample choice derived from the brief's non-colour distinction requirements for Retry and Paused: a sample whose identity is shape-carried keeps those later distinctions achievable. Checks only the Ready sample's own form; the pairwise family comparison is deferred.",
+          "scope": "This Ready sample only (specialist sample criterion; caller may demote or drop).",
+          "authority": "proposal",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Error/retry must be distinguishable without color alone", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "Paused distinguishable without relying on color alone", "lines": [7, 7]}
+          ]
+        },
+        {
+          "id": "sample-pixel-craft",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+          "basis": "Specialist expert judgment applying the brief's coherent pixel-art status assets and representative-sample instruction.",
+          "scope": "This Ready sample, assessed for style review; passing does not approve the family style.",
+          "authority": "proposal",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Create coherent pixel-art status assets", "lines": [3, 3]},
+            {"path": "BRIEF.md", "locator": "propose a representative status sample before expanding the family", "lines": [5, 5]}
+          ]
+        }
+      ]
+    }
+  ]
+}

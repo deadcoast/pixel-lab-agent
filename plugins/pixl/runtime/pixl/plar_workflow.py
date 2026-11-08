@@ -127,6 +127,16 @@ def report(root, selected, path):
                 }
             )
         action = "review_contract" if not current else "inspect_or_revise"
+        active_jobs = [
+            j for j in relevant if document.records[j["id"]].fields["tk"].id == task_id
+        ]
+        successful = [j for j in active_jobs if j["state"] == "succeeded"]
+        if current and successful:
+            action = (
+                "review_candidates"
+                if any(j.get("candidates") for j in successful)
+                else "retrieve_and_import"
+            )
         if task.fields["st"].value == "done" and current:
             action = "review_delivery"
         if pending:
@@ -142,6 +152,26 @@ def report(root, selected, path):
         workflow = next(
             t for t in lifecycle.report(document)["tasks"] if t["id"] == task_id
         )
+        prerequisites = [
+            {
+                "job": j["id"],
+                "action": j["next_action"],
+                "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset.",
+            }
+            for j in pending
+        ]
+        if not pending and successful and task.fields["st"].value != "done":
+            prerequisites.extend(
+                {
+                    "job": j["id"],
+                    "action": "review_candidates"
+                    if j.get("candidates")
+                    else "retrieve_and_import",
+                    "requirement": "Inspect this retained result or record its actual unavailability before deciding whether a corrective request is needed.",
+                }
+                for j in successful
+            )
+
         return {
             **result,
             "status": "available",
@@ -156,6 +186,38 @@ def report(root, selected, path):
             "jobs": rows,
             "pending_jobs": [j["id"] for j in pending],
             "next_action": action,
+            "continuation": {
+                "store": relative,
+                "state_hash": codec.digest(document),
+                "asset_id": asset["id"],
+                "requirements_hash": selected["requirements_hash"],
+                "task": task_id,
+                "action": action,
+                "jobs": [
+                    {
+                        k: row[k]
+                        for k in (
+                            "id",
+                            "task",
+                            "state",
+                            "provider",
+                            "remote_id",
+                            "next_action",
+                            "discovery",
+                        )
+                    }
+                    for row in rows
+                    if row["id"] in {j["id"] for j in pending} or row["task"] == task_id
+                ],
+                "before_another_request": prerequisites,
+                "after_observation": {
+                    "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+                    "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+                    "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity.",
+                },
+                "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+                "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict.",
+            },
             "link_action": "save_production_link" if not link else None,
             "new_request_allowed": current and not pending,
             "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance.",

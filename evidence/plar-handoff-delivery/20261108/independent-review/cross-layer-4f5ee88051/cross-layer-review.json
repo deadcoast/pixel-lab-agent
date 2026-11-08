@@ -1,0 +1,60 @@
+{
+  "scope": "Independent code and synthetic local cross-layer probes; no producer coaching, provider calls, real observations, generation or acceptance.",
+  "runtime_source_hashes": {
+    "pixl/request_review.py": "3f5dd8149a8aab6ce8953de3863fa8bc40f6949957e57c0d1da6ad7e1f5d1e47",
+    "pixl/plar_workflow.py": "555db8dc87443e0cf7ad039f0275ad1c47bf748714b16ac48d04150b025cdb62",
+    "pixl/plar_prepare.py": "65c653493532f337e8665cdddfced2f0dd7a21b151006843067ff54668e106f4"
+  },
+  "source_modules_unchanged_during_probes": true,
+  "findings": [
+    {
+      "id": "connection-identity-not-bound",
+      "priority": "P1",
+      "status": "reproduced",
+      "locations": [
+        "pixl/request_review.py report request artifact processing",
+        "pixl/plar_prepare.py _inputs connection handling (original snapshot lines 124-133)"
+      ],
+      "trigger": "Modify the connection file referenced by the packet while retaining its old packet SHA, changing provider from pixellab-test to isolated-other-provider.",
+      "observed": "request-review reports no connection drift; _inputs accepts the alternate connection provider with the same reviewed packet.",
+      "impact": "Exact argument equality is insufficient when reviewed provider/schema/discovery/authorization transport identity can change silently. A packet-bound connection should be checked when present and compared with the actual supplied connection; report its provider/type/provenance.",
+      "evidence": "probe-results.json connection_drift; connection-drift-report.json; source-snapshot/pixl/"
+    },
+    {
+      "id": "continuation-simulated-provenance",
+      "priority": "P2",
+      "status": "reproduced_before_parent_fix",
+      "locations": [
+        "pixl/plar_workflow.py continuation.jobs projection (snapshot lines 176-189)"
+      ],
+      "trigger": "Hand back only required production.continuation for the controlled submitted attempt.",
+      "observed": "provider and remote_id survive, but discovery and provider_simulated do not; they exist only in surrounding production.jobs.",
+      "impact": "A caller relying on the handoff alone loses explicit simulation/service provenance. The parent has announced an in-progress fix; this result is scoped to the recorded hash.",
+      "evidence": "probe-results.json pending_continuation"
+    },
+    {
+      "id": "uncited-source-drift",
+      "status": "fixed_in_probed_version",
+      "locations": [
+        "pixl/request_review.py report source inventory"
+      ],
+      "observed": "Changing uncited OWNER.md and provider-schemas.json is explicitly diagnosed as changed in current 3f5dd814... bytes.",
+      "evidence": [
+        "owner-drift-report.json",
+        "schema-drift-report.json"
+      ]
+    },
+    {
+      "id": "succeeded-resumption",
+      "status": "observed_no_runtime_prohibition_requested",
+      "observed": "A deliberately synthetic succeeded observation with no candidate yields continuation.action=retrieve_and_import. new_request_allowed remains true as a pre-existing local current-selection/no-pending advisory, not an authorization or readiness verdict.",
+      "recommendation": "Carry the retrieval/review-or-documented-unavailability prerequisite for any proposed later request, without interpreting this advisory as automatic spend permission.",
+      "evidence": "synthetic-success-report.json"
+    }
+  ],
+  "limitations": [
+    "No native record.json files existed at the last check; native artifact grading is still pending.",
+    "The counterfactual succeeded event exists only in the isolated continuation case and is explicitly labelled synthetic.",
+    "Source snapshots and probe JSON preserve the pre-fix evidence even if the parent changes code afterward."
+  ]
+}

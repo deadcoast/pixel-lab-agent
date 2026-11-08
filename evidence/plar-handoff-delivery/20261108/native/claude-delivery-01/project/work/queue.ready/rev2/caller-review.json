@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "reviewer": "calling agent (independent of the PIXL specialist)",
+  "reviewed_packet": {"path": "work/queue.ready/rev2/request-review.json", "sha256": "fb45d0257536efa98a31d80d9ec3ce02e6d07e31021b39960995a85a27b63f8d"},
+  "reviewed_request": {"path": "work/queue.ready/rev2/provider-arguments.json", "sha256": "89a91025e93c434765d32a2dce53eebc14bce5393f142c4ee000e63e89c2d5fa"},
+  "reviewed_criteria": {"path": "work/queue.ready/rev2/candidate-plan.json", "sha256": "d23062c82ce0bb5ba63aa8f400405ac5b9635d3faa519e4391da3081fd1949b9"},
+  "reviewed_connection": {"path": "work/queue.ready/rev2/connection.json", "sha256": "2e13f3746b4ffcb8ff0276e0b5892bfbb36cc099830ba5147372e5b867efde30"},
+  "locator_report": {"path": "work/queue.ready/rev2/request-review-report.json", "sha256": "b47baf76eac81251dc4966a2c107845987636515818d812761c0e7949a579a16", "diagnostics": []},
+  "sources_read_by_caller": {
+    "BRIEF.md": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+    "OWNER.md": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+    "src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+    "src/queue-view.ts": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+    "assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+    "provider-schemas.json": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c"
+  },
+  "verdict": "changes_requested",
+  "criterion_comparisons": [
+    {"id": "geometry", "source": "BRIEF.md:3 'Status cells are 16 by 16 logical pixels ... Ready and Retry are static images'; BRIEF.md:9 'Keep the existing 16x16 canvas, static behavior'; src/queue-view.ts:6 frames 1", "delta": "none", "finding": "consistent"},
+    {"id": "transparent-background", "source": "BRIEF.md:3 'Use transparent backgrounds'; BRIEF.md:9 'transparent background'", "delta": "explicitly permits partial alpha on subject; no binary-alpha rule added", "finding": "consistent"},
+    {"id": "check-mark-asymmetrical-arms", "source": "BRIEF.md:9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion.'", "delta": "Literal rejection condition reads 'two arms are of clearly unequal length (asymmetrical)'. The source says only 'asymmetrical arms'. Asymmetry can also come from clearly different arm angles or directions with similar lengths. The parenthetical makes unequal length the only qualifying construction.", "alternative": "A check mark with similar-length arms at clearly different angles (for example one steep, one shallow) is visibly asymmetrical and brief-conforming, but this criterion would reject it.", "finding": "NARROWED: an owner requirement is restated more strictly than the source. Disposition: change the check to require visibly asymmetrical arms (not mirror-symmetric about the vertex). Unequal length may be cited as one example, not as the condition. Keep the 'either arm may be longer' and unrestricted-construction clauses. The short-left/long-right prompt wording can remain as a specialist prompt choice."},
+    {"id": "ready-meaning", "source": "src/queue.ts:3 ok->succeeded; src/queue-view.ts:3,6; BRIEF.md:3 'working loop ... without looking like success'; BRIEF.md:9 'convey successful completion'", "delta": "judged alone and against the existing Start vector only; comparison to future family images deferred", "finding": "consistent; satisfiable now"},
+    {"id": "readability-1x-3x", "source": "BRIEF.md:3 'readable silhouettes ... Inspect at 1x and 3x nearest display scale on the actual dark panel'; BRIEF.md:9 'review display conditions'; src/queue-view.ts:9 background #172336, scale 3, nearest", "delta": "adds that arm asymmetry must not be lost; follows from BRIEF.md:9 'visibly'", "finding": "consistent"},
+    {"id": "cool-blue-accent", "source": "BRIEF.md:3 'existing UI's cool blue accent; a fixed palette is not required'; assets/start.svg fill #70b9ed", "delta": "relationship judgement, explicitly not exact-hex", "finding": "consistent"},
+    {"id": "silhouette-without-color", "source": "expert choice; motivated by BRIEF.md:3 and :7 non-colour distinctions", "delta": "labelled proposal; scoped to this sample's own form; a check mark satisfies it", "finding": "consistent as a scoped specialist criterion (unchanged from the first-generation review)"},
+    {"id": "sample-pixel-craft", "source": "expert choice; BRIEF.md:3 'coherent pixel-art', :5 representative sample", "delta": "labelled proposal; does not approve style", "finding": "consistent as a scoped specialist criterion"}
+  ],
+  "other_findings": [
+    {"area": "provider arguments", "finding": "Valid against the advertised create_image_pro_flash schema (description, width 16, height 16, no_background true; no extra fields). The description includes the check mark with asymmetrical arms, transparency, 1x/3x on #172336, the cool blue and static output. 'short left arm ... much longer right arm' is a specialist prompt choice and is recorded as such in choices.arm-orientation. Unchanged by this review."},
+    {"area": "destination", "finding": "src/queue-view.ts:6 assets/ready-confirmed.png. PLAR row delivery/existing were moved with ID queue.ready preserved; delivery is correctly deferred."},
+    {"area": "deferred obligations", "finding": "family-working-not-success, family-retry-non-color, family-paused-non-color, style-decision, destination-delivery and renderer-integration remain scheduled with a stage and prerequisites in the packet and in PLAR delivery checks."},
+    {"area": "PLAR refresh", "finding": "Compared with retained 0abd74f7…: only the queue.ready row changed; IDs queue.paused/queue.retry/queue.start/queue.working are byte-equal; sources rebound to the current BRIEF/view hashes; assets/start.svg is unchanged."},
+    {"area": "authorization", "finding": "OWNER.md:7 'The connection supports one further controlled request in this stage.' It is correctly cited in connection.json. Prepared job r.f9e2fa53f4fcac2a.request has not been dispatched, so the request is still unused."},
+    {"area": "first-generation retention", "finding": "All first-generation work/queue.ready/*.json hashes match PARENT-RESULT.json; first_request is retained as failed."}
+  ],
+  "next_action": "Withdraw undispatched prepared job r.f9e2fa53f4fcac2a.request with an evidenced local failed observation (never dispatched, no remote identity), as provider-recovery.md and asset-preparation.md allow. The specialist then revises only the check-mark-asymmetrical-arms criterion in a new rev3 packet and prepares it with revise:true. The caller then compares rev3."
+}

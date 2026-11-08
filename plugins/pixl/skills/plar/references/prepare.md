@@ -6,6 +6,10 @@ Choose an appropriate first operation and explicit candidate controls. Retain th
 ordinary request/criteria packet and let the caller compare it with the original
 sources through [request-review](../../pixl/references/request-review.md).
 
+Resolve the exact source/criterion evidence with `pixl_request_review` before the
+caller adopts the contract; its report exposes locator problems without certifying
+semantic consistency. Use the caller comparison described in the linked operation.
+
 The local preparation operation handles PX2 records and first-job creation. Keep
 expert interpretation in the packet: the runtime does not infer a prompt from code,
 choose an art style, or certify that all source requirements survived.
@@ -72,7 +76,8 @@ sample phase; it does not approve a production family or supply missing reviews.
 
 Read the selected asset's `production` result before deciding the next action. It
 combines the allocation with actual store, output acceptance and pending provider
-state. The operation links single-output work back into PLAR; verify `allocation`
+state. Carry its `continuation` in the result and use that immediate action for the
+next step; future new requests retain its pending-resolution prerequisites. The operation links single-output work back into PLAR; verify `allocation`
 in its response. A concurrent queue edit can leave a prepared job needing its link
 repaired. Preserve that job and reread the queue. Multi-output work needs an explicit
 choice of the delivery output; all planned outputs remain required by the task.

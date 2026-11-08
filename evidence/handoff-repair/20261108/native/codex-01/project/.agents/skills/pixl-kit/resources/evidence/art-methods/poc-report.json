@@ -1,0 +1,1765 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-08T06:12:37.070963+00:00",
+  "status": "pass",
+  "scope": "offline_reference_fixtures",
+  "implementation_sha256": "02a02bc89ae5a0d65955714c23b05f54cffc4bf901fef100ec5ace6db42923a1",
+  "knowledge_sha256": "d169c546d99f59b4adb4d0a939b61bd7b3d21bc0b3b2e13116e2e10a4882f15c",
+  "source_sha256": {
+    "training/original-docs/AGENT-PIXELART-TRAINING.md": "bb21cee0a39b504f7f4e56f61f13750b57178fe2b6230f27e79b28b40934a050",
+    "training/original-docs/PIXEL-ART-ASSETS.md": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900",
+    "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28"
+  },
+  "pillow_version": "12.3.0",
+  "checks": [
+    {
+      "id": "dither-coverage-4x4",
+      "method_ids": [
+        "dither-coverage"
+      ],
+      "status": "pass",
+      "observed": {
+        "counts": [
+          4,
+          8,
+          12
+        ]
+      },
+      "expected": {
+        "counts": [
+          4,
+          8,
+          12
+        ]
+      },
+      "limitations": "Counts only this specified 4x4 ordered pattern; does not establish texture quality."
+    },
+    {
+      "id": "dither-phase-cycle",
+      "method_ids": [
+        "dither-phase-motion"
+      ],
+      "status": "pass",
+      "observed": {
+        "counts": [
+          8,
+          8,
+          8,
+          8,
+          8
+        ],
+        "returns_to_start": true
+      },
+      "expected": {
+        "counts": [
+          8,
+          8,
+          8,
+          8,
+          8
+        ],
+        "returns_to_start": true
+      },
+      "limitations": "Proves coverage and periodicity, not comfort, directional readability or absence of visual flicker."
+    },
+    {
+      "id": "palette-membership",
+      "method_ids": [
+        "palette-contract"
+      ],
+      "status": "pass",
+      "observed": {
+        "valid_violations": [],
+        "mutant_violations": [
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "expected": {
+        "valid_violations": [],
+        "mutant_violations": [
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "limitations": "Exact RGBA membership for an opaque fixture; no claim about palette taste or perceptual distance."
+    },
+    {
+      "id": "palette-band-bounds",
+      "method_ids": [
+        "palette-lighting",
+        "material-ramps"
+      ],
+      "status": "pass",
+      "observed": {
+        "indices": [
+          0,
+          0,
+          1,
+          2,
+          2,
+          3,
+          3
+        ],
+        "output_colors": [
+          [
+            16,
+            24,
+            32,
+            255
+          ],
+          [
+            16,
+            24,
+            32,
+            255
+          ],
+          [
+            64,
+            96,
+            80,
+            255
+          ],
+          [
+            144,
+            176,
+            112,
+            255
+          ],
+          [
+            144,
+            176,
+            112,
+            255
+          ],
+          [
+            224,
+            216,
+            144,
+            255
+          ],
+          [
+            224,
+            216,
+            144,
+            255
+          ]
+        ],
+        "rejects_nan": true
+      },
+      "expected": {
+        "indices": [
+          0,
+          0,
+          1,
+          2,
+          2,
+          3,
+          3
+        ],
+        "output_colors": [
+          [
+            16,
+            24,
+            32,
+            255
+          ],
+          [
+            16,
+            24,
+            32,
+            255
+          ],
+          [
+            64,
+            96,
+            80,
+            255
+          ],
+          [
+            144,
+            176,
+            112,
+            255
+          ],
+          [
+            144,
+            176,
+            112,
+            255
+          ],
+          [
+            224,
+            216,
+            144,
+            255
+          ],
+          [
+            224,
+            216,
+            144,
+            255
+          ]
+        ],
+        "rejects_nan": true
+      },
+      "limitations": "Tests an explicit four-band ramp lookup, not an engine shader, color-management path or temporal lighting quality."
+    },
+    {
+      "id": "corner-topology-pairs",
+      "method_ids": [
+        "terrain-topology"
+      ],
+      "status": "pass",
+      "observed": {
+        "pairs_per_axis": 256,
+        "compatible_per_axis": [
+          64,
+          64
+        ],
+        "oracle_mismatches": [],
+        "right_of_2": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "below_8": [
+          1,
+          5,
+          9,
+          13
+        ]
+      },
+      "expected": {
+        "pairs_per_axis": 256,
+        "compatible_per_axis": [
+          64,
+          64
+        ],
+        "oracle_mismatches": [],
+        "right_of_2": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "below_8": [
+          1,
+          5,
+          9,
+          13
+        ]
+      },
+      "limitations": "Checks binary corner-label compatibility, not visual seams, 47-tile blob completeness or provider tile ordering."
+    },
+    {
+      "id": "crop-anchor-roundtrip",
+      "method_ids": [
+        "crop-and-anchor"
+      ],
+      "status": "pass",
+      "observed": {
+        "crop_size": [
+          4,
+          5
+        ],
+        "trim_offset": [
+          6,
+          7
+        ],
+        "local_anchor": [
+          2,
+          4
+        ],
+        "restored_anchor": [
+          8,
+          11
+        ],
+        "pixels_equal": true
+      },
+      "expected": {
+        "crop_size": [
+          4,
+          5
+        ],
+        "trim_offset": [
+          6,
+          7
+        ],
+        "local_anchor": [
+          2,
+          4
+        ],
+        "restored_anchor": [
+          8,
+          11
+        ],
+        "pixels_equal": true
+      },
+      "limitations": "Tests transparent-padding trimming, not automatic segmentation of a painted background."
+    },
+    {
+      "id": "integer-nearest-upscale",
+      "method_ids": [
+        "integer-presentation"
+      ],
+      "status": "pass",
+      "observed": {
+        "size": [
+          6,
+          6
+        ],
+        "uniform_blocks": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "color_count": 4
+      },
+      "expected": {
+        "size": [
+          6,
+          6
+        ],
+        "uniform_blocks": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "color_count": 4
+      },
+      "limitations": "Pillow output-pixel proof only; browser zoom, device pixel ratio, camera transforms and engine sampling remain untested."
+    },
+    {
+      "id": "frame-boundaries",
+      "method_ids": [
+        "frame-timing"
+      ],
+      "status": "pass",
+      "observed": {
+        "frames": [
+          "A",
+          "A",
+          "B",
+          "B",
+          "C",
+          "C",
+          "A"
+        ]
+      },
+      "expected": {
+        "frames": [
+          "A",
+          "A",
+          "B",
+          "B",
+          "C",
+          "C",
+          "A"
+        ]
+      },
+      "limitations": "Tests looping frame selection with half-open intervals, not audiovisual synchronization or action-event dispatch."
+    },
+    {
+      "id": "edge-coverage-centroid",
+      "method_ids": [
+        "edge-color-migration"
+      ],
+      "status": "pass",
+      "observed": {
+        "masses": [
+          1,
+          1.0,
+          1.0,
+          1.0,
+          1
+        ],
+        "centroids": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ]
+      },
+      "expected": {
+        "masses": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "centroids": [
+          0,
+          0.25,
+          0.5,
+          0.75,
+          1
+        ]
+      },
+      "limitations": "Coverage centroid is a numerical motion cue, not proof that a viewer perceives an equally spaced movement."
+    },
+    {
+      "id": "cluster-handoff-centroid",
+      "method_ids": [
+        "cluster-handoff"
+      ],
+      "status": "pass",
+      "observed": {
+        "areas": [
+          2,
+          3,
+          2
+        ],
+        "centroids": [
+          1.5,
+          2.0,
+          2.5
+        ],
+        "components": [
+          1,
+          1,
+          1
+        ]
+      },
+      "expected": {
+        "areas": [
+          2,
+          3,
+          2
+        ],
+        "centroids": [
+          1.5,
+          2,
+          2.5
+        ],
+        "components": [
+          1,
+          1,
+          1
+        ]
+      },
+      "limitations": "The temporary three-cell area is an explicit fixture allowance; rigid-feature volume and animation quality need review."
+    },
+    {
+      "id": "shading-drift-mask",
+      "method_ids": [
+        "shading-drift",
+        "animation-anchors"
+      ],
+      "status": "pass",
+      "observed": {
+        "changed_pixels": 2,
+        "same_silhouette": true,
+        "highlight_areas": [
+          2,
+          2
+        ]
+      },
+      "expected": {
+        "changed_pixels": 2,
+        "same_silhouette": true,
+        "highlight_areas": [
+          2,
+          2
+        ]
+      },
+      "limitations": "Proves mask preservation in this idle fixture, not a convincing breathing action or general world-space foot planting."
+    },
+    {
+      "id": "supersampled-coverage",
+      "method_ids": [
+        "coverage-candidates"
+      ],
+      "status": "pass",
+      "observed": {
+        "nonzero_coverage": [
+          [
+            2,
+            2,
+            0.75
+          ],
+          [
+            3,
+            2,
+            0.25
+          ]
+        ],
+        "total_coverage": 1.0
+      },
+      "expected": {
+        "nonzero_coverage": [
+          [
+            2,
+            2,
+            0.75
+          ],
+          [
+            3,
+            2,
+            0.25
+          ]
+        ],
+        "total_coverage": 1
+      },
+      "limitations": "Tests offline coverage construction; palette cleanup and artistic acceptance remain separate."
+    },
+    {
+      "id": "rig-pivot-hierarchy",
+      "method_ids": [
+        "rig-sockets",
+        "rig-cutout"
+      ],
+      "status": "pass",
+      "observed": {
+        "socket_world": [
+          3.0,
+          32.0
+        ],
+        "attachment_world_pivots": [
+          [
+            3.0,
+            32.0
+          ],
+          [
+            3.0,
+            32.0
+          ]
+        ],
+        "mutant_error": 1.0
+      },
+      "expected": {
+        "socket_world": [
+          3,
+          32
+        ],
+        "attachment_world_pivots": [
+          [
+            3,
+            32
+          ],
+          [
+            3,
+            32
+          ]
+        ],
+        "mutant_error": 1
+      },
+      "limitations": "A two-level rigid coordinate proof; attachment artwork, inverse kinematics and a game-engine rig are not evaluated."
+    },
+    {
+      "id": "final-snap-state",
+      "method_ids": [
+        "continuous-state-final-snap"
+      ],
+      "status": "pass",
+      "observed": {
+        "rendered": [
+          0,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "continuous_end": 2.0
+      },
+      "expected": {
+        "rendered": [
+          0,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "continuous_end": 2
+      },
+      "limitations": "Uses nonnegative round-half-up positions; camera transforms, negative tie behavior and independent bone seams need separate fixtures."
+    },
+    {
+      "id": "quarter-turn-topology",
+      "method_ids": [
+        "rotation-policy"
+      ],
+      "status": "pass",
+      "observed": {
+        "first_rotation_rows": [
+          "111",
+          "100",
+          "100"
+        ],
+        "four_turns_restore": true
+      },
+      "expected": {
+        "first_rotation_rows": [
+          "111",
+          "100",
+          "100"
+        ],
+        "four_turns_restore": true
+      },
+      "limitations": "Exact square-grid quarter turns only; arbitrary rotation, resampling and baked light direction remain unproven."
+    },
+    {
+      "id": "normal-orientation",
+      "method_ids": [
+        "normal-direction"
+      ],
+      "status": "pass",
+      "observed": {
+        "responses": [
+          [
+            1.0,
+            0,
+            0.5,
+            0.5
+          ],
+          [
+            0,
+            1.0,
+            0.5,
+            0.5
+          ],
+          [
+            0.5,
+            0.5,
+            1.0,
+            0
+          ],
+          [
+            0.5,
+            0.5,
+            0,
+            1.0
+          ]
+        ],
+        "maximum_8bit_angular_error_deg": 0.317755442
+      },
+      "expected": {
+        "responses": [
+          [
+            1,
+            0,
+            0.5,
+            0.5
+          ],
+          [
+            0,
+            1,
+            0.5,
+            0.5
+          ],
+          [
+            0.5,
+            0.5,
+            1,
+            0
+          ],
+          [
+            0.5,
+            0.5,
+            0,
+            1
+          ]
+        ],
+        "maximum_8bit_angular_error_deg": "< 1 degree"
+      },
+      "limitations": "Tests the declared x-right/y-up numeric convention and 8-bit quantization; no engine import or shader normal convention is certified."
+    },
+    {
+      "id": "shadow-occlusion",
+      "method_ids": [
+        "shadow-visibility"
+      ],
+      "status": "pass",
+      "observed": {
+        "visibility": [
+          0,
+          1
+        ],
+        "normal_term": [
+          1,
+          1
+        ]
+      },
+      "expected": {
+        "visibility": [
+          0,
+          1
+        ],
+        "normal_term": [
+          1,
+          1
+        ]
+      },
+      "limitations": "A noncollinear segment-visibility fixture; soft shadows, polygon degeneracy and renderer shadow casting are not implemented."
+    },
+    {
+      "id": "authored-shade-baseline",
+      "method_ids": [
+        "preserve-authored-shading"
+      ],
+      "status": "pass",
+      "observed": {
+        "zero_strength": [
+          [
+            0.2,
+            0.5,
+            0.8
+          ],
+          [
+            0.2,
+            0.5,
+            0.8
+          ],
+          [
+            0.2,
+            0.5,
+            0.8
+          ]
+        ],
+        "low_modulation": [
+          0.18,
+          0.45,
+          0.72
+        ],
+        "high_modulation": [
+          0.22,
+          0.55,
+          0.88
+        ]
+      },
+      "expected": {
+        "zero_strength": [
+          [
+            0.2,
+            0.5,
+            0.8
+          ],
+          [
+            0.2,
+            0.5,
+            0.8
+          ],
+          [
+            0.2,
+            0.5,
+            0.8
+          ]
+        ],
+        "low_modulation": [
+          0.18,
+          0.45,
+          0.72
+        ],
+        "high_modulation": [
+          0.22,
+          0.55,
+          0.88
+        ]
+      },
+      "limitations": "Illustrative linear scalar modulation only; preventing artistic double shading still needs rendered comparisons."
+    },
+    {
+      "id": "material-channel-isolation",
+      "method_ids": [
+        "material-channel-budget"
+      ],
+      "status": "pass",
+      "observed": {
+        "outputs": [
+          0.2,
+          0.6,
+          0.1,
+          0.5
+        ]
+      },
+      "expected": {
+        "outputs": [
+          0.2,
+          0.6,
+          0.1,
+          0.5
+        ]
+      },
+      "limitations": "The formula is a reference fixture, not a platform material implementation or a validated 2.5D height pipeline."
+    },
+    {
+      "id": "cluster-connectivity",
+      "method_ids": [
+        "semantic-clusters"
+      ],
+      "status": "pass",
+      "observed": {
+        "four_neighbor_sizes": [
+          1,
+          1,
+          1,
+          4
+        ],
+        "eight_neighbor_sizes": [
+          1,
+          2,
+          4
+        ]
+      },
+      "expected": {
+        "four_neighbor_sizes": [
+          1,
+          1,
+          1,
+          4
+        ],
+        "eight_neighbor_sizes": [
+          1,
+          2,
+          4
+        ]
+      },
+      "limitations": "Connectivity does not establish semantic importance; no singleton is automatically removed."
+    },
+    {
+      "id": "cell-conservation-determinism",
+      "method_ids": [
+        "deterministic-cell-update",
+        "cell-materials"
+      ],
+      "status": "pass",
+      "observed": {
+        "first_tick": [
+          [
+            1,
+            3,
+            2
+          ],
+          [
+            2,
+            3,
+            3
+          ],
+          [
+            3,
+            4,
+            2
+          ]
+        ],
+        "particle_counts": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "maximum_moves_per_id_per_tick": 1,
+        "same_seed_same_states": true,
+        "displacement_bound_holds": true,
+        "identities_preserved": true
+      },
+      "expected": {
+        "first_tick": [
+          [
+            1,
+            3,
+            2
+          ],
+          [
+            2,
+            3,
+            3
+          ],
+          [
+            3,
+            4,
+            2
+          ]
+        ],
+        "particle_counts": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "maximum_moves_per_id_per_tick": 1,
+        "same_seed_same_states": true,
+        "displacement_bound_holds": true,
+        "identities_preserved": true
+      },
+      "limitations": "Three powder entities, one floor, one-cell movement and 20 serial ticks. Does not establish full fluid behavior, cross-chunk concurrency or Noita equivalence."
+    },
+    {
+      "id": "destruction-components",
+      "method_ids": [
+        "destruction-topology"
+      ],
+      "status": "pass",
+      "observed": {
+        "before_sizes": [
+          19
+        ],
+        "after_sizes": [
+          9,
+          9
+        ],
+        "union_size": 18,
+        "overlap_size": 0
+      },
+      "expected": {
+        "before_sizes": [
+          19
+        ],
+        "after_sizes": [
+          9,
+          9
+        ],
+        "union_size": 18,
+        "overlap_size": 0
+      },
+      "limitations": "Proves occupancy partition after one bridge removal. Contours, simplification, mass properties and rigid-body solver integration are not implemented."
+    },
+    {
+      "id": "phase-write-domains",
+      "method_ids": [
+        "phased-write-ownership"
+      ],
+      "status": "pass",
+      "observed": {
+        "conflicting_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "expected": {
+        "conflicting_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "limitations": "Proves three declared half-open rectangle intersections, not that an actual simulation respects those write bounds."
+    },
+    {
+      "id": "sheet-offset-spacing",
+      "method_ids": [
+        "sheet-metadata"
+      ],
+      "status": "pass",
+      "observed": {
+        "roundtrip_matches": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "wrong_spacing_detected": true
+      },
+      "expected": {
+        "roundtrip_matches": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "wrong_spacing_detected": true
+      },
+      "limitations": "Fixed-grid RGBA extraction only; packed-atlas rotations and importer metadata need project-specific validation."
+    },
+    {
+      "id": "representation-domain-classification",
+      "method_ids": [
+        "representation-owner"
+      ],
+      "status": "pass",
+      "observed": {
+        "owners": [
+          [
+            "cell"
+          ],
+          [
+            "attachment"
+          ],
+          [
+            "frame"
+          ],
+          [
+            "cluster"
+          ],
+          [
+            "surface-channel"
+          ],
+          [
+            "occlusion"
+          ]
+        ],
+        "normal_and_shadow": [
+          "surface-channel",
+          "occlusion"
+        ],
+        "normal_alone_satisfies_shadow": false
+      },
+      "expected": {
+        "owners": [
+          [
+            "cell"
+          ],
+          [
+            "attachment"
+          ],
+          [
+            "frame"
+          ],
+          [
+            "cluster"
+          ],
+          [
+            "surface-channel"
+          ],
+          [
+            "occlusion"
+          ]
+        ],
+        "normal_and_shadow": [
+          "surface-channel",
+          "occlusion"
+        ],
+        "normal_alone_satisfies_shadow": false
+      },
+      "limitations": "Checks explicit behavior-tag classification and independent ownership domains; it does not evaluate an LLM interpreting an ambiguous brief."
+    },
+    {
+      "id": "key-silhouette-landmarks",
+      "method_ids": [
+        "silhouette-readability"
+      ],
+      "status": "pass",
+      "observed": {
+        "positive": {
+          "hole": true,
+          "shaft": true,
+          "teeth": 2
+        },
+        "negative": {
+          "hole": false,
+          "shaft": true,
+          "teeth": 1
+        }
+      },
+      "expected": {
+        "positive": {
+          "hole": true,
+          "shaft": true,
+          "teeth": 2
+        },
+        "negative": {
+          "hole": false,
+          "shaft": true,
+          "teeth": 1
+        }
+      },
+      "limitations": "Checks specified geometric landmarks and generates native/4x views. Visual recognition, background readability and final artistic acceptance require inspection; no such judgment is inferred from the counts."
+    },
+    {
+      "id": "edge-rhythm-detour",
+      "method_ids": [
+        "edge-rhythm"
+      ],
+      "status": "pass",
+      "observed": {
+        "baseline_deviations": [],
+        "detour_deviations": [
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "accidental_correction_candidates": [
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "intentional_correction_candidates": []
+      },
+      "expected": {
+        "baseline_deviations": [],
+        "detour_deviations": [
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "accidental_correction_candidates": [
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "intentional_correction_candidates": []
+      },
+      "limitations": "Tests an explicitly declared unit-step diagonal. Real curved or organic contours are not required to follow this pattern, and the fixture never auto-smooths artwork."
+    },
+    {
+      "id": "selective-aa-boundary",
+      "method_ids": [
+        "selective-edge-aa"
+      ],
+      "status": "pass",
+      "observed": {
+        "valid_changes": [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        "valid_forbidden_changes": [],
+        "mutant_forbidden_changes": [
+          [
+            2,
+            2
+          ]
+        ],
+        "palette_violations": []
+      },
+      "expected": {
+        "valid_changes": [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        "valid_forbidden_changes": [],
+        "mutant_forbidden_changes": [
+          [
+            2,
+            2
+          ]
+        ],
+        "palette_violations": []
+      },
+      "limitations": "Proves edit locality and approved colors, not perceptual antialiasing quality or suitability against arbitrary backgrounds."
+    },
+    {
+      "id": "tile-repeat-neighborhood",
+      "method_ids": [
+        "tile-repeat"
+      ],
+      "status": "pass",
+      "observed": {
+        "original_mismatches": [],
+        "mutant_mismatches": [
+          [
+            "horizontal",
+            3
+          ]
+        ],
+        "neighborhood_size": [
+          24,
+          24
+        ]
+      },
+      "expected": {
+        "original_mismatches": [],
+        "mutant_mismatches": [
+          [
+            "horizontal",
+            3
+          ]
+        ],
+        "neighborhood_size": [
+          24,
+          24
+        ]
+      },
+      "limitations": "Validates the fixture's exact-border contract and creates a 3x3 image. Matching bytes do not establish invisible repetition or universally seamless texture design."
+    },
+    {
+      "id": "seeded-tile-variants",
+      "method_ids": [
+        "tile-variants"
+      ],
+      "status": "pass",
+      "observed": {
+        "first_cycle": [
+          0,
+          0,
+          0,
+          1,
+          2,
+          2,
+          2,
+          0,
+          2,
+          1,
+          1,
+          2,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selection_count": 64,
+        "four_literal_cycles": true,
+        "repeatable": true,
+        "valid_variant_mismatches": [
+          0,
+          0,
+          0
+        ],
+        "mutant_mismatch_count": 1
+      },
+      "expected": {
+        "first_cycle": [
+          0,
+          0,
+          0,
+          1,
+          2,
+          2,
+          2,
+          0,
+          2,
+          1,
+          1,
+          2,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selection_count": 64,
+        "four_literal_cycles": true,
+        "repeatable": true,
+        "valid_variant_mismatches": [
+          0,
+          0,
+          0
+        ],
+        "mutant_mismatch_count": 1
+      },
+      "limitations": "Tests seeded selection and fixed borders with an intentionally tiny period-16 PRNG; no production randomness, visual-variety or directional-lighting claim."
+    },
+    {
+      "id": "provenance-manifest",
+      "method_ids": [
+        "asset-provenance"
+      ],
+      "status": "pass",
+      "observed": {
+        "declared_original_assets": [
+          "folder-original"
+        ],
+        "unresolved_reuse_assets": [
+          "npc-reference"
+        ],
+        "release_manifest_complete": false
+      },
+      "expected": {
+        "declared_original_assets": [
+          "folder-original"
+        ],
+        "unresolved_reuse_assets": [
+          "npc-reference"
+        ],
+        "release_manifest_complete": false
+      },
+      "limitations": "A metadata completeness check only. It neither verifies a creator claim nor determines copyright, licensing or legal permission; no referenced external asset is copied or redistributed."
+    },
+    {
+      "id": "alpha-compositing-contract",
+      "method_ids": [
+        "alpha-contract"
+      ],
+      "status": "pass",
+      "observed": {
+        "straight_result": [
+          127.5,
+          0.0,
+          127.5
+        ],
+        "premultiplied_result": [
+          127.5,
+          0.0,
+          127.5
+        ],
+        "double_multiplied_mutant": [
+          63.75,
+          0.0,
+          127.5
+        ],
+        "binary_alpha_violations": [
+          2
+        ]
+      },
+      "expected": {
+        "straight_result": [
+          127.5,
+          0,
+          127.5
+        ],
+        "premultiplied_result": [
+          127.5,
+          0,
+          127.5
+        ],
+        "double_multiplied_mutant": [
+          63.75,
+          0,
+          127.5
+        ],
+        "binary_alpha_violations": [
+          2
+        ]
+      },
+      "limitations": "Linear numeric compositing and alpha-policy fixture only; no display transfer function, GPU blend state or importer is evaluated."
+    },
+    {
+      "id": "independent-animation-channels",
+      "method_ids": [
+        "composed-animation"
+      ],
+      "status": "pass",
+      "observed": {
+        "tread_indices": [
+          0,
+          1,
+          2,
+          3,
+          0,
+          1,
+          2,
+          3
+        ],
+        "recoil_offsets": [
+          0,
+          0,
+          0,
+          0,
+          -2,
+          -1,
+          0,
+          0
+        ],
+        "armor_states": [
+          "normal",
+          "normal",
+          "normal",
+          "normal",
+          "normal",
+          "damaged",
+          "damaged",
+          "damaged"
+        ]
+      },
+      "expected": {
+        "tread_indices": [
+          0,
+          1,
+          2,
+          3,
+          0,
+          1,
+          2,
+          3
+        ],
+        "recoil_offsets": [
+          0,
+          0,
+          0,
+          0,
+          -2,
+          -1,
+          0,
+          0
+        ],
+        "armor_states": [
+          "normal",
+          "normal",
+          "normal",
+          "normal",
+          "normal",
+          "damaged",
+          "damaged",
+          "damaged"
+        ]
+      },
+      "limitations": "Tests three explicitly owned channels and event times; contacts, transform blending and target-engine animation composition remain separate."
+    },
+    {
+      "id": "atlas-raw-storage-budget",
+      "method_ids": [
+        "atlas-reuse-budget"
+      ],
+      "status": "pass",
+      "observed": {
+        "baked_rgba8_bytes": 60000000,
+        "modular_rgba8_bytes": 2621440
+      },
+      "expected": {
+        "baked_rgba8_bytes": 60000000,
+        "modular_rgba8_bytes": 2621440
+      },
+      "limitations": "Uncompressed RGBA8 arithmetic only, excluding padding, compression, mipmaps and metadata. Does not measure GPU resident memory, draw calls, frame time or target-device performance."
+    },
+    {
+      "id": "companion-pixel-alignment",
+      "method_ids": [
+        "companion-alignment"
+      ],
+      "status": "pass",
+      "observed": {
+        "matching_dimensions": true,
+        "aligned_feature_mismatches": [],
+        "mutant_dimensions_match": true,
+        "mutant_feature_mismatches": [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            5
+          ]
+        ]
+      },
+      "expected": {
+        "matching_dimensions": true,
+        "aligned_feature_mismatches": [],
+        "mutant_dimensions_match": true,
+        "mutant_feature_mismatches": [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            5
+          ]
+        ]
+      },
+      "limitations": "Tests calibration-feature correspondence despite equal dimensions. UV remapping, atlas padding and an engine import path are not evaluated."
+    },
+    {
+      "id": "dirty-region-boundary-parity",
+      "method_ids": [
+        "dirty-region-wakeup"
+      ],
+      "status": "pass",
+      "observed": {
+        "positions": [
+          [
+            7,
+            1
+          ],
+          [
+            8,
+            2
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ]
+        ],
+        "states_match_each_tick": true,
+        "first_wakeup_chunks": [
+          0,
+          1
+        ],
+        "final_active_chunks": [],
+        "full_cell_visits": 1024,
+        "dirty_cell_visits": 704
+      },
+      "expected": {
+        "positions": [
+          [
+            7,
+            1
+          ],
+          [
+            8,
+            2
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            6
+          ]
+        ],
+        "states_match_each_tick": true,
+        "first_wakeup_chunks": [
+          0,
+          1
+        ],
+        "final_active_chunks": [],
+        "full_cell_visits": 1024,
+        "dirty_cell_visits": 704
+      },
+      "limitations": "One particle crossing two 8x8 chunks with a one-cell halo and eight serial ticks. Cell-visit reduction is not measured speedup; thermal influence, arbitrary write radii and parallel simulation need separate checks."
+    },
+    {
+      "id": "reaction-threshold-table",
+      "method_ids": [
+        "reaction-tables"
+      ],
+      "status": "pass",
+      "observed": {
+        "outputs": [
+          "water",
+          "steam",
+          "steam"
+        ],
+        "occupied_cells": 3,
+        "invalid_probability_rejected": true,
+        "unknown_material_rejected": true
+      },
+      "expected": {
+        "outputs": [
+          "water",
+          "steam",
+          "steam"
+        ],
+        "occupied_cells": 3,
+        "invalid_probability_rejected": true,
+        "unknown_material_rejected": true
+      },
+      "limitations": "Deterministic probability-one replacement and schema guards only; intermediate stochastic probabilities, multi-reactant conflicts and physical thermodynamics are not simulated."
+    },
+    {
+      "id": "pipeline-dependency-order",
+      "method_ids": [
+        "pipeline-order"
+      ],
+      "status": "pass",
+      "observed": {
+        "valid_violations": [],
+        "mutant_violations": [
+          "light->upscale"
+        ]
+      },
+      "expected": {
+        "valid_violations": [],
+        "mutant_violations": [
+          "light->upscale"
+        ]
+      },
+      "limitations": "Checks an explicit reference dependency graph. It does not establish that any stage actually executed in an external engine or that its data ownership is race-free."
+    },
+    {
+      "id": "input-driven-pixel-ui",
+      "method_ids": [
+        "state-driven-pixel-ui"
+      ],
+      "status": "pass",
+      "observed": {
+        "states": [
+          "idle",
+          "pressed",
+          "idle",
+          "disabled",
+          "disabled"
+        ],
+        "distinct_state_masks": 3
+      },
+      "expected": {
+        "states": [
+          "idle",
+          "pressed",
+          "idle",
+          "disabled",
+          "disabled"
+        ],
+        "distinct_state_masks": 3
+      },
+      "limitations": "Tests supplied input-state transitions and distinct original masks. Does not inspect accessibility, overall UI aesthetics, input hardware or an application event loop."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dither-coverage.png",
+      "sha256": "5583344fb062c3eb032248307ae72892a3041495f1c95ad96bd6e52cfe5aba23",
+      "width": 12,
+      "height": 4,
+      "mode": "RGBA"
+    },
+    {
+      "path": "crop-restored.png",
+      "sha256": "9b47ef0fe8cfb89abcf701cbb69ebfbd0f6f1720b57c0eb8369a23d10ad162af",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA"
+    },
+    {
+      "path": "integer-upscale.png",
+      "sha256": "7cb36199f7d029d5db3286824a8c538f2c77614f4912b57ce54af66214dab4af",
+      "width": 6,
+      "height": 6,
+      "mode": "RGBA"
+    },
+    {
+      "path": "key-positive.png",
+      "sha256": "400f07ba6129d3e47e926b6b0230b61828188e94ef0e9ea717a5521616aec592",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA"
+    },
+    {
+      "path": "key-negative.png",
+      "sha256": "5d72f929eee0510d1ef97c57d9cbbdacd4bf51ae1db1dec948da391b6e04b56d",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA"
+    },
+    {
+      "path": "key-contact-sheet.png",
+      "sha256": "6c8edf61144cadff849fd316f11618e781452e60ed1162a91255beb61a015d43",
+      "width": 288,
+      "height": 176,
+      "mode": "RGBA"
+    },
+    {
+      "path": "tile-repeat-neighborhood.png",
+      "sha256": "f2fdcae748728fd7f2687cac68b50498529b8c9153098810dc0ce157c5b355f6",
+      "width": 24,
+      "height": 24,
+      "mode": "RGBA"
+    },
+    {
+      "path": "pixel-ui-states.png",
+      "sha256": "565bffaae08ef83e314eed5599424c7e7a08bef70aa9698469ffbbd520f27527",
+      "width": 24,
+      "height": 8,
+      "mode": "RGBA"
+    }
+  ],
+  "limitations": [
+    "No live PixelLab calls were made.",
+    "A passing reference fixture is not a provider capability, engine integration or visual-quality certification.",
+    "Every current knowledge method has a bounded reference check; project-specific, provider and visual-quality acceptance remain separate."
+  ]
+}

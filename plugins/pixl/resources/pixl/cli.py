@@ -23,6 +23,11 @@ def parser():
     q.add_argument("focus")
     q.add_argument("--budget", type=int)
     q.add_argument("--root")
+    q = sub.add_parser("request-review", help="Resolve exact request/criteria sources for caller comparison.")
+    q.add_argument("packet")
+    q.add_argument("--asset", dest="asset_id")
+    q.add_argument("--plar", default="plar.txt")
+    q.add_argument("--root", required=True)
     q = sub.add_parser("ready")
     q.add_argument("path")
     q.add_argument("--root")
@@ -156,7 +161,7 @@ def parser():
         "plar", help="Source-linked asset requirements and focused handoffs."
     )
     actions = q.add_subparsers(dest="plar_action", required=True)
-    for action in ("read", "save", "prepare"):
+    for action in ("read", "save", "prepare", "handoff"):
         action_parser = actions.add_parser(action)
         action_parser.add_argument("--root", required=True)
         action_parser.add_argument("--path", default="plar.txt")
@@ -165,6 +170,11 @@ def parser():
             action_parser.add_argument(
                 "--since", help="Compare the queue with a retained PLAR hash."
             )
+        elif action == "handoff":
+            action_parser.add_argument("details", metavar="DETAILS_JSON")
+            action_parser.add_argument("--asset", dest="asset_id", required=True)
+            action_parser.add_argument("--requirements", dest="requirements_hash", required=True)
+            action_parser.add_argument("--expect", required=True)
         elif action == "prepare":
             action_parser.add_argument("--asset", dest="asset_id", required=True)
             action_parser.add_argument(
@@ -240,7 +250,11 @@ def main(argv=None):
 
             serve(Path(a.root).resolve())
             return 0
-        if cmd == "validate":
+        if cmd == "request-review":
+            from .request_review import report
+
+            output = report(a.root, a.packet, a.asset_id, a.plar)
+        elif cmd == "validate":
             output = service.inspect_document(a.path, a.root)
         elif cmd in ("context", "ready", "impact", "decode"):
             doc = service.load_document(a.path)
@@ -358,6 +372,9 @@ def main(argv=None):
                     args["asset_id"] = a.asset_id
                 if a.since:
                     args["since"] = a.since
+            elif a.plar_action == "handoff":
+                args.update(asset_id=a.asset_id, requirements_hash=a.requirements_hash,
+                            expect=a.expect, details=service.read_json(a.details))
             elif a.plar_action == "prepare":
                 args.update(
                     asset_id=a.asset_id,

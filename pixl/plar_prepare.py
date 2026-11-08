@@ -115,11 +115,23 @@ def _inputs(root, path, asset_id, requirements_hash, packet_path, connection):
                     local in sources,
                     f"criterion source is absent from packet: {source['path']}",
                 )
+                if "lines" in source:
+                    from .request_review import source_evidence
+
+                    resolved = source_evidence(root, source, sources[local])
+                    _require(resolved["status"] == "resolved", f"criterion source lines: {source['path']}: {resolved['status']}")
+
     _require(
         isinstance(connection, dict)
         and set(connection) == {"provider", "schema", "discovery", "authorization"},
         "connection needs provider, schema, discovery and authorization",
     )
+    if "provider" in request_pointer:
+        _require(request_pointer["provider"] == connection["provider"], "reviewed provider differs from the supplied connection")
+    if "connection" in request_pointer:
+        reviewed_connection, reviewed_hash, reviewed_path = _artifact(root, request_pointer["connection"])
+        _require(reviewed_connection == connection, "supplied connection differs from the exact reviewed connection")
+        sources[reviewed_path] = reviewed_hash
     request = {
         **connection,
         "tool": request_pointer.get("tool"),

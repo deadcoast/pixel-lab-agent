@@ -184,7 +184,7 @@ To edit through the supplied interfaces, `decode FILE` returns a tagged JSON ada
 
 Context budgets are **strict byte budgets**, not model-token estimates. They do not prove token savings. `ready` establishes readiness only under the declared local rules; it does not establish credentials, credit, remote capacity, visual acceptance, or successful game import.
 
-The 32 local MCP tools include `pixl_plar_read`, `pixl_plar_save`, `pixl_plar_prepare`, `pixl_retain_library`, `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_intake`, `pixl_task_complete`, `pixl_workflow`, `pixl_commit`, `pixl_catalog`, `pixl_sources`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, `pixl_job`, `pixl_job_prepare`, `pixl_job_dispatch`, `pixl_job_observe`, `pixl_job_import`, `pixl_jobs`, `pixl_family`, `pixl_family_snapshot`, `pixl_inspection`, `pixl_inspection_prepare` and `pixl_inspection_review`. Fetch actual schemas through `tools/list`. Optional `pixl_asset_check(regions=[...])` reports exact-color component boxes with the image hash. `pixl_inspection` can return selected prepared views as actual image blocks with payload dimensions through `packet_id` and `view_ids`, supporting hosts whose file viewer omits that metadata. The [inspection operation](../plugins/pixl/skills/pixl/references/inspection.md) prepares saved views and retains explicit reviews; actual viewing happens through the host. The [provider recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md) saves plan-bound requests, claims dispatch before a host call, retains observations and imports local candidates. Legacy `pixl_prepare`/`pixl_job` remain stateless. No local tool submits or polls PixelLab; remote observations are caller-supplied, and imported candidates still require acceptance.
+The 34 local MCP tools include `pixl_request_review`, `pixl_plar_read`, `pixl_plar_save`, `pixl_plar_prepare`, `pixl_retain_library`, `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_intake`, `pixl_task_complete`, `pixl_workflow`, `pixl_commit`, `pixl_catalog`, `pixl_sources`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, `pixl_job`, `pixl_job_prepare`, `pixl_job_dispatch`, `pixl_job_observe`, `pixl_job_import`, `pixl_jobs`, `pixl_family`, `pixl_family_snapshot`, `pixl_inspection`, `pixl_inspection_prepare` and `pixl_inspection_review`. Fetch actual schemas through `tools/list`. Optional `pixl_asset_check(regions=[...])` reports exact-color component boxes with the image hash. `pixl_inspection` can return selected prepared views as actual image blocks with payload dimensions through `packet_id` and `view_ids`, supporting hosts whose file viewer omits that metadata. The [inspection operation](../plugins/pixl/skills/pixl/references/inspection.md) prepares saved views and retains explicit reviews; actual viewing happens through the host. The [provider recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md) saves plan-bound requests, claims dispatch before a host call, retains observations and imports local candidates. Legacy `pixl_prepare`/`pixl_job` remain stateless. No local tool submits or polls PixelLab; remote observations are caller-supplied, and imported candidates still require acceptance.
 
 The [family operation](../plugins/pixl/skills/pixl/references/family-delivery.md) binds production members to the exact approved sample, plans collective continuity and destination requirements, and retains selected bytes in an immutable package. `family FILE [OUTPUT] --root ROOT` reports acceptance, pending jobs and historical snapshot drift; `family-snapshot STORE OUTPUT CANDIDATE --expect HASH --root ROOT` copies accepted member bytes and publishes only an unaccepted report candidate. A useful package can retain unavailable engine requirements and a concrete handoff. Copying does not nominate, evaluate or complete delivery.
 
@@ -313,3 +313,48 @@ reviews remain; the replacement does not inherit acceptance. `ready PATH --root
 CONSUMER` and MCP readiness apply the same current-selection checks as dispatch and
 completion. See [the allocation/production contract](../spec/asset-preparation.md)
 and [cohesion evidence](../evidence/plar-cohesion/README.md) for behavior and limits.
+
+Use `request-review PACKET --root CONSUMER --asset ID` (or `pixl_request_review`) to resolve exact file-local criterion sources for independent caller comparison. It reports bad locators and changed sources without certifying semantic consistency. Focused production includes `continuation` with the current provider-bound action and prerequisites before a later request; carry that object in the returned handoff. See [the evidence contract](../spec/request-review.md).
+
+## Harness, knowledge and provider responsibilities — checked 2026-11-08
+
+PIXL applies the host model's existing pixel-art expertise together with the shared
+profile, curated methods and project evidence. Skills make that expertise reusable;
+local MCP operations preserve measurements and state; the host's available tools
+provide source/image inspection, code execution, research and delegated work. PixelLab
+supplies the actual production generation service. A callable PIXL profile is not a
+separately trained global model, and its local runtime is not its whole capability.
+
+| Responsibility | Operational location |
+| --- | --- |
+| Application purpose, consumer context and established authorization | Calling agent and actual project sources |
+| Pixel craft, art direction, method applicability and visual judgment | PIXL profile using host-model knowledge, relevant library material and inspected artifacts |
+| Reusable allocation, request/review and delivery procedure | Shared PLAR/PIXL skills, progressively loaded references |
+| Model execution, tool availability and permissions | Claude/Codex harness and its actual session configuration |
+| Deterministic facts and resumable identities | Shared CLI/local MCP; exact request evidence and `pixl_plar_handoff` |
+| Production generation and provider capabilities | Official PixelLab connection and current selected tool declaration |
+
+OpenAI documents skills as reusable workflows loaded progressively, and custom agents
+as inheriting parent permissions, provider and MCP servers. The existing thin Codex
+adapter keeps that relationship. [Skills](https://learn.chatgpt.com/docs/build-skills),
+[subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+Anthropic documents skill preloading and skill discovery during subagent execution;
+its subagents start without the parent's conversation history. The existing Claude
+adapter explicitly loads the shared profile/skill, and the caller supplies the actual
+assignment and references. A skill preload is not a complete consumer handoff.
+[Claude subagents](https://code.claude.com/docs/en/sub-agents),
+[Claude skills](https://code.claude.com/docs/en/skills).
+
+PixelLab's guide distinguishes MCP tools from REST interfaces and exposes current
+operation-specific image/reference and palette controls. Those declarations determine
+what a request can do; they do not make a palette, dominant color or provider default
+an owner requirement. Use the [platform docs](https://www.pixellab.ai/docs) and
+[official MCP guide](https://api.pixellab.ai/mcp/docs), then inspect the connected tool.
+The existing HTTP adapter remains separately scoped; these checks do not extend it to
+undocumented endpoints or certify every advertised provider operation.
+
+For a retained result, save expert observations in handoff `details` while the tool
+preserves `resume` and `next` exactly. Completed caller checks and future work have
+separate fields. A later contract correction is retained as a new proposal/comparison,
+without rewriting the historical request, generated candidate or accepted verdicts.

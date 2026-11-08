@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "plar": {
+    "path": "plar.txt",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673"
+  },
+  "correction": {
+    "kind": "corrected_future_contract_v2",
+    "authored": "2026-11-07 PHASE.md review stage, round 2 (PIXL specialist), after independent caller comparison",
+    "historical_packet": {
+      "path": "work/queue.ready-revision/request-review.json",
+      "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2",
+      "criteria_sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6",
+      "status": "preserved unchanged; it is the contract under which job r.22e90a2a03fe453a.request (remote controlled-create-0002) was dispatched and candidate ready.retained was reviewed and nominated"
+    },
+    "statement": "This v2 packet corrects citation locators, binds the discovered provider connection, refreshes the resume block to the current production state, and (round 2) binds criteria to candidate-plan.v2.json, which restores the historical contract.intent verbatim after caller finding C1. It changes no criterion outcome, no provider argument and no owner requirement. It does NOT retroactively replace the historical packet, does NOT re-verdict ready.retained, and is NOT an authorization or request for a new provider job. The pixellab-test connection is not available in this session; before any future request a fresh discovery and a fresh caller comparison are required.",
+    "defects_corrected": "D1-D8: see work/queue.ready-handoff/specialist-assessment.json#defects (round 1). C1 (round-1 intent edit): see correction.round1_corrected_packet.resolution_in_v2.",
+    "round1_corrected_packet": {
+      "path": "work/queue.ready-handoff/request-review.json",
+      "sha256": "48cf27c9ada1d53f120f6b7c2a0a2f7d2d8d20c2cc1f1dce5d5f7bd1fadffc7e",
+      "criteria_path": "work/queue.ready-handoff/candidate-plan.json",
+      "criteria_sha256": "e58e0e3ebe7fbaa303515022c46efd9fc44b1b5c80f6c21273585f9eb0c08db0",
+      "status": "superseded by this v2 packet/plan but retained unchanged; referenced by PLAR evidence and round-1 handoff .pixl/handoffs/26a46b6ce136936b4e6439d2502ab75a965ac5ccba4ef4fceb88798bd3aea4b3.json",
+      "caller_review": {
+        "path": "work/queue.ready-handoff/caller-review.json",
+        "sha256": "bfb6f0cf561d6fffcfa91d7ebf7e9f6920326c5a6f1f225b498500ed8be9b1ad",
+        "verdict": "changes_requested",
+        "discrepancies": [
+          "C1 contract.intent silently changed ('later' dropped) while scope/criteria.note claimed locator-only repair",
+          "C2 round-1 handoff details.caller_actions empty",
+          "C3 plar-candidate.json artifact entry lacked sha256"
+        ]
+      },
+      "resolution_in_v2": "C1 resolved by restoring the historical contract.intent verbatim in candidate-plan.v2.json (sha256 58ca2f15cb5cd84438afcddabf53f7f6420e5f311aa8634b1bcbe7fb15259f0f); v2 plan now differs from the historical plan e7f85aa1… only in its scope statement and criterion source pointers. C2 and C3 are resolved in the final pixl_plar_handoff, not in this packet."
+    }
+  },
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "role": "owner asset brief (requirement authority)",
+      "locators": [
+        "line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color",
+        "line 5: destination paths from view, badges excluded, no approved style, representative sample first",
+        "line 7: paused distinguishable from activity/completion/retry without color; keep existing style and display requirements",
+        "line 9: required check mark with asymmetrical arms; destination follows updated view; keep 16x16, static, transparent, review display conditions"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "role": "consumer state transitions (observation)",
+      "locators": [
+        "line 1: QueueState union includes succeeded",
+        "line 3: ok -> succeeded"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "role": "consumer visual mapping and display descriptor (observation)",
+      "locators": [
+        "line 3: idle -> Start assets/start.svg",
+        "line 6: succeeded -> Ready assets/ready-confirmed.png frames 1",
+        "line 9: display cell [16,16], scale 3, nearest, frameMs 100, background #172336",
+        "lines 10-11: statusCell and compactStatus share statusVisuals"
+      ]
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "role": "preserved existing Start vector; accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference",
+      "locators": [
+        "line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z"
+      ]
+    },
+    {
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "role": "source overview",
+      "locators": [
+        "line 3: state, visual mapping, consumers and scope"
+      ]
+    },
+    {
+      "path": "provider-schemas.json",
+      "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "role": "advertised pixellab-test schema (cross-check of the host declaration recorded in connection.json)",
+      "locators": [
+        "lines 2-33: create_image_pro_flash input schema (description, width, height, no_background, seed; additionalProperties false)"
+      ]
+    },
+    {
+      "path": "provider-contract-origin.json",
+      "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "role": "controlled connection origin/scope note",
+      "locators": [
+        "line 4: scope - controlled connection advertises only description, width, height, no_background and seed; not a complete upstream tools/list"
+      ]
+    },
+    {
+      "path": "OWNER.md",
+      "sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+      "role": "HISTORICAL request-stage authorization and limits (one further controlled request, now consumed by controlled-create-0002); not current authority",
+      "locators": [
+        "lines 2-11: revised request, retain original, inspect status, one further controlled request, no image or renderer"
+      ]
+    },
+    {
+      "path": "STAGE.md",
+      "sha256": "27645d41c854b992d502817066b48705a0026d899a78c8e80d821572c1bf75b5",
+      "role": "HISTORICAL delivery-stage instruction (retrieve, import, review, deliver, verify consumers; no new request); not current authority",
+      "locators": [
+        "lines 2-15: continue existing job through retrieval, review, delivery and node verify-integration; renderer and family adoption stay open; do not create another request"
+      ]
+    },
+    {
+      "path": "PHASE.md",
+      "sha256": "0bcf5dbd3c97ae2ae67acf6bb3ed100332ea023cb1f6d0962e9cdfbee54f7a60",
+      "role": "CURRENT assignment: reassess retained contract, correct defects in new artifacts, preserve history, no new generation",
+      "locators": [
+        "lines 2-11: reassess retained request/criteria and result; correct defects in new artifacts; preserve old arguments, plans, candidate, verdicts; corrected contract does not retroactively replace delivery contract; no new generation"
+      ]
+    }
+  ],
+  "request": {
+    "path": "work/queue.ready-revision/provider-arguments.json",
+    "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3",
+    "kind": "provider_arguments",
+    "tool": "create_image_pro_flash",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "connection": {
+      "path": "work/queue.ready-revision/connection.json",
+      "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"
+    },
+    "note": "Arguments are the exact bytes already dispatched as job r.22e90a2a03fe453a.request (request_sha256 64e34d9c4e28959547852457480650c7e3ef2b482a039a095a3122869dab5099 in the store). They are bound here for identity, not for re-dispatch. The bound connection.json is the historical discovery artifact; its nested authorization.evidence.lines [2,12] over-runs OWNER.md (11 lines) and must be re-discovered, not edited, before any future request."
+  },
+  "criteria": {
+    "path": "work/queue.ready-handoff/candidate-plan.v2.json",
+    "sha256": "58ca2f15cb5cd84438afcddabf53f7f6420e5f311aa8634b1bcbe7fb15259f0f",
+    "historical": {
+      "path": "work/queue.ready-revision/candidate-plan.json",
+      "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"
+    },
+    "round1_superseded": {
+      "path": "work/queue.ready-handoff/candidate-plan.json",
+      "sha256": "e58e0e3ebe7fbaa303515022c46efd9fc44b1b5c80f6c21273585f9eb0c08db0"
+    },
+    "note": "Same six criterion ids, checks, bases, scopes and authority labels as the historical plan, and the same contract block including intent ('One static 16x16 Ready candidate for later assets/ready-confirmed.png. ...') restored verbatim; only the scope statement and criterion source pointers (repaired to file-local inclusive bounds matching their locator text) differ from the historical plan. The round-1 plan e58e0e3e… had additionally dropped the word 'later' from contract.intent without disclosure; that edit is reverted here."
+  },
+  "authority_map": {
+    "owner_requirements": [
+      "16x16 logical cell (BRIEF.md line 3, line 9)",
+      "Ready is a static single image (BRIEF.md line 3, line 9)",
+      "transparent background (BRIEF.md line 3, line 9); alpha not restricted to binary",
+      "readable silhouette inspected at 1x and 3x nearest on the actual dark panel (BRIEF.md line 3, line 9)",
+      "use the existing UI's cool blue accent; fixed palette not required (BRIEF.md line 3)",
+      "Ready visibly uses a check mark with asymmetrical arms conveying successful completion (BRIEF.md line 9)",
+      "destination follows the view (BRIEF.md line 5, line 9 -> src/queue-view.ts line 6)",
+      "preserve the existing Start vector (BRIEF.md line 3)",
+      "representative sample before family expansion (BRIEF.md line 5)",
+      "family: Working must not look like success; Retry and Paused distinguishable without color alone (BRIEF.md line 3, line 7) - deferred to family stage"
+    ],
+    "consumer_observations": [
+      "display.background #172336, scale 3, filter nearest, frameMs 100, cell [16,16] (src/queue-view.ts line 9)",
+      "statusCell and compactStatus both return statusVisuals[state]; one shared asset (src/queue-view.ts lines 10-11)",
+      "stateAfter('ok') -> 'succeeded' (src/queue.ts line 3)",
+      "start.svg fill #70b9ed, right-pointing triangle M4 2L14 8L4 14Z (assets/start.svg line 1)"
+    ],
+    "specialist_choices": [
+      "Ready chosen as the representative sample (brief asks for a sample but does not pick the status)",
+      "sample-pixel-craft criterion (authority: proposal) - expert quality bar for a style sample; passing it does not approve the family style",
+      "contract alpha 'full' declared so partial alpha is permitted; the delivered sample happens to be binary",
+      "'no horizontal strip / no extra canvas' as the mechanical operationalization of 'static 16x16'",
+      "'viewed alone' reading scope for ready-meaning, since no Working/Retry/Paused art exists yet",
+      "no narrower construction recipe (stroke width, arm ratio, caps, highlight, exact hex) imposed"
+    ],
+    "delivered_sample_facts_that_are_not_requirements": [
+      "single colour exactly #70b9ed (equality observed, not required)",
+      "binary alpha 0/255 (observed, not required)",
+      "3-pixel 45-degree strokes with one-pixel tapered caps (observed construction)",
+      "visible bbox x 3..13, y 4..12 (one pixel right/down of geometric centre; observed)"
+    ]
+  },
+  "choices": [
+    {
+      "choice": "Ready is representative sample",
+      "basis": "Specialist proposal under BRIEF.md line 5; no approved style exists.",
+      "appears_in": "request description; plan scope"
+    },
+    {
+      "choice": "No narrower construction recipe",
+      "basis": "The owner requires an asymmetrical-arm check mark. Stroke width, arm ratio, caps, highlights, exact hex and plate geometry stay open.",
+      "appears_in": "request description; ready-meaning criterion"
+    },
+    {
+      "choice": "sample-pixel-craft quality bar",
+      "basis": "Expert judgment applying 'coherent pixel-art status assets' (BRIEF.md line 3) to a style sample; authority proposal, scoped to this sample.",
+      "appears_in": "sample-pixel-craft criterion"
+    }
+  ],
+  "deferred_obligations": [
+    {
+      "id": "family-working-not-success",
+      "obligation": "Working 4-frame loop communicates activity without looking like Ready/success.",
+      "source": "BRIEF.md line 3",
+      "stage": "family expansion after Ready sample style adoption",
+      "status": "open",
+      "prerequisites": [
+        "adopted Ready baseline",
+        "Working candidate (queue.working)"
+      ]
+    },
+    {
+      "id": "family-retry-non-color",
+      "obligation": "Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.",
+      "source": "BRIEF.md lines 3, 7",
+      "stage": "family expansion/collective review",
+      "status": "open",
+      "prerequisites": [
+        "adopted Ready baseline",
+        "Retry candidate (queue.retry)"
+      ]
+    },
+    {
+      "id": "family-paused-non-color",
+      "obligation": "Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.",
+      "source": "BRIEF.md line 7; PLAR queue.ready delivery checks",
+      "stage": "family collective review",
+      "status": "open",
+      "prerequisites": [
+        "adopted Ready baseline",
+        "Working, Retry and Paused candidates"
+      ]
+    },
+    {
+      "id": "style-decision",
+      "obligation": "Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.",
+      "source": "BRIEF.md line 5; PLAR queue.ready next/questions",
+      "stage": "now actionable: a reviewed candidate exists (ready.retained, fixture provenance)",
+      "status": "open",
+      "prerequisites": [
+        "owner/caller decision whether the fixture sample's treatment is adopted as baseline"
+      ]
+    },
+    {
+      "id": "destination-delivery",
+      "obligation": "Place accepted Ready image at assets/ready-confirmed.png; decode and confirm dimensions/frames/transparency there.",
+      "source": "BRIEF.md line 5; src/queue-view.ts line 6",
+      "stage": "delivery",
+      "status": "completed (bounded): assets/ready-confirmed.png sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5, 16x16, 1 frame, 227 alpha-0 / 29 alpha-255 pixels; rechecked 2026-11-07",
+      "prerequisites": []
+    },
+    {
+      "id": "renderer-integration",
+      "obligation": "Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.",
+      "source": "src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks",
+      "stage": "integration/live acceptance",
+      "status": "partial: source-module execution passed (work/queue.ready-handoff/integration-recheck.json, exit 0); graphical renderer, nearest sampling and alpha compositing remain unverified because no renderer is supplied",
+      "prerequisites": [
+        "a runnable graphical renderer or UI entry point (none supplied)"
+      ]
+    }
+  ],
+  "preserved": {
+    "start_vector": {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "note": "Unmodified; no Start production in scope."
+    },
+    "historical_artifacts": "work/queue.ready/*, work/queue.ready-revision/*, work/queue.ready-delivery/*, work/PIXL-DELIVERY.json, PARENT-RESULT.json, COLD-RESULT.json, DELIVERY-RESULT.json, .pixl/assets/queue.ready/** (state.px revision 14 hash 7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81) are unchanged by this stage.",
+    "plar_ids": "No PLAR allocation IDs added, removed or renamed; requirements_hash unchanged."
+  },
+  "review_status": {
+    "specialist_self_review": "Round 1: corrected against actual current sources with pixl_request_review diagnostics resolved. Round 2: v2 plan verified programmatically to equal the historical plan except scope statement and criterion sources, and to equal the round-1 plan except scope statement and restored intent; no new image, no re-verdict, no artistic acceptance change.",
+    "independent_caller_review_round1": {
+      "path": "work/queue.ready-handoff/caller-review.json",
+      "sha256": "bfb6f0cf561d6fffcfa91d7ebf7e9f6920326c5a6f1f225b498500ed8be9b1ad",
+      "reviewed_packet_sha256": "48cf27c9ada1d53f120f6b7c2a0a2f7d2d8d20c2cc1f1dce5d5f7bd1fadffc7e",
+      "verdict": "changes_requested (C1-C3); corrected contract found source-consistent, six criterion comparisons consistent, historical record preserved"
+    },
+    "independent_caller_review_v2": "Pending: the caller verifies this v2 packet and candidate-plan.v2.json against its C1 request before adoption.",
+    "historical_caller_reviews": "work/queue.ready-revision/caller-review.json e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255; work/queue.ready-delivery/caller-review.json 8f8049a1dd6e7509a5af001e0f52c7991f3432ad800e20893ae47547526dda24; both apply to the historical packet only."
+  },
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state": ".pixl/assets/queue.ready/state.px",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "task": "r.22e90a2a03fe453a.task",
+    "task_state": "done",
+    "output": "r.22e90a2a03fe453a.output.ready",
+    "candidate": "ready.retained",
+    "candidate_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "job": "r.22e90a2a03fe453a.request",
+    "job_state": "succeeded",
+    "remote_id": "controlled-create-0002",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "pending_jobs": [],
+    "derived_next_action": "review_delivery",
+    "historical": {
+      "task": "task",
+      "task_state": "open (superseded; selection binding changed, requirements_hash 79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8)",
+      "output": "output.ready",
+      "job": "first_request",
+      "job_state": "failed",
+      "remote_id": "controlled-create-0001"
+    },
+    "next": "Caller verifies this v2 packet/plan against its C1 request and the final handoff against C2/C3; then resolve family/style adoption and source-bind an approved baseline; supply a graphical renderer for display/alpha acceptance. No new request is authorized by this packet."
+  }
+}

@@ -38,6 +38,8 @@ are inserted. Criteria have an ID, exact `check`, `domain`, required evidence `m
 `basis`, `scope` and source path/locator list. Expert-choice sources can be empty
 when their basis is stated honestly. Criterion locators, authority and scope are
 retained in the exact plan artifact, not discarded during record construction.
+The optional authority and explicit source-line fields, deterministic evidence report
+and consumer continuation are specified in [request-review.md](request-review.md).
 
 The adapter creates A/P/S/I/C/T/F/Q records and actual reference X inputs, then
 uses the existing durable-job preparation. It adds no registry fields. Contract

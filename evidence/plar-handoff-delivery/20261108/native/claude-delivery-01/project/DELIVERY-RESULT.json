@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "role": "calling agent",
+  "assignment": {"path": "STAGE.md", "sha256": "27645d41c854b992d502817066b48705a0026d899a78c8e80d821572c1bf75b5"},
+  "previous_stage": {"path": "OWNER.md", "sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7", "result": "COLD-RESULT.json", "result_sha256": "76eadd1daf5a623a6ffc13c0e0825ca103711553235af1d9fda8b92278272beb"},
+  "recorded_at": "2026-11-08T06:09:47.773602+00:00",
+  "status": "delivered",
+  "status_scope": "Delivered for this bounded Ready stage: the retained rev3 generation was resolved on its originating controlled connection, its single returned PNG was downloaded, imported, inspected, reviewed (8/8 saved criteria pass), nominated, its PX2 task completed, its exact bytes placed at the PLAR destination assets/ready-confirmed.png, both real source consumers verified by node, and the PLAR row updated with history retained. The image is an evaluator fixture from pixellab-test, not upstream PixelLab generation. Renderer acceptance, the representative-sample style decision and the Working/Retry/Paused family work are NOT completed by this stage.",
+  "provider_simulated": true,
+  "asset_id": "queue.ready",
+  "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+  "workflow_used": "Packaged PLAR/PIXL skills under .agents/skills/pixl-kit/skills/: provider-recovery (observe, import), inspection (prepare, view, review), task completion, delegation contract (PIXL specialist for PX2 production; caller for provider calls, delivery, integration and PLAR), pixl-local MCP tools and the packaged runner for plar save.",
+
+  "provider_status_recovery": {
+    "connection": "pixellab-test (controlled evaluator fixture; no upstream service)",
+    "original_job": {"id": "r.028f320bf7292612.request", "remote_id": "controlled-create-0002", "tool": "create_image_pro_flash", "state_at_stage_start": "submitted", "next_action_at_start": "observe", "intent_sha256": "77beced673e88a5ad8a5f8e1613347a587c41e9aa83b23c6fc0a4e9311695505", "request_sha256": "7adba38229de8f11eee3b78aac2c5c251dbca6208b733b839a3bc0424101f400"},
+    "calls": [
+      {"tool": "mcp__pixellab-test__list_jobs", "observed": "controlled-create-0001 failed (no image); controlled-create-0002 still labelled queued; echoed arguments equal the retained reviewed arguments."},
+      {"tool": "mcp__pixellab-test__get_image", "arguments": {"job_id": "controlled-create-0002"}, "observed": "status completed; one image index 0, 16x16 png, declared sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5, download_url http://127.0.0.1:4294/controlled-create-0002.png; inline image block also returned."}
+    ],
+    "download": {"url": "http://127.0.0.1:4294/controlled-create-0002.png", "path": "work/queue.ready/rev3/download/controlled-create-0002.png", "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "bytes": 210, "http_status": 200, "content_type": "image/png", "headers_path": "work/queue.ready/rev3/download/response-headers.txt", "headers_sha256": "8b6dfa514bec7f00d6bacc5f0858a8ec6e3c221ed23adc115214a48b657765c4", "downloaded_at": "2026-11-08T05:58:15.968093+00:00", "sha256_equals_provider_declared": true, "png": {"ihdr": [16, 16], "bit_depth": 8, "color_type": 6, "chunks": ["IHDR", "tEXt", "IDAT", "IEND"], "text_purpose": "Controlled retrieval fixture, not PixelLab-generated art"}, "only_returned_result_downloaded": true, "no_replacement_image_manufactured": true},
+    "evidence": {"path": "work/queue.ready/rev3/provider-observation-succeeded.json", "sha256": "913ef082448e712830003032b7f659d28654b8367c7123178882e52a698feb8f"},
+    "recorded": {"operation": "pixl_job_observe succeeded", "job": "r.028f320bf7292612.request", "remote_id": "controlled-create-0002", "from_state": {"revision": 11, "hash": "7520ee8618d3d2c6e5ca3963c13bd3f5333fadec9fc51941aa93b3a5ec2808bd"}, "to_state": {"revision": 12, "hash": "cb90e21b2a9146e7c830cd533c197baceb44598cb2bda4ab3254290f78cb6b8a"}, "recorded_at": "2026-11-08T05:59:08.743675+00:00"},
+    "new_requests_created": 0,
+    "note": "controlled-create-0002 belongs to pixellab-test and must not be retrieved from or reused on a real PixelLab service."
+  },
+
+  "delegation": {
+    "specialist": "native PIXL agent (agent type 'pixl') loading the packaged PIXL skill",
+    "assigned": "import the downloaded bytes as candidate r.028f320bf7292612.candidate.ready, mechanical and visual inspection at 1x/3x nearest on #172336, retained justified review of the 8 saved rev3 criteria, task completion only if all pass. Explicitly excluded: provider calls, new requests, image editing, delivery to assets/, PLAR save.",
+    "result": {"path": "work/queue.ready/rev3/specialist-result.json", "sha256": "d06eeb15b4777666f3cce122df8a594941876b17ecea5c05904a69036aac7934", "status": "delivered (for that bounded scope)"},
+    "state_mutations_by_specialist": [
+      {"step": "pixl_job_import", "revision": 13, "hash": "7eed60da26984169329cac350a9daa498528a9ee51f2bfb00b3f43aa98e0cde8", "recorded_at": "2026-11-08T06:00:55.082533+00:00"},
+      {"step": "pixl_inspection_prepare r.028f320bf7292612.inspect1", "revision": 14, "hash": "10f6b9b62cc88ba245ccb5f3df81612342c3c939fd8170686260c80c0d37f7f8", "created_at": "2026-11-08T06:01:31.331051+00:00"},
+      {"step": "pixl_inspection_review r.028f320bf7292612.review1", "revision": 15, "hash": "4ff91e3c4ceaaff1e3ded1c018ae5afcf6c8de7d1c3a1a0be36b372ec65d10e5", "observed_at": "2026-11-08T06:02:45.768533+00:00", "recorded_at": "2026-11-08T06:03:24.067615+00:00"},
+      {"step": "pixl_task_complete publication 1", "revision": 16, "hash": "d427cbc599e1947ec253b65aac6cd647acb392d2d6c5742da27bcecb893580ba"},
+      {"step": "pixl_task_complete publication 2 (final)", "revision": 17, "hash": "fc5455196672aca53193d60b302a599afb49af2aab5b7fdd6a3f57a1ab3e935d", "acceptance_created": false, "remote_executed": false}
+    ]
+  },
+
+  "candidate": {
+    "id": "r.028f320bf7292612.candidate.ready",
+    "output": "r.028f320bf7292612.output.ready",
+    "contract": "r.028f320bf7292612.contract.ready",
+    "record_sha256": "c6c94bfb7fdd312081628c7020a65f5a88283adb910211ca9f3aee44f11534c7",
+    "retained_path": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "dimensions": [16, 16],
+    "frames": 1,
+    "nominated": true,
+    "byte_identity": "retained artifact == downloaded original == assets/ready-confirmed.png (cmp identical, caller-verified)"
+  },
+
+  "inspection": {
+    "packet": {"id": "r.028f320bf7292612.inspect1", "manifest": ".pixl/assets/queue.ready/inspections/463ed8e2d432f53c1fdb64722de69fdd819b9d0868153e351ba07b67dec10dc9/manifest.json", "sha256": "463ed8e2d432f53c1fdb64722de69fdd819b9d0868153e351ba07b67dec10dc9", "options": {"references": [], "scale": 3, "backgrounds": ["#172336", "checkerboard"], "max_side": 1024, "contexts": []}},
+    "views": [
+      {"id": "r.028f320bf7292612.inspect1.view.0", "scale": 1, "background": null, "size": [16, 16], "sha256": "515a100db9cfafd6da3238b563d84c94309f4f89b64023381b8c9bf44e6effec"},
+      {"id": "r.028f320bf7292612.inspect1.view.1", "scale": 1, "background": "#172336", "size": [16, 16], "sha256": "0cb2e9b589d36cc5d12c90e6ffaf15715fbed5bca19e93729b77cbc6e11cdb95"},
+      {"id": "r.028f320bf7292612.inspect1.view.2", "scale": 3, "background": "#172336", "size": [48, 48], "sha256": "fac71a10bde018f1fcb47ae7d3d02473bf6d9c7823dd91bdbb23ca5841f1f9ac"},
+      {"id": "r.028f320bf7292612.inspect1.view.3", "scale": 1, "background": "checkerboard", "size": [16, 16], "sha256": "1840ec40d13cca376541e3473a96d125d82d6412b9f69955dd3d471ec18d643d"},
+      {"id": "r.028f320bf7292612.inspect1.view.4", "scale": 3, "background": "checkerboard", "size": [48, 48], "sha256": "ab0713bd35c32db532f424fb5cd549106ee250fb56a98aa4c053259e4df2ca73"}
+    ],
+    "mechanical": {"pixl_asset_check": {"pass": true, "width": 16, "height": 16, "frame_count": 1, "visible_pixels": 29, "visible_colors": 1, "fractional_alpha_pixels": 0, "opaque_components": 1, "visible_bbox": [3, 4, 14, 13]}, "sole_visible_colour": "#70b9ed (rgba 112,185,237,255)", "alpha_histogram": {"0": 227, "255": 29}},
+    "review": {"id": "r.028f320bf7292612.review1", "reviewer": "actor (PIXL)", "manifest": ".pixl/assets/queue.ready/inspections/63af65128d02dfb9cccbf1b33a93a1cde03170b764ecca4bc039385fb51eeb30/manifest.json", "sha256": "63af65128d02dfb9cccbf1b33a93a1cde03170b764ecca4bc039385fb51eeb30", "coverage": {"complete": true, "observed": 5, "missing": [], "resized": [], "unknown_size": []}, "verdicts": {"geometry": "pass", "transparent-background": "pass", "check-mark-asymmetrical-arms": "pass", "ready-meaning": "pass", "readability-1x-3x": "pass", "cool-blue-accent": "pass", "silhouette-without-color": "pass", "sample-pixel-craft": "pass"}, "verdict_ids": ["r.028f320bf7292612.review1.verdict.0", "r.028f320bf7292612.review1.verdict.1", "r.028f320bf7292612.review1.verdict.2", "r.028f320bf7292612.review1.verdict.3", "r.028f320bf7292612.review1.verdict.4", "r.028f320bf7292612.review1.verdict.5", "r.028f320bf7292612.review1.verdict.6", "r.028f320bf7292612.review1.verdict.7"], "evidence_ids": "r.028f320bf7292612.review1.evidence.0 .. .7", "failed_or_unavailable": [], "criteria_weakened": false},
+    "derived_evidence_by_specialist": [
+      {"path": "work/queue.ready/rev3/inspection/derived-desaturated-1x-on-172336.png", "sha256": "9ecdb3adf676487d7139ee5efbe8db9671ff34d36bc52c9a3931c9ebdea8a60b"},
+      {"path": "work/queue.ready/rev3/inspection/derived-desaturated-3x-on-172336.png", "sha256": "0edabd77ec3abb1ac62285ca52aaae6ca6e86fbad852d8c1d5774d28dfb68abc"},
+      {"path": "work/queue.ready/rev3/inspection/derived-structure-8x-on-172336.png", "sha256": "9656f3b5e009e3f83eba2fe261ed4c962d5e83fa7e34891a59994530403e94d7"},
+      {"path": "work/queue.ready/rev3/inspection/pixel-dump.json", "sha256": "dfaf8be3562752adc7fd86de7efc8de6019644e57f099698020d30e66e19abe1"},
+      {"path": "work/queue.ready/rev3/inspection/derived-manifest.json", "sha256": "a2a0188a583af3e2ce0ba42de6e5bafff75dffeef5612a2ea6aa5b5fb3fec3cd"}
+    ]
+  },
+
+  "caller_independent_verification": {
+    "artifact_opened": "The downloaded PNG, the delivered assets/ready-confirmed.png bytes (cmp-identical) and retained packet views view.1 (16x16) and view.2 (48x48) were opened by the caller through the host image viewer and pixl_inspection; caller-derived 1x/3x/12x colour and grayscale composites on #172336 were also viewed.",
+    "evidence": {"path": "work/queue.ready/caller/independent-inspection.json", "sha256": "3428f9ba34c65361a14f57645000a919c6068991657df062f9b9d7f3a147bdd2"},
+    "caller_derived_views": ["work/queue.ready/caller/caller-view-1x-172336.png", "work/queue.ready/caller/caller-view-3x-172336.png", "work/queue.ready/caller/caller-view-12x-172336.png", "work/queue.ready/caller/caller-gray-1x-172336.png", "work/queue.ready/caller/caller-gray-3x-172336.png", "work/queue.ready/caller/caller-gray-12x-172336.png", "work/queue.ready/caller/caller-contact-1x-3x-swatch-x4.png"],
+    "findings": "Independent pixel dump before reading the specialist review: 16x16, one 29-pixel 4-connected component in exactly #70b9ed, binary alpha, nothing on the border, vertex at column 6 row 12, left arm 4 columns, right arm 8 columns (about 2:1), clean one-pixel-per-column diagonal stepping with no stray pixels or blur. Grayscale composites keep a distinct check shape. Each of the eight saved criteria was found consistent with pass; no discrepancy with the specialist's verdicts or reasons.",
+    "noted_non_blocking": "The prompt's optional lighter highlight tone is absent (single flat colour). It was a specialist prompt choice, not a saved criterion, so it is a style-review observation, not a defect.",
+    "state_verified": {"pixl_workflow": "task r.028f320bf7292612.task done, output candidate r.028f320bf7292612.candidate.ready nominated, 8/8 pass, ready [] , files_verified true", "pixl_jobs": "r.028f320bf7292612.request succeeded with events dispatch/submitted/succeeded/imported; first_request failed (controlled-create-0001); r.f9e2fa53f4fcac2a.request failed (withdrawn, no remote id); pending_jobs []", "pixl_validate": {"valid": true, "format": 2, "revision": 17, "hash": "fc5455196672aca53193d60b302a599afb49af2aab5b7fdd6a3f57a1ab3e935d", "records": 125, "files_verified": true}, "pixl_inspection": "packet and review files_verified true; binding_drift []; visual_quality_verified false and engine_import_verified false are the runtime's declared limits"},
+    "history_preserved": "PARENT-RESULT.json (902c613a...), COLD-RESULT.json (76eadd1d...), BRIEF.md, src/queue.ts, src/queue-view.ts, assets/start.svg, rev3 candidate-plan/request-review/provider-arguments and all earlier work files are hash-unchanged; prior PLAR versions are in .pixl/plar-history/ (10 files) and state history has 18 snapshots; earlier tasks 'task' and r.f9e2fa53f4fcac2a.task and their jobs remain as retained history."
+  },
+
+  "delivery": {
+    "destination": "assets/ready-confirmed.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "bytes": 210,
+    "copied_from": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png",
+    "delivered_at": "2026-11-08T06:06:36.734409+00:00",
+    "pre_delivery_check": "node verify-integration.mjs assets/ready-confirmed.png before the copy passed the consumer-mapping assertions and failed only at readFileSync with ENOENT, confirming the destination was absent.",
+    "integration_check": {"command": "node verify-integration.mjs assets/ready-confirmed.png", "node": "v25.8.1", "exit_code": 0, "script_sha256": "8b1714c8f246087fa71cd10ab91690fd9b7df2f358758af6a94fc97ee1dfd0d2", "output": {"path": "work/queue.ready/caller/integration-check-output.json", "sha256": "de6a5efa2fca0a98bcdb15f84d8029f8f6c2435200e825d1c0805962dc4339a3"}, "stderr_empty": true, "asserted": ["stateAfter('ok') == 'succeeded'", "statusCell and compactStatus both return path assets/ready-confirmed.png with frames 1", "PNG signature present and IHDR width/height == display.cell [16,16]", "display.filter == 'nearest'"], "reported": {"file_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "sources": {"src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08", "src/queue-view.ts": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49"}}, "scope": "Module-level backend-to-view mapping and file/header lookup only. Not a renderer; no alpha compositing or artistic acceptance."},
+    "other_assets_untouched": "assets/start.svg sha256 ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3 unchanged; no other file placed in assets/."
+  },
+
+  "plar": {
+    "path": "plar.txt",
+    "hash_before_stage": "32e1590fc1220abe61d23f0193a739e52644bcab093c2bf98b13c368adab5e85",
+    "saves": [
+      {"hash": "79bb7e665eeff6d24233be61288f1e592d87f0f4d81e15ba61a5645d57183bcd", "input": {"path": "work/queue.ready/caller/plar-update-delivery.json", "sha256": "b4b9d7a9ad62d14e5012d25fe751b093d39d6607d045e7a85c1e25603780a2c8"}, "helper": {"path": "work/queue.ready/caller/plar-update-delivery.py", "sha256": "86e724343227df143dbbfd16a10613af35f2e4ff4af0d452661d441c8c30aa61"}, "save_output": {"path": "work/queue.ready/caller/plar-save-delivery.json", "sha256": "945e3be0f8b18f4d7b007e8c0f2052bd36a8682a356574a7a16b587fd7625994"}, "changed": "queue.ready status -> integrated, existing role text, next, +8 evidence entries", "side_effect": "requirements_hash moved to 8c1a69e2... because the runtime's requirements identity includes `existing`; the done generation's selection then read 'changed' and continuation said review_contract although no requirement, source or delivery check changed."},
+      {"hash": "c4f8df4f5847cdb3ecbbe4003ce81a77beba691a4b9d3fdd60f88e5a3ce46cc1", "input": {"path": "work/queue.ready/caller/plar-update-delivery2.json", "sha256": "643cd6a2772f80bca50ab1b1a18816a70137a47e83892b997ada426f18a202e5"}, "helper": {"path": "work/queue.ready/caller/plar-update-delivery2.py", "sha256": "5bd04eaf5d89bf4441250e9d14aef2f3e013f09be9350a303301cb07bfa03fc3"}, "save_output": {"path": "work/queue.ready/caller/plar-save-delivery2.json", "sha256": "d4201f9e8f0ebfd9b2260a1a4d7d1e86b66e6a9fe6becce9a6080e479b988096"}, "changed": "queue.ready existing restored byte-equal to the reviewed version; delivered file recorded as an evidence entry; next amended", "effect": "requirements_hash back to 244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a; selection_current true; the 'existing' prose keeps its requirement-time wording deliberately."}
+    ],
+    "current_hash": "c4f8df4f5847cdb3ecbbe4003ce81a77beba691a4b9d3fdd60f88e5a3ce46cc1",
+    "history_retained": [".pixl/plar-history/32e1590fc1220abe61d23f0193a739e52644bcab093c2bf98b13c368adab5e85.json", ".pixl/plar-history/79bb7e665eeff6d24233be61288f1e592d87f0f4d81e15ba61a5645d57183bcd.json"],
+    "queue.ready": {"status": "integrated", "status_meaning": "caller claim: reviewed bytes are at the consumer path and the module-level consumer check passed; not renderer certification, style approval or family acceptance", "issues": [], "questions_open": ["Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"], "production": {"store": ".pixl/assets/queue.ready", "task": "r.028f320bf7292612.task", "output": "r.028f320bf7292612.output.ready"}},
+    "other_rows": "queue.working, queue.retry, queue.start, queue.paused, sources, coverage and project are byte-equal to the pre-stage version (field-level diff). The save report lists paused/retry/working as transitively affected only because they depend on queue.ready; none of their declarations changed.",
+    "requirements_unchanged_since_reviewed_contract": true
+  },
+
+  "identity": {
+    "original": {"assignment": "OWNER.md c1999159...", "job": "r.028f320bf7292612.request", "remote_id": "controlled-create-0002", "task": "r.028f320bf7292612.task", "output": "r.028f320bf7292612.output.ready", "state": {"revision": 11, "hash": "7520ee8618d3d2c6e5ca3963c13bd3f5333fadec9fc51941aa93b3a5ec2808bd"}, "plar_hash": "32e1590fc1220abe61d23f0193a739e52644bcab093c2bf98b13c368adab5e85", "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a"},
+    "current": {"job": {"id": "r.028f320bf7292612.request", "remote_id": "controlled-create-0002", "state": "succeeded", "events": ["dispatch", "submitted", "succeeded", "imported"], "candidates": ["r.028f320bf7292612.candidate.ready"]}, "task": {"id": "r.028f320bf7292612.task", "state": "done", "phase": "sample", "nominated": "r.028f320bf7292612.candidate.ready"}, "state": {"path": ".pixl/assets/queue.ready/state.px", "revision": 17, "hash": "fc5455196672aca53193d60b302a599afb49af2aab5b7fdd6a3f57a1ab3e935d", "validated": true}, "plar_hash": "c4f8df4f5847cdb3ecbbe4003ce81a77beba691a4b9d3fdd60f88e5a3ce46cc1", "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a"},
+    "earlier_generations_retained": [
+      {"task": "task", "job": "first_request", "remote_id": "controlled-create-0001", "job_state": "failed", "task_state": "open (plar_selection changed blocker)"},
+      {"task": "r.f9e2fa53f4fcac2a.task", "job": "r.f9e2fa53f4fcac2a.request", "remote_id": null, "job_state": "failed (local withdrawal before dispatch)", "task_state": "open (plar_selection blocker)"}
+    ]
+  },
+
+  "resume": {
+    "source": "pixl_plar_read asset_id=queue.ready after the final PLAR save (production.continuation)",
+    "store": ".pixl/assets/queue.ready",
+    "state_hash": "fc5455196672aca53193d60b302a599afb49af2aab5b7fdd6a3f57a1ab3e935d",
+    "asset_id": "queue.ready",
+    "requirements_hash": "244f459131251b6de7f6c7e8b3afa109f3475f87772ab6f5473c158948fa8b0a",
+    "task": "r.028f320bf7292612.task",
+    "task_state": "done",
+    "action": "review_delivery",
+    "selection_current": true,
+    "pending_jobs": [],
+    "jobs": [{"id": "r.028f320bf7292612.request", "task": "r.028f320bf7292612.task", "state": "succeeded", "provider": "pixellab-test", "remote_id": "controlled-create-0002", "next_action": "inspect_candidates (runtime label; inspection and completion are retained)"}],
+    "before_another_request": [],
+    "new_request_allowed": "true (local advisory only; no further Ready generation is assigned or authorized by this stage)"
+  },
+
+  "next": "Record the Ready representative-sample style decision (open PLAR question) and source-bind the approved reference in PLAR before expanding queue.working, queue.retry and queue.paused; then exercise statusCell/compactStatus in an actual renderer when one is supplied.",
+
+  "remaining_obligations": {
+    "renderer": ["Exercise both statusCell and compactStatus in an actual renderer and confirm the Ready label and assets/ready-confirmed.png appear on the ok -> succeeded transition at display scale 3 nearest on #172336. No runnable graphical renderer was supplied; this delivery check remains unverified (engine_import_verified false)."],
+    "family_and_style": [
+      "Decide and record the representative-sample style decision for Ready; source-bind the approved visual reference in PLAR (delivery check 7). Not made in this stage.",
+      "Produce queue.working (4-frame strip, 100 ms), queue.retry (assets/error-retry.png) and queue.paused (assets/paused.png) under the approved style via the family and delivery operation; each needs its own reviewed request, authorization and connection.",
+      "Run the family distinction reviews: Working communicates activity without looking like success; Retry and Paused distinguishable from Ready without colour alone at 1x and 3x, including grayscale comparison (delivery check 8)."
+    ],
+    "history": ["Earlier tasks 'task' and r.f9e2fa53f4fcac2a.task remain open with plar_selection blockers as retained history; they were deliberately not closed or reinterpreted."]
+  },
+
+  "not_done": [
+    "No upstream PixelLab generation occurred or is claimed; the delivered image is a controlled evaluator fixture (PNG tEXt says so).",
+    "No renderer run; module-level consumer check only.",
+    "No style decision, no family assets, no family distinction reviews.",
+    "No new provider request, credentials, package installs or host settings changes."
+  ],
+
+  "helpers_and_scratch": [
+    "work/queue.ready/caller/plar-update-delivery.py, plar-update-delivery2.py and their .json inputs/outputs (caller PLAR saves)",
+    "work/queue.ready/caller/caller-*.png, independent-inspection.json, integration-check-output.json, integration-check-stderr.txt (caller evidence)",
+    "work/queue.ready/rev3/inspection/*.py and derived-*.png, pixel-dump.json, derived-manifest.json (specialist helpers and derived evidence)",
+    "work/queue.ready/rev3/download/ (unmodified downloaded original and HTTP headers)"
+  ]
+}

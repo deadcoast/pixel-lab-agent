@@ -1,0 +1,158 @@
+{
+  "plar_hash": "1794e17cdc7b3c0dac61f4c6aa1c711091a4f66468d4dff39b6795b4a5542606",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "selection_current": true,
+  "task": "r.22e90a2a03fe453a.task",
+  "task_state": "done",
+  "outputs": [
+    {
+      "id": "r.22e90a2a03fe453a.output.ready",
+      "candidate": "ready.retained",
+      "requirements": [
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+          "name": "geometry",
+          "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+          "domain": "mechanical",
+          "mode": "local",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.0",
+          "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.0"
+          ]
+        },
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+          "name": "transparent-background",
+          "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+          "domain": "mechanical",
+          "mode": "local",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.1",
+          "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.1"
+          ]
+        },
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+          "name": "ready-meaning",
+          "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+          "domain": "visual",
+          "mode": "visual",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.2",
+          "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.2"
+          ]
+        },
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+          "name": "readability-1x-3x",
+          "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+          "domain": "visual",
+          "mode": "visual",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.3",
+          "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.3"
+          ]
+        },
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+          "name": "cool-blue-accent",
+          "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+          "domain": "visual",
+          "mode": "visual",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.4",
+          "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.4"
+          ]
+        },
+        {
+          "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+          "name": "sample-pixel-craft",
+          "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+          "domain": "visual",
+          "mode": "visual",
+          "status": "pass",
+          "verdict": "ready.delivery.review.verdict.5",
+          "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+          "reviewer": "actor",
+          "evidence": [
+            "ready.delivery.review.evidence.5"
+          ]
+        }
+      ]
+    }
+  ],
+  "pending_jobs": [],
+  "continuation": {
+    "store": ".pixl/assets/queue.ready",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+    "task": "r.22e90a2a03fe453a.task",
+    "action": "review_delivery",
+    "jobs": [
+      {
+        "id": "r.22e90a2a03fe453a.request",
+        "task": "r.22e90a2a03fe453a.task",
+        "state": "succeeded",
+        "provider": "pixellab-test",
+        "remote_id": "controlled-create-0002",
+        "next_action": "inspect_candidates",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T05:44:20.461670+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this session, cross-checked against provider-schemas.json#create_image_pro_flash"
+        }
+      }
+    ],
+    "before_another_request": [],
+    "after_observation": {
+      "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+      "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+      "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+    },
+    "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+    "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+  },
+  "validation": {
+    "valid": true,
+    "hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "files_verified": true
+  },
+  "unrelated_rows_unchanged": true,
+  "criteria_unchanged": true,
+  "family": {
+    "format": 2,
+    "revision": 14,
+    "hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "files_verified": true,
+    "families": []
+  },
+  "inspection_binding_drift": [
+    []
+  ]
+}

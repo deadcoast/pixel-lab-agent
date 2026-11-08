@@ -428,6 +428,14 @@ def call(name, args, root):
             root,
             args.get("from_library"),
         )
+    if name == "pixl_plar_handoff":
+        from .handoff import save
+
+        return save(root, args["asset_id"], args["requirements_hash"], args["expect"], args["details"], args.get("path", "plar.txt"))
+    if name == "pixl_request_review":
+        from .request_review import report
+
+        return report(root, args["packet"], args.get("asset_id"), args.get("path", "plar.txt"))
     if name == "pixl_plar_prepare":
         from . import plar_prepare
 

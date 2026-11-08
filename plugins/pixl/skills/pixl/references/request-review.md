@@ -25,6 +25,30 @@ Do not estimate pixel coordinates by eye and then describe them as verified. Whe
 
 The caller independently verifies consequential measured claims against the original image and measurement, including the coordinate convention; repeating a specialist's pixel map is not independent verification. Correct unsupported numbers before dispatch while preserving the required visual outcome.
 
+## Resolve source evidence for the comparison
+
+For candidate plans used by selected-asset preparation, call `pixl_request_review`
+with the packet path and selected `asset_id` (CLI `request-review PACKET --asset ID
+--root PROJECT`). It reads the exact request/criteria identities, returns cited text
+with file-local bounds, and includes the current production continuation. It reports
+invalid/unresolved locators and changed sources. A resolved excerpt is evidence for
+the caller to interpret, not a consistency verdict. Retain this report with the review.
+
+When the connection is already discovered, bind `request.provider` and
+`request.connection: {path, sha256}` to its exact artifact. Preparation compares that
+reviewed connection with the supplied one; host credentials stay outside the artifact.
+
+Use `lines: [first,last]` on a criterion's source pointer when citing text; retain
+`locator` as a human-readable label. Preparation validates explicit bounds before
+saving new work. Numbered prose in older plans remains readable and receives
+locator diagnostics. For non-text references inspect the actual image/animation;
+for named sections resolve the location through the existing source tool. Do not
+mark a locator verified merely because its claimed wording appears elsewhere.
+
+The optional criterion `authority` uses PLAR's requirement/proposal/observation/unknown
+labels. Keep its basis and scope explicit. This label is an assertion to compare,
+not an automatic grant of owner authority.
+
 ## Caller: inspect before adopting
 
 Open the packet and verify its hashes. Read the original brief, relevant sources, complete request and complete criteria, not just the specialist's summary or self-audit. Check:
@@ -36,6 +60,38 @@ Open the packet and verify its hashes. Read the original brief, relevant sources
 5. Each rejection rule belongs to the current candidate/stage and has satisfiable prerequisites. A first sample cannot require completed dependent family assets before it may be accepted. Retain deferred family or destination obligations with an explicit later stage in the handoff/PLAR; verify they remain scheduled rather than dropping the required outcome.
 
 For each criterion that can reject a candidate, retain a short caller-side comparison: criterion ID, the exact relevant source wording/locator (or explicit expert-choice basis), what the criterion adds or omits, and the finding. Group genuinely identical rules, but cover every rejection rule; a global "all restrictions come from the brief" claim is not this comparison. If a derived rule is stricter than the source, consider a source-conforming result it would reject before adopting it.
+
+Compare the **literal rejection condition**, including parenthetical constructions,
+with the returned source wording. A qualitative outcome can admit several valid
+constructions. State a source-conforming alternative when the criterion narrows it;
+if that alternative would fail, remove the narrowing or explicitly retain it as a
+scoped expert candidate choice for the caller to assess. Calling a detail a prompt
+choice elsewhere does not undo its presence in a mandatory acceptance condition.
+Record the source quote/bounds, criterion delta and alternative/disposition in the
+caller comparison so a cold reader can check the reasoning.
+
+For every owner/consumer rejection criterion, compare each qualifying clause, not
+only its central noun. Record a brief-conforming alternative and whether the literal
+criterion admits it. Composition, extent, exclusions and numerical bounds can add
+restrictions even when the main property is sourced. If one criterion mixes a required
+outcome with your chosen realization, split them: keep the outcome required, and give
+the sample choice its own proposal authority, rationale and scope. Choosing a useful
+palette or visual emphasis from pixel-art expertise is legitimate; changing the
+owner's criterion to make that choice mandatory is a different decision. Do not drop
+the required visual outcome while removing an unsupported restriction.
+
+Resolve every evidence-report diagnostic before calling a locator verified. For a
+text citation, open the actual source, use its file-local inclusive bounds and save
+those bounds in the corrected packet; a nearby matching sentence does not repair a
+wrong range. An unresolved named or visual reference needs actual inspection and a
+recorded finding. A source hash alone never verifies the cited location or its meaning.
+
+If a contract defect is found after delivery, preserve the original request, plan,
+verdicts and candidate. Save a corrected proposal and independent comparison as a new
+artifact, explicitly distinguishing it from the historical contract used for delivery.
+Do not create another provider job merely to correct documentation, transplant old
+verdicts to new criteria, or silently rewrite durable completed work. Carry both the
+historical identity and the correction's adoption scope in the exact handoff details.
 
 Keep process requirements, output requirements and diagnostic proxies distinct. A required production route is checked through actual calls and downloaded-byte provenance; a property of the resulting image is evidence only when it establishes that claim. Do not silently turn a process restriction into an extra output-difference test, or a diagnostic into a rejection rule. Independent review uses the original source, not another agent's assertion that the rule is sourced.
 
