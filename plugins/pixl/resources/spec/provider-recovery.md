@@ -15,3 +15,10 @@ Each event has `sequence` (1-based contiguous integer), `event`, `recorded_at`, 
 Dispatch occurs once from prepared, has no remote ID and yields unknown. Before dispatch, only failed may abandon preparation. After dispatch, submitted/running/unknown observations may repeat; running cannot regress to submitted, including through unknown. Accepted states submitted/running/succeeded require an observed ID. Once known, that ID remains identical on every later event. Succeeded and failed are terminal for observations. Imported is allowed only after succeeded and retains that state and identity. No event permits returning to prepared. A retry is a new authorized intent, after prior pending work has been reconciled.
 
 The complete prefix history is retained through successive J.ev receipts and immutable journal X files. Each update publishes one additional event and one new snapshot; no prefix can be rewritten or omitted. An imported artifact's current X record hash must match its retained event. Publication checks the unchanged F plan before linking a new candidate. These guarantees establish local history and relationships, not the actual truth of remote observations or artistic acceptance.
+
+Plans created by [selected-asset preparation](asset-preparation.md) opt into an explicit
+`pixl.plar.selection/1` report-X input binding. Its current PLAR requirements identity
+is checked at new intent/dispatch publication, including generic commits. Retained
+input bytes keep reports and reconciliation of existing submissions available after
+consumer changes. Job reports expose selection state without rewriting the immutable
+intent. This adds no journal field and does not reinterpret legacy untagged inputs.

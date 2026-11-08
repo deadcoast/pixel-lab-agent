@@ -155,12 +155,23 @@ def parser():
         "plar", help="Source-linked asset requirements and focused handoffs."
     )
     actions = q.add_subparsers(dest="plar_action", required=True)
-    for action in ("read", "save"):
+    for action in ("read", "save", "prepare"):
         action_parser = actions.add_parser(action)
         action_parser.add_argument("--root", required=True)
         action_parser.add_argument("--path", default="plar.txt")
         if action == "read":
             action_parser.add_argument("--asset", dest="asset_id")
+            action_parser.add_argument(
+                "--since", help="Compare the queue with a retained PLAR hash."
+            )
+        elif action == "prepare":
+            action_parser.add_argument("--asset", dest="asset_id", required=True)
+            action_parser.add_argument(
+                "--requirements", dest="requirements_hash", required=True
+            )
+            action_parser.add_argument("--packet", required=True)
+            action_parser.add_argument("--connection", required=True)
+            action_parser.add_argument("--store")
         else:
             action_parser.add_argument("document", metavar="DOCUMENT_JSON")
             action_parser.add_argument("--expect", required=True)
@@ -342,6 +353,17 @@ def main(argv=None):
             if a.plar_action == "read":
                 if a.asset_id:
                     args["asset_id"] = a.asset_id
+                if a.since:
+                    args["since"] = a.since
+            elif a.plar_action == "prepare":
+                args.update(
+                    asset_id=a.asset_id,
+                    requirements_hash=a.requirements_hash,
+                    packet=a.packet,
+                    connection=a.connection,
+                )
+                if a.store:
+                    args["store"] = a.store
             else:
                 args.update(document=service.read_json(a.document), expect=a.expect)
             output = service.call("pixl_plar_" + a.plar_action, args, a.root)

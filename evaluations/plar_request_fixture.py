@@ -14,7 +14,7 @@ from jsonschema import Draft202012Validator, ValidationError
 try:
     from evaluations.pixellab_mcp_fixture import Provider
 except ModuleNotFoundError:
-    from pixellab_mcp_fixture import Provider
+    from pixellab_mcp_fixture import Provider  # type: ignore[import-not-found,no-redef]
 
 SCHEMAS = {
     "create_image_pro_flash": {

@@ -2,7 +2,7 @@
 
 **Overall status: in development; the requested specialist ecosystem is not complete.**
 Updated 2026-11-08 UTC against commit `3a2f280` plus the retained working-tree implementation and evidence below.
-**Current checkpoint: request/criteria handoff and controlled delegated delivery are verified in both hosts, with Claude scope/timestamp defects retained. Next: PLAR consumer allocation/update coverage and a simpler first-request entrypoint.**
+**Active work: PLAR allocation/update and selected-asset preparation implemented; independent fixture/recovery review passes. Native first-request and installed-operation checks are in progress.**
 
 This is the current product-level work list. [Detailed task specifications](evaluations/TODO.spec.md) retain their IDs, historical attempts and narrower acceptance criteria. [The scaffold review](docs/PROJECT-REVIEW.md) explains the original findings; its dated sequence is historical. A consumer project's `plar.txt` is its asset TODO, not this repository's development plan.
 

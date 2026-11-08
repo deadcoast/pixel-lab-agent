@@ -16,7 +16,7 @@ Validation/workflow/job/family/inspection reports identify any retained source u
 
 A valid old receipt remains evidence about the same old source records and bytes. It is not proof that the updated implementation behaves identically, that a method applies to a new project, or that a new candidate passed review. Changing a source record still invalidates dependent evidence under the existing record-hash rules. Retaining sources supplies no new verdict or completion.
 
-This is for imported library knowledge/proof sources. Keep live consumer requirements and generated artifacts bound to their actual project files. PLAR continues to report current source drift independently.
+This is for imported library knowledge/proof sources. This resolver does not silently substitute historical consumer files or generated artifacts. The separate selected-asset preparation adapter explicitly binds retained input snapshots and checks current PLAR identity before new dispatch; PLAR continues to report current source drift independently.
 
 If an older project was already affected, supply its original kit (or a complete verified retained source set); the latest kit cannot reconstruct lost original bytes. Without those bytes, the diagnostic identifies the affected S record and expected digest, and dependent work remains unresolved. Never overwrite the installed kit with old receipts.
 

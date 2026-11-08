@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "sprite",
+              "tileset",
+              "animation",
+              "atlas",
+              "normal",
+              "material"
+            ]
+          },
+          "contract": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "palette": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "view": {
+                "enum": [
+                  "side",
+                  "low_topdown",
+                  "high_topdown",
+                  "isometric",
+                  "oblique",
+                  "ui"
+                ]
+              },
+              "sampling": {
+                "enum": [
+                  "nearest",
+                  "custom"
+                ]
+              },
+              "alpha": {
+                "enum": [
+                  "binary",
+                  "full"
+                ]
+              },
+              "intent": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "size",
+              "palette",
+              "view",
+              "sampling",
+              "alpha",
+              "intent"
+            ],
+            "additionalProperties": false
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "check": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "domain": {
+                  "enum": [
+                    "mechanical",
+                    "visual",
+                    "continuity",
+                    "engine",
+                    "other"
+                  ]
+                },
+                "mode": {
+                  "enum": [
+                    "local",
+                    "visual",
+                    "live"
+                  ]
+                },
+                "basis": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scope": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sources": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "locator": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "locator"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "check",
+                "domain",
+                "mode",
+                "basis",
+                "scope",
+                "sources"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "contract",
+          "criteria"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "version",
+    "scope",
+    "outputs"
+  ],
+  "additionalProperties": false
+}

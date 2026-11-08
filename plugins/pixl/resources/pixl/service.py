@@ -415,11 +415,28 @@ def call(name, args, root):
             root,
             args.get("from_library"),
         )
+    if name == "pixl_plar_prepare":
+        from . import plar_prepare
+
+        return plar_prepare.prepare(
+            root,
+            args["asset_id"],
+            args["requirements_hash"],
+            args["packet"],
+            args["connection"],
+            args.get("path", "plar.txt"),
+            args.get("store"),
+        )
     if name in ("pixl_plar_read", "pixl_plar_save"):
         from . import plar
 
         if name == "pixl_plar_read":
-            return plar.read(root, args.get("path", "plar.txt"), args.get("asset_id"))
+            return plar.read(
+                root,
+                args.get("path", "plar.txt"),
+                args.get("asset_id"),
+                args.get("since"),
+            )
         return plar.save(
             root, args["document"], args["expect"], args.get("path", "plar.txt")
         )

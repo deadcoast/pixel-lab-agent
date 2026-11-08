@@ -53,9 +53,17 @@ def _context(doc, task_id, outputs):
     }
 
 
-def _blockers(doc, task_id):
+def _blockers(doc, task_id, root=None):
     task = _task(doc, task_id)
     reasons = lifecycle.blockers(doc, task_id)
+    if root is not None:
+        from .plar import selection_bindings
+
+        reasons.extend(
+            f"plar_selection: {row.get('asset_id', row['input'])} is {row['status']}; compare current requirements with the retained plan"
+            for row in selection_bindings(doc, task_id, root)
+            if row["status"] != "current"
+        )
     if task.fields["st"].value not in {"open", "active"}:
         reasons.append(f"task_state: {task_id} is {task.fields['st'].value}")
     return reasons
@@ -274,7 +282,9 @@ def transitions(current, candidate, root, folder):
                 f"{record.id}: save unchanged request context first",
             )
             _require(
-                not _blockers(candidate, context["task"]), "job_blocked", record.id
+                not _blockers(candidate, context["task"], root),
+                "job_blocked",
+                record.id,
             )
             _pending(candidate, context["task"], context["outputs"], record.id)
             continue
@@ -317,7 +327,9 @@ def transitions(current, candidate, root, folder):
                 f"{record.id}: request context changed",
             )
             _require(
-                not _blockers(candidate, context["task"]), "job_blocked", record.id
+                not _blockers(candidate, context["task"], root),
+                "job_blocked",
+                record.id,
             )
             _pending(candidate, context["task"], context["outputs"], record.id)
         elif journal["events"][-1]["event"] == "imported":
@@ -475,7 +487,7 @@ def _project(doc, folder, root, journal):
     )
 
 
-def _summary(doc, record, journal):
+def _summary(doc, record, journal, root=None):
     if journal is None:
         return {
             "id": record.id,
@@ -487,7 +499,7 @@ def _summary(doc, record, journal):
     stale = _stale(doc, journal)
     state = journal["state"]
     reasons = (
-        _blockers(doc, journal["intent"]["context"]["task"])
+        _blockers(doc, journal["intent"]["context"]["task"], root)
         if state == "prepared"
         else []
     )
@@ -499,7 +511,12 @@ def _summary(doc, record, journal):
         "succeeded": "inspect_candidates",
         "failed": "review_failure",
     }[state]
+    from .plar import selection_bindings
+
     return {
+        "selection_bindings": selection_bindings(doc, record.fields["tk"].id, root)
+        if root is not None
+        else [],
         "id": record.id,
         "durable": True,
         "state": state,
@@ -523,7 +540,7 @@ def _save(folder, root, doc, journal, expected):
     published = store.commit(folder, doc, expected, root)
     return {
         **published,
-        "job": _summary(doc, doc.records[journal["intent"]["job"]], journal),
+        "job": _summary(doc, doc.records[journal["intent"]["job"]], journal, root),
         "remote_executed": False,
     }
 
@@ -557,7 +574,7 @@ def prepare(
         job_id not in doc.records, "job_exists", "use a new job ID for a new attempt"
     )
     context = _context(doc, task_id, outputs)
-    reasons = _blockers(doc, task_id)
+    reasons = _blockers(doc, task_id, root)
     _require(not reasons, "job_blocked", "; ".join(reasons))
     _pending(doc, task_id, outputs)
     request = platform.prepare_discovered(
@@ -572,7 +589,7 @@ def dispatch(folder, expected, job_id, root=None):
     previous = _get(doc, job_id, root)
     _require(not _stale(doc, previous), "job_stale", "saved request context changed")
     task_id = previous["intent"]["context"]["task"]
-    reasons = _blockers(doc, task_id)
+    reasons = _blockers(doc, task_id, root)
     _require(not reasons, "job_blocked", "; ".join(reasons))
     journal = job_history.append(
         previous,
@@ -664,7 +681,7 @@ def report(doc, root):
     for record in sorted(doc.records.values(), key=lambda r: r.id):
         if record.kind == "J":
             journal = _get(doc, record.id, root) if "jr" in record.fields else None
-            rows.append(_summary(doc, record, journal))
+            rows.append(_summary(doc, record, journal, root))
     return {
         "jobs": rows,
         "hash": codec.digest(doc),

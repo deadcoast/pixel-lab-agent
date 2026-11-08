@@ -33,7 +33,14 @@ TOOLS = [
     (
         "pixl_plar_read",
         "Read project asset requirements, source drift and next actions; select asset_id for a focused production handoff.",
-        schema({"path": STR, "asset_id": STR}),
+        schema({"path": STR, "asset_id": STR, "since": STR}),
+    ),
+    (
+        "pixl_plar_prepare",
+        "Prepare the selected asset's first reviewable candidate from exact request-review artifacts and the discovered provider schema. Saves the existing PX2 sample plan and durable first request; never dispatches, generates, or approves art. Repeated unchanged calls resume the existing job.",
+        schema({"path": STR, "asset_id": STR, "requirements_hash": STR, "packet": STR,
+                "connection": {"anyOf": [OBJ, STR]}, "store": STR},
+               ["asset_id", "requirements_hash", "packet", "connection"]),
     ),
     (
         "pixl_plar_save",
@@ -384,6 +391,7 @@ def dispatch(request, root):
                             "pixl_intake",
                             "pixl_commit",
                             "pixl_plar_save",
+                            "pixl_plar_prepare",
                             "pixl_job_prepare",
                             "pixl_job_dispatch",
                             "pixl_job_observe",

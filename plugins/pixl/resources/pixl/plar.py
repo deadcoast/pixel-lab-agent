@@ -7,6 +7,7 @@ and local bindings; it never infers visual quality or invokes a provider.
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -138,11 +139,88 @@ def _issues(root, asset, sources):
     return issues
 
 
-def read(root, path="plar.txt", asset_id=None):
+def _requirements(asset):
+    return {
+        key: value
+        for key, value in asset.items()
+        if key not in ("status", "next", "evidence", "production")
+    }
+
+
+def _changes(document, sources, previous=None, baseline=None):
+    """Conservative impact of tracked bindings and authored requirements, not a scan."""
+    assets = {row["id"]: row for row in document["assets"]}
+    old_assets = {row["id"]: row for row in previous["assets"]} if previous else assets
+    old_sources = (
+        {row["id"]: row for row in previous["sources"]}
+        if previous
+        else {row["id"]: row for row in document["sources"]}
+    )
+    declarations = {row["id"]: row for row in document["sources"]}
+    changed_sources = {
+        id_
+        for id_ in set(declarations) | set(old_sources)
+        if declarations.get(id_) != old_sources.get(id_)
+        or (id_ in sources and sources[id_]["binding"] != "current")
+    }
+    direct = set()
+    project_changed = (
+        previous is not None and previous["project"] != document["project"]
+    )
+    for id_ in set(assets) | set(old_assets):
+        current, old = assets.get(id_), old_assets.get(id_)
+        if (
+            current is None
+            or old is None
+            or project_changed
+            or _requirements(current) != _requirements(old)
+            or (_source_ids(current) | _source_ids(old)) & changed_sources
+        ):
+            direct.add(id_)
+    dependents: dict[str, set[str]] = {}
+    for row in [*assets.values(), *old_assets.values()]:
+        for dependency in row["depends_on"]:
+            dependents.setdefault(dependency, set()).add(row["id"])
+    affected = graph.closure(dependents, direct) | direct
+    return {
+        "baseline_hash": baseline,
+        "changed_sources": sorted(changed_sources),
+        "direct_assets": sorted(direct),
+        "affected_assets": sorted(affected),
+        "unaffected_assets": sorted(set(assets) - affected),
+        "added_assets": sorted(set(assets) - set(old_assets)),
+        "removed_assets": sorted(set(old_assets) - set(assets)),
+        "coverage_changed": previous is not None
+        and previous["coverage"] != document["coverage"],
+        "scope": "Tracked source bindings and declarations only; inspect source/coverage for newly introduced or dynamic consumers.",
+    }
+
+
+def read(root, path="plar.txt", asset_id=None, since=None):
     """Return a queue or a complete source-bound delegation context for one asset."""
     root = Path(root).resolve()
     document, digest = _load(graph.confined(root, path))
     validate(document, root)
+    previous = None
+    if since is not None:
+        if asset_id is not None:
+            raise PixlError(
+                "plar_scope",
+                "compare the queue with since, then read an affected asset",
+            )
+        if not isinstance(since, str) or not re.fullmatch(r"[0-9a-f]{64}", since):
+            raise PixlError("plar_history", "since must be a retained PLAR byte hash")
+        if since == digest:
+            previous = document
+        else:
+            previous, actual = _load(
+                graph.confined(root, ".pixl/plar-history/" + since + ".json")
+            )
+            if actual != since:
+                raise PixlError(
+                    "plar_history", "retained PLAR bytes do not match their identity"
+                )
+            validate(previous, root)
     assets = {row["id"]: row for row in document["assets"]}
     if asset_id is not None and asset_id not in assets:
         raise PixlError("plar_asset", asset_id)
@@ -180,6 +258,12 @@ def read(root, path="plar.txt", asset_id=None):
             for row in selected
         ],
     }
+    if asset_id is None:
+        result["changes"] = _changes(document, sources, previous, since)
+    else:
+        result["dependency_issues"] = {
+            id_: issues[id_] for id_ in dependency_ids if issues[id_]
+        }
     if asset_id is not None:
         result["asset"] = assets[asset_id]
         result["dependencies"] = [
@@ -203,11 +287,7 @@ def read(root, path="plar.txt", asset_id=None):
         semantic = {
             "project": document["project"],
             "assets": [
-                {
-                    key: value
-                    for key, value in row.items()
-                    if key not in ("status", "next", "evidence", "production")
-                }
+                _requirements(row)
                 for row in sorted(context_assets, key=lambda row: row["id"])
             ],
             "sources": [
@@ -255,4 +335,32 @@ def save(root, document, expected, path="plar.txt"):
             store._atomic(snapshot, previous)
         destination.parent.mkdir(parents=True, exist_ok=True)
         store._atomic(destination, data)
-    return read(root, path)
+    return read(root, path, since=actual if previous is not None else None)
+
+
+def selection_bindings(document, task_id, root):
+    """Report opt-in live PLAR selections carried by immutable task input reports."""
+    result = []
+    for reference in document.records[task_id].fields["ip"]:
+        artifact = document.records[reference.id]
+        metadata = artifact.fields.get("mt", {})
+        if metadata.get("binding") != "pixl.plar.selection/1":
+            continue
+        row = {"input": artifact.id, "snapshot": artifact.fields["ur"], **metadata}
+        try:
+            if artifact.fields["kd"].value != "report" or not all(
+                isinstance(metadata.get(k), str)
+                for k in ("plar_path", "asset_id", "requirements_hash")
+            ):
+                raise PixlError("plar_binding", "invalid version-1 selection metadata")
+            current = read(root, metadata["plar_path"], metadata["asset_id"])
+            row["current_requirements_hash"] = current["requirements_hash"]
+            row["status"] = (
+                "current"
+                if current["requirements_hash"] == metadata["requirements_hash"]
+                else "changed"
+            )
+        except (PixlError, OSError) as error:
+            row.update(status="unavailable", reason=str(error))
+        result.append(row)
+    return result

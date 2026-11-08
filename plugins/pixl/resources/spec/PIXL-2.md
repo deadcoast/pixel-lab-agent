@@ -54,6 +54,12 @@ For each newly published pass/fail V, the planned F and its complete semantic sc
 
 A done task must reopen when it or its relevant dependency closure changes. PX2 closure does not traverse through P: an unrelated intake choice or project display name does not reopen an accepted sample. Link actual semantic dependencies through its input/output contracts, choices, criteria, sources and decisions. Changing one of those dependencies requires reopening and superseding stale E/V before new evaluation. History remains available for cold resumption.
 
+The optional [selected-asset preparation adapter](asset-preparation.md) authors the
+existing candidate/sample records from exact reviewed PLAR artifacts and retains
+input bytes. Its explicit versioned report-X metadata binding also checks current
+PLAR identity before new job preparation/dispatch; it does not add record fields or
+relabel an expert candidate interpretation as owner-approved production.
+
 ## Operational boundaries
 
 Use `intake`, `decode`, `encode`, `validate`, `commit`, `workflow`, `ready`, `context` and `impact` through the selected runner; MCP adds `pixl_intake` and `pixl_workflow`. `context` retains PX2 format and complete references. Mutable state and evidence live in the art project, outside installed resources. Generic encode/commit can author the declared records; they do not perform inspection or grant approval.
