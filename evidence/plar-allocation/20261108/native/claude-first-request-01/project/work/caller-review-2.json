@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "reviewer": {"role": "calling agent (independent of PIXL specialist)", "model": "claude-opus-5-5"},
+  "reviewed_at": "2026-11-08",
+  "packet": {"path": "work/request-review-r2.json", "sha256": "d4e55942324cb9434f84a3bbb7ee7d299f9e48f941a5b1cc4bcd0b5572efa527"},
+  "supersedes_review": {"path": "work/caller-review-1.json", "sha256": "6ab023fcf5d62f2b2f5b8278814b86990d782fd5af631fb4ba56e58eaa72028a", "verdict": "changes_requested"},
+  "verified_hashes": {
+    "work/queue-ready-arguments.json": "2682ea48c03ed6bb14d815cbc1d7636aeb9c881d39d0c17ea12002323fc333f4",
+    "work/queue-ready-criteria-r2.json": "d182898f786048fcd6b17e8283a5eebefdda7f1c32a48266e75d67199b5c5b07",
+    "work/connection.json": "1dca723decc2ef5f633ed169001356b12e99ebb8e06df60f1c3da00657641d96"
+  },
+  "method": "Parsed r1 and r2 criteria/packet independently and diffed every field. Only criteria family_sample_suitability.check and packet.criteria pointer differ; contract, scope, all other criteria, request and connection are identical. Re-read r2 family_sample_suitability against BRIEF.md.",
+  "verdict": "consistent",
+  "criteria_comparisons": [
+    {"id": "family_sample_suitability", "source": "BRIEF.md 'No approved style reference exists yet: propose a representative status sample before expanding the family'; plar.txt queue.ready family_sample (proposal)", "adds_or_omits": "Now a rejecting check: the treatment must be coherent and plausibly carry Working/Retry/Paused at 16x16 including non-color-distinct motifs. 'non-color-distinct' traces to BRIEF error/retry and paused 'without color alone'. Scoped to this sample; does not approve a family style.", "finding": "consistent; resolves caller-review-1 finding"},
+    {"id": "geometry, transparent_background, readability, success_meaning, cool_blue_accent, motif_checkmark, preserve_existing", "source": "unchanged; see caller-review-1.json per-criterion comparisons", "adds_or_omits": "byte-for-byte equal to r1 (verified by field diff)", "finding": "consistent (as in caller-review-1)"}
+  ],
+  "request_findings": [
+    {"location": "work/queue-ready-arguments.json", "finding": "Unchanged and still consistent with the create_image_pro_flash declaration and BRIEF (see caller-review-1 request_findings)."},
+    {"location": "PX2 job first_request_r2", "finding": "pixl_workflow/pixl_validate on .pixl/assets/queue.ready/state.px rev 4 (e2ed67a0...245d) valid, files verified; criterion record text equals r2. Job request to be compared again against the dispatch claim before submission."}
+  ],
+  "process_notes": [
+    "Old job first_request was recorded 'failed' by the specialist as local pre-dispatch abandonment (never submitted). It used the observe vocabulary for a non-provider event; accepted because its evidence states no remote submission and pixellab-test list_jobs was empty."
+  ],
+  "next_action": "Re-read PLAR queue.ready to confirm requirements_hash, claim job first_request_r2 via pixl_job_dispatch, compare the returned arguments with work/queue-ready-arguments.json, submit exactly once to pixellab-test, and record the response."
+}

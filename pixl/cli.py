@@ -172,6 +172,8 @@ def parser():
             action_parser.add_argument("--packet", required=True)
             action_parser.add_argument("--connection", required=True)
             action_parser.add_argument("--store")
+            action_parser.add_argument("--revise", action="store_true")
+            action_parser.add_argument("--expect", help="Current production state hash for an explicit revised plan.")
         else:
             action_parser.add_argument("document", metavar="DOCUMENT_JSON")
             action_parser.add_argument("--expect", required=True)
@@ -361,7 +363,10 @@ def main(argv=None):
                     requirements_hash=a.requirements_hash,
                     packet=a.packet,
                     connection=a.connection,
+                    revise=a.revise,
                 )
+                if a.expect:
+                    args["expect"] = a.expect
                 if a.store:
                     args["store"] = a.store
             else:

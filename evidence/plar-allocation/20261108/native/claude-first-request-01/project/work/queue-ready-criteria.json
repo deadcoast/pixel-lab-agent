@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "scope": "First representative Ready sample for queue.ready, for style review before Working/Retry/Paused family expansion. Candidate work only: no style is approved, and renderer integration of assets/ready.png is outside this sample's acceptance.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready status sample (assets/ready.png candidate)",
+      "kind": "sprite",
+      "contract": {
+        "size": [
+          16,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "Owner requirements: static single-frame 16x16 Ready/success status image, transparent background, readable pixel-art silhouette at 1x and 3x nearest on the #172336 panel, existing cool-blue UI accent, no fixed palette (empty palette), alpha not restricted to binary. Observation: Start SVG accent #70b9ed (color cue, not an exact-color rule). Specialist sample choice: a bare checkmark motif without badge/circle, prompt-only (no style reference exists and the discovered tool has no image input)."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "check": "Decoded candidate PNG is exactly 16x16 pixels and a single static frame.",
+          "domain": "mechanical",
+          "mode": "local",
+          "basis": "Owner/consumer requirement: 16x16 logical cells; Ready is static; consumer declares frames: 1.",
+          "scope": "This candidate file's decoded bytes.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Status cells are 16 by 16 logical pixels; Ready and Retry are static images"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded frames: 1; display.cell [16, 16] (lines 10, 13)"
+            }
+          ]
+        },
+        {
+          "id": "transparent_background",
+          "check": "Background area is fully transparent with no opaque matte or filled backdrop; partial alpha is permitted (no binary-alpha rule).",
+          "domain": "mechanical",
+          "mode": "local",
+          "basis": "Owner requirement: transparent backgrounds. Binary alpha is not required by any source.",
+          "scope": "This candidate file's alpha channel outside the subject.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Use transparent backgrounds"
+            }
+          ]
+        },
+        {
+          "id": "readability",
+          "check": "Viewed at 1x and 3x nearest-neighbor over #172336, the subject is a readable pixel-art silhouette with clean edges (not muddy, noisy or lost against the panel).",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner requirement: readable silhouettes inspected at 1x and 3x nearest on the actual dark panel; consumer display scale 3, filter nearest, background #172336.",
+          "scope": "This candidate at the declared display conditions.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "readable silhouettes ... Inspect at 1x and 3x nearest display scale on the actual dark panel"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "display scale: 3, filter: \"nearest\", background: \"#172336\" (line 13)"
+            }
+          ]
+        },
+        {
+          "id": "success_meaning",
+          "check": "The image reads as Ready / successful completion, not as activity/in-progress, failure/retry, or paused.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner/consumer requirement: an ok result becomes succeeded, shown with label Ready; the working loop must not look like success; error/retry and paused must be distinguishable from completion.",
+          "scope": "This candidate judged on its own; no other family member exists yet.",
+          "sources": [
+            {
+              "path": "src/queue.ts",
+              "locator": "stateAfter: ok -> succeeded (line 3)"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded label Ready, path assets/ready.png (line 10)"
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "The working loop must communicate activity without looking like success; paused ... distinguishable from activity, completion and retry"
+            }
+          ]
+        },
+        {
+          "id": "cool_blue_accent",
+          "check": "The dominant color treatment uses the existing UI's cool-blue accent family; any exact hex, color count or shading ramp is not a rejection rule.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner requirement: existing UI cool blue accent, no fixed palette. #70b9ed is an observation from the Start SVG used as a cue only.",
+          "scope": "This candidate's color treatment.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "the existing UI's cool blue accent; a fixed palette is not required"
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "path fill=\"#70b9ed\""
+            }
+          ]
+        },
+        {
+          "id": "family_sample_suitability",
+          "check": "Silhouette, edge handling and color treatment are reviewed and recorded as a usable (or rejected) shared treatment for later Working/Retry/Paused members.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner requirement to propose a representative status sample before expanding the family; Ready as the sample is a PLAR proposal (family_sample).",
+          "scope": "This sample's suitability as a family reference; it does not approve a style or the family.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "No approved style reference exists yet: propose a representative status sample before expanding the family"
+            },
+            {
+              "path": "plar.txt",
+              "locator": "queue.ready requirements family_sample (proposal); questions[0]"
+            }
+          ]
+        },
+        {
+          "id": "motif_checkmark",
+          "check": "Subject is a single bare checkmark (no circle/badge, no text) whose shape still reads as a check in grayscale at 1x.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Specialist sample choice (expert judgment), consistent with PLAR's sample_motif proposal. The grayscale check is a sample choice that keeps the future Paused/Retry non-color distinction feasible; it is not an owner requirement on Ready.",
+          "scope": "This first sample only; a different success motif could satisfy the owner brief and would require revising this criterion, not the brief.",
+          "sources": [
+            {
+              "path": "plar.txt",
+              "locator": "queue.ready requirements sample_motif (proposal, no sources)"
+            }
+          ]
+        },
+        {
+          "id": "preserve_existing",
+          "check": "assets/start.svg bytes remain sha256 ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3 and statusVisuals paths/labels and PLAR asset IDs are unchanged by this candidate work.",
+          "domain": "other",
+          "mode": "local",
+          "basis": "Owner requirement: preserve the existing vector Start control and keep other allocation IDs; assets belong at the paths the view already uses.",
+          "scope": "Project files touched during this candidate's production; process/preservation check, not an image property.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Preserve the existing vector Start control; Assets belong at the paths already used by the view"
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "whole file"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals (lines 6-12)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

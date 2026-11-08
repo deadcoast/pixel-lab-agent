@@ -55,6 +55,15 @@ Supply every applicable mechanical, qualitative, temporal and destination check;
 the example is a shape illustration, not a complete universal acceptance plan.
 Do not manufacture a fixed palette or binary-alpha requirement to fill fields.
 
+Scope required candidate checks to the stage being prepared. A representative
+sample can establish a direction before dependent assets exist: assess its own
+meaning, readability and relevant reference relationships now. Preserve later
+family-wide distinction/consistency and renderer obligations in PLAR and the
+request/criteria handoff, with their later review stage and prerequisites. Do not
+attach a required check to this sample that can pass only after assets depending
+on its acceptance have been produced. The caller checks that dependency order as
+well as the requirement wording; deferral must not erase the final obligation.
+
 When the caller's comparison is consistent, reread PLAR to ensure requirements are
 unchanged, claim the existing durable dispatch and submit its exact arguments to
 PixelLab. Record the actual provider response and continue normal retrieval/review.

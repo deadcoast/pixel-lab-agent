@@ -57,7 +57,7 @@
       "id": "queue.ready",
       "kind": "static_status_icon",
       "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
-      "status": "todo",
+      "status": "in_progress",
       "consumers": [
         {
           "source": "queue-view",
@@ -222,8 +222,30 @@
       "questions": [
         "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
       ],
-      "next": "When production is assigned, prepare a representative 16x16 Ready sample for style review, then bind the approved visual reference and its decision before expanding the family.",
-      "evidence": []
+      "next": "Retrieve the result of PixelLab job controlled-create-0001 (PX2 job first_request_r2, state submitted, next_action observe) when a retrievable provider exists; do not resubmit. Import the downloaded bytes with pixl_job_import, prepare an inspection packet at 1x/3x nearest on #172336, review against queue-ready-criteria-r2.json, then record the representative-sample decision before expanding Working/Retry/Paused.",
+      "evidence": [
+        {
+          "path": "work/request-review-r2.json",
+          "note": "Adopted request/criteria packet (specialist) for first Ready sample; sha256 d4e55942...a527."
+        },
+        {
+          "path": "work/caller-review-2.json",
+          "note": "Caller independent comparison: consistent. Supersedes caller-review-1.json (changes_requested on family_sample_suitability)."
+        },
+        {
+          "path": "work/caller/provider-response.json",
+          "note": "Simulated pixellab-test create_image_pro_flash response: job_id controlled-create-0001, status queued, provider_simulated=true. No image delivered."
+        },
+        {
+          "path": "PARENT-RESULT.json",
+          "note": "Caller result for this first-request stage."
+        }
+      ],
+      "production": {
+        "store": ".pixl/assets/queue.ready",
+        "task": "task",
+        "output": "output.ready"
+      }
     },
     {
       "id": "queue.working",

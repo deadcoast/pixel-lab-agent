@@ -48,7 +48,7 @@ Return a compact structured result (JSON or equivalent named fields):
 
 When durable production state is in use, finish its accepted-candidate selection and task state through `task-complete` / `pixl_task_complete` after the saved required checks pass. The caller reads `workflow` to confirm the completed state agrees with the delivered files; an open task remains an explicit unfinished part of the operation. A planning-only assignment does not need manufactured production state.
 
-Judge completion against the delegated scope. A planning-only assignment is delivered when its complete reviewed contract is returned; future generation remains outside that scope. A production assignment is still partial at contract handoff.
+Judge completion against the delegated scope. A planning-only assignment is delivered when its complete reviewed contract is returned; future generation remains outside that scope. An assignment ending at an accepted request is delivered when that request and its resumable state are returned, while the asset remains unaccepted and its production task open. State both facts explicitly. A full asset-production assignment is still partial at contract handoff. Retain the provider connection and simulated/live provenance with every job ID and next action; an ID cannot be resumed on a different service.
 
 Include only applicable fields. A generation-only task can deliver a reviewed artifact while explicitly leaving engine import unverified. If the assignment requires integration, unavailable integration keeps that part unfinished. Never use a provider's completed status as artistic acceptance.
 

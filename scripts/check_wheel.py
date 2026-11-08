@@ -16,6 +16,7 @@ if not __package__:
     sys.path.insert(0, str(ROOT))
 
 from scripts.family_probe import run_family_probe
+from scripts.plar_probe import run_plar_probe
 from scripts.provider_probe import run_provider_probe
 from scripts.retention_probe import run_retention_probe
 
@@ -120,30 +121,57 @@ def run(log_dir=None):
         environment = folder / "runtime"
         created = subprocess.run(
             [uv, "venv", "--python", sys.executable, str(environment)],
-            capture_output=True, text=True, check=False, timeout=60,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=60,
         )
         if created.returncode:
             raise RuntimeError(created.stdout + created.stderr)
-        runtime_python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        runtime_python = environment / (
+            "Scripts/python.exe" if os.name == "nt" else "bin/python"
+        )
         installed = subprocess.run(
             [uv, "pip", "install", "--python", str(runtime_python), str(wheel)],
-            capture_output=True, text=True, check=False, timeout=60,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=60,
         )
         if log_dir is not None:
             (Path(log_dir) / "distribution-install.log").write_text(
-                created.stdout + created.stderr + installed.stdout + installed.stderr, encoding="utf-8"
+                created.stdout + created.stderr + installed.stdout + installed.stderr,
+                encoding="utf-8",
             )
         if installed.returncode:
             raise RuntimeError(installed.stdout + installed.stderr)
-        environment_info = json.loads(subprocess.check_output(
-            [str(runtime_python), "-I", "-c",
-             ("import json,sysconfig;from importlib.metadata import distributions;"
-             "print(json.dumps({'site':sysconfig.get_path('purelib'),"
-             "'packages':sorted(d.metadata['Name'].lower() for d in distributions())}))")],
-            cwd=cwd, text=True,
-        ))
+        environment_info = json.loads(
+            subprocess.check_output(
+                [
+                    str(runtime_python),
+                    "-I",
+                    "-c",
+                    (
+                        "import json,sysconfig;from importlib.metadata import distributions;"
+                        "print(json.dumps({'site':sysconfig.get_path('purelib'),"
+                        "'packages':sorted(d.metadata['Name'].lower() for d in distributions())}))"
+                    ),
+                ],
+                cwd=cwd,
+                text=True,
+            )
+        )
         target = Path(environment_info["site"])
-        forbidden = {"coverage", "mypy", "ruff", "setuptools", "sourcery", "tiktoken", "types-jsonschema", "types-setuptools"}
+        forbidden = {
+            "coverage",
+            "mypy",
+            "ruff",
+            "setuptools",
+            "sourcery",
+            "tiktoken",
+            "types-jsonschema",
+            "types-setuptools",
+        }
         if forbidden.intersection(environment_info["packages"]):
             raise RuntimeError("runtime install contains development tooling")
         launch = f"import sys,runpy;from pathlib import Path;import pixl;assert Path(pixl.__file__).is_relative_to({str(target)!r});sys.argv=['pixl']+sys.argv[1:];runpy.run_module('pixl',run_name='__main__')"
@@ -180,6 +208,10 @@ def run(log_dir=None):
         if plar_packet["asset"]["delivery"]["path"] != "assets/working.png":
             raise RuntimeError("installed PLAR handoff differs from consumer contract")
         checks.append({"command": "plar", "status": "pass"})
+        plar_preparation = run_plar_probe(cli, cwd / "consumer")
+        checks.append(
+            {"command": "plar selected preparation and refresh", **plar_preparation}
+        )
         shutil.copytree(resource_root / "examples/delegation", cwd / "directions")
         reference_packet = cli(
             [
@@ -249,14 +281,52 @@ def run(log_dir=None):
             checks.append({"command": args[0], "status": "pass"})
         # The copied plugin also runs with only this environment's production dependencies.
         plugin = folder / "copied plugin"
-        shutil.copytree(ROOT / "plugins/pixl", plugin, ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(
+            ROOT / "plugins/pixl", plugin, ignore=shutil.ignore_patterns("__pycache__")
+        )
         copied = subprocess.run(
-            [str(runtime_python), "-I", str(plugin / "scripts/pixl.py"), "knowledge", "palette-contract"],
-            cwd=cwd, env=env, capture_output=True, text=True, check=False, timeout=20,
+            [
+                str(runtime_python),
+                "-I",
+                str(plugin / "scripts/pixl.py"),
+                "knowledge",
+                "palette-contract",
+            ],
+            cwd=cwd,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=20,
         )
         if copied.returncode or not json.loads(copied.stdout):
-            raise RuntimeError("minimal copied-plugin execution failed: " + copied.stderr)
-        checks.append({"command": "copied-plugin with runtime dependencies", "status": "pass"})
+            raise RuntimeError(
+                "minimal copied-plugin execution failed: " + copied.stderr
+            )
+        checks.append(
+            {"command": "copied-plugin with runtime dependencies", "status": "pass"}
+        )
+
+        def plugin_cli(args):
+            result = subprocess.run(
+                [str(runtime_python), "-I", str(plugin / "scripts/pixl.py"), *args],
+                cwd=cwd,
+                env=env,
+                capture_output=True,
+                check=False,
+                timeout=20,
+            )
+            if result.returncode:
+                raise RuntimeError(result.stderr.decode("utf-8"))
+            return json.loads(result.stdout)
+
+        shutil.copytree(
+            plugin / "resources/examples/plar-project", cwd / "plugin consumer"
+        )
+        copied_plar = run_plar_probe(plugin_cli, cwd / "plugin consumer")
+        checks.append(
+            {"command": "copied-plugin PLAR preparation and refresh", **copied_plar}
+        )
         provider = run_provider_probe(cli, cwd)
         checks.extend(provider["checks"])
         family = run_family_probe(cli, cwd)

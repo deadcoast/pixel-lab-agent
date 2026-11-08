@@ -196,7 +196,7 @@ def _changes(document, sources, previous=None, baseline=None):
     }
 
 
-def read(root, path="plar.txt", asset_id=None, since=None):
+def read(root, path="plar.txt", asset_id=None, since=None, include_production=True):
     """Return a queue or a complete source-bound delegation context for one asset."""
     root = Path(root).resolve()
     document, digest = _load(graph.confined(root, path))
@@ -304,6 +304,10 @@ def read(root, path="plar.txt", asset_id=None, since=None):
                 semantic, sort_keys=True, ensure_ascii=False, allow_nan=False
             ).encode("utf-8")
         ).hexdigest()
+    if asset_id is not None and include_production:
+        from .plar_workflow import report
+
+        result["production"] = report(root, result, path)
     return result
 
 
@@ -353,7 +357,7 @@ def selection_bindings(document, task_id, root):
                 for k in ("plar_path", "asset_id", "requirements_hash")
             ):
                 raise PixlError("plar_binding", "invalid version-1 selection metadata")
-            current = read(root, metadata["plar_path"], metadata["asset_id"])
+            current = read(root, metadata["plar_path"], metadata["asset_id"], include_production=False)
             row["current_requirements_hash"] = current["requirements_hash"]
             row["status"] = (
                 "current"

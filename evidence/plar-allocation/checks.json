@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "updated_at": "2026-11-08T03:52:38.284822+00:00",
+  "full_verification": {
+    "path": "evidence/verification-runs/20261108T034254.703857Z/result.json",
+    "sha256": "350d4fa17c436037b615d152c64e92092163ee7c06d9f25a472efce53b6c1b20",
+    "status": "pass",
+    "tests": {
+      "status": "pass",
+      "discovered": 481,
+      "run": 481,
+      "passed": 480,
+      "failures": 0,
+      "errors": 0,
+      "skipped": [
+        {
+          "test": "test_history_symlink_cannot_redirect_publication (tests.test_store.StoreTests.test_history_symlink_cannot_redirect_publication)",
+          "reason": "symlink privilege unavailable"
+        }
+      ]
+    },
+    "reference_checks": {
+      "status": "pass",
+      "total": 39,
+      "passed": 39,
+      "methods_with_reference_checks": 43
+    },
+    "checked_inputs": 109,
+    "current_input_mismatches": []
+  },
+  "previous_failed_verification": "evidence/verification-runs/20261108T033740.731893Z/result.json",
+  "final_distribution": {
+    "path": "evidence/plar-allocation/20261108/final-distribution.json",
+    "sha256": "9ae1921001dacc44e913e79727eeb0c9466926de0bcd83a7026bb2b1a6d2e3f9",
+    "status": "pass",
+    "check_entries": 39,
+    "runtime_packages": [
+      "attrs",
+      "jsonschema",
+      "jsonschema-specifications",
+      "pillow",
+      "pixl-agent",
+      "referencing",
+      "rpds-py"
+    ],
+    "new_plar_checks": [
+      {
+        "command": "plar selected preparation and refresh",
+        "status": "pass",
+        "checks": [
+          "selected artifact to exact prepared request",
+          "populated production/evidence links survive unrelated scoped refresh",
+          "prepared state unchanged by unrelated allocation update",
+          "unchanged preparation resumes without duplicate",
+          "exact dispatch payload",
+          "existing job remains observable after source change",
+          "retained source bytes remain exact"
+        ],
+        "scope": "Local installed operation with synthetic schema/observation; no model judgment, provider execution, generated image or engine acceptance"
+      },
+      {
+        "command": "copied-plugin PLAR preparation and refresh",
+        "status": "pass",
+        "checks": [
+          "selected artifact to exact prepared request",
+          "populated production/evidence links survive unrelated scoped refresh",
+          "prepared state unchanged by unrelated allocation update",
+          "unchanged preparation resumes without duplicate",
+          "exact dispatch payload",
+          "existing job remains observable after source change",
+          "retained source bytes remain exact"
+        ],
+        "scope": "Local installed operation with synthetic schema/observation; no model judgment, provider execution, generated image or engine acceptance"
+      }
+    ]
+  },
+  "static_checks": "20261108/static-checks.json",
+  "skill_checks": "20261108/skill-checks.json",
+  "integrity_checks": "20261108/integrity-checks.json",
+  "independent_native_review": "20261108/native-review.json",
+  "native_outcomes": [
+    {
+      "case": "codex-first-request-01",
+      "completion_record_present": true,
+      "assigned_request_stage": "passed",
+      "plan_conformance": "failed",
+      "handoff_scope": "request-stage completion correctly distinguished from artwork",
+      "verdict": "Accepted-request mechanics are valid; the first sample plan has a circular mandatory family prerequisite. Preserve this as a failed conformance run."
+    },
+    {
+      "case": "claude-first-request-01",
+      "completion_record_present": true,
+      "assigned_request_stage": "passed",
+      "plan_conformance": "passed_after_caller_requested_revision",
+      "handoff_scope": "failed",
+      "verdict": "Controlled first request and durable continuation pass. Preserve the caller recovery and remaining handoff/locator defects; do not label the broader artwork complete."
+    },
+    {
+      "case": "codex-first-request-02",
+      "completion_record_present": true,
+      "assigned_request_stage": "passed",
+      "plan_conformance": "passed",
+      "handoff_scope": "passed",
+      "verdict": "The observed run completes the assigned controlled request stage with source-conforming sample criteria, an independent caller review and correctly scoped durable handoff. No remaining substantive issue found in this run."
+    },
+    {
+      "case": "claude-first-request-02",
+      "completion_record_present": true,
+      "assigned_request_stage": "passed",
+      "plan_conformance": "passed",
+      "verdict": "The assigned controlled first-request stage is delivered with a valid reviewed sample plan and retained state. A remaining handoff defect makes the proposed same-output live continuation unexecutable until the pending simulated attempt is reconciled or a separate production context is used."
+    }
+  ],
+  "new_regressions": {
+    "allocation_update": 3,
+    "preparation": 17,
+    "request_fixture": 1,
+    "total": 21
+  },
+  "scope": "Fixture allocation/update understanding, exact local preparation/recovery, clean installed operation and actual native controlled requests. Real PixelLab generation, image quality and renderer acceptance are separate unperformed outcomes in this increment.",
+  "independent_native_review_sha256": "b488633bb36a623aeb52f668fe7b63c410207886c51e97e870bb650823dac2a3",
+  "archive_checks": "20261108/archive-checks.json",
+  "remaining_native_defect": {
+    "case": "claude-first-request-02",
+    "operation": "Future same-output live reprepare while simulated first_request remains submitted",
+    "actual_result": "job_pending; unchanged state and files; no remote work",
+    "probe": "20261108/review-findings/20261108T035455Z-results.json",
+    "next": "Explicitly resolve the original attempt with supported evidence or use a separate production assignment/context; test the cold continuation."
+  }
+}

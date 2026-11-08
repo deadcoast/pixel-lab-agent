@@ -1,5 +1,7 @@
 # PLA / PLAR critical review — 2026-11-07
 
+Later allocation/update and selected-request implementation, current A–E answers and actual host findings: [2026-11-08 review](../evidence/plar-allocation/README.md). The review below retains its original dated scope.
+
 The product is a callable specialist that understands a consumer project, creates its pixel-art UI/game assets through the official paid PixelLab API, inspects the result and delivers usable files. The repository has substantial production machinery, but its everyday interface previously began too far down at state records. PLAR supplies the missing project-to-asset requirements operation.
 
 The reviewed behavioral source is [.agents/PROFILE.md](../.agents/PROFILE.md), with the shared [PIXL skill](../plugins/pixl/skills/pixl/SKILL.md), host adapters and runtime. No file named `MIVIM.spec` or profile titled `PIXEL ART ASSET SPECIALIST` exists in this checkout. [TODO.spec.md](../evaluations/TODO.spec.md) uses the MIVIM development-task framing; it is not another production profile.

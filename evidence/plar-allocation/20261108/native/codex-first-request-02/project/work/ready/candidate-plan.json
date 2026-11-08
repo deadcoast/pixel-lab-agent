@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "scope": "First Ready representative sample plan. This assignment stops at first controlled simulated queued request. All candidate checks await real returned image bytes; no art or integration acceptance is claimed.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready representative candidate",
+      "kind": "sprite",
+      "contract": {
+        "size": [
+          16,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static transparent Ready completion icon for assets/ready.png shared by statusCell and compactStatus; checkmark is an expert sample proposal; no approved style yet."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decode the eventual candidate as a single static 16x16 PNG image, one frame.",
+          "basis": "Owner/consumer requirement",
+          "scope": "Ready representative candidate after actual image retrieval; not claimed at simulated request acceptance",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: cells 16 by 16; Ready and Retry static"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded and display.cell"
+            }
+          ]
+        },
+        {
+          "id": "transparency",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Confirm transparent background with no opaque matte; full alpha is allowed and no binary-alpha restriction applies.",
+          "basis": "Owner requirement; alpha interpretation preserves unspecified partial-alpha freedom",
+          "scope": "Ready representative candidate after actual image retrieval; not claimed at simulated request acceptance",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: Use transparent backgrounds"
+            }
+          ]
+        },
+        {
+          "id": "meaning",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "At 1x and 3x the Ready candidate communicates successful completion rather than ongoing activity, failure/retry or pause. Assess its own meaning now; do not require unproduced family members.",
+          "basis": "Owner/consumer state requirement; state interpretation from actual mapping",
+          "scope": "Ready representative candidate after actual image retrieval; not claimed at simulated request acceptance",
+          "sources": [
+            {
+              "path": "src/queue.ts",
+              "locator": "stateAfter ok -> succeeded"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded Ready"
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: working loop activity without looking like success; update paused distinction"
+            }
+          ]
+        },
+        {
+          "id": "readability",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Inspect actual candidate at native 1x and 3x nearest display scale on #172336; silhouette remains legible and deliberate pixel clusters/edges support the icon at both scales.",
+          "basis": "Owner readability/scale requirement; cluster and edge quality assessment is specialist judgment, not a universal ban on antialiasing",
+          "scope": "Ready representative candidate after actual image retrieval; not claimed at simulated request acceptance",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: readable silhouettes; inspect at 1x and 3x nearest on actual dark panel"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "display.background and display.filter"
+            }
+          ]
+        },
+        {
+          "id": "cool_blue",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Candidate uses the existing cool blue UI accent direction coherently with the preserved Start control; do not reject solely for differing exact colors or palette count.",
+          "basis": "Owner color direction; Start fill is observation/color cue, not approved art style",
+          "scope": "Ready representative candidate after actual image retrieval; not claimed at simulated request acceptance",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: existing cool blue accent; fixed palette not required"
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "path fill #70b9ed"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

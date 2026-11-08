@@ -1,0 +1,74 @@
+{
+  "provider": "pixellab-test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "description": {
+        "type": "string",
+        "minLength": 1
+      },
+      "width": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 256,
+        "multipleOf": 4
+      },
+      "height": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 256,
+        "multipleOf": 4
+      },
+      "no_background": {
+        "type": "boolean"
+      },
+      "seed": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": [
+      "description"
+    ],
+    "additionalProperties": false
+  },
+  "discovery": {
+    "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash, cross-checked against provider-schemas.json",
+    "observed_at": "2026-11-08T03:37:13.099508+00:00",
+    "evidence": {
+      "connection": "pixellab-test",
+      "tool": "create_image_pro_flash",
+      "provider_simulated": true,
+      "upstream_service": false,
+      "declared_fields": [
+        "description",
+        "width",
+        "height",
+        "no_background",
+        "seed"
+      ],
+      "declaration_note": "Request-only fixture; default canvas 64x64, no_background true; returns simulated acceptance with no generated image.",
+      "schema_file": {
+        "path": "provider-schemas.json",
+        "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c"
+      },
+      "contract_origin": {
+        "path": "provider-contract-origin.json",
+        "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09"
+      }
+    }
+  },
+  "authorization": {
+    "scope": "One submission of this queue.ready first-candidate request to the controlled pixellab-test connection (provider_simulated=true); no other provider, retrieval-as-acceptance or integration.",
+    "evidence": {
+      "source": {
+        "path": "OWNER.md",
+        "sha256": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a"
+      },
+      "quote": "One submission to the controlled pixellab-test connection is authorized.",
+      "submissions_authorized": 1,
+      "provider_simulated": true,
+      "note": "Specialist prepares only; dispatch follows the caller's independent request/criteria comparison."
+    }
+  }
+}

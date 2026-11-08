@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "reviewer": {"role": "calling agent (independent of PIXL specialist)", "model": "claude-opus-5-5"},
+  "reviewed_at": "2026-11-08",
+  "packet": {"path": "work/request-review.json", "sha256": "01f9fc581956766688574f5247d9b9a09273e460296f1e818fd48a2be101ea81"},
+  "verified_hashes": {
+    "work/queue-ready-arguments.json": "2682ea48c03ed6bb14d815cbc1d7636aeb9c881d39d0c17ea12002323fc333f4",
+    "work/queue-ready-criteria.json": "43c728d81b697ef077457f376876679a05e65018868d95c85ca8ef1396e084d0",
+    "work/connection.json": "1dca723decc2ef5f633ed169001356b12e99ebb8e06df60f1c3da00657641d96",
+    "BRIEF.md": "5955da4dd9079d0d13dc1b01feff4ed82f86628a42b0f79305f6bc68bbc6c7df",
+    "OWNER.md": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a",
+    "src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+    "src/queue-view.ts": "01ee53761bce9cb9dbf41c7df3cb709397bebfb27f96cd738d84971aa6b190fa",
+    "assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+    "plar.txt": "3901a2e7cea7eea6bc616715c64962f665e93a2b0804bcf9dfd45a51f1d0ac56",
+    "provider-schemas.json": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c"
+  },
+  "verdict": "changes_requested",
+  "request_findings": [
+    {"location": "arguments (all keys)", "finding": "Only description,width,height,no_background,seed used; all within the create_image_pro_flash declaration (16 is >=16 and multipleOf 4; additionalProperties false respected). Consistent with provider-schemas.json and the live tool declaration."},
+    {"location": "arguments.width/height=16", "source": "BRIEF.md 'Status cells are 16 by 16 logical pixels'; queue-view.ts display.cell [16,16]", "finding": "Consistent; explicitly overrides the fixture's 64x64 default."},
+    {"location": "arguments.no_background=true; description 'transparent background'", "source": "BRIEF.md 'Use transparent backgrounds'", "finding": "Consistent."},
+    {"location": "description 'cool light-blue accent (around #70b9ed)'", "source": "BRIEF.md 'existing UI's cool blue accent; a fixed palette is not required'; start.svg fill #70b9ed", "finding": "Consistent; hex is a cue, no palette rule added."},
+    {"location": "description 'checkmark', negative cues", "source": "OWNER.md 'A sample motif is expert judgment'; plar sample_motif proposal", "finding": "Expert choice correctly attributed in choices; negative cues support BRIEF's success-vs-activity distinction."},
+    {"location": "description static single icon", "source": "BRIEF.md 'Ready and Retry are static images'; queue-view frames: 1", "finding": "Consistent; no frame/animation field invented."},
+    {"location": "no image/reference input", "source": "BRIEF.md 'No approved style reference exists yet'; schema has no image field", "finding": "Consistent; Start SVG preserved, not used as style reference."}
+  ],
+  "criteria_comparisons": [
+    {"id": "geometry", "source": "BRIEF 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'; queue-view succeeded frames:1", "adds_or_omits": "Nothing added; exact decoded size of a single frame.", "finding": "consistent"},
+    {"id": "transparent_background", "source": "BRIEF 'Use transparent backgrounds'", "adds_or_omits": "Explicitly does not add binary alpha. A brief-conforming candidate with soft edges is not rejected.", "finding": "consistent"},
+    {"id": "readability", "source": "BRIEF 'readable silhouettes' + 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; queue-view scale 3, nearest, #172336", "adds_or_omits": "'clean edges' is a mild expert-quality gloss consistent with PLAR delivery check 'edge quality'; does not reject a brief-conforming readable icon.", "finding": "consistent"},
+    {"id": "success_meaning", "source": "queue.ts ok->succeeded; queue-view label Ready; BRIEF working loop must not look like success; paused distinct from completion", "adds_or_omits": "Scoped to Ready alone; side-by-side family/grayscale comparison deferred because other members do not exist (listed as unresolved in choices). Acceptable for a first sample.", "finding": "consistent"},
+    {"id": "cool_blue_accent", "source": "BRIEF 'existing UI's cool blue accent; a fixed palette is not required'; start.svg #70b9ed observation", "adds_or_omits": "Explicitly excludes exact hex/count rules.", "finding": "consistent"},
+    {"id": "family_sample_suitability", "source": "BRIEF 'No approved style reference exists yet: propose a representative status sample before expanding the family'", "adds_or_omits": "OMITS/WEAKENS: the check 'reviewed and recorded as a usable (or rejected) shared treatment' is satisfied whether the sample is usable or not, so it cannot reject a non-representative sample. The required outcome (a representative treatment that can carry Working/Retry/Paused) is not binding.", "finding": "changes_requested: restate as a rejecting check, e.g. 'Silhouette construction, edge handling and color treatment form a coherent treatment that could plausibly carry the Working/Retry/Paused members at 16x16 (including non-color-distinct motifs); the review decision is recorded.' Keep basis as owner requirement + PLAR family_sample proposal, scoped to this sample; it must not approve the family style."},
+    {"id": "motif_checkmark", "source": "OWNER 'A sample motif is expert judgment'; plar sample_motif proposal (no sources)", "adds_or_omits": "Adds a rejection rule (bare check, no badge). A brief-conforming check-in-badge would be rejected, but the criterion is explicitly attributed to specialist choice and scoped to this sample, as OWNER permits.", "finding": "consistent (expert-choice, scoped)"},
+    {"id": "preserve_existing", "source": "BRIEF 'Preserve the existing vector Start control', 'Assets belong at the paths already used by the view'; OWNER 'Keep the existing Start control and other allocation IDs'", "adds_or_omits": "Process/preservation check, correctly marked as not an image property.", "finding": "consistent"}
+  ],
+  "omissions_checked": [
+    {"item": "Renderer exercise of statusCell/compactStatus (PLAR delivery check)", "finding": "Deferred; OWNER states live renderer acceptance remains future work. Acceptable, remains in PLAR remaining work."},
+    {"item": "Retry/Paused non-color distinction", "finding": "Applies to Retry/Paused members and family review; not dropped, carried in PLAR delivery checks."}
+  ],
+  "next_action": "Return the single family_sample_suitability discrepancy to the PIXL specialist; revise only that criterion, re-prepare the not-yet-dispatched job, and return the new packet for caller re-review. Request arguments need no change."
+}

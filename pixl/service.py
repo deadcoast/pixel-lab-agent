@@ -426,6 +426,8 @@ def call(name, args, root):
             args["connection"],
             args.get("path", "plar.txt"),
             args.get("store"),
+            args.get("revise", False),
+            args.get("expect"),
         )
     if name in ("pixl_plar_read", "pixl_plar_save"):
         from . import plar

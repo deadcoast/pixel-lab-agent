@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "scope": "First Ready representative candidate; request-only controlled stage ends at simulated queued acceptance. All image, artistic, family and engine criteria remain pending.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready representative sample",
+      "kind": "sprite",
+      "contract": {
+        "size": [
+          16,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "Static transparent Ready success icon, cool blue, readable at 1x/3x on #172336; proposed check motif. Full alpha permits fractional alpha; no fixed palette."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decode a PNG with one static 16x16 frame.",
+          "basis": "Owner/consumer requirement",
+          "scope": "Ready candidate",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: cells and static Ready"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded; display.cell"
+            }
+          ]
+        },
+        {
+          "id": "transparency",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Background is transparent with no opaque matte; fractional alpha is allowed.",
+          "basis": "Owner requirement, no binary-alpha restriction",
+          "scope": "Ready candidate",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: transparent backgrounds"
+            }
+          ]
+        },
+        {
+          "id": "readability",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Inspect silhouette readability at 1x and 3x nearest display scale on #172336; assess clear, deliberate pixel-art cluster and edge treatment.",
+          "basis": "Owner readability requirement; edge/cluster quality is specialist judgment; panel color is consumer observation",
+          "scope": "Ready candidate",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: readable silhouettes, inspect scales"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "display"
+            }
+          ]
+        },
+        {
+          "id": "success",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Communicates successful completion rather than activity or error/retry.",
+          "basis": "Owner/consumer state meaning",
+          "scope": "Ready candidate",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: working must not look like success"
+            },
+            {
+              "path": "src/queue.ts",
+              "locator": "stateAfter ok -> succeeded"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded"
+            }
+          ]
+        },
+        {
+          "id": "cool-blue",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Uses the cool blue UI accent direction; no exact hex match or fixed palette count required.",
+          "basis": "Owner direction; SVG accent is a cue only",
+          "scope": "Ready candidate",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: cool blue; fixed palette not required"
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "path fill"
+            }
+          ]
+        },
+        {
+          "id": "sample-check",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The proposed completion check silhouette is clear and recognizable.",
+          "basis": "Specialist sample choice, not an owner-prescribed motif",
+          "scope": "This check-motif candidate only",
+          "sources": []
+        },
+        {
+          "id": "family-distinction",
+          "domain": "continuity",
+          "mode": "visual",
+          "check": "When family candidates exist, compare at 1x and 3x on actual panel and without color: error/retry is distinguishable, working conveys activity not success, and Paused is distinct from activity, completion and retry. Preserve pending status until those candidates exist.",
+          "basis": "Owner family requirements",
+          "scope": "Future family review; cannot pass from Ready alone",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 1: working/error requirements; update paragraph: paused"
+            }
+          ]
+        },
+        {
+          "id": "sample-review",
+          "domain": "continuity",
+          "mode": "visual",
+          "check": "Record representative sample review of silhouette, edges and color treatment before family expansion; bind any approved reference.",
+          "basis": "Owner sample-before-expansion requirement; review dimensions are specialist judgment",
+          "scope": "Future sample adoption/family expansion",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraph 2: no approved reference; propose sample before expanding"
+            },
+            {
+              "path": "OWNER.md",
+              "locator": "representative Ready candidate; no approved style"
+            }
+          ]
+        },
+        {
+          "id": "consumer",
+          "domain": "engine",
+          "mode": "live",
+          "check": "At assets/ready.png verify ok -> succeeded displays the Ready image and label through both statusCell and compactStatus with one 16x16 frame, nearest scale 3 and actual panel alpha compositing. Preserve existing Start and all other allocation IDs.",
+          "basis": "Owner and consumer delivery requirements",
+          "scope": "Future renderer integration; not performed in request-only stage",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "paragraphs 1-2: existing paths; preserve Start"
+            },
+            {
+              "path": "src/queue.ts",
+              "locator": "stateAfter"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals.succeeded; statusCell; compactStatus; display"
+            },
+            {
+              "path": "OWNER.md",
+              "locator": "preserve Start and allocation IDs"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

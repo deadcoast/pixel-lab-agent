@@ -7,7 +7,7 @@ Use for delegated asset work when a proposed production contract is ready to ado
 Save a compact `request-review.json` in the consumer project. Point to existing artifacts instead of duplicating provider history or manufacturing PX2 state for a planning-only task. Its fields are:
 
 - `version`: 1.
-- `sources`: the brief and relevant consumer/reference sources, each with project-relative `path`, actual byte `sha256`, and `role`; include locators for the adopted decisions. Include the selected `requirements_hash` when PLAR supplied one.
+- `sources`: the brief and relevant consumer/reference sources, each with project-relative `path`, actual byte `sha256`, and `role`; include locators for the adopted decisions. Numbered locators refer to that individual file, never a concatenated multi-file terminal display. The caller verifies the cited content at those locators. Include the selected `requirements_hash` when PLAR supplied one.
 - `request`: `path`, `sha256`, `kind` (`provider_arguments` or `creative_brief`) and the actual tool name when known. Provider arguments must be the complete exact JSON to dispatch, including real reference inputs. Use a creative brief when an operation/schema has not been discovered; do not label it executable.
 - `criteria`: `path` and `sha256` for the exact criteria to use. Each criterion has an ID, check, authority/basis, applicable scope and source locator. Distinguish owner/consumer requirements, specialist sample choices, observations and diagnostics.
 - `choices`: the consequential specialist choices or unresolved decisions, where each appears in the request/criteria, and its reason. A criterion scoped to a chosen sample can assess that sample; it does not establish a universal project requirement.
@@ -33,6 +33,7 @@ Open the packet and verify its hashes. Read the original brief, relevant sources
 2. Every consequential extra restriction has its true basis and scope. Test whether a brief-conforming alternative would be rejected only because an observation or proposal was promoted to an owner requirement.
 3. The proposed operation's actual declaration supports the payload. Do not infer a provider parameter, frame/direction count, alpha policy or camera from prose alone.
 4. Findings concern these exact artifacts. Mechanical/hash validity and a specialist's consistency claim do not prove semantic agreement or artistic quality.
+5. Each rejection rule belongs to the current candidate/stage and has satisfiable prerequisites. A first sample cannot require completed dependent family assets before it may be accepted. Retain deferred family or destination obligations with an explicit later stage in the handoff/PLAR; verify they remain scheduled rather than dropping the required outcome.
 
 For each criterion that can reject a candidate, retain a short caller-side comparison: criterion ID, the exact relevant source wording/locator (or explicit expert-choice basis), what the criterion adds or omits, and the finding. Group genuinely identical rules, but cover every rejection rule; a global "all restrictions come from the brief" claim is not this comparison. If a derived rule is stricter than the source, consider a source-conforming result it would reject before adopting it.
 

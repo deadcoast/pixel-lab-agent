@@ -1,5 +1,11 @@
 # Verification and limits
 
+## PLAR allocation/update and first-request preparation, 2026-11-08
+
+The [corrected full verifier](../evidence/verification-runs/20261108T034254.703857Z/result.json) passes **480 tests, one Windows symlink-privilege skip and 39 reference checks**. The 21 added regressions cover allocation impact, selected preparation/recovery and the controlled request fixture. Fresh wheel/copied-plugin checks exercise the selected asset through preparation, unrelated allocation refresh, dispatch and observation after source drift, with actual populated history links. The preceding package-schema omission remains in its failed receipt.
+
+[Allocation and native evidence](../evidence/plar-allocation/README.md) separates raw-source/update understanding, local mechanisms and actual native call/contract outcomes. Both hosts reach the controlled first-request stage; semantic planning/handoff defects and corrective attempts remain explicit. This does not establish generated-art quality or destination acceptance. Final guidance-only edits receive a separate clean distribution check; all 109 full-verifier checked inputs remain identical.
+
 ## Request/criteria handoff and controlled delivery, 2026-11-08
 
 The [current implementation receipt](../evidence/request-review/checks.json) records **459 passing tests, one Windows symlink-privilege skip, 39/39 reference checks**, a clean wheel/copied-plugin installation, and passing maintained-code Ruff/Mypy checks. This increment adds 22 regressions for exact-color measurements, image delivery, upload/recovery, accepted-task completion and preparation-time observation validation.

@@ -4,6 +4,7 @@ This adapter authors the existing sample-plan records and first durable intent.
 It does not invent requirements, choose provider controls or publish acceptance.
 """
 
+import copy
 import json
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -11,7 +12,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from . import codec, graph, jobs, lifecycle, plar, platform, store
+from . import codec, graph, jobs, lifecycle, plar, plar_workflow, platform, store
 from .codec import PixlError, Record, Ref, Symbol
 
 SCHEMA = json.loads(
@@ -333,11 +334,46 @@ def _document(root, selected, plan, marker_path, marker, marker_hash, captured=N
             ),
         ]
     )
-    return codec.Document(0, {r.id: r for r in records}, format=2)
+    document = codec.Document(0, {r.id: r for r in records}, format=2)
+    prefix = marker.get("prefix", "")
+    if prefix:
+        names = {}
+        for record in records:
+            name = prefix + record.id
+            if len(name) > 96:
+                name = (
+                    prefix
+                    + record.id[:55]
+                    + "."
+                    + sha256(record.id.encode()).hexdigest()[:12]
+                )
+            names[record.id] = record.id if record.id in {"actor", "project"} else name
+
+        def remap(value):
+            if isinstance(value, Ref):
+                return Ref(names.get(value.id, value.id))
+            if isinstance(value, list):
+                return [remap(item) for item in value]
+            if isinstance(value, dict):
+                return {key: remap(item) for key, item in value.items()}
+            return value
+
+        document.records = {
+            names[r.id]: Record(names[r.id], r.kind, remap(r.fields)) for r in records
+        }
+    return document
 
 
 def prepare(
-    root, asset_id, requirements_hash, packet, connection, path="plar.txt", folder=None
+    root,
+    asset_id,
+    requirements_hash,
+    packet,
+    connection,
+    path="plar.txt",
+    folder=None,
+    revise=False,
+    expected=None,
 ):
     """Publish the exact candidate plan and prepare its first job; never dispatch."""
     root = Path(root).resolve()
@@ -346,19 +382,37 @@ def prepare(
     selected, plan, sources, identity = _inputs(
         root, path, asset_id, requirements_hash, packet, connection
     )
-    folder = graph.confined(root, folder or f".pixl/assets/{asset_id}")
-    _require(folder != root, "use a consumer subdirectory for the asset store")
     linked = selected["asset"].get("production")
+    folder = graph.confined(
+        root, folder or (linked["store"] if linked else f".pixl/assets/{asset_id}")
+    )
+    _require(folder != root, "use a consumer subdirectory for the asset store")
     if linked:
         _require(
-            graph.confined(root, linked["store"]) == folder
-            and linked["task"] == "task"
-            and linked["output"] in {"output." + o["id"] for o in plan["outputs"]},
+            graph.confined(root, linked["store"]) == folder,
             "this asset already links another plan; resume that work",
+        )
+    current = store.load(folder) if (folder / "state.px").exists() else None
+    if current is not None:
+        graph.validate(current, root)
+        if expected is not None and codec.digest(current) != expected:
+            raise PixlError(
+                "stale_write", "reread the production state before revising"
+            )
+    elif revise:
+        _require(
+            False,
+            "revision requires existing production; omit revise for the first request",
         )
     fingerprint = platform._sha(identity)
     marker_file = graph.confined(folder, "plans/" + fingerprint + ".json")
     with store.lock(folder):
+        if current is not None and codec.digest(store.load(folder)) != codec.digest(
+            current
+        ):
+            raise PixlError(
+                "stale_write", "production changed before retaining the revised plan"
+            )
         if marker_file.exists():
             marker, marker_hash, marker_path = _json_file(
                 root, marker_file.relative_to(root).as_posix()
@@ -369,10 +423,24 @@ def prepare(
                 "asset preparation already exists with a different contract; preserve and revise the existing plan",
             )
         else:
-            _require(
-                not (folder / "state.px").exists(),
-                "existing state was not created by this preparation; resume its plan",
-            )
+            prefix = ""
+            if current is not None:
+                _require(
+                    revise and expected is not None,
+                    "existing state was not created by this preparation; review a revision and supply revise plus expect",
+                )
+                owned = plar_workflow.owned_tasks(current, root, path, asset_id)
+                _require(
+                    owned and (not linked or linked["task"] in owned),
+                    "existing state has no matching asset selection; resume its explicit plan",
+                )
+                for task_id in owned:
+                    jobs._pending(
+                        current,
+                        task_id,
+                        [r.id for r in current.records[task_id].fields["op"]],
+                    )
+                prefix = "r." + fingerprint[:16] + "."
             captured, retained_sources = {}, {}
             for original, expected in sources.items():
                 local = graph.confined(root, original)
@@ -400,6 +468,7 @@ def prepare(
                 "input": identity,
                 "sources": retained_sources,
                 "created_at": datetime.now(UTC).isoformat(),
+                **({"prefix": prefix} if prefix else {}),
             }
             data = platform._json_bytes(marker) + b"\n"
             marker_hash = sha256(data).hexdigest()
@@ -409,7 +478,7 @@ def prepare(
             )
             graph.validate(preview)
             _require(
-                not lifecycle.blockers(preview, "task"),
+                not lifecycle.blockers(preview, prefix + "task"),
                 "candidate plan has unresolved activation prerequisites",
             )
             for relative, source_data in captured.items():
@@ -429,13 +498,44 @@ def prepare(
         "unsupported preparation snapshot; inspect its retained version",
     )
     document = _document(root, selected, plan, marker_path, marker, marker_hash)
+    task_id = marker.get("prefix", "") + "task"
+    output_ids = [r.id for r in document.records[task_id].fields["op"]]
     graph.validate(document, root)
     _require(
-        not lifecycle.blockers(document, "task"),
+        not lifecycle.blockers(document, task_id),
         "candidate plan has unresolved activation prerequisites",
     )
-    if not (folder / "state.px").exists():
+    if current is None:
         store.initialize(folder, document, root)
+    elif task_id not in current.records:
+        _require(
+            revise and expected is not None,
+            "new plan generation requires explicit revise and expect",
+        )
+        # Preserve every original task, contract, candidate, verdict and job.
+        candidate = copy.deepcopy(current)
+        for id_, record in document.records.items():
+            if id_ == "project":
+                project = candidate.records[id_].fields
+                for key in ("sc", "in"):
+                    project[key].extend(
+                        r for r in record.fields[key] if r not in project[key]
+                    )
+                project["br"] = record.fields["br"]
+            elif id_ in candidate.records:
+                _require(
+                    candidate.records[id_] == record,
+                    "revision record collides with existing work",
+                )
+            else:
+                candidate.records[id_] = record
+        candidate.revision += 1
+        store.commit(folder, candidate, expected, root)
+    elif linked and linked["task"] != task_id:
+        _require(
+            False,
+            "this is an earlier retained plan; resume the currently linked production instead",
+        )
     current = store.load(folder)
     graph.validate(current, root)
     for id_, record in document.records.items():
@@ -445,7 +545,15 @@ def prepare(
             "prepared plan records changed; inspect the current workflow",
         )
         expected_fields, actual_fields = record.fields, actual.fields
-        if id_ == "task":
+        if id_ == "project":
+            _require(
+                all(
+                    set(record.fields[k]) <= set(actual.fields[k]) for k in ("sc", "in")
+                ),
+                "prepared source/choice references changed; inspect the current project",
+            )
+            continue
+        if id_ == task_id:
             expected_fields = {
                 k: v for k, v in expected_fields.items() if k not in {"st", "ca", "vr"}
             }
@@ -456,15 +564,24 @@ def prepare(
             actual_fields == expected_fields,
             "prepared plan changed; inspect the current workflow",
         )
-    job_id = "first_request"
+    job_id = (
+        marker.get("prefix", "") + "request"
+        if marker.get("prefix")
+        else "first_request"
+    )
     reused = job_id in current.records
     if not reused:
+        # The same pending-asset check applies after interrupted plan publication.
+        for owned in plar_workflow.owned_tasks(current, root, path, asset_id):
+            jobs._pending(
+                current, owned, [r.id for r in current.records[owned].fields["op"]]
+            )
         jobs.prepare(
             folder,
             codec.digest(current),
             job_id,
-            "task",
-            [r.id for r in document.records["task"].fields["op"]],
+            task_id,
+            output_ids,
             root=root,
             **identity["request"],
         )
@@ -472,9 +589,7 @@ def prepare(
     report = jobs.report(current, root)
     job = next(row for row in report["jobs"] if row["id"] == job_id)
     retained_request = job.get("request", {})
-    expected_context = jobs._context(
-        current, "task", [r.id for r in document.records["task"].fields["op"]]
-    )
+    expected_context = jobs._context(current, task_id, output_ids)
     _require(
         job.get("context") == expected_context,
         "existing first request has different task/output bindings; inspect its actual journal",
@@ -487,15 +602,19 @@ def prepare(
         == platform._sha(identity["request"]),
         "existing first request differs from the reviewed intent; inspect its actual journal before continuing",
     )
+    allocation = plar_workflow.synchronize(
+        root, selected, path, folder, task_id, output_ids, marker_path
+    )
     return {
+        "allocation": allocation,
         "store": folder.relative_to(root).as_posix(),
         "state": str(folder / "state.px"),
         "hash": codec.digest(current),
         "revision": current.revision,
         "asset_id": asset_id,
         "requirements_hash": requirements_hash,
-        "task": "task",
-        "outputs": [r.id for r in document.records["task"].fields["op"]],
+        "task": task_id,
+        "outputs": output_ids,
         "job": job,
         "already_prepared": reused,
         "phase": "sample",

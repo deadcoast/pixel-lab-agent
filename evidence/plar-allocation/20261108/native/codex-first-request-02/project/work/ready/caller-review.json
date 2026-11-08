@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "reviewer_role": "independent calling agent /root",
+  "packet": {
+    "path": "work/ready/request-review.json",
+    "sha256": "492499f79f96f09418e5bb43f5991a4884d6d86649a3aabb4599f8ec4f3397ba"
+  },
+  "status": "consistent",
+  "hash_verification": "All six source hashes and complete request/criteria hashes independently verified against local bytes",
+  "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+  "criterion_comparisons": [
+    {
+      "criterion_id": "geometry",
+      "source": "BRIEF.md paragraph 1: Status cells are 16 by 16 logical pixels; Ready and Retry are static images. src/queue-view.ts statusVisuals.succeeded: assets/ready.png, frames:1; display.cell [16,16].",
+      "comparison": "Single static 16x16 PNG preserves geometry and destination format. No added frame or resolution limit.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "transparency",
+      "source": "BRIEF.md paragraph 1: Use transparent backgrounds.",
+      "comparison": "No opaque matte preserves transparency; full alpha permits source-conforming partially transparent edges. No binary-alpha rule added.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "meaning",
+      "source": "src/queue.ts stateAfter ok -> succeeded; src/queue-view.ts succeeded label Ready. BRIEF.md: working loop must communicate activity without looking like success; paused distinct from activity, completion and retry.",
+      "comparison": "Completion semantics survive. First sample assesses its own meaning without unavailable family prerequisites; later family comparisons remain packet choices and PLAR delivery checks. Checkmark is a scoped specialist choice, not a rejection rule against other completion motifs.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "readability",
+      "source": "BRIEF.md paragraph 1: readable silhouettes; Inspect at 1x and 3x nearest display scale on the actual dark panel. src/queue-view.ts display.background #172336, filter nearest.",
+      "comparison": "Both scales and actual panel preserved. Deliberate clusters/edges is explicitly expert quality judgment, with no invented antialiasing ban or measured coordinates.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "cool_blue",
+      "source": "BRIEF.md paragraph 1: existing UI cool blue accent; a fixed palette is not required. assets/start.svg path fill #70b9ed.",
+      "comparison": "Direction required; exact color and palette count cannot reject alone. Start is source-level color cue, not approved pixel style or unsupported uploaded reference.",
+      "finding": "consistent"
+    }
+  ],
+  "request_findings": [
+    {
+      "location": "provider-arguments.json entire payload",
+      "finding": "Complete payload uses only actual connected description,width,height,no_background fields. 16x16 and no_background true explicit; no unsupported reference, palette, frame or provider_simulated argument. Single-frame and qualitative direction are expressed in description and retained for later checks."
+    },
+    {
+      "location": "request-review.json choices",
+      "finding": "Checkmark is a revisable first-sample expert proposal. No approved style exists; no image conditioning claimed. Deferred Working four horizontal frames at 100ms, Retry non-color distinction and current error-retry.png path, Paused non-color distinction, sample adoption and actual renderer/destination checks remain in original PLAR and packet."
+    },
+    {
+      "location": "OWNER.md and stage scope",
+      "finding": "One controlled request only. Simulated queued acceptance completes assigned operation, not image delivery, art acceptance or integration. Preserve Start and all allocation IDs."
+    }
+  ],
+  "unresolved_findings": [],
+  "next_action": "Prepare through pixl_plar_prepare, independently compare durable dispatch arguments against exact reviewed JSON, submit once and retain actual response identity."
+}

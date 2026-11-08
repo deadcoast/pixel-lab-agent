@@ -39,7 +39,8 @@ TOOLS = [
         "pixl_plar_prepare",
         "Prepare the selected asset's first reviewable candidate from exact request-review artifacts and the discovered provider schema. Saves the existing PX2 sample plan and durable first request; never dispatches, generates, or approves art. Repeated unchanged calls resume the existing job.",
         schema({"path": STR, "asset_id": STR, "requirements_hash": STR, "packet": STR,
-                "connection": {"anyOf": [OBJ, STR]}, "store": STR},
+                "connection": {"anyOf": [OBJ, STR]}, "store": STR,
+                "revise": {"type": "boolean"}, "expect": STR},
                ["asset_id", "requirements_hash", "packet", "connection"]),
     ),
     (

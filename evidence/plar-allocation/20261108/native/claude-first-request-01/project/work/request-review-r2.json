@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "5955da4dd9079d0d13dc1b01feff4ed82f86628a42b0f79305f6bc68bbc6c7df",
+      "role": "brief",
+      "locators": [
+        "16 by 16 logical pixels",
+        "Ready and Retry are static images",
+        "transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required",
+        "Inspect at 1x and 3x nearest display scale on the actual dark panel",
+        "working loop ... without looking like success",
+        "Preserve the existing vector Start control",
+        "propose a representative status sample before expanding the family",
+        "paused ... distinguishable from activity, completion and retry without relying on color alone"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "role": "consumer_state",
+      "locators": [
+        "stateAfter ok -> succeeded (line 3)"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "01ee53761bce9cb9dbf41c7df3cb709397bebfb27f96cd738d84971aa6b190fa",
+      "role": "consumer_view",
+      "locators": [
+        "statusVisuals.succeeded {label Ready, path assets/ready.png, frames 1} (line 10)",
+        "display {cell [16,16], scale 3, filter nearest, background #172336} (line 13)",
+        "statusCell / compactStatus share statusVisuals (lines 14-15)"
+      ]
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "role": "existing_asset_preserved_and_color_observation",
+      "locators": [
+        "fill #70b9ed (observation, not a style reference)"
+      ]
+    },
+    {
+      "path": "plar.txt",
+      "sha256": "3901a2e7cea7eea6bc616715c64962f665e93a2b0804bcf9dfd45a51f1d0ac56",
+      "role": "plar_selection",
+      "locators": [
+        "queue.ready"
+      ]
+    },
+    {
+      "path": "OWNER.md",
+      "sha256": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a",
+      "role": "assignment_authorization",
+      "locators": [
+        "One submission to the controlled pixellab-test connection is authorized"
+      ]
+    },
+    {
+      "path": "provider-schemas.json",
+      "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "role": "provider_schema",
+      "locators": [
+        "create_image_pro_flash"
+      ]
+    }
+  ],
+  "request": {
+    "path": "work/queue-ready-arguments.json",
+    "sha256": "2682ea48c03ed6bb14d815cbc1d7636aeb9c881d39d0c17ea12002323fc333f4",
+    "kind": "provider_arguments",
+    "tool": "create_image_pro_flash",
+    "provider": "pixellab-test"
+  },
+  "criteria": {
+    "path": "work/queue-ready-criteria-r2.json",
+    "sha256": "d182898f786048fcd6b17e8283a5eebefdda7f1c32a48266e75d67199b5c5b07"
+  },
+  "connection": {
+    "path": "work/connection.json",
+    "sha256": "1dca723decc2ef5f633ed169001356b12e99ebb8e06df60f1c3da00657641d96"
+  },
+  "choices": [
+    {
+      "choice": "Operation create_image_pro_flash at native 16x16 (width/height 16) with no_background true",
+      "where": "request.width/height/no_background",
+      "reason": "Only discovered generation tool; 16 is within its 16-256 multipleOf-4 range so no resize from an oversized canvas is needed; no_background expresses the transparent-background requirement. The fixture's 64x64 default is overridden explicitly."
+    },
+    {
+      "choice": "Bare checkmark motif, no circle/badge, no text",
+      "where": "request.description; criteria motif_checkmark",
+      "reason": "Expert choice: strongest single-shape success symbol at 16x16; avoids circular forms that could later collide with a Retry arrow and keeps a grayscale-distinct silhouette for the Paused/Retry non-color requirement. Scoped to this sample."
+    },
+    {
+      "choice": "Color wording 'cool light-blue accent (around #70b9ed)' with lighter/deeper blue shading",
+      "where": "request.description; criteria cool_blue_accent",
+      "reason": "Carries the owner's cool-blue direction and the observed Start fill as a cue; shading is a prompt suggestion, not a palette rule."
+    },
+    {
+      "choice": "Negative prompt cues (no spinner, arrows, cross, pause bars, text, badge)",
+      "where": "request.description",
+      "reason": "Supports the owner's success-vs-activity/retry/paused distinction; they are prompt cues, and success_meaning is the binding criterion."
+    },
+    {
+      "choice": "Fixed seed 1108",
+      "where": "request.seed",
+      "reason": "Reproducibility for a later revision comparison; carries no aesthetic meaning."
+    },
+    {
+      "choice": "Prompt-only conditioning; Start SVG not supplied as an image input",
+      "where": "request",
+      "reason": "No approved style reference exists and the discovered schema has no image/style field; Start is preserved and only its accent color is cited."
+    },
+    {
+      "choice": "Renderer exercise of statusCell/compactStatus deferred",
+      "where": "criteria scope",
+      "reason": "No renderer/entry point was supplied and the assignment ends at the simulated queued response; the PLAR delivery check remains for integration."
+    },
+    {
+      "unresolved": "Family distinction from Working/Retry/Paused side by side, including grayscale comparison",
+      "where": "criteria success_meaning scope",
+      "reason": "Those members do not exist yet; assessed at family review per PLAR delivery checks."
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "role": "calling agent (parent); independent request/criteria reviewer",
+  "assignment": {"path": "OWNER.md", "sha256": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a"},
+  "status": "partial",
+  "status_basis": "The assigned stage (first accepted request with resumable state and caller review) is complete. Per OWNER.md, the simulated queued response ends this stage; retrieval, art acceptance and renderer acceptance remain future work, so the asset itself is not delivered.",
+  "provider_simulated": true,
+  "completed_scope": [
+    "Read OWNER.md, BRIEF.md, SOURCE-MAP.md, src/queue.ts, src/queue-view.ts, assets/start.svg, provider-schemas.json, provider-contract-origin.json and the focused PLAR row for queue.ready.",
+    "Delegated to the native PIXL agent (subagent_type pixl) with the packaged PLAR/PIXL skills. The specialist prepared the packet and durable PX2 job via pixl_plar_prepare and did not dispatch.",
+    "Caller review 1 independently compared the request and every criterion against the sources and returned changes_requested on one criterion (family_sample_suitability passed regardless of outcome).",
+    "A second native PIXL specialist revised only that criterion (r2). It retired the undispatched first_request as locally abandoned (event 'failed', provider_contacted=false), committed the criterion revision and prepared first_request_r2 with byte-identical arguments.",
+    "Caller review 2 confirmed by field diff that only that check changed, and judged the r2 contract consistent.",
+    "Re-read PLAR: requirements_hash 79b08da5... unchanged. Claimed dispatch with pixl_job_dispatch, compared the returned dispatch arguments with the reviewed file (equal), and submitted exactly once to pixellab-test create_image_pro_flash.",
+    "Recorded the provider response (job_id controlled-create-0001, status queued, provider_simulated true) with pixl_job_observe event submitted. Linked the PLAR row's production/status/next/evidence via plar save."
+  ],
+  "request_review": {
+    "adopted_packet": {"path": "work/request-review-r2.json", "sha256": "d4e55942324cb9434f84a3bbb7ee7d299f9e48f941a5b1cc4bcd0b5572efa527"},
+    "adopted_criteria": {"path": "work/queue-ready-criteria-r2.json", "sha256": "d182898f786048fcd6b17e8283a5eebefdda7f1c32a48266e75d67199b5c5b07"},
+    "request_arguments": {"path": "work/queue-ready-arguments.json", "sha256": "2682ea48c03ed6bb14d815cbc1d7636aeb9c881d39d0c17ea12002323fc333f4", "tool": "create_image_pro_flash"},
+    "connection": {"path": "work/connection.json", "sha256": "1dca723decc2ef5f633ed169001356b12e99ebb8e06df60f1c3da00657641d96"},
+    "superseded_packet": {"path": "work/request-review.json", "sha256": "01f9fc581956766688574f5247d9b9a09273e460296f1e818fd48a2be101ea81", "criteria_sha256": "43c728d81b697ef077457f376876679a05e65018868d95c85ca8ef1396e084d0"},
+    "caller_reviews": [
+      {"path": "work/caller-review-1.json", "sha256": "6ab023fcf5d62f2b2f5b8278814b86990d782fd5af631fb4ba56e58eaa72028a", "packet_sha256": "01f9fc58...ea81", "verdict": "changes_requested", "finding": "family_sample_suitability could not reject a non-representative sample ('usable (or rejected)')."},
+      {"path": "work/caller-review-2.json", "sha256": "57a366e196b4881717e2709c5d89a7b9e754b1109fdfdd3393e01d24bc00d65e", "packet_sha256": "d4e55942...a527", "verdict": "consistent"}
+    ],
+    "unresolved_findings": [],
+    "noted_choices": [
+      "motif_checkmark (a bare check with no badge) is a specialist expert choice scoped to this sample; OWNER.md says the motif is expert judgment.",
+      "The renderer exercise of statusCell/compactStatus and the side-by-side family/grayscale comparison are deferred because no renderer exists and the other members haven't been made; both remain in the PLAR delivery checks."
+    ]
+  },
+  "submitted_vs_reviewed": {
+    "method": "Parsed JSON equality plus a canonical sha256 over the reviewed file, the pixl_job_dispatch dispatch_request.arguments, and the provider-echoed arguments.",
+    "reviewed_canonical_sha256": "bc9621c2c7ca5405eea0211f88530ad947f2549fba70d4d2cbf119d2491fe361",
+    "dispatch_arguments": {"path": "work/caller/dispatch-arguments.json", "sha256": "9996de38b3b115f4c7f8649b1d645c31dd414d0cb8e351c8fff2c2ce74a09560", "equal_to_reviewed": true},
+    "provider_echo": {"path": "work/caller/provider-response.json", "sha256": "f858ab9f3e58d94915f790ffb459536f36da78750e6e9aa7a493157e490e3595", "equal_to_reviewed": true},
+    "fields": {"width": 16, "height": 16, "no_background": true, "seed": 1108, "description": "checkmark Ready prompt (see file)"},
+    "px2_request_sha256": "53e577557e9ff9fc180adcd38e51b02d4f387d2028312043b2ff089a30c22913",
+    "submissions_made": 1,
+    "submissions_authorized": 1
+  },
+  "provider": {
+    "connection": "pixellab-test",
+    "tool": "create_image_pro_flash",
+    "remote_job_id": "controlled-create-0001",
+    "status": "queued",
+    "provider_simulated": true,
+    "list_jobs": "controlled-create-0001 is the only job"
+  },
+  "state": {
+    "plar": {"path": "plar.txt", "hash_before": "3901a2e7cea7eea6bc616715c64962f665e93a2b0804bcf9dfd45a51f1d0ac56", "hash_after": "79b1df225af7fad74e2b7fd396596684d2fe746d0b3604ed41b95ba6c86b6613", "asset_id": "queue.ready", "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8", "row_status": "in_progress", "production": {"store": ".pixl/assets/queue.ready", "task": "task", "output": "output.ready"}, "other_rows": "unchanged (queue.working, queue.retry, queue.paused todo; queue.start deferred)"},
+    "px2": {"store": ".pixl/assets/queue.ready", "state": ".pixl/assets/queue.ready/state.px", "revision": 6, "hash": "46110f63bc5556168736949cf605a02648c67eefad1902f0d9659627773b516e", "files_verified": true, "phase": "sample", "task": {"id": "task", "state": "open"}, "output": "output.ready",
+      "jobs": [
+        {"id": "first_request_r2", "state": "submitted", "remote_id": "controlled-create-0001", "next_action": "observe", "selection_binding": "current"},
+        {"id": "first_request", "state": "failed", "remote_id": null, "meaning": "Withdrawn before dispatch after caller-review-1; never submitted; consumed no submission."}
+      ],
+      "jobs_report": {"path": "work/caller/jobs-final.json", "sha256": "643bf1fa669cd785d9c30958f8e2b40683561abf13cea08789c2446f0c7a2717"}
+    }
+  },
+  "not_done": {
+    "image_delivered": false,
+    "assets/ready.png": "absent; nothing was fabricated",
+    "criteria_verdicts": "all 8 unperformed (no candidate exists)",
+    "integration": "not integrated; the PLAR row is in_progress, not integrated"
+  },
+  "remaining_work": [
+    "Retrieve controlled-create-0001 from a provider that can return images (this fixture can't); do not resubmit. Record the outcome with pixl_job_observe.",
+    "Import the downloaded bytes with pixl_job_import, prepare an inspection packet (1x and 3x nearest on #172336), and review all 8 r2 criteria. Only after that, select the candidate and complete the task (pixl_task_complete).",
+    "Record the representative-sample decision (PLAR question) and source-bind the approved reference before producing queue.working, queue.retry and queue.paused.",
+    "Compare the family side by side, including grayscale/non-color distinction for Retry and Paused.",
+    "Integrate at assets/ready.png and exercise statusCell/compactStatus in a real renderer (none is supplied)."
+  ],
+  "process_notes": [
+    "pixl_plar_prepare refuses a changed packet once a store exists. The revision went through job-observe (abandon) + commit + job-prepare, as the specialist reported. That route records a local withdrawal with the 'failed' event; the evidence says no provider contact happened.",
+    "The specialist called pixellab-test list_jobs, which is read-only, to confirm nothing had been submitted. Only the caller submitted.",
+    "Helpers and evidence: work/build_packet.py, work/build_packet_r2.py, work/r2/, work/caller/. All are under the consumer root."
+  ]
+}
