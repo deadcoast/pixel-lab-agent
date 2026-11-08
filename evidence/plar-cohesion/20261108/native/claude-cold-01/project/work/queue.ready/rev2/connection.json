@@ -1,0 +1,63 @@
+{
+  "provider": "pixellab-test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "description": {
+        "type": "string",
+        "minLength": 1
+      },
+      "width": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 256,
+        "multipleOf": 4
+      },
+      "height": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 256,
+        "multipleOf": 4
+      },
+      "no_background": {
+        "type": "boolean"
+      },
+      "seed": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": [
+      "description"
+    ],
+    "additionalProperties": false
+  },
+  "discovery": {
+    "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this specialist session (rev2), cross-checked equal to provider-schemas.json#create_image_pro_flash",
+    "observed_at": "2026-11-08T05:09:00.566185+00:00",
+    "evidence": {
+      "connection": "pixellab-test",
+      "tool": "create_image_pro_flash",
+      "host_tool_name": "mcp__pixellab-test__create_image_pro_flash",
+      "host_declaration_text": "Controlled request-only fixture using documented PixelLab create_image_pro_flash fields. Queues one request; default canvas 64x64, no_background true. Return is a simulated acceptance, with no generated image or upstream provider. The assigned stage ends after retaining this job identity.",
+      "schema_file": "provider-schemas.json",
+      "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "schema_equals_host_declaration": true,
+      "contract_origin_file": "provider-contract-origin.json",
+      "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "provider_simulated": true,
+      "specialist_called_provider": false
+    }
+  },
+  "authorization": {
+    "scope": "Exactly one further submission, of this revised queue.ready rev2 request, to the controlled pixellab-test connection (create_image_pro_flash), after the caller's independent comparison. No other provider, credentials, installs or host changes.",
+    "evidence": {
+      "source": "OWNER.md",
+      "source_sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+      "locator": "line 7: 'The connection supports one further controlled request in this stage.'",
+      "provider_simulated": true,
+      "dispatch_owner": "caller, after its independent request/criteria comparison",
+      "prior_attempt": "first_request (remote_id controlled-create-0001) is terminal failed per caller observation work/queue.ready/rev2/original-status.json; it is not re-submitted"
+    }
+  }
+}

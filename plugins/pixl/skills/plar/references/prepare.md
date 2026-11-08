@@ -70,8 +70,29 @@ PixelLab. Record the actual provider response and continue normal retrieval/revi
 Keep store/task/output links and next action in PLAR. Preparation uses the existing
 sample phase; it does not approve a production family or supply missing reviews.
 
-An unchanged repeated call resumes the same preparation. A pending/unknown job
-needs reconciliation, not another submission. A changed reviewed contract or an
-existing different store needs explicit resumption/replanning through the existing
-operations. Keep older contracts and work. An isolated direct assignment can still
-use the ordinary PIXL workflow without creating a repository-wide inventory.
+Read the selected asset's `production` result before deciding the next action. It
+combines the allocation with actual store, output acceptance and pending provider
+state. The operation links single-output work back into PLAR; verify `allocation`
+in its response. A concurrent queue edit can leave a prepared job needing its link
+repaired. Preserve that job and reread the queue. Multi-output work needs an explicit
+choice of the delivery output; all planned outputs remain required by the task.
+
+An unchanged call resumes the same preparation. For a changed contract, refresh the
+actual source bindings/requirements, retain a new exact packet and obtain the caller's
+comparison. Resolve pending jobs using their originating connection before preparing
+replacement work. A changed provider or a completed request-only assignment does not
+terminate an existing submitted job. Preserve unknown outcomes until evidence resolves
+them; never label a real pending request failed just to unlock a revision. Simulated
+IDs remain on their controlled connection and cannot become upstream resources.
+
+Then call the same operation with `revise: true` and `expect` from current production
+state (CLI: `--revise --expect STATE_HASH`). It appends a candidate generation in the
+same store, retaining the earlier plan, inputs, jobs, candidates and verdicts. The
+returned task/output/job IDs are the current ones; never assume the first generation's
+IDs after a revision. Review/retrieve against the appropriate generation. An interrupted
+revision resumes with the same packet and current state hash. Acceptance from an earlier
+plan is not inherited. Existing explicit low-level amendments and family/adoption
+operations remain available when their broader scope is needed.
+
+An isolated direct assignment can still use ordinary PIXL operations without creating
+a repository-wide inventory. Neither route turns a sample into approved production.

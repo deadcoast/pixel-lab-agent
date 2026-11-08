@@ -22,3 +22,5 @@ is checked at new intent/dispatch publication, including generic commits. Retain
 input bytes keep reports and reconciliation of existing submissions available after
 consumer changes. Job reports expose selection state without rewriting the immutable
 intent. This adds no journal field and does not reinterpret legacy untagged inputs.
+
+PLAR-bound continuation uses the [allocation/revision contract](asset-preparation.md#allocation-and-revised-work). Pending attempts for the same explicitly tagged asset exclude new jobs even under different task/output IDs. New task activation/completion checks the current selection and selected generation; retained historical validation is unchanged.

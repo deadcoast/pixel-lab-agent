@@ -247,7 +247,7 @@ def main(argv=None):
             if cmd == "context":
                 binary = codec.encode(graph.context(doc, a.focus, a.budget))
             elif cmd == "ready":
-                output = {"ready": graph.ready(doc), "hash": codec.digest(doc)}
+                output = {"ready": service.workflow(a.path, a.root)["ready"] if doc.format == 2 else graph.ready(doc), "hash": codec.digest(doc)}
             elif cmd == "impact":
                 output = {"affected": graph.impact(doc, a.id)}
             else:

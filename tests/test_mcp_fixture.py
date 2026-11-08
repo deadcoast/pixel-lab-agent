@@ -38,6 +38,24 @@ class McpFixtureTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "one request"):
                 caller.request("create_image_pro_flash", arguments)
 
+    def test_continuation_fixture_requires_terminal_original_and_accepts_only_one_new_job(self):
+        from evaluations.plar_request_fixture import RequestProvider
+
+        with TemporaryDirectory() as temp:
+            folder = Path(temp)
+            provider = RequestProvider(folder, continuation=True)
+            original = provider.request("create_image_pro_flash", {"description": "Original"})
+            with self.assertRaises(ValueError):
+                provider.request("create_image_pro_flash", {"description": "New"})
+            state = json.loads((folder / "provider-state.json").read_bytes())
+            state["jobs"][0]["status"] = "failed"
+            (folder / "provider-state.json").write_text(json.dumps(state), encoding="utf-8")
+            self.assertEqual(provider.request("list_jobs", {})["jobs"][0]["status"], "failed")
+            revised = provider.request("create_image_pro_flash", {"description": "New"})
+            self.assertNotEqual(original["job_id"], revised["job_id"])
+            with self.assertRaises(ValueError):
+                provider.request("create_image_pro_flash", {"description": "Duplicate"})
+
     def arguments(self):
         return {
             "method": "reference",

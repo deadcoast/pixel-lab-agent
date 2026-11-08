@@ -119,6 +119,12 @@ def run_plar_probe(cli, root):
         or prepared["remote_executed"]
     ):
         raise RuntimeError("installed preparation changed the request")
+    packet = cli(["plar", "read", "--root", str(root), "--asset", "queue.working"])
+    if (
+        packet["production"]["pending_jobs"] != [prepared["job"]["id"]]
+        or prepared["allocation"]["status"] != "linked"
+    ):
+        raise RuntimeError("prepared work was not connected to its allocation")
     write("probe/preparation.json", prepared)
     document = json.loads((root / "plar.txt").read_text(encoding="utf-8"))
     working = next(r for r in document["assets"] if r["id"] == "queue.working")
@@ -130,7 +136,8 @@ def run_plar_probe(cli, root):
             "task": prepared["task"],
             "output": prepared["outputs"][0],
         },
-        evidence=[
+        evidence=working["evidence"]
+        + [
             {
                 "path": "probe/preparation.json",
                 "note": "Actual local preparation receipt; no provider or image acceptance",
@@ -243,6 +250,90 @@ def run_plar_probe(cli, root):
         raise RuntimeError(
             "changed source obstructed observation or lost original bytes"
         )
+    focused = cli(["plar", "read", "--root", str(root), "--asset", "queue.working"])
+    if (
+        focused["production"]["next_action"] != "observe"
+        or focused["production"]["selection_current"]
+    ):
+        raise RuntimeError("cold allocation report lost changed-source pending work")
+    write(
+        "probe/terminal.json",
+        {
+            "fixture": "Synthetic terminal failure of the retained request; no provider cancellation is implied."
+        },
+    )
+    terminal = cli(
+        [
+            "job-observe",
+            str(state.parent),
+            "first_request",
+            "failed",
+            str(root / "probe/terminal.json"),
+            "--root",
+            str(root),
+            "--expect",
+            observed["hash"],
+        ]
+    )
+    changed = json.loads((root / "plar.txt").read_bytes())
+    for source in changed["sources"]:
+        if source["path"] == "src/queue-view.ts":
+            source.pop("sha256", None)
+    write("probe/revised-allocation.json", changed)
+    cli(
+        [
+            "plar",
+            "save",
+            str(root / "probe/revised-allocation.json"),
+            "--root",
+            str(root),
+            "--expect",
+            focused["hash"],
+        ]
+    )
+    selected = cli(["plar", "read", "--root", str(root), "--asset", "queue.working"])
+    revised_arguments = {
+        **arguments,
+        "description": f"{arguments['description']} Current consumer revision.",
+    }
+    review["requirements_hash"] = selected["requirements_hash"]
+    review["sources"] = [
+        {"path": row["path"], "sha256": row["sha256"], "role": "consumer source"}
+        for row in selected["sources"]
+    ]
+    review["request"].update(write("probe/arguments-r2.json", revised_arguments))
+    write("probe/request-review-r2.json", review)
+    revised = cli(
+        [
+            "plar",
+            "prepare",
+            "--root",
+            str(root),
+            "--asset",
+            "queue.working",
+            "--requirements",
+            selected["requirements_hash"],
+            "--packet",
+            "probe/request-review-r2.json",
+            "--connection",
+            "probe/connection.json",
+            "--revise",
+            "--expect",
+            terminal["hash"],
+        ]
+    )
+    current = cli(["plar", "read", "--root", str(root), "--asset", "queue.working"])
+    if (
+        revised["task"] == prepared["task"]
+        or revised["job"]["request"]["arguments"] != revised_arguments
+        or current["asset"]["production"]["task"] != revised["task"]
+        or len(current["production"]["jobs"]) != 2
+        or retained_view.read_bytes() != original_view
+        or not current["production"]["selection_current"]
+    ):
+        raise RuntimeError(
+            "revised preparation lost old work or current allocation identity"
+        )
     return {
         "status": "pass",
         "checks": [
@@ -253,6 +344,10 @@ def run_plar_probe(cli, root):
             "exact dispatch payload",
             "existing job remains observable after source change",
             "retained source bytes remain exact",
+            "first preparation links allocation with pending job",
+            "cold selection reports changed requirements and original pending identity",
+            "explicit terminal observation permits reviewed revision",
+            "revised generation links current work and preserves original job and inputs",
         ],
         "scope": "Local installed operation with synthetic schema/observation; no model judgment, provider execution, generated image or engine acceptance",
     }

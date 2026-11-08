@@ -1,7 +1,5 @@
 """Connect PLAR requirements to retained production without inventing acceptance."""
 
-from pathlib import Path
-
 from . import codec, graph, jobs, lifecycle, store
 from .codec import PixlError
 
@@ -26,11 +24,15 @@ def owned_tasks(document, root, path, asset_id):
     return result
 
 
-def current_bindings(document, task_id, root):
+def current_bindings(document, task_id, root, folder=None):
     from .plar import selection_bindings
 
-    bindings = selection_bindings(document, task_id, root)
-    changed = [b for b in bindings if b["status"] != "current"]
+    bindings = selection_bindings(document, task_id, root, folder)
+    changed = [
+        b
+        for b in bindings
+        if b["status"] != "current" or not b.get("selected_for_asset", True)
+    ]
     if changed:
         raise PixlError(
             "plar_selection",
@@ -96,9 +98,12 @@ def report(root, selected, path):
         from .plar import selection_bindings
 
         task = document.records[task_id]
-        bindings = selection_bindings(document, task_id, root)
-        current = bool(bindings) and all(b["status"] == "current" for b in bindings)
-        report_jobs = jobs.report(document, root)["jobs"]
+        bindings = selection_bindings(document, task_id, root, folder)
+        current = bool(bindings) and all(
+            b["status"] == "current" and b.get("selected_for_asset", True)
+            for b in bindings
+        )
+        report_jobs = jobs.report(document, root, folder)["jobs"]
         relevant = [
             j for j in report_jobs if document.records[j["id"]].fields["tk"].id in owned
         ]

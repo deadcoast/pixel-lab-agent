@@ -53,16 +53,16 @@ def _context(doc, task_id, outputs):
     }
 
 
-def _blockers(doc, task_id, root=None):
+def _blockers(doc, task_id, root=None, dispatching=False):
     task = _task(doc, task_id)
     reasons = lifecycle.blockers(doc, task_id)
     if root is not None:
         from .plar import selection_bindings
 
         reasons.extend(
-            f"plar_selection: {row.get('asset_id', row['input'])} is {row['status']}; compare current requirements with the retained plan"
+            f"plar_selection: {row.get('asset_id', row['input'])} is {row['status']} (selected={row.get('selected_for_asset', True)}); compare current requirements with the retained plan"
             for row in selection_bindings(doc, task_id, root)
-            if row["status"] != "current"
+            if row["status"] != "current" or (dispatching and not row.get("selected_for_asset", True))
         )
     if task.fields["st"].value not in {"open", "active"}:
         reasons.append(f"task_state: {task_id} is {task.fields['st'].value}")
@@ -225,7 +225,17 @@ def validate(doc, root=None):
             _snapshots(doc, record, root)
 
 
-def _pending(doc, task_id, outputs, except_id=None):
+def _pending(doc, task_id, outputs, except_id=None, root=None):
+    def selections(task):
+        keys = set()
+        for reference in _task(doc, task).fields.get("ip", []):
+            metadata = doc.records[reference.id].fields.get("mt", {})
+            if metadata.get("binding") == "pixl.plar.selection/1" and all(isinstance(metadata.get(k), str) for k in ("plar_path", "asset_id")):
+                path = graph.confined(root, metadata["plar_path"]) if root is not None else Path(metadata["plar_path"])
+                keys.add((str(path), metadata["asset_id"]))
+        return keys
+
+    selected = selections(task_id)
     for record in doc.records.values():
         if (
             record.kind != "J"
@@ -234,7 +244,7 @@ def _pending(doc, task_id, outputs, except_id=None):
         ):
             continue
         fields = record.fields
-        if ("jr" not in fields and fields["tk"].id == task_id) or (
+        if selected.intersection(selections(fields["tk"].id)) or ("jr" not in fields and fields["tk"].id == task_id) or (
             "jr" in fields and set(outputs) & {r.id for r in fields["op"]}
         ):
             raise PixlError(
@@ -286,7 +296,7 @@ def transitions(current, candidate, root, folder):
                 "job_blocked",
                 record.id,
             )
-            _pending(candidate, context["task"], context["outputs"], record.id)
+            _pending(candidate, context["task"], context["outputs"], record.id, root)
             continue
         previous = _snapshots(current, old, root)[-1]
         _require(journal["intent"] == previous["intent"], "job_history", record.id)
@@ -327,11 +337,11 @@ def transitions(current, candidate, root, folder):
                 f"{record.id}: request context changed",
             )
             _require(
-                not _blockers(candidate, context["task"], root),
+                not _blockers(candidate, context["task"], root, dispatching=True),
                 "job_blocked",
                 record.id,
             )
-            _pending(candidate, context["task"], context["outputs"], record.id)
+            _pending(candidate, context["task"], context["outputs"], record.id, root)
         elif journal["events"][-1]["event"] == "imported":
             item = journal["events"][-1]["artifact"]
             _require(
@@ -499,7 +509,7 @@ def _summary(doc, record, journal, root=None):
     stale = _stale(doc, journal)
     state = journal["state"]
     reasons = (
-        _blockers(doc, journal["intent"]["context"]["task"], root)
+        _blockers(doc, journal["intent"]["context"]["task"], root, dispatching=True)
         if state == "prepared"
         else []
     )
@@ -576,7 +586,7 @@ def prepare(
     context = _context(doc, task_id, outputs)
     reasons = _blockers(doc, task_id, root)
     _require(not reasons, "job_blocked", "; ".join(reasons))
-    _pending(doc, task_id, outputs)
+    _pending(doc, task_id, outputs, root=root)
     request = platform.prepare_discovered(
         provider, tool, arguments, schema, discovery, authorization
     )
@@ -589,7 +599,7 @@ def dispatch(folder, expected, job_id, root=None):
     previous = _get(doc, job_id, root)
     _require(not _stale(doc, previous), "job_stale", "saved request context changed")
     task_id = previous["intent"]["context"]["task"]
-    reasons = _blockers(doc, task_id, root)
+    reasons = _blockers(doc, task_id, root, dispatching=True)
     _require(not reasons, "job_blocked", "; ".join(reasons))
     journal = job_history.append(
         previous,

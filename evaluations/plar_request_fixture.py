@@ -52,7 +52,8 @@ DESCRIPTIONS = {
 
 
 class RequestProvider(Provider):
-    def __init__(self, folder):
+    def __init__(self, folder, continuation=False):
+        self.continuation = continuation
         super().__init__(folder, folder / "unused-negative", folder / "unused-positive")
 
     def request(self, name, arguments):
@@ -61,12 +62,12 @@ class RequestProvider(Provider):
             Draft202012Validator(SCHEMAS[name]).validate(arguments)
             if name == "list_jobs":
                 return {"jobs": self.state["jobs"], "provider_simulated": True}
-            if self.state["jobs"]:
+            if self.state["jobs"] and not (self.continuation and len(self.state["jobs"]) == 1 and self.state["jobs"][0]["status"] == "failed"):
                 raise ValueError(
                     "This stage permits one request; recover the existing job"
                 )
             job = {
-                "job_id": "controlled-create-0001",
+                "job_id": f"controlled-create-{len(self.state['jobs']) + 1:04d}",
                 "status": "queued",
                 "arguments": arguments,
                 "tool": name,
@@ -78,8 +79,8 @@ class RequestProvider(Provider):
             return job
 
 
-def serve(folder):
-    provider = RequestProvider(folder)
+def serve(folder, continuation=False):
+    provider = RequestProvider(folder, continuation)
     for line in sys.stdin:
         request = json.loads(line)
         if "id" not in request:
@@ -129,4 +130,6 @@ def serve(folder):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--folder", type=Path, required=True)
-    serve(parser.parse_args().folder)
+    parser.add_argument("--continuation", action="store_true")
+    args = parser.parse_args()
+    serve(args.folder, args.continuation)

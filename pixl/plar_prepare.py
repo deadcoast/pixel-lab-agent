@@ -361,6 +361,10 @@ def _document(root, selected, plan, marker_path, marker, marker_hash, captured=N
         document.records = {
             names[r.id]: Record(names[r.id], r.kind, remap(r.fields)) for r in records
         }
+    if prefix:
+        for record in document.records.values():
+            if record.kind == "I":
+                record.fields["ky"] = prefix + record.fields["ky"]
     return document
 
 
@@ -442,14 +446,14 @@ def prepare(
                     )
                 prefix = "r." + fingerprint[:16] + "."
             captured, retained_sources = {}, {}
-            for original, expected in sources.items():
+            for original, source_digest in sources.items():
                 local = graph.confined(root, original)
                 _require(
                     local.stat().st_size <= 64 * 1024 * 1024, "source exceeds 64 MiB"
                 )
                 source_data = local.read_bytes()
                 _require(
-                    sha256(source_data).hexdigest() == expected,
+                    sha256(source_data).hexdigest() == source_digest,
                     f"source changed while preparing: {original}",
                 )
                 suffix = local.suffix.lower()
@@ -458,10 +462,13 @@ def prepare(
                 ):
                     suffix = ".bin"
                 retained_path = (
-                    folder.relative_to(root) / "inputs" / (expected + suffix)
+                    folder.relative_to(root) / "inputs" / (source_digest + suffix)
                 ).as_posix()
                 captured[retained_path] = source_data
-                retained_sources[original] = {"path": retained_path, "sha256": expected}
+                retained_sources[original] = {
+                    "path": retained_path,
+                    "sha256": source_digest,
+                }
             marker = {
                 "version": 1,
                 "input_sha256": fingerprint,
@@ -500,6 +507,11 @@ def prepare(
     document = _document(root, selected, plan, marker_path, marker, marker_hash)
     task_id = marker.get("prefix", "") + "task"
     output_ids = [r.id for r in document.records[task_id].fields["op"]]
+    job_id = (
+        marker.get("prefix", "") + "request"
+        if marker.get("prefix")
+        else "first_request"
+    )
     graph.validate(document, root)
     _require(
         not lifecycle.blockers(document, task_id),
@@ -531,7 +543,18 @@ def prepare(
                 candidate.records[id_] = record
         candidate.revision += 1
         store.commit(folder, candidate, expected, root)
-    elif linked and linked["task"] != task_id:
+    elif (
+        linked
+        and linked["task"] != task_id
+        and not (
+            revise
+            and expected is not None
+            and (
+                job_id not in current.records
+                or current.records[job_id].fields["si"].value == "prepared"
+            )
+        )
+    ):
         _require(
             False,
             "this is an earlier retained plan; resume the currently linked production instead",
@@ -586,7 +609,7 @@ def prepare(
             **identity["request"],
         )
         current = store.load(folder)
-    report = jobs.report(current, root)
+    report = jobs.report(current, root, folder)
     job = next(row for row in report["jobs"] if row["id"] == job_id)
     retained_request = job.get("request", {})
     expected_context = jobs._context(current, task_id, output_ids)
@@ -604,6 +627,9 @@ def prepare(
     )
     allocation = plar_workflow.synchronize(
         root, selected, path, folder, task_id, output_ids, marker_path
+    )
+    job = next(
+        row for row in jobs.report(current, root, folder)["jobs"] if row["id"] == job_id
     )
     return {
         "allocation": allocation,

@@ -218,9 +218,22 @@ def workflow(path, root=None):
             "lifecycle_format",
             "workflow requires PX2; PX1 state retains its original rules",
         )
+    report = lifecycle.report(doc)
+    if root is not None:
+        from .plar import selection_bindings
+        from .plar_workflow import current_bindings
+
+        for task in report["tasks"]:
+            task["selection_bindings"] = selection_bindings(doc, task["id"], root, Path(path).resolve().parent)
+            try:
+                current_bindings(doc, task["id"], root, Path(path).resolve().parent)
+            except PixlError as error:
+                task["blockers"].append(str(error))
+                if task["id"] in report["ready"]:
+                    report["ready"].remove(task["id"])
     return _with_retained_sources(
         dict(
-            lifecycle.report(doc),
+            report,
             format=2,
             revision=doc.revision,
             hash=codec.digest(doc),
@@ -261,7 +274,7 @@ def job_prepare(folder, expected, job_id, task_id, outputs, request, root=None):
 
 def job_report(path, root):
     doc = load_document(path)
-    return _with_retained_sources(jobs.report(doc, root), doc, root)
+    return _with_retained_sources(jobs.report(doc, root, Path(path).resolve().parent), doc, root)
 
 
 def family_report(path, root, output_id=None):
@@ -292,7 +305,7 @@ def call(name, args, root):
         doc = load_document(path("path"))
         graph.validate(doc, root)
         if name == "pixl_ready":
-            return {"ready": graph.ready(doc), "hash": codec.digest(doc)}
+            return {"ready": workflow(path("path"), root)["ready"] if doc.format == 2 else graph.ready(doc), "hash": codec.digest(doc)}
         if name == "pixl_impact":
             return {"affected": graph.impact(doc, args["id"])}
         packet = graph.context(doc, args["focus"], args.get("budget"))

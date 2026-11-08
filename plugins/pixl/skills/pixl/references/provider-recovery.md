@@ -53,7 +53,7 @@ For delegated work, compare the saved prepared request with the exact arguments 
 
 Start with `jobs STORE/state.px --root ROOT`. It returns the saved request, context, event history, remote identity, candidate associations, drift and next action. Reading a request is not a new dispatch grant.
 
-A resource ID belongs to the connection that returned it. Use that same provider/account context for lookup or retrieval; never carry a simulated or unrelated provider ID into a real service. If the originating connection cannot return an image, retain that limitation and its observed state. Separate future production uses its own actual request and provider identity under the assignment; it is not retrieval of the simulated job.
+A resource ID belongs to the connection that returned it. Use that same provider/account context for lookup or retrieval; never carry a simulated or unrelated provider ID into a real service. If the originating connection cannot return an image, retain that limitation and its observed state. Separate future production uses its own actual request and provider identity under the assignment; it is not retrieval of the simulated job. A finished request-only assignment does not terminate its queued job: before another request for the same asset, resolve the pending attempt with supported originating-connection evidence, or keep a truly separate assignment/context explicit. Changing task/output IDs within the asset store cannot bypass its pending attempt.
 
 | Saved state / issue | Next operation |
 |---|---|

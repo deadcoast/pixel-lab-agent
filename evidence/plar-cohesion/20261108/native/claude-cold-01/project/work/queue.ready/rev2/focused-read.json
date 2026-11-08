@@ -1,0 +1,460 @@
+{
+  "hash": "8286816146866e72f33147f055fdcc4cb8c9c5228aa240ad74e31375c7f81001",
+  "project_root": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief (current update paragraph, line 9) and changed queue-view (statusVisuals.succeeded, line 6) for this refresh; queue-state, start.svg and SOURCE-MAP.md are byte-unchanged.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations (working.png, paused.png, ready-confirmed.png, error-retry.png) are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Reconcile the Ready destination move from assets/ready.png to assets/ready-confirmed.png while preserving its queue.ready ID, unchanged success/completion purpose and existing production history; add the brief's asymmetrical-arm check-mark requirement to queue.ready only.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "No executable UI entry point, renderer, importer, package manifest or runtime capture was supplied. Descriptor inspection does not verify rendered behavior, frame cropping, alpha compositing or integration.",
+      "No approved style reference exists. Ready remains the proposed representative sample (now required to use an asymmetrical-arm check mark); Working, Retry and Paused depend on its review before family expansion.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "The supplied SVG was inspected as source only. No artwork was generated, rendered, or visually accepted during allocation or refresh."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\BRIEF.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\assets\\start.svg"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "next": "First attempt first_request (pixellab-test, remote_id controlled-create-0001, provider_simulated=true) is terminal failed without an image, observed by the caller on its originating connection (work/queue.ready/rev2/original-status.json). The brief and view changed: Ready now needs an asymmetrical-arm check mark at assets/ready-confirmed.png. Next: specialist prepares the revised packet in work/queue.ready/rev2/ and a revised generation in .pixl/assets/queue.ready via plar prepare --revise; caller independently compares it, then claims dispatch and submits the one further controlled pixellab-test request. No image, style approval or integration exists. Not integrated.",
+      "issues": [
+        "missing Current required Ready destination is missing; the previous assets/ready.png target is superseded by the updated view. No reusable Ready image was supplied.: assets/ready-confirmed.png"
+      ],
+      "questions": [
+        "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+      ]
+    }
+  ],
+  "dependency_issues": {},
+  "asset": {
+    "id": "queue.ready",
+    "kind": "static_status_icon",
+    "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+    "status": "in_progress",
+    "consumers": [
+      {
+        "source": "queue-view",
+        "symbol": "statusVisuals.succeeded",
+        "usage": "Maps succeeded to the Ready label, current assets/ready-confirmed.png path and one static frame."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "statusCell",
+        "usage": "Full status consumer returns the shared succeeded descriptor."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "compactStatus",
+        "usage": "Compact status consumer returns the same succeeded descriptor; reuse one asset."
+      },
+      {
+        "source": "queue-state",
+        "symbol": "stateAfter",
+        "usage": "An ok result transitions to succeeded, which resolves to the Ready visual."
+      }
+    ],
+    "existing": [
+      {
+        "path": "assets/ready-confirmed.png",
+        "role": "Current required Ready destination is missing; the previous assets/ready.png target is superseded by the updated view. No reusable Ready image was supplied."
+      }
+    ],
+    "requirements": [
+      {
+        "property": "cell_size_px",
+        "value": [
+          16,
+          16
+        ],
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF fixes logical status cells and display.cell agrees."
+      },
+      {
+        "property": "background",
+        "value": "transparent",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+      },
+      {
+        "property": "pixel_art_readability",
+        "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+      },
+      {
+        "property": "panel_background",
+        "value": "#172336",
+        "authority": "observation",
+        "sources": [
+          "queue-view"
+        ],
+        "reason": "display.background is the supplied dark-panel color; use it for future previews."
+      },
+      {
+        "property": "color_direction",
+        "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+      },
+      {
+        "property": "existing_accent",
+        "value": "#70b9ed",
+        "authority": "observation",
+        "sources": [
+          "start-vector"
+        ],
+        "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+      },
+      {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      {
+        "property": "image_geometry",
+        "value": {
+          "width": 16,
+          "height": 16,
+          "frames": 1
+        },
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "Ready is static and occupies one 16 by 16 logical cell."
+      },
+      {
+        "property": "state_meaning",
+        "value": "Communicate success/completion, distinct from Working activity and Retry failure.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-state",
+          "queue-view"
+        ],
+        "reason": "The succeeded state is Ready, and the working loop must not look like success."
+      },
+      {
+        "property": "ready_check_mark",
+        "value": "Ready visibly uses a check mark with asymmetrical arms to convey successful completion.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "The brief's current update requires this specific mark; the exact arm ratio, orientation and stroke weight are not specified."
+      },
+      {
+        "property": "family_sample",
+        "value": "Use Ready as the representative sample; review its silhouette, edges and color treatment before expanding Working and Retry.",
+        "authority": "proposal",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF requires a representative status sample first but does not choose which status."
+      },
+      {
+        "property": "sample_motif",
+        "value": "The check-mark form is now an owner requirement (see ready_check_mark). Remaining motif details are proposals for style review: stroke weight, arm proportions and orientation, highlight treatment and the absence of a backing plate or badge.",
+        "authority": "proposal",
+        "sources": [],
+        "reason": "The current brief fixes a check mark with asymmetrical arms but not its stroke weight, exact proportions, orientation, shading or framing."
+      },
+      {
+        "property": "paused_family_distinction",
+        "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+      },
+      {
+        "property": "destination_update",
+        "value": "The current Ready destination is assets/ready-confirmed.png; the established queue.ready asset identity, success/completion purpose and production history are unchanged.",
+        "authority": "observation",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "The current brief says the destination follows the updated view; statusVisuals.succeeded supplies the new path. Previous allocation bytes remain in PLAR history."
+      }
+    ],
+    "delivery": {
+      "path": "assets/ready-confirmed.png",
+      "checks": [
+        "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+        "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+        "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+        "Inspect at 1x and 3x nearest on #172336 that the mark is visibly a check mark with asymmetrical arms conveying successful completion.",
+        "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+        "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+        "Review and record the representative sample decision before expanding the other status assets; source-bind the approved visual reference for later handoff.",
+        "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+        "Confirm statusVisuals.succeeded resolves assets/ready-confirmed.png; do not deliver new Ready art to the superseded assets/ready.png path."
+      ]
+    },
+    "depends_on": [],
+    "questions": [
+      "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+    ],
+    "next": "First attempt first_request (pixellab-test, remote_id controlled-create-0001, provider_simulated=true) is terminal failed without an image, observed by the caller on its originating connection (work/queue.ready/rev2/original-status.json). The brief and view changed: Ready now needs an asymmetrical-arm check mark at assets/ready-confirmed.png. Next: specialist prepares the revised packet in work/queue.ready/rev2/ and a revised generation in .pixl/assets/queue.ready via plar prepare --revise; caller independently compares it, then claims dispatch and submits the one further controlled pixellab-test request. No image, style approval or integration exists. Not integrated.",
+    "evidence": [
+      {
+        "path": "work/queue.ready/request-review.json",
+        "note": "First Ready candidate request/criteria packet (sha256 c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a); prepared job first_request in .pixl/assets/queue.ready, not dispatched; provider_simulated=true; no image, review or integration."
+      },
+      {
+        "path": "work/queue.ready/caller-review.json",
+        "note": "Independent caller comparison of request-review.json (c9f17ecb...) against BRIEF/OWNER/source: consistent, no discrepancies; sha256 15b41fd2e544f838dcb12ca0211b9eddf80004711f104365995efa783216015a."
+      },
+      {
+        "path": "work/queue.ready/provider-response.json",
+        "note": "Actual pixellab-test create_image_pro_flash response and list_jobs: job_id controlled-create-0001, status queued, provider_simulated=true; no image. sha256 da8b5e2dfc905b6023042f4f7b14db6c6e9544db52582c6bacfe500042b553f9."
+      },
+      {
+        "path": "work/queue.ready/submission-comparison.json",
+        "note": "Caller comparison: submitted/echoed arguments equal reviewed provider-arguments.json (48a6a03c...). sha256 802280897255f352770ee556ecb71904448d53f0e3928ac524382b92545838cf."
+      },
+      {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "note": "PX2 store after observation: revision 3, hash 375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2; job first_request submitted; task 'task' open; output.ready has no candidate."
+      },
+      {
+        "path": "work/queue.ready/rev2/original-status.json",
+        "note": "Caller's pixellab-test list_jobs observation at resume: controlled-create-0001 failed without an image (provider_simulated=true); recorded on job first_request (store revision 4, hash 47ef2326...). sha256 7d0e1b38718e6bed9740a175e47798f3e409469c9295818dfaf75ff4f0f10bab."
+      }
+    ],
+    "production": {
+      "store": ".pixl/assets/queue.ready",
+      "task": "task",
+      "output": "output.ready"
+    }
+  },
+  "dependencies": [],
+  "visual_references": [],
+  "requirements_hash": "b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c",
+  "production": {
+    "store": ".pixl/assets/queue.ready",
+    "link_status": "linked",
+    "status": "available",
+    "state": "C:\\Users\\ryanf\\github\\gh\\pixel-lab-agent\\evidence\\plar-cohesion\\20261108\\native\\claude-cold-01\\project\\.pixl\\assets\\queue.ready\\state.px",
+    "hash": "47ef2326e8420a8db6369384c5eaf847cc07afd9474e37522a556c6689d71864",
+    "revision": 4,
+    "task": "task",
+    "task_state": "open",
+    "outputs": [
+      {
+        "id": "output.ready",
+        "name": "Ready status icon sample",
+        "candidate": null,
+        "requirements": [
+          {
+            "id": "criterion.ready.geometry",
+            "name": "geometry",
+            "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.transparent-background",
+            "name": "transparent-background",
+            "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.ready-meaning",
+            "name": "ready-meaning",
+            "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.readability-1x-3x",
+            "name": "readability-1x-3x",
+            "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.cool-blue-accent",
+            "name": "cool-blue-accent",
+            "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.silhouette-without-color",
+            "name": "silhouette-without-color",
+            "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          },
+          {
+            "id": "criterion.ready.sample-pixel-craft",
+            "name": "sample-pixel-craft",
+            "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          }
+        ],
+        "candidates": []
+      }
+    ],
+    "selection_bindings": [
+      {
+        "input": "selection",
+        "snapshot": ".pixl/assets/queue.ready/plans/fae21e3d75dd954d110db963d3475007f543fb27c9bd082e3a84d10e5c903eec.json",
+        "asset_id": "queue.ready",
+        "binding": "pixl.plar.selection/1",
+        "plar_path": "plar.txt",
+        "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+        "current_requirements_hash": "b0b8bb6f1620ba184aa2b054ee59ffb8e96dae15e7d668b729c5300b7ae0475c",
+        "selected_for_asset": true,
+        "linked_task": "task",
+        "status": "changed"
+      }
+    ],
+    "selection_current": false,
+    "jobs": [
+      {
+        "id": "first_request",
+        "state": "failed",
+        "remote_id": "controlled-create-0001",
+        "next_action": "review_failure",
+        "durable": true,
+        "task": "task",
+        "provider": "pixellab-test",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "connection": "pixellab-test",
+            "contract_origin_file": "provider-contract-origin.json",
+            "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+            "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+            "provider_simulated": true,
+            "schema_file": "provider-schemas.json",
+            "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+            "tool": "create_image_pro_flash"
+          },
+          "observed_at": "2026-11-08T03:47:58.109307+00:00",
+          "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this session, cross-checked against provider-schemas.json#create_image_pro_flash"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      }
+    ],
+    "pending_jobs": [],
+    "next_action": "review_contract",
+    "link_action": null,
+    "new_request_allowed": false,
+    "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance."
+  }
+}

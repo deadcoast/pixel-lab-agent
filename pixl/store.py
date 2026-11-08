@@ -123,6 +123,7 @@ def initialize(folder, doc=None, root=None, name="PIXL project"):
         _acceptance_plan(None, doc)
         from . import delivery, jobs
 
+        _selection_transitions(None, doc, root if root is not None else folder.parent, folder)
         jobs.transitions(None, doc, root if root is not None else folder.parent, folder)
         delivery.transitions(
             None, doc, root if root is not None else folder.parent, folder
@@ -241,6 +242,17 @@ def _transitions(current, candidate):
                     raise PixlError("job_identity_change", id_)
 
 
+def _selection_transitions(current, candidate, root, folder):
+    if candidate.format == 2 and root is not None:
+        from .plar_workflow import current_bindings
+
+        for record in candidate.records.values():
+            if record.kind == "T" and record.fields["st"].value in {"active", "done"}:
+                previous = current.records.get(record.id) if current is not None else None
+                if previous is None or previous.fields["st"] != record.fields["st"]:
+                    current_bindings(candidate, record.id, root, folder)
+
+
 def _check_commit(current, candidate, expected, root, folder):
     """Validate a publication without writing; shared by single/compound operations."""
     validate(current)  # A grounded candidate can repair file drift.
@@ -254,6 +266,7 @@ def _check_commit(current, candidate, expected, root, folder):
     _transitions(current, candidate)
     validate(candidate, root)
     _acceptance_plan(current, candidate)
+    _selection_transitions(current, candidate, root, folder)
     from . import delivery, jobs
 
     jobs.transitions(current, candidate, root, folder)

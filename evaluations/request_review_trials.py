@@ -95,7 +95,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         shutil.copytree(resume / "project", project, ignore=shutil.ignore_patterns("pixl-kit", "__pycache__"))
     else:
         project.mkdir()
-        if case not in ("mcp-edit", "plar-start"):
+        if case not in ("mcp-edit", "plar-start", "plar-resume"):
             seed(project, case)
     package = project / ".agents/skills/pixl-kit"
     shutil.copytree(ROOT / "plugins/pixl", package, ignore=shutil.ignore_patterns("__pycache__"))
@@ -114,7 +114,11 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         from evaluations import plar_asset_case
         extra_server = plar_asset_case.setup(project, destination, python, resume)
         guidance, prompt = plar_asset_case.GUIDANCE, plar_asset_case.PROMPT
-    if resume:
+    elif case == "plar-resume":
+        from evaluations import plar_resume_case
+        extra_server = plar_resume_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_resume_case.GUIDANCE, plar_resume_case.PROMPT
+    if resume and case != "plar-resume":
         prompt = ("You are the calling agent resuming the saved consumer project. Delegate a cold status/recovery check to PIXL. "
                   "Inspect its saved contracts, jobs, candidate reviews and delivered file. Recover the next action without repeating "
                   "completed submissions. Save COLD-RESULT.json with actual observed state and evidence. "
@@ -236,7 +240,7 @@ def run(destination: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("claude", "codex"), required=True)
-    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start"), required=True)
+    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start", "plar-resume"), required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", type=Path)

@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent independent of PIXL specialist",
+  "packet": {
+    "path": "work/queue.ready/revised/request-review.json",
+    "sha256": "8a724519250df065706c873716d9100e4fe112c420b11f58ede98bcbfbd921ce"
+  },
+  "verdict": "consistent",
+  "per_criterion": [
+    {
+      "criterion_id": "geometry",
+      "source": "BRIEF.md:3 'Status cells are 16 by 16 logical pixels'; 'Ready and Retry are static images'; src/queue-view.ts:6,9",
+      "comparison": "Exact16x16 static preserves source; no extra geometry.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "transparent-background",
+      "source": "BRIEF.md:3 'Use transparent backgrounds'",
+      "comparison": "Alpha0 outside subject; partial subject alpha allowed, no binary-alpha addition.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "ready-meaning",
+      "source": "BRIEF.md:11 'convey successful completion'; src/queue.ts:3 ok->succeeded; src/queue-view.ts:3,6",
+      "comparison": "Preserves completion meaning and Start distinction; future family comparisons deferred.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "check-mark-asymmetrical-arms",
+      "source": "BRIEF.md:11 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'",
+      "comparison": "Required motif and asymmetry retained in prompt and rejection rule. Symmetric check fails appropriately; no numeric ratio or stroke requirement added.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "readability-1x-3x",
+      "source": "BRIEF.md:3 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; src/queue-view.ts:9 #172336",
+      "comparison": "Both scales and actual panel retained without numerical contrast threshold.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "cool-blue-accent",
+      "source": "BRIEF.md:3 'existing UI’s cool blue accent; a fixed palette is not required'; assets/start.svg:1 fill #70b9ed",
+      "comparison": "Visual relationship retained; hue alternatives can pass, no exact hex/count rule.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "silhouette-without-color",
+      "source": "Specialist sample choice; BRIEF.md:3 Retry non-color, :7 Paused non-color",
+      "comparison": "Extra sample rule accurately attributed and scoped. Could reject hue-only identity; reasonable check-form trial, no unavailable family prerequisites.",
+      "finding": "consistent"
+    },
+    {
+      "criterion_id": "sample-pixel-craft",
+      "source": "Specialist expert judgment; BRIEF.md:3 'coherent pixel-art status assets'; :5 representative sample",
+      "comparison": "Craft judgment retained as expert sample criterion; no fixed outline/stroke/palette recipe; approval not inferred.",
+      "finding": "consistent"
+    }
+  ],
+  "request_findings": [
+    "Read complete exact arguments and criteria, current original sources and host schema independently.",
+    "Payload uses only advertised description,width,height,no_background; explicit16x16/transparency. No reference-image input exists. Start fill is an observation, not approved art reference.",
+    "Centered unadorned mark, rising longer arm, optional shading/no text/plate/shadow are scoped specialist choices; no additional mandatory numerical recipe.",
+    "Destination is assets/ready-confirmed.png (view line6), shared by statusCell/compactStatus; deferred delivery updated. No stale ready.png destination in current contract.",
+    "All six later-stage family/style/destination/renderer obligations remain explicit with prerequisites. No sample gate depends on unproduced family images.",
+    "Original provider failure observed on originating pixellab-test; original artifacts retained. One further simulated request authorized by OWNER.md."
+  ],
+  "unresolved_findings": [],
+  "next": "Verify hashes and unchanged selected requirements, prepare explicit revision, compare durable dispatch arguments with reviewed JSON and submit once; record actual controlled response. No asset acceptance."
+}

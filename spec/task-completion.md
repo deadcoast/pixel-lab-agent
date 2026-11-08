@@ -27,3 +27,5 @@ selected candidate IDs, task ID, publication history and explicit
 `acceptance_created:false` / `remote_executed:false`. Files still need the caller's
 assigned destination integration and actual review; this operation only publishes
 completion supported by the existing saved acceptance plan.
+
+PLAR-bound continuation uses the [allocation/revision contract](asset-preparation.md#allocation-and-revised-work). Pending attempts for the same explicitly tagged asset exclude new jobs even under different task/output IDs. New task activation/completion checks the current selection and selected generation; retained historical validation is unchanged.

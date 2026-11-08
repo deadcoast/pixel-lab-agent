@@ -1,6 +1,6 @@
 # Selected asset to first candidate request
 
-`plar prepare --root ROOT --asset ID --requirements HASH --packet PACKET_JSON --connection CONNECTION_JSON [--store STORE] [--path plar.txt]`
+`plar prepare --root ROOT --asset ID --requirements HASH --packet PACKET_JSON --connection CONNECTION_JSON [--store STORE] [--path plar.txt] [--revise --expect STATE_HASH]`
 and `pixl_plar_prepare` prepare the first candidate for a selected PLAR asset.
 The normal output is an existing PX2 sample plan plus its first durable provider job.
 The operation executes locally and returns the normal job state/next action. It
@@ -25,8 +25,8 @@ existing dispatch/observe operations and the assignment's existing authorization
   from the reviewed packet, avoiding a second hand-authored copy of the payload.
   Credentials belong in the host connection, never these artifacts.
 - `store` defaults to `.pixl/assets/ASSET_ID` under the consumer. Existing linked
-  work must be resumed in its own store. This is a first-plan adapter; it does not
-  replace another plan or amend an existing candidate contract implicitly.
+  work defaults to its linked store. A revised contract requires explicit `revise`
+  and the current production `expect` hash; ordinary calls cannot replace it.
 
 Candidate-plan JSON follows [asset-plan.schema.json](../pixl/asset-plan.schema.json):
 `version:1`, an explicit candidate `scope`, and `outputs`. Each output has a distinct
@@ -58,7 +58,7 @@ Later source edits cannot rewrite what the earlier request consumed. Snapshot id
 PLAR status, next action, evidence links, production links and absolute installation
 paths. Updates to those queue fields or relocation do not invalidate the same plan.
 Changing relevant requirements, sources, arguments or criteria requires a new
-comparison and explicit existing-plan revision; this adapter refuses to overwrite.
+comparison and an explicit revision. The adapter never overwrites the old plan.
 
 Validation of supplied schema/authorization assertions occurs before publication;
 new discovery timestamps cannot be in the future. Invalid plan semantics are
@@ -89,3 +89,44 @@ or remote execution. Link appropriate store/task/output IDs in PLAR and update i
 status/next action against actual progress. Preparation is not completed production.
 After submission continue the existing retrieval, candidate review, revision and
 completion operations; failed candidates and unavailable required checks remain.
+
+## Allocation and revised work
+
+Focused PLAR reads return a compact `production` view: linked/discovered/missing
+state, current selection, planned outputs and acceptance results, retained provider
+identities, pending jobs and the next operation. This is derived from actual PX2
+state, not the editable allocation status. Missing or corrupt production leaves
+requirements readable with an explicit diagnostic. The default owned store can be
+discovered after an interrupted allocation link; custom stores require their link
+or the explicit store argument. Reports never search arbitrary directories.
+
+For one-output preparation, the operation CAS-links store/task/output, sets
+`in_progress` and appends the immutable plan snapshot as evidence. Unrelated rows,
+requirements, existing evidence and previous PLAR bytes remain unchanged. If a
+concurrent allocation edit wins, the prepared job remains retained and the result
+reports `allocation.status: needs_reconciliation`; reread and link it instead of
+starting another request. Unchanged matching links are left byte-identical. A
+multi-output plan returns `needs_output_link` for an explicit delivery-output choice.
+This linking step does not create a destination file or certify integration.
+
+`revise: true` with `expect` appends a new candidate task/output/criteria/choice/input
+generation in the **same store and project**, under IDs derived from the exact
+reviewed input identity. Every old task, candidate, verdict and journal remains.
+Project source/choice membership grows to include the new generation; no acceptance
+is copied. The single-output allocation link advances only after its job is prepared.
+A new plan can be retained before its job or allocation link; an unchanged explicit
+retry with the current state hash resumes that generation, not another one.
+
+Before revision, resolve every pending attempt bound to this PLAR asset. A provider
+change, new task ID or new output ID does not bypass that rule. Low-level prepare
+and generic job publication enforce it too for tagged selections. Prepared work
+may be explicitly withdrawn with the existing evidenced failed observation; unknown
+or submitted work requires actual evidence from its originating connection. The
+adapter never fabricates cancellation or retires a job merely to make a new plan fit.
+
+Old inputs and outputs stay readable after consumer changes. New dispatch and
+activation/completion require current selected requirements; completion also checks
+that the task is still the allocation's selected generation. Historical done state
+remains a statement about its original plan, not acceptance for the changed consumer.
+Existing untagged PX2 work keeps its original semantics. No new registry or journal
+fields are introduced.
