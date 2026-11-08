@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "role": "calling agent",
+  "status": "delivered",
+  "status_scope": "Assigned accepted revised request stage complete; asset unaccepted, no image and task open.",
+  "provider_simulated": true,
+  "asset_id": "queue.ready",
+  "delegation": {
+    "specialist": "/root/pixl",
+    "skills": [
+      ".agents/skills/pixl-kit/skills/plar/SKILL.md",
+      ".agents/skills/pixl-kit/skills/pixl/SKILL.md"
+    ]
+  },
+  "original": {
+    "result": "PARENT-RESULT.json",
+    "store": ".pixl/assets/queue.ready",
+    "state_path": ".pixl/assets/queue.ready/state.px",
+    "state_revision": 3,
+    "state_hash": "375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2",
+    "task": "task",
+    "output": "output.ready",
+    "job": "first_request",
+    "remote_id": "controlled-create-0001",
+    "provider": "pixellab-test",
+    "current_provider_status": "failed",
+    "failure_evidence": "work/queue.ready/revised/original-provider-status.json",
+    "plar_path": "plar.txt",
+    "plar_hash": "0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33",
+    "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+    "packet": "work/queue.ready/request-review.json",
+    "request": "work/queue.ready/provider-arguments.json",
+    "criteria": "work/queue.ready/candidate-plan.json"
+  },
+  "current": {
+    "store": ".pixl/assets/queue.ready",
+    "state_path": ".pixl/assets/queue.ready/state.px",
+    "state_revision": 8,
+    "state_hash": "552c03196c891a0445538ff222377c413bdbf0504e182bf387a27e6321697bfb",
+    "task": "r.e3924db2642e50c7.task",
+    "output": "r.e3924db2642e50c7.output.ready",
+    "job": "r.e3924db2642e50c7.request",
+    "job_state": "submitted",
+    "task_state": "open",
+    "remote_id": "controlled-create-0002",
+    "provider": "pixellab-test",
+    "observed_provider_status": "queued",
+    "plar_path": "plar.txt",
+    "plar_hash": "901014e409e1d441de2fc77c400b686aa6f5ab0d2a0e02a3c9638ebc2e6b04b7",
+    "requirements_hash": "08522cb2873b812aec762e19f0c213dcc90a8471b8e95f0da78a4a390c7f1b40",
+    "selection_current": true,
+    "destination": "assets/ready-confirmed.png",
+    "packet": "work/queue.ready/revised/request-review.json",
+    "request": "work/queue.ready/revised/provider-arguments.json",
+    "criteria": "work/queue.ready/revised/candidate-plan.json",
+    "caller_review": "work/queue.ready/revised/caller-review.json",
+    "submission_evidence": "work/queue.ready/revised/submission-evidence.json"
+  },
+  "independent_review": {
+    "version": 1,
+    "reviewer_role": "calling agent independent of PIXL specialist",
+    "packet": {
+      "path": "work/queue.ready/revised/request-review.json",
+      "sha256": "8a724519250df065706c873716d9100e4fe112c420b11f58ede98bcbfbd921ce"
+    },
+    "verdict": "consistent",
+    "per_criterion": [
+      {
+        "criterion_id": "geometry",
+        "source": "BRIEF.md:3 'Status cells are 16 by 16 logical pixels'; 'Ready and Retry are static images'; src/queue-view.ts:6,9",
+        "comparison": "Exact16x16 static preserves source; no extra geometry.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "transparent-background",
+        "source": "BRIEF.md:3 'Use transparent backgrounds'",
+        "comparison": "Alpha0 outside subject; partial subject alpha allowed, no binary-alpha addition.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "ready-meaning",
+        "source": "BRIEF.md:11 'convey successful completion'; src/queue.ts:3 ok->succeeded; src/queue-view.ts:3,6",
+        "comparison": "Preserves completion meaning and Start distinction; future family comparisons deferred.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "check-mark-asymmetrical-arms",
+        "source": "BRIEF.md:11 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'",
+        "comparison": "Required motif and asymmetry retained in prompt and rejection rule. Symmetric check fails appropriately; no numeric ratio or stroke requirement added.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "readability-1x-3x",
+        "source": "BRIEF.md:3 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; src/queue-view.ts:9 #172336",
+        "comparison": "Both scales and actual panel retained without numerical contrast threshold.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "cool-blue-accent",
+        "source": "BRIEF.md:3 'existing UI’s cool blue accent; a fixed palette is not required'; assets/start.svg:1 fill #70b9ed",
+        "comparison": "Visual relationship retained; hue alternatives can pass, no exact hex/count rule.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "silhouette-without-color",
+        "source": "Specialist sample choice; BRIEF.md:3 Retry non-color, :7 Paused non-color",
+        "comparison": "Extra sample rule accurately attributed and scoped. Could reject hue-only identity; reasonable check-form trial, no unavailable family prerequisites.",
+        "finding": "consistent"
+      },
+      {
+        "criterion_id": "sample-pixel-craft",
+        "source": "Specialist expert judgment; BRIEF.md:3 'coherent pixel-art status assets'; :5 representative sample",
+        "comparison": "Craft judgment retained as expert sample criterion; no fixed outline/stroke/palette recipe; approval not inferred.",
+        "finding": "consistent"
+      }
+    ],
+    "request_findings": [
+      "Read complete exact arguments and criteria, current original sources and host schema independently.",
+      "Payload uses only advertised description,width,height,no_background; explicit16x16/transparency. No reference-image input exists. Start fill is an observation, not approved art reference.",
+      "Centered unadorned mark, rising longer arm, optional shading/no text/plate/shadow are scoped specialist choices; no additional mandatory numerical recipe.",
+      "Destination is assets/ready-confirmed.png (view line6), shared by statusCell/compactStatus; deferred delivery updated. No stale ready.png destination in current contract.",
+      "All six later-stage family/style/destination/renderer obligations remain explicit with prerequisites. No sample gate depends on unproduced family images.",
+      "Original provider failure observed on originating pixellab-test; original artifacts retained. One further simulated request authorized by OWNER.md."
+    ],
+    "unresolved_findings": [],
+    "next": "Verify hashes and unchanged selected requirements, prepare explicit revision, compare durable dispatch arguments with reviewed JSON and submit once; record actual controlled response. No asset acceptance."
+  },
+  "actual_submitted_arguments": {
+    "description": "16x16 pixel-art UI status icon for Ready, conveying successful completion of queued work. A clearly visible check mark with asymmetrical arms: one shorter arm and one longer rising arm. A bold centered silhouette using the existing UI's cool blue accent, visually related to #70b9ed, with optional lighter blue shading; no fixed palette. Transparent background, single static image. Readable silhouette at 1x and 3x nearest-neighbor scale on the actual dark navy #172336 panel. Deliberate clean pixel clusters and edges. For this sample propose an unadorned check mark without text, a backing plate or a drop shadow; exact stroke width and colors remain open to visual review. This is the representative Ready sample before family expansion, not an approved style reference.",
+    "height": 16,
+    "no_background": true,
+    "width": 16
+  },
+  "submission_comparison": {
+    "reviewed_equals_dispatch": true,
+    "dispatch_equals_submitted": true,
+    "submitted_equals_create_response_and_list_jobs": true,
+    "submissions_this_stage": 1
+  },
+  "verification": {
+    "state_valid": true,
+    "files_verified": true,
+    "current_selection": true,
+    "criteria_count": 8,
+    "criteria_status": "all unperformed; no candidate",
+    "behavior": "Native delegated PLAR refresh, recovery, revision, independent caller comparison and controlled submission exercised.",
+    "art_outcome": "No image, visual acceptance, style approval or renderer integration.",
+    "original_task": "Retained open with stale selection blocker; revised task open without plan blockers."
+  },
+  "preserved": {
+    "previous_artifacts": "PARENT-RESULT and original work artifacts untouched; PLAR and PX2 history retained.",
+    "other_rows": "queue.working, queue.retry, queue.start, queue.paused unchanged",
+    "start_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"
+  },
+  "remaining_work": [
+    "No further submission assigned. Reconcile controlled-create-0002 only on originating pixellab-test before further attempts; never use simulated IDs upstream.",
+    "Future separately authorized generation/retrieval and candidate import require an actual image-capable service; no upstream exists here.",
+    "Review actual image against all eight saved criteria at1x/3x nearest on #172336, including asymmetrical check, transparency, cool blue relation and pixel craft.",
+    "Record style decision and approved reference before family expansion; retain Working activity, Retry and Paused non-color distinction reviews.",
+    "Deliver accepted image to assets/ready-confirmed.png and verify statusCell/compactStatus in actual renderer (none supplied)."
+  ],
+  "artifacts": [
+    {
+      "path": "work/queue.ready/revised/request-review.json",
+      "sha256": "8a724519250df065706c873716d9100e4fe112c420b11f58ede98bcbfbd921ce"
+    },
+    {
+      "path": "work/queue.ready/revised/provider-arguments.json",
+      "sha256": "31303517f81b02d8a18ba0c905ad90050a8c7f69d3eee719be2925908df6fe48"
+    },
+    {
+      "path": "work/queue.ready/revised/candidate-plan.json",
+      "sha256": "13f687f0fe1f6c209fa7e476730b52fdd9a485ae7bbf7d291d3b6e186ed9a9d7"
+    },
+    {
+      "path": "work/queue.ready/revised/connection.json",
+      "sha256": "8f16370912a26b621245282246895e0b71a9af4b9ca6c76010b2b1fbf0a26b7b"
+    },
+    {
+      "path": "work/queue.ready/revised/caller-review.json",
+      "sha256": "2df2f4d4b13bd97016a21c7e5dd07dc54ddcc20c4644cffddc560f4b1bfd6f50"
+    },
+    {
+      "path": "work/queue.ready/revised/submission-evidence.json",
+      "sha256": "352ad02953080fbbe518931ccba6276dbeea05bfe1bd1d0322a642730d01dc03"
+    },
+    {
+      "path": "work/queue.ready/revised/original-provider-status.json",
+      "sha256": "32d5be799aaea85d9a9bb86233b726cf14fc2e6fab478962705527f927a6274d"
+    }
+  ]
+}

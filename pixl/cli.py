@@ -25,6 +25,7 @@ def parser():
     q.add_argument("--root")
     q = sub.add_parser("ready")
     q.add_argument("path")
+    q.add_argument("--root")
     q = sub.add_parser("impact")
     q.add_argument("path")
     q.add_argument("id")

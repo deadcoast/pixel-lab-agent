@@ -609,7 +609,7 @@ def prepare(
             **identity["request"],
         )
         current = store.load(folder)
-    report = jobs.report(current, root)
+    report = jobs.report(current, root, folder)
     job = next(row for row in report["jobs"] if row["id"] == job_id)
     retained_request = job.get("request", {})
     expected_context = jobs._context(current, task_id, output_ids)
@@ -627,6 +627,9 @@ def prepare(
     )
     allocation = plar_workflow.synchronize(
         root, selected, path, folder, task_id, output_ids, marker_path
+    )
+    job = next(
+        row for row in jobs.report(current, root, folder)["jobs"] if row["id"] == job_id
     )
     return {
         "allocation": allocation,

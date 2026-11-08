@@ -98,7 +98,9 @@ identities, pending jobs and the next operation. This is derived from actual PX2
 state, not the editable allocation status. Missing or corrupt production leaves
 requirements readable with an explicit diagnostic. The default owned store can be
 discovered after an interrupted allocation link; custom stores require their link
-or the explicit store argument. Reports never search arbitrary directories.
+or the explicit store argument. Reports never search arbitrary directories. `new_request_allowed` is a local
+selection/pending-work advisory, not authorization or a substitute for preparation
+validation of the exact request and connection.
 
 For one-output preparation, the operation CAS-links store/task/output, sets
 `in_progress` and appends the immutable plan snapshot as evidence. Unrelated rows,

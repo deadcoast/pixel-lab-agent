@@ -26,7 +26,7 @@ def complete(folder, expected, task_id, candidates, root=None):
             raise PixlError("unknown_task", str(task_id))
         from .plar_workflow import current_bindings
 
-        current_bindings(current, task_id, root)
+        current_bindings(current, task_id, root, folder)
         if (
             not isinstance(candidates, list)
             or not candidates

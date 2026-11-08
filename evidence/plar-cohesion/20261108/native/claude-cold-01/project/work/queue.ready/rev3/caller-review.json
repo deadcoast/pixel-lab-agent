@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "reviewer": "calling agent (independent of PIXL specialist)",
+  "reviewed_at": "2026-11-08T05:17:04.191933+00:00",
+  "packet": {
+    "path": "work/queue.ready/rev3/request-review.json",
+    "sha256": "de88a037a349305e2e29b34bac160aaff069e677ed690cc0dd1f3401eac251c8"
+  },
+  "request": {
+    "path": "work/queue.ready/rev2/provider-arguments.json",
+    "sha256": "bef2510035113048070b25172b4b042633a2c7e4dca950915afa5b0aedeefdae",
+    "note": "unchanged from rev2, already reviewed"
+  },
+  "criteria": {
+    "path": "work/queue.ready/rev3/candidate-plan.json",
+    "sha256": "707bd4794435e9c3420c1e1f3c859704bb84880e8ab36e6c5cdb24d3b0063989"
+  },
+  "connection": {
+    "path": "work/queue.ready/rev2/connection.json",
+    "sha256": "86fd154ec0a9ad081381d88d132df98a1d04dd0e67e98c800bb9113c6acc3d88"
+  },
+  "previous_review": {
+    "path": "work/queue.ready/rev2/caller-review.json",
+    "sha256": "f0ab72906afce249a74ef20be918f2bb302b1625bf3888086c9ba687238f8fa1",
+    "verdict": "changes_requested"
+  },
+  "verdict": "consistent",
+  "criterion_comparisons": [
+    {
+      "id": "geometry",
+      "source": "BRIEF l3 '16 by 16 logical pixels','Ready and Retry are static'; l9 'Keep the existing 16x16 canvas, static behavior'; queue-view l6 frames 1, l9 cell [16,16]",
+      "adds_or_omits": "none",
+      "finding": "consistent"
+    },
+    {
+      "id": "transparent-background",
+      "source": "BRIEF l3 'Use transparent backgrounds'; l9 'transparent background'",
+      "adds_or_omits": "explicitly permits partial alpha (no binary-alpha rule added)",
+      "finding": "consistent"
+    },
+    {
+      "id": "ready-meaning",
+      "source": "BRIEF l9 'to convey successful completion'; l3 working must not look like success; queue.ts l3 ok->succeeded; queue-view l6 label Ready",
+      "adds_or_omits": "comparison against Working/Retry/Paused images deferred (they do not exist yet)",
+      "finding": "consistent; deferral retained in packet deferred_obligations and PLAR delivery checks"
+    },
+    {
+      "id": "asymmetric-check-mark",
+      "source": "BRIEF l9 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'; l9 'review display conditions'; queue-view l9",
+      "adds_or_omits": "Now 'visibly asymmetrical (for example differing in length and/or angle)'; leaves ratio/orientation/stroke/colour open. Tested alternatives: equal-length different-angle tick and mirrored tick both pass; symmetric V fails, which matches the source.",
+      "finding": "consistent (rev2 discrepancy resolved)"
+    },
+    {
+      "id": "readability-1x-3x",
+      "source": "BRIEF l3 'readable silhouettes','Inspect at 1x and 3x nearest display scale on the actual dark panel'; l9 'review display conditions'; queue-view l9 background #172336",
+      "adds_or_omits": "none",
+      "finding": "consistent"
+    },
+    {
+      "id": "cool-blue-accent",
+      "source": "BRIEF l3 'existing UI's cool blue accent; a fixed palette is not required'; start.svg l1 fill #70b9ed",
+      "adds_or_omits": "#70b9ed used as observed relationship, not exact-hex rule",
+      "finding": "consistent"
+    },
+    {
+      "id": "silhouette-without-color",
+      "source": "expert choice; BRIEF l3/l7 non-colour requirements apply to Retry and Paused, not Ready",
+      "adds_or_omits": "adds a sample-scoped rule. Tested alternative: any brief-conforming asymmetrical check mark carries its meaning by form, so it satisfies this rule; it rejects no source-conforming candidate. Largely overlaps asymmetric-check-mark.",
+      "finding": "acceptable as attributed specialist choice"
+    },
+    {
+      "id": "sample-pixel-craft",
+      "source": "expert judgment; BRIEF l3 'coherent pixel-art status assets', l5 representative sample",
+      "adds_or_omits": "quality rule attributed to expert judgment, scoped to sample",
+      "finding": "acceptable as attributed specialist choice"
+    }
+  ],
+  "other_findings": [
+    "My semantic diff of the rev2 and rev3 candidate-plans shows the contract and 7 criteria are equal. The only changes are the asymmetric-check-mark check text and the rev2->rev3 labels in scope and name.",
+    "Durable job r.725292e0867932c7.request (state prepared, request_sha256 0a333891...) saves arguments equal to the reviewed provider-arguments.json (I checked this in the caller jobs report, work/queue.ready/rev3/caller-jobs.json).",
+    "I reread PLAR (caller-plar-read.json). Hash edbe5d2d, requirements_hash b0b8bb6f unchanged, all source bindings current, selection current, pending job is only the rev3 request, next_action dispatch.",
+    "Rev2 job r.926cff0e8f7acca0.request was retired with a local failed event. Its evidence states it was never dispatched and no remote call was made. No remote_id or provider response was fabricated. I accept this as the documented route because the runtime has no other way to abandon a prepared job.",
+    "Minor wording note, not consequential: the reused connection.json authorization scope says 'this revised queue.ready rev2 request'. The rev2 job was never sent, so this rev3 submission is still the single 'one further controlled request' authorized by OWNER.md line 7. The arguments are identical.",
+    "Earlier generations, the first_request history and all first-generation and rev2 files are preserved. I verified their hashes."
+  ],
+  "next_action": "Caller claims dispatch of r.725292e0867932c7.request (expect baee0e58...) and submits its exact returned arguments once to pixellab-test create_image_pro_flash."
+}

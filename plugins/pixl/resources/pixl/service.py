@@ -224,9 +224,9 @@ def workflow(path, root=None):
         from .plar_workflow import current_bindings
 
         for task in report["tasks"]:
-            task["selection_bindings"] = selection_bindings(doc, task["id"], root)
+            task["selection_bindings"] = selection_bindings(doc, task["id"], root, Path(path).resolve().parent)
             try:
-                current_bindings(doc, task["id"], root)
+                current_bindings(doc, task["id"], root, Path(path).resolve().parent)
             except PixlError as error:
                 task["blockers"].append(str(error))
                 if task["id"] in report["ready"]:
@@ -274,7 +274,7 @@ def job_prepare(folder, expected, job_id, task_id, outputs, request, root=None):
 
 def job_report(path, root):
     doc = load_document(path)
-    return _with_retained_sources(jobs.report(doc, root), doc, root)
+    return _with_retained_sources(jobs.report(doc, root, Path(path).resolve().parent), doc, root)
 
 
 def family_report(path, root, output_id=None):

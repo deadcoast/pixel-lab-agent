@@ -342,7 +342,7 @@ def save(root, document, expected, path="plar.txt"):
     return read(root, path, since=actual if previous is not None else None)
 
 
-def selection_bindings(document, task_id, root):
+def selection_bindings(document, task_id, root, folder=None):
     """Report opt-in live PLAR selections carried by immutable task input reports."""
     result = []
     for reference in document.records[task_id].fields["ip"]:
@@ -360,8 +360,9 @@ def selection_bindings(document, task_id, root):
             current = read(root, metadata["plar_path"], metadata["asset_id"], include_production=False)
             row["current_requirements_hash"] = current["requirements_hash"]
             link = current["asset"].get("production")
-            row["selected_for_asset"] = link is None or link["task"] == task_id
+            row["selected_for_asset"] = link is None or (link["task"] == task_id and (folder is None or graph.confined(root, link["store"]) == Path(folder).resolve()))
             row["linked_task"] = link["task"] if link else None
+            row["linked_store"] = link["store"] if link else None
             row["status"] = (
                 "current"
                 if current["requirements_hash"] == metadata["requirements_hash"]

@@ -301,3 +301,15 @@ Give the delegate: absolute consumer root, installed skill location, PLAR path a
 For a copied plugin in Codex, place the complete kit under `.agents/skills/pixl-kit/` and add discoverable `.agents/skills/plar/SKILL.md` and `.agents/skills/pixl/SKILL.md` wrappers pointing to `../pixl-kit/skills/plar/SKILL.md` and `../pixl-kit/skills/pixl/SKILL.md`. Keep the kit's sibling resources/runtime intact. Alternatively use the host's supported plugin installation. Shared names are not automatically merged.
 
 The canonical profile is explicitly copied from `.agents/PROFILE.md` to the portable `resources/agent/PROFILE.md` location. Both wheel and plugin checks verify those bytes. A source-only wheel provides runtime resources; the complete plugin also provides host skills and agent adapters.
+
+
+Focused PLAR reads also join the allocation to retained production: current selected
+task, output reviews, provider-bound pending work and next action. Single-output
+preparation links its work back to the queue. An interrupted link can be repaired by
+resuming the same request. A reviewed changed contract uses the same operation with
+`revise: true` and the current state `expect` (CLI `--revise --expect`), after pending
+work has been resolved through its originating connection. Old generations and their
+reviews remain; the replacement does not inherit acceptance. `ready PATH --root
+CONSUMER` and MCP readiness apply the same current-selection checks as dispatch and
+completion. See [the allocation/production contract](../spec/asset-preparation.md)
+and [cohesion evidence](../evidence/plar-cohesion/README.md) for behavior and limits.

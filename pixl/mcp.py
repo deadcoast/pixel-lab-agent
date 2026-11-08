@@ -32,12 +32,12 @@ TOOLS = [
     ),
     (
         "pixl_plar_read",
-        "Read project asset requirements, source drift and next actions; select asset_id for a focused production handoff.",
+        "Read project asset requirements, source drift and update impact; select asset_id for current production links, pending jobs and next actions.",
         schema({"path": STR, "asset_id": STR, "since": STR}),
     ),
     (
         "pixl_plar_prepare",
-        "Prepare the selected asset's first reviewable candidate from exact request-review artifacts and the discovered provider schema. Saves the existing PX2 sample plan and durable first request; never dispatches, generates, or approves art. Repeated unchanged calls resume the existing job.",
+        "Prepare a selected asset from reviewed request/criteria and discovered provider schema. Retains the candidate plan and durable job, links the allocation, and resumes identical calls. Explicit revise plus expect appends a reviewed generation after pending work is resolved. No dispatch or art acceptance.",
         schema({"path": STR, "asset_id": STR, "requirements_hash": STR, "packet": STR,
                 "connection": {"anyOf": [OBJ, STR]}, "store": STR,
                 "revise": {"type": "boolean"}, "expect": STR},
@@ -60,7 +60,7 @@ TOOLS = [
     ),
     (
         "pixl_ready",
-        "List open tasks whose prerequisites are completed.",
+        "List open tasks whose prerequisites are completed and whose tagged PLAR selections remain current.",
         schema({"path": STR}, ["path"]),
     ),
     (

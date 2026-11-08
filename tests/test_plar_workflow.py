@@ -397,13 +397,72 @@ class PLARWorkflowTests(unittest.TestCase):
             store.initialize(folder, initial, self.root)
         self.assertFalse((folder / "state.px").exists())
 
+    def test_revision_preserves_accepted_candidate_and_reviews_without_inheriting_them(
+        self,
+    ):
+        from PIL import Image
+
+        first = self.prepare()
+        folder = self.root / first["store"]
+        dispatched = jobs.dispatch(folder, first["hash"], "first_request", self.root)
+        succeeded = jobs.observe(
+            folder,
+            dispatched["hash"],
+            "first_request",
+            "succeeded",
+            {"fixture": "Synthetic lifecycle success, not PixelLab generation"},
+            remote_id="synthetic-only",
+            root=self.root,
+        )
+        Image.new("RGBA", (64, 16), "magenta").save(self.root / "synthetic.png")
+        imported = jobs.import_artifact(
+            folder,
+            succeeded["hash"],
+            "first_request",
+            first["outputs"][0],
+            "candidate",
+            "synthetic.png",
+            {"fixture": "Synthetic test raster"},
+            root=self.root,
+        )
+        reviewed = store.load(folder)
+        reviewed.revision += 1
+        for index, criterion in enumerate(
+            reviewed.records[first["outputs"][0]].fields["rq"]
+        ):
+            add_verdict(
+                reviewed,
+                self.root,
+                "candidate",
+                criterion.id,
+                "pass",
+                f"verdict{index}",
+            )
+        store.commit(folder, reviewed, imported["hash"], self.root)
+        done = completion.complete(
+            folder, codec.digest(reviewed), first["task"], ["candidate"], self.root
+        )
+        original = store.load(folder)
+        self.revise_packet(source_change=True)
+        second = self.prepare(revise=True, expect=done["hash"])
+        current = store.load(folder)
+        for id_, record in original.records.items():
+            if id_ != "project":
+                self.assertEqual(record, current.records[id_])
+        self.assertEqual(current.records[first["task"]].fields["st"], Symbol("done"))
+        self.assertEqual(current.records[second["task"]].fields["st"], Symbol("open"))
+        self.assertEqual(current.records[second["task"]].fields["ca"], [])
+        self.assertEqual(current.records[second["task"]].fields["vr"], [])
+        self.assertEqual(second["job"]["next_action"], "dispatch")
+        self.assertEqual(self.selected()["production"]["task"], second["task"])
+
     def test_cli_and_mcp_readiness_agree_with_current_consumer(self):
         import subprocess
         import sys
 
         folder, _ = self.reviewed_sample()
         (self.root / "BRIEF.md").write_text("New consumer", encoding="utf-8")
-        args = {"path": str(folder / "state.px")}
+        args = {"path": (folder / "state.px").relative_to(self.root).as_posix()}
         mcp = service.call("pixl_ready", args, self.root)
         result = subprocess.run(
             [
@@ -412,7 +471,7 @@ class PLARWorkflowTests(unittest.TestCase):
                 "-m",
                 "pixl",
                 "ready",
-                args["path"],
+                str(self.root / args["path"]),
                 "--root",
                 str(self.root),
             ],

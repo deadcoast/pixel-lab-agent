@@ -53,7 +53,7 @@ Copy/install the complete plugin, not the skill directory alone. Requirements an
 
 ## Focused delegation identity
 
-A selected read returns `project_root`, `requirements_hash`, `asset`, full `dependencies`, relevant `sources` and `visual_references`. Source rows add `observed_sha256` and `absolute_path`; stored source paths remain portable and relative. The full queue's existing `hash` is still the compare-and-swap token for saves.
+A selected read returns `project_root`, `requirements_hash`, `asset`, full `dependencies`, relevant `sources`, `visual_references` and a derived `production` view. Source rows add `observed_sha256` and `absolute_path`; stored source paths remain portable and relative. The full queue's existing `hash` is still the compare-and-swap token for saves.
 
 The requirements hash covers the selected asset and transitive dependency requirements, their bound/current source identities and project brief. It excludes status, next action, evidence lists, production-state links and absolute installation paths. It does not assert readiness or acceptance; read dependency status/issues separately. Changing a style reference changes this hash even before someone refreshes its saved source hash. An unrelated asset's queue progress does not.
 
@@ -66,3 +66,25 @@ Queue reads include `changes`: tracked source drift, direct and transitively aff
 This is conservative file/dependency impact, not a semantic code scanner. Re-read changed code and look for new states, consumers or dynamic paths. A shared source edit can affect several rows for review without requiring all their requirements or assets to change. Do not merely refresh hashes. Keep stable roles/IDs on destination moves; retain superseded work as deferred where applicable.
 
 [First-candidate preparation](prepare.md) consumes a focused selection and the exact reviewed request/criteria artifacts, removing handwritten PX2 setup from that path.
+
+## Allocation and production continuity
+
+A focused read joins the selected row to its retained PX2 store. `production` reports
+current task/output acceptance, selection identity, provider-bound pending jobs and
+one next action. Missing or invalid state is an explicit diagnostic while the
+requirements remain readable. Queue `status` remains an authored progress label.
+`new_request_allowed` is only a local selection/pending-work advisory; preparation
+still validates the exact reviewed request, current source identity and connection.
+
+Single-output preparation links the resulting store/task/output and snapshot evidence
+back to the row. A failed concurrent queue save leaves the prepared job intact; resume
+the same preparation to repair its link. The default asset store is discoverable;
+custom stores require the existing link or explicit store argument. Multiple outputs
+need a deliberate choice of the delivery output.
+
+Source changes require review of affected/dependent rows, not automatic replacement
+of all art. For a revised contract, reconcile pending work on its original connection,
+retain the reviewed new packet, then use `plar prepare --revise --expect STATE_HASH`.
+The new generation is appended to the existing store; prior inputs, jobs, candidates
+and verdicts remain. Use returned IDs. Historical acceptance describes its original
+contract and cannot complete the newly selected generation.
