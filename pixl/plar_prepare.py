@@ -368,6 +368,63 @@ def _document(root, selected, plan, marker_path, marker, marker_hash, captured=N
     return document
 
 
+def _canonical_identity(identity):
+    """Source table order is presentation, just as in PLAR requirements identity."""
+    result = copy.deepcopy(identity)
+    selection = result.get("selection")
+    if isinstance(selection, dict) and isinstance(selection.get("sources"), list):
+        selection["sources"] = sorted(selection["sources"], key=platform._json_bytes)
+    return result
+
+
+def _retained_identity(current, root, folder, identity, linked):
+    """Reuse a bound older snapshot without renaming or rewriting its identity."""
+    canonical = _canonical_identity(identity)
+    if current is None:
+        return canonical
+    owned = plar_workflow.owned_tasks(
+        current, root, identity["plar_path"], identity["asset_id"]
+    )
+    owned.sort(key=lambda task: (not linked or task != linked["task"], task))
+    seen = set()
+    for task_id in owned:
+        for reference in current.records[task_id].fields["ip"]:
+            record = current.records[reference.id]
+            if (
+                reference.id in seen
+                or record.fields.get("mt", {}).get("binding") != "pixl.plar.selection/1"
+            ):
+                continue
+            seen.add(reference.id)
+            location = graph.confined(root, record.fields["ur"])
+            if (
+                location.parent != folder / "plans"
+                or location.suffix != ".json"
+                or len(location.stem) != 64
+                or any(c not in "0123456789abcdef" for c in location.stem)
+            ):
+                # Explicit selection metadata also supports ordinary report inputs.
+                continue
+            marker, _, relative = _json_file(
+                root, record.fields["ur"], record.fields["dg"]
+            )
+            previous = marker.get("input")
+            if (
+                not isinstance(previous, dict)
+                or _canonical_identity(previous) != canonical
+            ):
+                continue
+            fingerprint = platform._sha(previous)
+            _require(
+                marker.get("input_sha256") == fingerprint
+                and graph.confined(root, relative)
+                == graph.confined(folder, "plans/" + fingerprint + ".json"),
+                "retained preparation snapshot identity differs from its binding",
+            )
+            return previous
+    return canonical
+
+
 def prepare(
     root,
     asset_id,
@@ -408,6 +465,7 @@ def prepare(
             False,
             "revision requires existing production; omit revise for the first request",
         )
+    identity = _retained_identity(current, root, folder, identity, linked)
     fingerprint = platform._sha(identity)
     marker_file = graph.confined(folder, "plans/" + fingerprint + ".json")
     with store.lock(folder):

@@ -1,3 +1,5 @@
+Current allocation/production continuity, cold host findings and A–E answers: [cohesion review](../evidence/plar-cohesion/README.md).
+
 # PLA / PLAR critical review — 2026-11-07
 
 Later allocation/update and selected-request implementation, current A–E answers and actual host findings: [2026-11-08 review](../evidence/plar-allocation/README.md). The review below retains its original dated scope.

@@ -101,6 +101,57 @@ class PLARWorkflowTests(unittest.TestCase):
         self.prepare()
         self.assertEqual(unchanged, self.files())
 
+    def test_source_table_reordering_resumes_exact_current_job_without_writes(self):
+        first = self.prepare()
+        document = json.loads((self.root / "plar.txt").read_bytes())
+        document["sources"].reverse()
+        plar.save(self.root, document, plar.read(self.root)["hash"])
+        before = self.files()
+        second = self.prepare()
+        self.assertTrue(second["already_prepared"])
+        self.assertEqual(second["hash"], first["hash"])
+        self.assertEqual(before, self.files())
+
+    def test_precanonical_snapshot_resumes_after_source_reorder_without_migration(self):
+        # Reproduce the old identity algorithm; keep its saved bytes and IDs.
+        with patch("pixl.plar_prepare._canonical_identity", side_effect=copy.deepcopy):
+            first = self.prepare()
+        document = json.loads((self.root / "plar.txt").read_bytes())
+        document["sources"].reverse()
+        plar.save(self.root, document, plar.read(self.root)["hash"])
+        before = self.files()
+        second = self.prepare()
+        self.assertTrue(second["already_prepared"])
+        self.assertEqual(second["hash"], first["hash"])
+        self.assertEqual(second["task"], first["task"])
+        self.assertEqual(second["job"]["id"], first["job"]["id"])
+        self.assertEqual(before, self.files())
+
+    def test_revision_accepts_explicit_selection_metadata_on_a_text_report(self):
+        from hashlib import sha256
+
+        first = self.prepare()
+        terminal = self.terminal(first)
+        folder = self.root / first["store"]
+        current = store.load(folder)
+        report = self.root / "work/selection.txt"
+        report.write_text(
+            "Explicit PLAR binding report, not a preparation snapshot.",
+            encoding="utf-8",
+        )
+        current.records["selection"].fields.update(
+            ur="work/selection.txt", dg=sha256(report.read_bytes()).hexdigest()
+        )
+        current.revision += 1
+        store.commit(folder, current, terminal["hash"], self.root)
+        self.revise_packet()
+        revised = self.prepare(revise=True, expect=codec.digest(current))
+        self.assertEqual(revised["job"]["state"], "prepared")
+        self.assertEqual(revised["job"]["next_action"], "dispatch")
+        self.assertEqual(
+            store.load(folder).records["selection"], current.records["selection"]
+        )
+
     def test_custom_linked_store_resumes_without_repeating_store_option(self):
         first = self.prepare(store="work/retained asset")
         second = self.prepare()

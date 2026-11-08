@@ -56,7 +56,10 @@ the asset store and bound into the plan, together with an immutable selection/
 connection snapshot. The snapshot maps original paths/hashes to retained paths.
 Later source edits cannot rewrite what the earlier request consumed. Snapshot identity excludes mutable
 PLAR status, next action, evidence links, production links and absolute installation
-paths. Updates to those queue fields or relocation do not invalidate the same plan.
+paths. Updates to those queue fields, source-table reordering or relocation do not
+invalidate the same plan. New snapshots canonicalize the source table; matching
+older snapshots are reused through their explicit selection inputs without rewriting
+retained identities, records or jobs.
 Changing relevant requirements, sources, arguments or criteria requires a new
 comparison and an explicit revision. The adapter never overwrites the old plan.
 

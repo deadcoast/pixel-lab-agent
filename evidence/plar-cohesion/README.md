@@ -1,0 +1,56 @@
+# PLAR allocation and production cohesion — 2026-11-08
+
+This increment connects source allocation, the selected reviewed contract, durable provider work and current-consumer acceptance. It extends the existing first-request operation instead of adding another orchestration layer. The [master TODO](../../TODO.md) remains the product plan; actual PixelLab-generated quality and renderer acceptance remain open.
+
+## Connected behavior
+
+| Boundary | Implemented behavior | Evidence scope |
+| --- | --- | --- |
+| Consumer source → PLAR | Existing source/dependency impact and stable allocation IDs remain. Focused reads now join the selected row to its actual production state, pending provider identities and next operation. Missing/corrupt production preserves readable requirements with a diagnostic. | Raw-source/update cases from the previous increment; current runtime and cold source-change cases below |
+| Reviewed request → first plan/job | The same `pixl_plar_prepare` / `plar prepare` operation retains exact source/request/criteria inputs, creates the existing sample plan/job and links one-output work back into the allocation. | Exact dispatch and installed-consumer probes; native submissions |
+| Interrupted publication → resumption | A queue CAS conflict retains the prepared job. Repeating the exact packet repairs a missing default-store link or an interrupted revised job/link without duplicating work. Custom stores need their existing link or explicit store argument; multi-output plans need an explicit delivery-output choice. | Interrupted-store/link and concurrent-update regressions; independent probes |
+| Changed requirements → revised generation | Explicit `revise` plus current state `expect` appends a new generation within the same project/store. Original plans, input bytes, jobs, candidates, reviews and done history remain; acceptance is not inherited. | Failed-job and accepted-candidate revision regressions; both cold hosts |
+| Pending work → another request | Ownership comes from explicit PLAR selection bindings, across task/output generations. A provider switch or new task/output ID does not bypass pending work. Observe/reconcile the original connection; local code does not fabricate remote cancellation. | Native terminal observation, duplicate rejection, generic-publication regressions |
+| Selected generation → dispatch/completion | Current source identity and the selected task/store matter. CLI/MCP readiness, dispatch, activation and completion share that boundary. Old work remains readable and observable; an old done task does not certify the changed consumer. | Current-selection, same-task/different-store, stale completion and historical-read regressions |
+| Harmless allocation edit → same preparation | Reordering source-table rows leaves the request reusable. New snapshots canonicalize ordering; existing bound snapshots retain their exact original identity and job. | Fresh and pre-canonical snapshot regressions plus independent replay |
+
+There are still 32 local MCP tools. The profile owns visual expertise; PLAR owns source-to-asset understanding; the production skill owns operation/review order; the runtime maintains exact identities and state; the host calls the authenticated official PixelLab tools. The semantic caller comparison remains necessary: a structurally valid plan can contain an overstrict criterion.
+
+## Native cold continuation
+
+Both native hosts independently resumed the same previously submitted Claude consumer fixture. Before either run, the harness changed Ready's actual destination to `assets/ready-confirmed.png`, added a visible check mark with asymmetrical arms to the brief, and made the originating controlled job report a terminal failure with no image. The caller had to discover that actual fixture status, refresh affected allocation, compare the revised contract, preserve earlier work and submit one further request. This is a controlled connection, not an upstream PixelLab quality trial.
+
+| Attempt | Actual operation | Remaining conformance finding |
+| --- | --- | --- |
+| [Codex cold01](20261108/native/codex-cold-01/record.json) | Preserved prior inputs/history and unrelated rows; observed original failure; reviewed a revised plan; submitted its exact arguments once; retained current open/submitted state with next action `observe`. | The final criterion requires one shorter and one longer arm, attributing that narrower choice to the owner. The source only requires qualitative asymmetry. The plan, caller comparison and result also cite nonexistent BRIEF line 11; the requirement is line 9. |
+| [Claude cold01](20261108/native/claude-cold-01/record.json) | Caller caught the proposed unequal-length rejection rule, requested a broader visible-asymmetry criterion, and reviewed the correction. The undispatched superseded job was explicitly retired with local evidence; one corrected request was submitted. Original work and the rejected generation remain. | The final remaining-work instruction again suggests a new live job without first resolving the submitted controlled job. An isolated-copy replay rejects this with `job_pending` and no writes. The derived state correctly says `observe`; the authored continuation is incomplete. |
+
+Both complete the assigned request stage. Neither receives an unqualified full-conformance pass. No image, candidate acceptance, family adoption or renderer result was invented. The independent review checks actual packet/source bytes, outbound arguments, journal history, caller comparisons and final state; a host exit code is not its verdict.
+
+The exact frozen native kits predate the returned-action refresh, selected-store comparison, CLI/MCP readiness parity and source-order reuse corrections. Those later corrections have separate regression/independent/installed verification; they were not silently substituted into the native archives. Earlier full-delivery findings retain their original scope.
+
+## Verification and preserved defects
+
+[Checks and identities](checks.json) records the final full-verifier receipt, static/skill checks, installation probes, independent review and archives. The first full run of this increment, before the source-order correction, passed 498 tests plus one platform skip; its [receipt](../verification-runs/20261108T051736.141973Z/result.json) remains. A passing suite did not cover the subsequently found ordering case.
+
+Independent probes exposed a stale returned next action after successful allocation linking, a selected-store comparison that considered only the task name, and source-order-dependent preparation reuse. Each correction has retained evidence. The [baseline](20261108/baseline.manifest.json), [before-ordering source](20261108/before-source-order/identity.json), native frozen kits and independent probes preserve the relevant earlier conditions. The CLI parity regression also caught missing `ready --root` support during implementation; it now passes.
+
+The new tests cover real state transitions and observable failures, including interrupted publication, concurrent edits, pending ownership, cold relocation, accepted-candidate preservation, readiness parity and legacy snapshot reuse. Test images/verdicts are explicitly synthetic lifecycle fixtures, not assessments of pixel-art quality. The installation probe now follows eleven checks through selection, preparation, unrelated refresh, exact dispatch, source drift, terminal observation and append-only revision in both a clean wheel and copied plugin.
+
+Native [archives](20261108/archives/) include exact manifests and recorded input/output checks. Original failed attempts are retained. No source or evidence was removed to simplify the interface.
+
+## Required A–E review
+
+**A — Improvement.** The agent can ask for one selected asset and receive the current production action without reconstructing several stores by hand. Initial and revised requests use one operation with recoverable allocation linking. The new native evidence shows the next useful improvement is evidence-backed source comparison and executable continuation guidance: the parent can still approve a narrowed qualitative requirement or contradict the returned pending action. Repeating broad success claims would conceal those defects.
+
+**B — Host compatibility.** These native runs use the installed Claude Code and Codex CLI adapters, shared skill, local MCP and controlled provider connection recorded in their frozen identities. Both perform real parent/specialist exchange, review and one exact submission. This establishes bounded operation on those versions, not current-version compatibility everywhere. No new host-specific orchestration, global settings, tools or production policy was introduced. Existing official platform research and the authenticated PixelLab setup remain in [the agent kit](../../docs/AGENT-KIT.md).
+
+**C — Contextual and artistic quality.** Source identities, qualitative criteria, explicit expert choices and retained rejected plans improve the conditions for consistent art. Claude's counterexample-based correction shows a useful review behavior; Codex's surviving length restriction shows why it is not dependable yet. The runtime verifies identity and lifecycle, not whether asymmetry means a prescribed ratio or whether a generated icon reads well. Actual generated quality, reference fidelity, temporal/family consistency and renderer fit remain empirical acceptance work.
+
+**D — Consumer-project operability.** Both hosts recovered another retained consumer session, found changed source and destination, preserved unrelated allocations and Start art, and produced resumable exact work. Deterministic probes additionally exercise relocation, interrupted links, stale writes and installed runtime use. Coverage remains explicitly scoped to inspected sources; dynamic consumers and arbitrary repository understanding are not certified. Claude's incomplete final continuation is retained rather than hidden by the correct underlying state.
+
+**E — Pipeline representation.** The [profile](../../.agents/PROFILE.md) owns expert judgment and caller responsibility. The [PLAR skill](../../plugins/pixl/skills/plar/SKILL.md) owns consumer allocation/update; its [preparation reference](../../plugins/pixl/skills/plar/references/prepare.md) owns selected-plan/revision sequencing. The [request-review reference](../../plugins/pixl/skills/pixl/references/request-review.md) owns independent comparison; provider/inspection/family references own execution and review. [Asset preparation](../../spec/asset-preparation.md) specifies deterministic publication/recovery. CLI and local MCP expose the same operations; the host's official PixelLab connection generates the assets. Optional research, method proofs and historical trials stay available without becoming mandatory everyday steps.
+
+## Next evidence needed
+
+Improve the exact source/criterion comparison and pending-job continuation handoff against these retained failures, then carry the revised selected generation through retrieval, candidate review, adoption/family obligations and destination integration in the existing consumers. Preserve the difference between controlled workflow behavior and actual PixelLab-generated quality. The full product outcome is still open.
