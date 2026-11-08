@@ -1,3 +1,4 @@
+import base64
 import copy
 import hashlib
 import json
@@ -7,7 +8,7 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
-from pixl import codec, graph, inspection, store
+from pixl import codec, graph, inspection, mcp, store
 from pixl.codec import PixlError
 from tests.inspection_support import options, project
 
@@ -76,6 +77,71 @@ class InspectionTests(unittest.TestCase):
             ][0]
             self.assertEqual(packet["binding_drift"], [])
             self.assertEqual(packet["criteria"][1]["status"], "unperformed")
+
+    def test_mcp_delivers_exact_views_with_matching_payload_metadata(self):
+        prepared = self.prepare()
+        selected = [v["id"] for v in prepared["views"][:3]]
+        response = mcp.dispatch(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": "pixl_inspection",
+                    "arguments": {
+                        "path": ".pixl/state.px",
+                        "packet_id": "packet",
+                        "view_ids": selected,
+                    },
+                },
+            },
+            self.root,
+        )["result"]
+        self.assertFalse(response["isError"], response)
+        metadata = response["structuredContent"]["image_payloads"]
+        images = response["content"][1:]
+        self.assertEqual(len(images), 3)
+        for meta, image, view in zip(metadata, images, prepared["views"], strict=False):
+            data = base64.b64decode(image["data"])
+            self.assertEqual(data, (self.root / view["path"]).read_bytes())
+            self.assertEqual(meta["sha256"], hashlib.sha256(data).hexdigest())
+            self.assertEqual(meta["payload_size"], [view["width"], view["height"]])
+        self.assertFalse(
+            any(r.kind == "V" for r in store.load(self.folder).records.values())
+        )
+
+    def test_image_delivery_rejects_changed_bytes_and_unknown_views(self):
+        self.prepare()
+        report = inspection.report(store.load(self.folder), self.root, "packet")
+        view = report["packets"][0]["views"][0]
+        with self.assertRaises(PixlError):
+            inspection.image_payloads(report, self.root, ["missing"])
+        (self.root / view["path"]).write_bytes(b"changed after verification")
+        with self.assertRaisesRegex(PixlError, "changed during delivery"):
+            inspection.image_payloads(report, self.root, [view["id"]])
+
+    def test_mcp_image_selection_requires_packet_and_distinct_bounded_views(self):
+        for args in (
+            {"path": ".pixl/state.px", "view_ids": ["x"]},
+            {"path": ".pixl/state.px", "packet_id": "packet", "view_ids": []},
+            {"path": ".pixl/state.px", "packet_id": "packet", "view_ids": ["x", "x"]},
+            {
+                "path": ".pixl/state.px",
+                "packet_id": "packet",
+                "view_ids": list(map(str, range(9))),
+            },
+        ):
+            result = mcp.dispatch(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {"name": "pixl_inspection", "arguments": args},
+                },
+                self.root,
+            )["result"]
+            self.assertTrue(result["isError"])
+            self.assertIn("inputSchema", result["content"][0]["text"])
 
     def test_fail_and_explicit_supersession(self):
         result = self.prepare()

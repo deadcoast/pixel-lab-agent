@@ -1,5 +1,15 @@
 # Verification and limits
 
+## Request/criteria handoff and controlled delivery, 2026-11-08
+
+The [current implementation receipt](../evidence/request-review/checks.json) records **459 passing tests, one Windows symlink-privilege skip, 39/39 reference checks**, a clean wheel/copied-plugin installation, and passing maintained-code Ruff/Mypy checks. This increment adds 22 regressions for exact-color measurements, image delivery, upload/recovery, accepted-task completion and preparation-time observation validation.
+
+[Native outcomes](../evidence/request-review/README.md) retain 18 independently reviewed attempts. Both hosts complete controlled delegated delivery and the same unfinished cross-host handoff; the latest Claude full run retains path-scope and timestamp defects. Its final runtime timestamp correction has regression coverage but no subsequent native full run. These results establish the stated mechanisms and bounded behavior, not upstream generation quality or live renderer acceptance.
+
+## Current dependency installation check, 2026-11-07
+
+The wheel verifier now installs the wheel and declared production dependencies into a fresh unseeded environment, checks that maintainer packages are absent, and exercises both the installed runtime and copied plugin. It no longer reuses the development interpreter's dependency paths. [Dependency evidence](../evidence/runtime-dependencies/README.md) records the actual package set and operations. This proves the recorded platform/Python installation, not every supported operating system or Python version.
+
 ## Build and verification repair, 2026-09-14
 
 The [ecosystem audit](../evidence/reviews/2026-09-13-ecosystem/README.md) retains the
@@ -17,8 +27,9 @@ uv build
 
 The verifier discovers every test under `tests/`, regenerates reference proofs and
 the portable plugin, and exercises `checkout -> sdist -> wheel -> temporary
-installation`. The installation reuses the selected environment's dependencies;
-it does not prove a clean dependency installation on another OS or Python version.
+installation`. The September installation reused the selected environment's dependencies;
+that historical result did not prove a clean dependency installation. The current
+replacement is described above; other OS/Python combinations remain unverified.
 
 Each verification attempt archives the previous generated outputs before replacing
 them, records its own logs under `evidence/verification-runs/`, and publishes a

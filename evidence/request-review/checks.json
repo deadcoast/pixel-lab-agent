@@ -1,0 +1,63 @@
+{
+  "recorded_at": "2026-11-08T02:46:59.323486+00:00",
+  "scope": "Maintained implementation/format checks. Native behavior is assessed separately in review.md.",
+  "verification": {
+    "path": "evidence/verification-runs/20261108T024306.139395Z/result.json",
+    "sha256": "61d32f7e3d7d7a565d898ce214631655465ae6e467e9fe05c9565264758609a7",
+    "tests": {
+      "status": "pass",
+      "discovered": 460,
+      "run": 460,
+      "passed": 459,
+      "failures": 0,
+      "errors": 0,
+      "skipped": [
+        {
+          "test": "test_history_symlink_cannot_redirect_publication (tests.test_store.StoreTests.test_history_symlink_cannot_redirect_publication)",
+          "reason": "symlink privilege unavailable"
+        }
+      ]
+    },
+    "art_pocs": {
+      "status": "pass",
+      "total": 39,
+      "passed": 39,
+      "methods_with_reference_checks": 43
+    },
+    "status": "pass"
+  },
+  "ruff": {
+    "status": "pass",
+    "scope": "pixl scripts tests evaluations setup.py plugins/pixl/runtime plugins/pixl/resources/pixl plugins/pixl/scripts"
+  },
+  "mypy": {
+    "status": "pass",
+    "check_untyped_defs": true,
+    "runtime_files": 25,
+    "maintenance_files": 23,
+    "maintenance_explicit_package_bases": true
+  },
+  "skill_format": {
+    "status": "pass",
+    "path": "plugins/pixl/skills/pixl",
+    "validator": "system skill-creator/scripts/quick_validate.py",
+    "environment": "uv --offline --no-project --with pyyaml; PyYAML is a validator dependency, not a product dependency"
+  },
+  "claude_plugin_format": {
+    "status": "pass",
+    "command": "claude plugin validate ./plugins/pixl",
+    "directory_submission": "blocked: missing LICENSE/license metadata; icon warning",
+    "limit": "Native loading/format passed. Public catalog submission was not attempted."
+  },
+  "bundle_files_verified": 141,
+  "intermediate_verification": {
+    "path": "evidence/verification-runs/20261108T014556.973311Z/result.json",
+    "status": "fail",
+    "reason": "Verifier detected pixl/mcp.py line-ending restoration during the run. This receipt was preserved; final stable-source run above passes."
+  },
+  "new_regression_tests": 22,
+  "bundle_manifest_sha256": "ed40d3ad90eaaaf86b4466af0a0e53ac6715a59f8c00caf55a9e88e06f63a62c",
+  "checked_input_hashes_verified": 104,
+  "native_attempt_archives_verified": 18,
+  "native_limit": "Completed native runs predate the final prepare-time future-observation rejection; that final correction has regression coverage only. Claude scope/timestamp defects remain in review.md."
+}

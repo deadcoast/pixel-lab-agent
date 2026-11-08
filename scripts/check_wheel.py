@@ -17,6 +17,7 @@ if not __package__:
 
 from scripts.family_probe import run_family_probe
 from scripts.provider_probe import run_provider_probe
+from scripts.retention_probe import run_retention_probe
 
 
 def run(log_dir=None):
@@ -25,7 +26,7 @@ def run(log_dir=None):
         raise RuntimeError("uv is required to build and verify the wheel")
     with TemporaryDirectory(prefix="pixl-wheel-") as tmp:
         folder = Path(tmp)
-        wheels, target, cwd = folder / "wheels", folder / "site", folder / "project"
+        wheels, cwd = folder / "wheels", folder / "project"
         cwd.mkdir()
         built = subprocess.run(
             [
@@ -115,31 +116,37 @@ def run(log_dir=None):
                             raise RuntimeError(
                                 f"wheel runtime differs: {prefix}{path.name}"
                             )
+        # A fresh unseeded environment proves runtime use without maintainer tooling.
+        environment = folder / "runtime"
+        created = subprocess.run(
+            [uv, "venv", "--python", sys.executable, str(environment)],
+            capture_output=True, text=True, check=False, timeout=60,
+        )
+        if created.returncode:
+            raise RuntimeError(created.stdout + created.stderr)
+        runtime_python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         installed = subprocess.run(
-            [
-                uv,
-                "pip",
-                "install",
-                "--python",
-                sys.executable,
-                "--no-deps",
-                "--target",
-                str(target),
-                str(wheel),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=60,
+            [uv, "pip", "install", "--python", str(runtime_python), str(wheel)],
+            capture_output=True, text=True, check=False, timeout=60,
         )
         if log_dir is not None:
             (Path(log_dir) / "distribution-install.log").write_text(
-                installed.stdout + installed.stderr, encoding="utf-8"
+                created.stdout + created.stderr + installed.stdout + installed.stderr, encoding="utf-8"
             )
         if installed.returncode:
             raise RuntimeError(installed.stdout + installed.stderr)
-        dependency_paths = [p for p in sys.path if p.endswith("site-packages")]
-        launch = f"import sys,runpy;from pathlib import Path;sys.path[:0]={[str(target)] + dependency_paths!r};import pixl;assert Path(pixl.__file__).is_relative_to({str(target)!r});sys.argv=['pixl']+sys.argv[1:];runpy.run_module('pixl',run_name='__main__')"
+        environment_info = json.loads(subprocess.check_output(
+            [str(runtime_python), "-I", "-c",
+             ("import json,sysconfig;from importlib.metadata import distributions;"
+             "print(json.dumps({'site':sysconfig.get_path('purelib'),"
+             "'packages':sorted(d.metadata['Name'].lower() for d in distributions())}))")],
+            cwd=cwd, text=True,
+        ))
+        target = Path(environment_info["site"])
+        forbidden = {"coverage", "mypy", "ruff", "setuptools", "sourcery", "tiktoken", "types-jsonschema", "types-setuptools"}
+        if forbidden.intersection(environment_info["packages"]):
+            raise RuntimeError("runtime install contains development tooling")
+        launch = f"import sys,runpy;from pathlib import Path;import pixl;assert Path(pixl.__file__).is_relative_to({str(target)!r});sys.argv=['pixl']+sys.argv[1:];runpy.run_module('pixl',run_name='__main__')"
         env = dict(os.environ)
         env.pop("PIXL_PLUGIN_ROOT", None)
         env.pop("PYTHONPATH", None)
@@ -148,7 +155,7 @@ def run(log_dir=None):
 
         def cli(args):
             result = subprocess.run(
-                [sys.executable, "-I", "-c", launch, *args],
+                [str(runtime_python), "-I", "-c", launch, *args],
                 cwd=cwd,
                 env=env,
                 capture_output=True,
@@ -197,6 +204,8 @@ def run(log_dir=None):
                 "installed reference handoff lost its dependency context"
             )
         checks.append({"command": "plar reference handoff", "status": "pass"})
+        retention_check = run_retention_probe(cli, cwd / "retained library project")
+        checks.append({"command": "retain-library", **retention_check})
         for args in (
             ["sources"],
             ["intake", ".px2", "--root", str(cwd), "--brief", "Canvas unresolved"],
@@ -238,6 +247,16 @@ def run(log_dir=None):
                         "wheel proof failed or identified a different runner"
                     )
             checks.append({"command": args[0], "status": "pass"})
+        # The copied plugin also runs with only this environment's production dependencies.
+        plugin = folder / "copied plugin"
+        shutil.copytree(ROOT / "plugins/pixl", plugin, ignore=shutil.ignore_patterns("__pycache__"))
+        copied = subprocess.run(
+            [str(runtime_python), "-I", str(plugin / "scripts/pixl.py"), "knowledge", "palette-contract"],
+            cwd=cwd, env=env, capture_output=True, text=True, check=False, timeout=20,
+        )
+        if copied.returncode or not json.loads(copied.stdout):
+            raise RuntimeError("minimal copied-plugin execution failed: " + copied.stderr)
+        checks.append({"command": "copied-plugin with runtime dependencies", "status": "pass"})
         provider = run_provider_probe(cli, cwd)
         checks.extend(provider["checks"])
         family = run_family_probe(cli, cwd)
@@ -248,13 +267,14 @@ def run(log_dir=None):
             "wheel_sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
             "sdist": sdist.name,
             "sdist_sha256": hashlib.sha256(sdist.read_bytes()).hexdigest(),
-            "build_route": "checkout -> sdist -> wheel -> temporary installation",
+            "build_route": "checkout -> sdist -> wheel -> fresh runtime environment",
+            "runtime_packages": environment_info["packages"],
             "source_documents_verified": len(inventory["documents"]),
             "wheel_files": len(names),
             "checks": checks,
             "provider_probe": provider,
             "family_probe": family,
-            "scope": "uv default sdist-to-wheel build; temporary wheel installation; runtime dependencies reused; no global installation or source import; no whole-module coverage claim",
+            "scope": "uv default sdist-to-wheel build; fresh wheel installation with resolved production dependencies; copied-plugin execution; no global installation or source import; no whole-module coverage claim",
         }
 
 

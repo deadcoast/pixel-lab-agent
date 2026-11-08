@@ -329,7 +329,12 @@ def validate(doc, root=None):
         if root is not None and record.kind in ("S", "X", "E"):
             if record.kind == "S" and urlsplit(f["ur"]).scheme in ("https", "http"):
                 continue
-            path = confined(root, f["ur"])
+            if record.kind == "S":
+                from .retention import resolve
+
+                path = resolve(root, f["ur"], f["dg"])
+            else:
+                path = confined(root, f["ur"])
             _require(path.is_file(), "file_missing", f"{id_}: {f['ur']}")
             _require(file_hash(path) == f["dg"], "file_hash", f"{id_}: {f['ur']}")
             if record.kind == "S" and f["ln"]:

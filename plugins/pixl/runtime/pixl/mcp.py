@@ -23,6 +23,14 @@ INT = {"type": "integer", "minimum": 1}
 OBJ = {"type": "object"}
 TOOLS = [
     (
+        "pixl_retain_library",
+        "Retain exact library S-source bytes for a project before a kit update, or recover them from its original kit. Keeps state and receipts unchanged; no new proof or provider action.",
+        schema(
+            {"store": STR, "expect": STR, "library": STR, "from_library": STR},
+            ["store", "expect", "library"],
+        ),
+    ),
+    (
         "pixl_plar_read",
         "Read project asset requirements, source drift and next actions; select asset_id for a focused production handoff.",
         schema({"path": STR, "asset_id": STR}),
@@ -63,14 +71,48 @@ TOOLS = [
         schema({"store": STR, "name": STR, "brief": STR}, ["store"]),
     ),
     (
+        "pixl_task_complete",
+        "Nominate explicit already-reviewed candidates and complete their PX2 task. Requires every saved criterion passed and provider attempts terminal; creates no acceptance evidence or remote action.",
+        schema(
+            {
+                "store": STR,
+                "expect": STR,
+                "task_id": STR,
+                "candidates": {
+                    "type": "array",
+                    "items": STR,
+                    "minItems": 1,
+                    "uniqueItems": True,
+                },
+            },
+            ["store", "expect", "task_id", "candidates"],
+        ),
+    ),
+    (
         "pixl_workflow",
         "Inspect PX2 intake, planned outputs, candidate verdicts, blockers and next ready tasks. No acceptance or remote side effect.",
         schema({"path": STR}, ["path"]),
     ),
     (
         "pixl_inspection",
-        "Verify retained candidate inspection views, original criteria, declared viewing coverage, reviews and binding drift. Read-only; no artistic or engine acceptance.",
-        schema({"path": STR, "packet_id": STR}, ["path"]),
+        "Verify retained inspection and reviews. With packet_id and view_ids, deliver selected PNG image blocks with exact payload dimensions and hashes for viewing. Read-only; no artistic or engine acceptance.",
+        {
+            **schema(
+                {
+                    "path": STR,
+                    "packet_id": STR,
+                    "view_ids": {
+                        "type": "array",
+                        "items": STR,
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "uniqueItems": True,
+                    },
+                },
+                ["path"],
+            ),
+            "dependentRequired": {"view_ids": ["packet_id"]},
+        },
     ),
     (
         "pixl_inspection_prepare",
@@ -241,7 +283,7 @@ TOOLS = [
     ),
     (
         "pixl_asset_check",
-        "Measure image dimensions, palette, alpha and components. Does not judge artistic quality.",
+        "Measure image dimensions, palette, alpha and components. Optional regions selects exact RGBA colors for measured component boxes; no artistic judgment.",
         schema(
             {
                 "path": STR,
@@ -249,6 +291,12 @@ TOOLS = [
                 "height": INT,
                 "palette": {"type": "array", "items": STR},
                 "alpha": {"enum": ["binary", "full"]},
+                "regions": {
+                    "type": "array",
+                    "items": STR,
+                    "minItems": 1,
+                    "maxItems": 16,
+                },
             },
             ["path"],
         ),
@@ -343,6 +391,7 @@ def dispatch(request, root):
                             "pixl_family_snapshot",
                             "pixl_inspection_prepare",
                             "pixl_inspection_review",
+                            "pixl_task_complete",
                         ),
                         "destructiveHint": False,
                         "openWorldHint": False,
@@ -359,6 +408,13 @@ def dispatch(request, root):
                 raise PixlError("unknown_tool", str(name))
             Draft202012Validator(found).validate(args)
             output = call(name, args, root)
+            images = []
+            if name == "pixl_inspection" and "view_ids" in args:
+                from .inspection import image_payloads
+
+                output["image_payloads"], images = image_payloads(
+                    output, root, args["view_ids"]
+                )
             result = {
                 "content": [
                     {
@@ -367,7 +423,8 @@ def dispatch(request, root):
                             output, ensure_ascii=False, separators=(",", ":")
                         ),
                     }
-                ],
+                ]
+                + images,
                 "structuredContent": output,
                 "isError": False,
             }

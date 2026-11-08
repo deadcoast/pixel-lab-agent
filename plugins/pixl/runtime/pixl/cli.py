@@ -37,6 +37,26 @@ def parser():
     q.add_argument("--name", default="PIXL project")
     q.add_argument("--brief", default="")
     q.add_argument("--root")
+    q = sub.add_parser(
+        "retain-library",
+        help="Keep exact project-bound library sources across kit updates.",
+    )
+    q.add_argument("store")
+    q.add_argument(
+        "library", help="Project-relative kit directory named by the source records."
+    )
+    q.add_argument(
+        "--from-library",
+        help="Project-relative original kit for recovery after replacement.",
+    )
+    q.add_argument("--expect", required=True)
+    q.add_argument("--root")
+    q = sub.add_parser("task-complete", help="Complete an already-reviewed PX2 task.")
+    q.add_argument("store")
+    q.add_argument("task")
+    q.add_argument("candidates", nargs="+")
+    q.add_argument("--expect", required=True)
+    q.add_argument("--root")
     q = sub.add_parser("workflow")
     q.add_argument("path")
     q.add_argument("--root")
@@ -151,6 +171,10 @@ def parser():
     q.add_argument("--root")
     q = sub.add_parser("source")
     q.add_argument("path")
+    q.add_argument(
+        "--root",
+        help="Resolve a project-relative source, including explicitly retained revisions.",
+    )
     q.add_argument("--expect", required=True)
     q.add_argument("--start", type=int, required=True)
     q.add_argument("--end", type=int, required=True)
@@ -161,6 +185,7 @@ def parser():
     q.add_argument("--height", type=int)
     q.add_argument("--palette", nargs="*")
     q.add_argument("--alpha", choices=["binary", "full"], default="binary")
+    q.add_argument("--regions", nargs="+", help="Measure exact-color component boxes")
     q = sub.add_parser("encode")
     q.add_argument("path")
     q.add_argument("--out")
@@ -228,6 +253,14 @@ def main(argv=None):
             output = store.initialize(
                 a.store, doc=store.intake_project(a.name, a.brief), root=a.root
             )
+        elif cmd == "retain-library":
+            from .retention import retain
+
+            output = retain(a.store, a.expect, a.library, a.root, a.from_library)
+        elif cmd == "task-complete":
+            from .completion import complete
+
+            output = complete(a.store, a.expect, a.task, a.candidates, a.root)
         elif cmd == "workflow":
             output = service.workflow(a.path, a.root)
         elif cmd == "inspection":
@@ -317,13 +350,27 @@ def main(argv=None):
 
             output = build(a.root)
         elif cmd == "source":
-            output = service.source_slice(a.path, a.expect, a.start, a.end, a.budget)
+            output = (
+                service.call(
+                    "pixl_source",
+                    {
+                        "path": a.path,
+                        "expect": a.expect,
+                        "start": a.start,
+                        "end": a.end,
+                        "budget": a.budget,
+                    },
+                    a.root,
+                )
+                if a.root
+                else service.source_slice(a.path, a.expect, a.start, a.end, a.budget)
+            )
         elif cmd == "sources":
             output = service.source_inventory(a.root)
         elif cmd == "asset-check":
             from .assets import inspect
 
-            output = inspect(a.path, a.width, a.height, a.palette, a.alpha)
+            output = inspect(a.path, a.width, a.height, a.palette, a.alpha, a.regions)
         elif cmd == "encode":
             binary = codec.encode(service.from_json(service.read_json(a.path)))
         elif cmd == "knowledge":

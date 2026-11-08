@@ -214,7 +214,7 @@ def copy_inputs(project: Path, fixture_root: Path, names: list[str], predecessor
     return {"attempt": predecessor.name, "record_sha256": sha(record_path), "artifact_hashes": record["artifacts"]}
 
 
-def run(host: str, case: str, attempt: str, model: str | None, timeout: int, resume: str | None = None,
+def run(host: str, case: str, attempt: str, model: str | None, timeout: int | None, resume: str | None = None,
         sandbox: str = "workspace-write", retain_session: bool = False) -> Path:
     identity = freeze()
     target = EVIDENCE / "runs" / attempt
@@ -254,12 +254,13 @@ def run(host: str, case: str, attempt: str, model: str | None, timeout: int, res
         controls = [value for value in controls if not value.startswith(("mcp_servers.", "plugins.", "model=", "features.codex_hooks=", "features.memory_tool="))]
         command = codex_command() + [
             "exec", "--ignore-user-config", "--ignore-rules", "--json",
-            "--skip-git-repo-check", "--sandbox", sandbox, "-C", str(project),
+            "--skip-git-repo-check", "-C", str(project),
             "-c", "features.apps=false", "-c", "features.plugins=false", "-c", "web_search=\"disabled\"",
-            "-c", "model_reasoning_effort=\"xhigh\"",
             "-c", "mcp_servers.pixl_local.command=" + json.dumps(server["command"]),
             "-c", "mcp_servers.pixl_local.args=" + json.dumps(server["args"]),
         ]
+        # Workspace actions remain sandboxed and individually reviewed by the host.
+        command += ["--approve-for-me"] if sandbox == "workspace-write" else ["--sandbox", sandbox]
         for value in controls:
             command += ["-c", value]
         if not retain_session:
@@ -284,6 +285,10 @@ def run(host: str, case: str, attempt: str, model: str | None, timeout: int, res
         version_command = [command[0], "--version"]
     env = dict(os.environ)
     env.pop("PYTHONPATH", None)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    for key in list(env):
+        if any(word in key.upper() for word in ("PIXELLAB", "PIXEL_LAB", "ANTHROPIC_API_KEY", "OPENAI_API_KEY")):
+            del env[key]
     version = subprocess.check_output(version_command, text=True, env=env).strip()
     record: dict[str, object] = {
         "attempt": attempt, "case_id": case, "host": host, "host_and_version": version,

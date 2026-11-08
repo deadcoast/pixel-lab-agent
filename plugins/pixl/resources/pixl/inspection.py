@@ -819,3 +819,59 @@ def report(doc, root, packet_id=None):
         raise PixlError(
             "inspection_manifest", "invalid retained inspection structure"
         ) from error
+
+
+def image_payloads(verified_report, root, view_ids):
+    """Capture verified views for MCP image delivery without resizing or accepting art."""
+    import base64
+    from io import BytesIO
+
+    from PIL import Image
+
+    views = {
+        v["id"]: v for packet in verified_report["packets"] for v in packet["views"]
+    }
+    metadata, total = [], 0
+    content: list[dict[str, str]] = []
+    for id_ in view_ids:
+        if id_ not in views:
+            raise PixlError("inspection_view", f"Unknown prepared view: {id_}")
+        view = views[id_]
+        with graph.confined(root, view["path"]).open("rb") as stream:
+            data = stream.read(8 * 1024 * 1024 - total + 1)
+        total += len(data)
+        if total > 8 * 1024 * 1024:
+            raise PixlError(
+                "inspection_images", "Image payload exceeds 8 MiB; request fewer views"
+            )
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != view["sha256"]:
+            raise PixlError(
+                "inspection_images", "Prepared view changed during delivery"
+            )
+        with Image.open(BytesIO(data)) as image:
+            if image.format != "PNG" or list(image.size) != [
+                view["width"],
+                view["height"],
+            ]:
+                raise PixlError(
+                    "inspection_images", "Prepared image format or dimensions changed"
+                )
+            image.load()
+        metadata.append(
+            {
+                "view": id_,
+                "image_index": len(content),
+                "sha256": digest,
+                "payload_size": [view["width"], view["height"]],
+                "note": "Encoded image dimensions; report any subsequent host resizing. No viewing or acceptance inferred.",
+            }
+        )
+        content.append(
+            {
+                "type": "image",
+                "mimeType": "image/png",
+                "data": base64.b64encode(data).decode("ascii"),
+            }
+        )
+    return metadata, content

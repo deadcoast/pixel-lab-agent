@@ -23,6 +23,8 @@ Retain the selected method ID, exact source identities/ranges, the project quest
 
 This operation is complete when another session can identify the same method and source text, understand why it was selected or rejected, and identify the remaining production-specific proof. Explain the useful conclusion to the user in plain language. Keep hashes and tool details in the retained evidence unless they help the user assess a conflict or failure.
 
+After saving imported library S records in the consumer project, use [library-source retention](library-retention.md) to preserve their exact bytes before replacing the kit. It leaves record and receipt identities unchanged. During a cold resume, inspect any reported retained revision before treating old proof as evidence for new work.
+
 ## Failures and recovery
 
 | Observation | Required response |

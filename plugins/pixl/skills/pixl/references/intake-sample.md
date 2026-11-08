@@ -20,6 +20,8 @@ Keep diagnostic conclusions attached to their tested artifact, method, scale and
 
 Before saving the approach or a verdict, trace every enforced artistic restriction back to that account. Correct downstream claims such as “approved,” “binding,” or “must” when their source is still observed, proposed or unresolved. Preserve the earlier draft and its evidence when correcting it.
 
+For a selected PLAR asset's first concrete candidate, use [PLAR preparation](../../plar/references/prepare.md) to save the reviewed output/criteria plan and first durable request in one operation. The record-level sequence below remains available for advanced plans and explicit amendments.
+
 ## Preserve intake and plan before execution
 
 1. Load the current state and canonical hash. Decode it through the runner, keeping `format: 2` in the host adapter. Amend the relevant fields, increase the revision by one, encode a candidate, validate against the project root, and commit with the previously observed hash. A stale-write error means reload and reconcile.
@@ -55,6 +57,7 @@ An unavailable V has `ev=[]` and a concrete reason. For example, a target projec
 - If a candidate fails, keep X/E/V, create the revised X and nominate it. Evaluate the new candidate against the saved criteria; it cannot borrow old bindings.
 - If correcting a verdict, supersede the old V with `ob=true` and add a new V. Do not rewrite its previous outcome or reviewer. Supersede E only when its own observation is invalidated or replaced.
 - If the plan, relevant choice or contract changes, preserve the change rationale/sources, reopen affected completed work, and supersede stale E/V. Commit the changed plan before publishing new evaluation. Do not merely recompute old receipt hashes.
+- After all saved criteria pass, use `task-complete STORE TASK CANDIDATE... --expect HASH --root ROOT` or `pixl_task_complete` to nominate the explicit accepted candidates and finish the task. It validates existing acceptance, preserves every failed candidate/verdict, and publishes the legal state transitions; it does not supply a missing review. Read `workflow` afterward to confirm the durable result. [Operation contract](../../../resources/spec/task-completion.md).
 - Mark T done only when all its nominated outputs satisfy every declared criterion and all prerequisite tasks are done. A mechanically valid but visually rejected sample stays unfinished. Deliver useful files while keeping an unavailable engine requirement explicit; do not label them fully accepted for that destination.
 - Commit state and leave a handoff with the next task or unresolved requirement. A cold session starts with `workflow` and the focused `context`, inspecting retained observations before repeating work.
 

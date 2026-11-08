@@ -179,20 +179,33 @@ def from_json(data):
     return doc
 
 
+def _with_retained_sources(result, doc, root):
+    from .retention import report
+
+    retained = report(doc, root)
+    if retained:
+        result["retained_sources"] = retained
+    return result
+
+
 def inspect_document(path, root=None):
     doc = load_document(path)
     graph.validate(doc, root)
-    return {
-        "valid": True,
-        "format": doc.format,
-        "revision": doc.revision,
-        "hash": codec.digest(doc),
-        "records": len(doc.records),
-        "files_verified": root is not None,
-        "record_hashes": {
-            id_: codec.record_hash(r) for id_, r in sorted(doc.records.items())
+    return _with_retained_sources(
+        {
+            "valid": True,
+            "format": doc.format,
+            "revision": doc.revision,
+            "hash": codec.digest(doc),
+            "records": len(doc.records),
+            "files_verified": root is not None,
+            "record_hashes": {
+                id_: codec.record_hash(r) for id_, r in sorted(doc.records.items())
+            },
         },
-    }
+        doc,
+        root,
+    )
 
 
 def workflow(path, root=None):
@@ -205,12 +218,16 @@ def workflow(path, root=None):
             "lifecycle_format",
             "workflow requires PX2; PX1 state retains its original rules",
         )
-    return dict(
-        lifecycle.report(doc),
-        format=2,
-        revision=doc.revision,
-        hash=codec.digest(doc),
-        files_verified=root is not None,
+    return _with_retained_sources(
+        dict(
+            lifecycle.report(doc),
+            format=2,
+            revision=doc.revision,
+            hash=codec.digest(doc),
+            files_verified=root is not None,
+        ),
+        doc,
+        root,
     )
 
 
@@ -243,21 +260,24 @@ def job_prepare(folder, expected, job_id, task_id, outputs, request, root=None):
 
 
 def job_report(path, root):
-    return jobs.report(load_document(path), root)
+    doc = load_document(path)
+    return _with_retained_sources(jobs.report(doc, root), doc, root)
 
 
 def family_report(path, root, output_id=None):
     """Verify retained family files and describe the current saved selection."""
     from . import delivery
 
-    return delivery.report(load_document(path), root, output_id)
+    doc = load_document(path)
+    return _with_retained_sources(delivery.report(doc, root, output_id), doc, root)
 
 
 def inspection_report(path, root, packet_id=None):
     """Verify retained inspection data and report original conditions and reviews."""
     from . import inspection
 
-    return inspection.report(load_document(path), root, packet_id)
+    doc = load_document(path)
+    return _with_retained_sources(inspection.report(doc, root, packet_id), doc, root)
 
 
 def call(name, args, root):
@@ -294,6 +314,12 @@ def call(name, args, root):
                 args.get("name", "PIXL project"), args.get("brief", "")
             ),
             root=root,
+        )
+    if name == "pixl_task_complete":
+        from .completion import complete
+
+        return complete(
+            path("store"), args["expect"], args["task_id"], args["candidates"], root
         )
     if name == "pixl_workflow":
         return workflow(path("path"), root)
@@ -379,11 +405,38 @@ def call(name, args, root):
             else load_document(path("candidate"))
         )
         return store.commit(path("store"), candidate, args["expect"], root=root)
+    if name == "pixl_retain_library":
+        from .retention import retain
+
+        return retain(
+            path("store"),
+            args["expect"],
+            args["library"],
+            root,
+            args.get("from_library"),
+        )
+    if name == "pixl_plar_prepare":
+        from . import plar_prepare
+
+        return plar_prepare.prepare(
+            root,
+            args["asset_id"],
+            args["requirements_hash"],
+            args["packet"],
+            args["connection"],
+            args.get("path", "plar.txt"),
+            args.get("store"),
+        )
     if name in ("pixl_plar_read", "pixl_plar_save"):
         from . import plar
 
         if name == "pixl_plar_read":
-            return plar.read(root, args.get("path", "plar.txt"), args.get("asset_id"))
+            return plar.read(
+                root,
+                args.get("path", "plar.txt"),
+                args.get("asset_id"),
+                args.get("since"),
+            )
         return plar.save(
             root, args["document"], args["expect"], args.get("path", "plar.txt")
         )
@@ -395,18 +448,30 @@ def call(name, args, root):
         scope = args.get("scope", "project")
         if scope not in ("project", "library"):
             raise PixlError("source_scope", scope)
-        source_path = (
+        from .retention import resolve
+
+        original = (
             graph.confined(resource_root(), args["path"])
             if scope == "library"
             else path("path")
         )
-        return source_slice(
+        source_path = (
+            original
+            if scope == "library"
+            else resolve(root, args["path"], args["expect"])
+        )
+        result = source_slice(
             source_path,
             args["expect"],
             args["start"],
             args["end"],
             args.get("budget", 16384),
         )
+        if source_path != original:
+            result.update(
+                retained_revision=True, uri=args["path"], resolved_path=str(source_path)
+            )
+        return result
     if name == "pixl_asset_check":
         return assets.inspect(
             path("path"),
@@ -414,6 +479,7 @@ def call(name, args, root):
             args.get("height"),
             args.get("palette"),
             args.get("alpha", "binary"),
+            args.get("regions"),
         )
     if name == "pixl_encode":
         return {"wire": codec.encode(from_json(args["document"])).decode("utf-8")}

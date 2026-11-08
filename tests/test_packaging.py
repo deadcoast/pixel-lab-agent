@@ -149,6 +149,10 @@ class PackagingTests(unittest.TestCase):
             self.assertEqual(reference_packet["dependencies"][0]["id"], "robot.base")
             self.assertTrue(reference_packet["dependencies"][0]["requirements"])
             self.assertEqual(len(reference_packet["requirements_hash"]), 64)
+            from scripts.retention_probe import run_retention_probe
+
+            retained = run_retention_probe(cli, cwd / "retained library project")
+            self.assertTrue(retained["state_unchanged"])
             for command in (
                 ["sources"],
                 [

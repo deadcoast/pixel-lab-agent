@@ -58,3 +58,11 @@ A selected read returns `project_root`, `requirements_hash`, `asset`, full `depe
 The requirements hash covers the selected asset and transitive dependency requirements, their bound/current source identities and project brief. It excludes status, next action, evidence lists, production-state links and absolute installation paths. It does not assert readiness or acceptance; read dependency status/issues separately. Changing a style reference changes this hash even before someone refreshes its saved source hash. An unrelated asset's queue progress does not.
 
 This additive version-1 extension keeps existing documents valid. Use a runtime containing the reference-role extension to author documents with `references`; older closed-schema readers cannot interpret new fields.
+
+## Selective refresh
+
+Queue reads include `changes`: tracked source drift, direct and transitively affected asset IDs, and unaffected IDs. Pass `since` (CLI `--since`) with a retained prior PLAR byte hash to compare declarations as well. Saves return this comparison against the replaced version. Queue progress fields (`status`, `next`, `evidence`, `production`) are not requirement changes. Coverage changes are reported separately. History bytes are hash-checked before comparison. Use `since` on the whole queue, then select an affected asset; focused reads include `dependency_issues`.
+
+This is conservative file/dependency impact, not a semantic code scanner. Re-read changed code and look for new states, consumers or dynamic paths. A shared source edit can affect several rows for review without requiring all their requirements or assets to change. Do not merely refresh hashes. Keep stable roles/IDs on destination moves; retain superseded work as deferred where applicable.
+
+[First-candidate preparation](prepare.md) consumes a focused selection and the exact reviewed request/criteria artifacts, removing handwritten PX2 setup from that path.

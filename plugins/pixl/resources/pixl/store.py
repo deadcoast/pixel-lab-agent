@@ -124,7 +124,9 @@ def initialize(folder, doc=None, root=None, name="PIXL project"):
         from . import delivery, jobs
 
         jobs.transitions(None, doc, root if root is not None else folder.parent, folder)
-        delivery.transitions(None, doc, root if root is not None else folder.parent, folder)
+        delivery.transitions(
+            None, doc, root if root is not None else folder.parent, folder
+        )
         return _publish(folder, doc)
 
 
@@ -239,25 +241,34 @@ def _transitions(current, candidate):
                     raise PixlError("job_identity_change", id_)
 
 
+def _check_commit(current, candidate, expected, root, folder):
+    """Validate a publication without writing; shared by single/compound operations."""
+    validate(current)  # A grounded candidate can repair file drift.
+    if digest(current) != expected:
+        raise PixlError(
+            "stale_write",
+            "reload state and recompute the candidate from the current revision",
+        )
+    if candidate.revision != current.revision + 1:
+        raise PixlError("revision", f"expected {current.revision + 1}")
+    _transitions(current, candidate)
+    validate(candidate, root)
+    _acceptance_plan(current, candidate)
+    from . import delivery, jobs
+
+    jobs.transitions(current, candidate, root, folder)
+    delivery.transitions(current, candidate, root, folder)
+
+
 def commit(folder, candidate, expected, root=None):
     folder = Path(folder).resolve()
     with lock(folder):
         current = load(folder)
-        validate(
-            current
-        )  # Drift in files can be repaired by a correctly grounded candidate.
-        if digest(current) != expected:
-            raise PixlError(
-                "stale_write",
-                "reload state and recompute the candidate from the current revision",
-            )
-        if candidate.revision != current.revision + 1:
-            raise PixlError("revision", f"expected {current.revision + 1}")
-        _transitions(current, candidate)
-        validate(candidate, root if root is not None else folder.parent)
-        _acceptance_plan(current, candidate)
-        from . import delivery, jobs
-
-        jobs.transitions(current, candidate, root if root is not None else folder.parent, folder)
-        delivery.transitions(current, candidate, root if root is not None else folder.parent, folder)
+        _check_commit(
+            current,
+            candidate,
+            expected,
+            root if root is not None else folder.parent,
+            folder,
+        )
         return _publish(folder, candidate)

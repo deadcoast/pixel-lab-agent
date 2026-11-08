@@ -1,5 +1,11 @@
 # PX-SKILL-002: authority of artistic requirements
 
+## Current comparison, 2026-11-07
+
+[Six fresh native attempts and independent whole-output review](20261107-review/README.md) use the current profile and host defaults. Both final Codex retries and Claude's lantern approach pass their bounded planning criteria. Claude's drone retains an unsupported frame-count rejection, so the task remains open. Exact input/output identities and the incomplete first Codex deliveries are preserved. PX-OPS-002 has since been repaired; its historical open status below belongs to the September record.
+
+## Historical instruction revisions, 2026-09-14
+
 This pace addresses observed cases where a production approach turned measured
 reference properties or an earlier agent's proposals into approved artistic rules.
 It evaluates the shared PIXL skill in designated native sessions. The maintainer

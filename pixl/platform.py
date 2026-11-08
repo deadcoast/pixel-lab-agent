@@ -1015,6 +1015,12 @@ def prepare_discovered(
     detached snapshot whose identity is checked by ``validate_discovered``.
     """
     _discovered_inputs(provider, tool, arguments, schema, discovery, authorization)
+    prepared_at = datetime.now(UTC)
+    if _iso_timestamp(discovery["observed_at"], "discovery.observed_at") > prepared_at:
+        _fail(
+            "discovery.observed_at cannot be in the future; capture the actual observation time from the host clock",
+            "platform_request",
+        )
     execution = {
         "provider": provider,
         "tool": tool,
@@ -1028,7 +1034,7 @@ def prepare_discovered(
         "request_sha256": _sha(execution),
         "discovery": discovery,
         "authorization": authorization,
-        "prepared_at": datetime.now(UTC).isoformat(),
+        "prepared_at": prepared_at.isoformat(),
         "policy": "caller_schema",
         "remote_executed": False,
         "cached_assessment": _cached_assessment(

@@ -25,6 +25,64 @@ class PLARTests(unittest.TestCase):
         shutil.copytree(ROOT / "examples/plar-project", self.root, dirs_exist_ok=True)
         self.document = json.loads((self.root / "plar.txt").read_text("utf-8"))
 
+    def test_refresh_tracks_requirement_changes_and_transitive_dependents(self):
+        before = plar.read(self.root)
+        self.document["assets"][0]["requirements"][0]["value"] = [80, 16]
+        saved = plar.save(self.root, self.document, before["hash"])
+        self.assertEqual(saved["changes"]["direct_assets"], ["queue.working"])
+        self.assertEqual(
+            saved["changes"]["affected_assets"],
+            ["queue.ready", "queue.retry", "queue.working"],
+        )
+        self.assertEqual(saved["changes"]["unaffected_assets"], ["queue.start"])
+        compared = service.call("pixl_plar_read", {"since": before["hash"]}, self.root)
+        self.assertEqual(compared["changes"], saved["changes"])
+        self.document["assets"][0]["next"] = "Continue with the same requirements"
+        progress = plar.save(self.root, self.document, saved["hash"])
+        self.assertEqual(progress["changes"]["affected_assets"], [])
+        self.assertEqual(
+            plar.read(self.root, since=progress["hash"])["changes"]["affected_assets"],
+            [],
+        )
+
+    def test_refresh_source_drift_and_dependency_issues_do_not_rebind(self):
+        self.add_reference()
+        (self.root / "style.txt").write_text("changed", encoding="utf-8")
+        before = (self.root / "plar.txt").read_bytes()
+        queue = plar.read(self.root)
+        self.assertEqual(queue["changes"]["changed_sources"], ["style"])
+        self.assertEqual(queue["changes"]["direct_assets"], ["queue.working"])
+        self.assertEqual(
+            queue["changes"]["affected_assets"],
+            ["queue.ready", "queue.retry", "queue.working"],
+        )
+        focused = plar.read(self.root, asset_id="queue.ready")
+        self.assertEqual(
+            focused["dependency_issues"], {"queue.working": ["source style: changed"]}
+        )
+        self.assertEqual((self.root / "plar.txt").read_bytes(), before)
+
+    def test_refresh_reports_added_removed_roles_and_checks_history_bytes(self):
+        before = plar.read(self.root)
+        self.document["assets"] = [
+            r for r in self.document["assets"] if r["id"] != "queue.retry"
+        ]
+        paused = copy.deepcopy(self.document["assets"][1])
+        paused["id"] = "queue.paused"
+        paused["delivery"]["path"] = "assets/paused.png"
+        self.document["assets"].append(paused)
+        saved = plar.save(self.root, self.document, before["hash"])
+        self.assertEqual(saved["changes"]["added_assets"], ["queue.paused"])
+        self.assertEqual(saved["changes"]["removed_assets"], ["queue.retry"])
+        history = self.root / ".pixl/plar-history" / (before["hash"] + ".json")
+        history.write_text(json.dumps(self.document), encoding="utf-8")
+        with self.assertRaisesRegex(PixlError, "retained PLAR bytes"):
+            plar.read(self.root, since=before["hash"])
+        with self.assertRaises(PixlError):
+            plar.read(self.root, since="../outside")
+        with self.assertRaisesRegex(PixlError, "compare the queue"):
+            plar.read(self.root, asset_id="queue.ready", since=saved["hash"])
+
     def test_focus_binds_consumers_and_keeps_exact_contract(self):
         packet = plar.read(self.root, asset_id="queue.working")
         self.assertEqual(packet["asset"]["delivery"]["path"], "assets/working.png")

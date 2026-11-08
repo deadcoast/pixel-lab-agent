@@ -17,6 +17,14 @@ The repository is developing beyond its initial scaffold. Existing implementatio
 
 Read [the project review](docs/PROJECT-REVIEW.md) for the operational model, observed gaps, and development order. Read [the production profile](.agents/PROFILE.md) as the description of the intended specialist behavior.
 
+## Continuity of development work
+
+- Read [TODO.md](TODO.md) for the current overall objective, open work and next action before starting a development increment. Detailed evaluation specifications retain their narrower scopes and evidence.
+- Carry the user's outstanding objective across turns. A completed patch, test run or bounded trial does not complete the overall product request.
+- Update the relevant open item when its implementation or evidence changes. Leave unmet acceptance criteria open; record the continuation context instead of quietly substituting a smaller task.
+- In progress and final reports, distinguish changed implementation, observed verification, remaining work and the next action. Do not present an existing suite's total as newly completed work.
+- Keep the required A–E review questions answered as understanding develops; they inform decisions and do not create generic permission gates.
+
 ## Sources and changes
 
 - Preserve source-defined meaning and project-specific aesthetics. Do not turn fixture values or examples into universal pixel-art rules.

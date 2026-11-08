@@ -1,6 +1,7 @@
 """Measured image properties. Artistic quality remains a separate inspection."""
 
 import hashlib
+import heapq
 from collections import Counter
 from io import BytesIO
 from pathlib import Path
@@ -29,7 +30,44 @@ def components(points):
     return count
 
 
-def inspect(path, width=None, height=None, palette=None, alpha="binary"):
+def color_regions(pixels, width, color):
+    """Exact RGBA components; bounded, deterministic top-left box reporting."""
+    points = {
+        (i % width, i // width) for i, pixel in enumerate(pixels) if pixel == color
+    }
+    pixel_count, count = len(points), 0
+    boxes: list[tuple[int, int, int, int]] = []
+    while points:
+        count += 1
+        x, y = points.pop()
+        left = right = x
+        top = bottom = y
+        pending = [(x, y)]
+        while pending:
+            x, y = pending.pop()
+            left, top = min(left, x), min(top, y)
+            right, bottom = max(right, x), max(bottom, y)
+            for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if neighbor in points:
+                    points.remove(neighbor)
+                    pending.append(neighbor)
+        # A max heap retains the first 128 boxes in top/left order.
+        key = (-top, -left, -(bottom + 1), -(right + 1))
+        heapq.heappush(boxes, key)
+        if len(boxes) > 128:
+            heapq.heappop(boxes)
+    ordered = sorted(tuple(-v for v in box) for box in boxes)
+    return {
+        "color": "#" + "".join(f"{v:02x}" for v in color),
+        "pixels": pixel_count,
+        "component_count": count,
+        "boxes": [[left, top, right, bottom] for top, left, bottom, right in ordered],
+        "boxes_truncated": count > len(boxes),
+        "coordinates": "zero-based [left, top, right, bottom]; right/bottom exclusive; 4-connected",
+    }
+
+
+def inspect(path, width=None, height=None, palette=None, alpha="binary", regions=None):
     if alpha not in ("binary", "full"):
         raise PixlError("alpha_policy", alpha)
     for value in (width, height):
@@ -41,6 +79,16 @@ def inspect(path, width=None, height=None, palette=None, alpha="binary"):
             allowed.add(ImageColor.getcolor(color, "RGBA"))
     except (ValueError, TypeError) as error:
         raise PixlError("palette", "invalid color") from error
+    selected = []
+    if regions is not None:
+        if not isinstance(regions, list) or not 1 <= len(regions) <= 16:
+            raise PixlError("regions", "select 1..16 exact RGBA colors")
+        try:
+            selected = list(
+                dict.fromkeys(ImageColor.getcolor(c, "RGBA") for c in regions)
+            )
+        except (ValueError, TypeError, AttributeError) as error:
+            raise PixlError("regions", "invalid color") from error
     frames, failures = [], set()
     try:
         with Path(path).open("rb") as stream:
@@ -109,6 +157,10 @@ def inspect(path, width=None, height=None, palette=None, alpha="binary"):
                         "visible_bbox": list(bbox) if bbox else None,
                     }
                 )
+                if selected:
+                    frames[-1]["color_regions"] = [
+                        color_regions(pixels, frame.width, color) for color in selected
+                    ]
     except PixlError:
         raise
     except (

@@ -4,6 +4,7 @@ import json
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Barrier
@@ -78,6 +79,26 @@ class JobsTests(unittest.TestCase):
             remote_id=remote_id,
             root=self.root,
         )
+
+    def test_future_discovery_does_not_publish_intent_or_blobs(self):
+        before = {
+            p.relative_to(self.root): p.read_bytes()
+            for p in self.root.rglob("*")
+            if p.is_file()
+        }
+        discovery = {
+            "source": "fixture tools/list",
+            "observed_at": (datetime.now(UTC) + timedelta(days=1)).isoformat(),
+            "evidence": {"fixture": True},
+        }
+        with self.assertRaisesRegex(codec.PixlError, "cannot be in the future"):
+            self.prepare(discovery=discovery)
+        after = {
+            p.relative_to(self.root): p.read_bytes()
+            for p in self.root.rglob("*")
+            if p.is_file()
+        }
+        self.assertEqual(after, before)
 
     def test_unknown_submission_resumes_then_imports_without_acceptance(self):
         from pixl import jobs, service
@@ -263,9 +284,13 @@ class JobsTests(unittest.TestCase):
     def test_lost_publish_does_not_grant_dispatch(self):
         self.prepare()
         before = codec.encode(self.current())
-        with patch(
-            "pixl.store._publish", side_effect=OSError("fixture publication failure")
-        ), self.assertRaisesRegex(OSError, "fixture publication failure"):
+        with (
+            patch(
+                "pixl.store._publish",
+                side_effect=OSError("fixture publication failure"),
+            ),
+            self.assertRaisesRegex(OSError, "fixture publication failure"),
+        ):
             self.dispatch()
         self.assertEqual(codec.encode(self.current()), before)
         result = self.dispatch()

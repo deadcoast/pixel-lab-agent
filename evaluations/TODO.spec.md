@@ -5,6 +5,8 @@ authority remains the profile, operation skills and versioned specifications.
 Evidence is under `evidence/host-evaluation/`; a host pass never stands in for
 artistic or destination acceptance.
 
+The [overall plan and TODO](../TODO.md) owns current product status and work order. This file owns detailed task contracts and their historical evidence. A completed task below closes only its stated scope.
+
 ## PX-EVAL-004 — delegated PixelLab integration in both hosts
 
 - **Status:** complete for the bounded integration milestone, 2026-11-07. Fresh Claude 03 and Codex 05 both delegated, submitted/polled/imported, retained passing sample reviews and delivered files independently inspected by their parents. Earlier blocked and mismatched attempts remain preserved. See [trial outcomes](../evidence/delegated-asset-request/README.md).
@@ -143,7 +145,7 @@ artistic or destination acceptance.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 
-- **Status:** observed integration gap, 2026-09-14; design required before implementation.
+- **Status:** implemented and verified for the defined source-retention/recovery contract, 2026-11-07. The historical failure was reproduced first; [current evidence](../evidence/library-retention/README.md) records unchanged state/receipts, recovery after replacement, relocation and installed use.
 - **WHO:** project publication and recovery tools preserve evidence; the maintainer
   verifies package-update behavior without asserting that old proof covers new code.
 - **WHAT:** keep exact proof/source dependencies recoverable after a kit update and
@@ -158,12 +160,11 @@ artistic or destination acceptance.
 - **Stopping condition:** an updated kit can resume with the original evidence
   still addressable and affected new claims explicitly unresolved. Never rewrite
   old receipts, accept mismatched hashes or relabel old proof as testing new code.
+- **Result:** one explicit retain-library CLI/MCP operation keeps exact project-bound library S revisions and manifest provenance. Normal reports identify retained old sources. Seventeen new tests and the historical replay verify integrity and recovery; the complete suite is 437 passed / one platform skip. Actual current-interface host production remains separate work.
 
 ## PX-SKILL-002 — preserve the authority of artistic requirements
 
-- **Status:** partial implementation, 2026-09-14; remains open. Revised guidance and
-  complete-file audits improve observed behavior, but completed Claude approaches
-  still promote proposals to requirements and falsely report internal consistency.
+- **Status:** implemented and verified in bounded native planning and controlled delivery cases in both hosts, 2026-11-08 UTC. Exact source/request/criteria packets and separate caller comparisons preserve the required outcomes. Measured-coordinate, provenance-rule and encoded-input failures remain in [current evidence](../evidence/request-review/README.md) alongside fixes and later outcomes. Broader artistic reliability remains open. [Earlier comparison](../evidence/artistic-authority/20261107-review/README.md) and historical failures below remain unchanged.
 - **WHO:** the user sets requirements; PIXL records observations, proposes choices and
   supplies project-specific artistic reasoning; the evaluator checks those boundaries.
 - **WHAT:** distinguish supplied requirements, measured facts, proposals and universal
@@ -184,7 +185,7 @@ artistic or destination acceptance.
   A sourced method must still fit this project's conditions.
 - **Stopping condition:** observed model behavior supports the revised guidance; string
   presence, valid state, or a correct rejection alone cannot close this task.
-- **Result:** 26 retained native attempts across unchanged controls and five instruction
+- **Historical result:** 26 retained native attempts across unchanged controls and five instruction
   revisions, including two separately labeled 600-second completion repeats. Final
   Codex style/counterexample approaches pass the bounded criteria with complete readback.
   Both final 360-second Claude trials made corrections but timed out without responses;
@@ -194,17 +195,14 @@ artistic or destination acceptance.
 - **Verification:** full discovery ran 388 tests (387 pass, one privilege skip), 39
   reference POCs and the default sdist-to-wheel/install route passed. Maintained-source
   Ruff and expanded Mypy passed. These do not override observed behavioral failures.
-- **Next work:** specify how the operation retains the exact proposed prompt and criteria
-  and checks them against the source brief before adoption. Evaluate contradiction
-  detection on fresh cases; the producing model's self-reported whole-file audit cannot
-  be treated as acceptance. Keep this pace open until that outcome is observed.
+- **Current result:** request-review.json binds exact source, request and criterion artifacts; the caller independently compares every rejection criterion and records corrections before adoption. Fresh planning cases and complete controlled upload/revision/delivery cases exercise this exchange in both hosts. The successful contracts preserve qualitative outcomes and distinguish process provenance from output properties. Earlier unsupported rules remain recorded failures. The fresh Claude run still has separate path-scope and timestamp defects tracked under PX-EVAL-005.
+- **Remaining qualification:** additional art types, consequential-question behavior, real generated quality and broad reliability belong to the open coverage/production tasks. A producing model's self-audit alone remains insufficient acceptance.
 
 ## PX-EVAL-003 — broaden outcome and recovery coverage
 
 - **Status:** planned; requires concrete fixtures or a separately authorized production brief.
-- **Priority update, 2026-11-05:** the selected next operation is the zero-provider-spend
-  [PX-EVAL-004 milestone](delegated-asset-request.spec.md). The six cases and fresh
-  real-art outcome below remain open and are not prerequisites for that operation.
+- **Historical priority, 2026-11-05:** PX-EVAL-004 was selected ahead of this broader matrix and completed its controlled integration scope on November 7.
+- **Current priority, 2026-11-08:** follow the [overall work order](../TODO.md). Controlled uncertain-submission recovery and completed-project cold resumption now have PX-EVAL-005 evidence. Contract-change cold resumption, routing and animation/tile/engine cases remain open; the broader matrix is not complete. Real consumer production remains PX-PROD-001.
 - **WHO:** maintainer supplies controlled pressure cases; actual production uses the
   chosen provider, project owner and target engine.
 - **WHAT:** execute the six unattempted catalog cases: language development, production
@@ -232,3 +230,51 @@ artistic or destination acceptance.
 - **WHY:** reduce source discovery and state-authoring friction without replacing the existing job/inspection mechanisms.
 - **Proof:** required A–E [critical review](../docs/PLAR-REVIEW.md), independent raw-source forward evaluation, source drift/CAS checks and relocated distribution use.
 - **Limits:** an inventory status is not visual acceptance; semantic coverage and exact generated art require project-specific observation. Keep production acceptance and development-harness constraints separate.
+
+
+## PX-A2A-001 — reference-aware assignment and result
+
+- **Status:** implemented 2026-11-07; one independent planning exercise passed. Native execution of this updated reference-aware path remains PX-EVAL-005.
+- **WHAT:** caller/specialist contract, complete dependency requirements, explicit visual-reference roles, source binding and semantic requirements identity, current PixelLab operation guidance and host adapters.
+- **Evidence:** [implementation review](../docs/AGENT-HANDOFF-REVIEW.md) and [runtime, installation and independent plan](../evidence/agent-handoff/README.md).
+- **Observed outcome:** the specialist recovered the dependency identity and prepared actual source PNG bytes for a supported four-direction operation; the parent verified the returned files and mapping.
+- **Limit:** neither that planning result nor the earlier controlled HTTP deliveries establishes current native MCP generation, generated-art fidelity or engine acceptance.
+
+## PX-EVAL-005 — current reference-aware native operation
+
+- **Status:** controlled delivery and durable completion demonstrated in both native hosts, 2026-11-08 UTC; full conformance remains open. Codex's upload run passes. Fresh Claude reaches done and delivers the independently downloaded/inspected PNG, but fails consumer-only path scope and records a future discovery timestamp. [Actual attempts and findings](../evidence/request-review/README.md) retain all 18 attempts and their qualifications.
+- **Completed continuation:** both hosts resume the same unfinished Claude revision17 and reach identical revision19, preserving original sources/criteria/verdicts/jobs without new generation or uploads. The new task-complete operation replaces handwritten final nomination/lifecycle edits.
+- **Remaining work:** simplify initial plan authoring; improve observed path/clock adherence; verify the final prepare-time timestamp rejection through native use. New future discovery times now fail before any state/blob publication, while historical version1 assertions remain readable. The completed full runs predate that final runtime correction.
+- **WHO:** each native host delegates to the current packaged specialist; the caller and retained evidence establish the outcome.
+- **WHAT:** a complete consumer assignment with actual reference-input binding, official MCP tool selection/calls, retrieval, candidate rejection/revision, caller consumption and cold resumption.
+- **WHERE:** fresh retained native attempts; reuse suitable existing runners and production mechanisms instead of inventing another orchestration framework.
+- **Inputs:** matching consumer contract and image references, current observed MCP declarations, frozen instructions, and explicitly identified provider response conditions.
+- **Acceptance:** both hosts complete the operation; real tool arguments carry the image/reference identity, outputs satisfy the assigned checks, the caller opens the result, and recovery does not silently duplicate submissions.
+- **Evidence boundary:** a controlled provider transport tests the operation and must remain labeled as such. The actual production outcome belongs to PX-PROD-001. Existing authorization carries forward within each assignment.
+
+## PX-PROD-001 — actual consumer-project asset delivery
+
+- **Development scope clarification:** verify the reusable agent with repository-supplied representative consumers. Selecting another user project or commissioning assets is not a prerequisite. Actual invocation supplies the target repository; the specialist derives its context there. Keep real-provider/art-quality evidence separate from controlled workflow checks.
+
+- **Status:** open; no completed real production assignment is established by current retained evidence.
+- **WHO:** the calling project agent supplies consumer context; PLA owns visual work and provider operation; actual artifact/renderer review establishes fit.
+- **WHAT:** useful UI/game asset work through paid official PixelLab operations, including needed revision, real destination integration and a consumable caller result. Cover each supported host with useful scoped work.
+- **Inputs:** consumer repository, actual asset need, relevant references, target use and existing execution authorization/limits. Resolve only missing consequential details.
+- **Acceptance:** retained real provider IDs and outputs, independently inspected candidates, actual source/consumer integration, required visual/destination checks and updated PLAR state. Failed candidates remain available.
+- **Limit:** operational success alone is not artistic acceptance. Unavailable required integration remains unfinished. Development of the other open items can proceed before these consumer inputs are selected.
+
+
+## PX-PLAR-002 — complete consumer understanding and allocation maintenance
+
+- **Status:** open; the base PLAR implementation and two controlled examples exist, but complete real-consumer allocation/update acceptance is outstanding.
+- **WHAT:** consume an existing source index/MOC or derive a focused overview, follow actual UI/render consumers and backend states, identify missing/reusable/shared assets, and keep plar.txt synchronized with current integration.
+- **Operation:** preserve explicit requirements, observations and proposals; identify scan boundaries and dynamic gaps; ask only missing consequential context. Revisit affected consumers and dependencies when code or reference bytes change without re-planning unrelated assets.
+- **Acceptance:** a caller can delegate from a real consumer with a useful source overview and quantified asset contract; selected requirements match actual integration; delivered/revised assets update the work list with evidence. A complete-file inventory or source-name search alone does not establish semantic coverage.
+- **Review:** answer A–E for the resulting operation, including current platform compatibility and where the profile, skill and MCP responsibilities reside.
+
+## PX-PKG-001 — separate runtime and maintainer dependencies
+
+- **Status:** implemented and verified 2026-11-07. Mandatory runtime dependencies are Pillow/jsonschema; development tools remain in the dev group and token benchmarking remains optional. [Fresh installation evidence](../evidence/runtime-dependencies/README.md) records the resolved runtime packages and installed/copied-plugin checks.
+- **WHAT:** keep only actual runtime dependencies mandatory; retain development/build/type-check tools in appropriate groups and token benchmarking as an optional operation.
+- **Acceptance:** source distribution, wheel and copied plugin run their normal operations in an environment containing only declared production dependencies. Maintainer verification remains reproducible with its development/benchmark tools. Verify generated requirements and package metadata, not merely edited TOML.
+- **Scope:** preserve tools and code; this changes installation requirements, not a license to remove supporting infrastructure.

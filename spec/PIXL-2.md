@@ -4,6 +4,8 @@ PIXL/2 adds explicit intake and candidate acceptance to the existing agent-opera
 
 The complete PX2 field/type schema is [registry-v2.json](../pixl/registry-v2.json). Fields inherited unchanged from PX1 retain their defined meanings. Unknown kinds, fields and enum values fail. The JSON host adapter may include `format: 2`; absence means 1. The lifecycle commands never guess a format from fields. Library records can be copied with their complete dependency closure without changing record hashes; validate the destination document and its actual file paths.
 
+PX2 shares PX1's optional [library-source retention](library-retention.md): source resolution preserves the declared revision and reports its retained identity, while choice authority, adoption, candidate and verdict semantics remain unchanged.
+
 ## Intake and concrete contracts
 
 P owns a list `in` of I choices and can retain the brief in `br`. Its `ct` is optional. Initialization via `intake` creates no C, dimensions, projection, palette or alpha defaults. The user is a valid A role. Old `init` remains a PX1 initializer for compatibility.
@@ -42,6 +44,8 @@ Semantic traversal in PX2 excludes P/E/T/J/N/V and includes I/F/Q as well as the
 
 A done task needs all prerequisite tasks done, at least one F, exactly one nominated X per F, and a current passing V for every Q on every nominee. Mechanical success alone cannot satisfy visual or engine criteria. Older rejected candidates remain recorded and do not prevent selecting a later candidate, but no unreviewed replacement inherits their proof.
 
+The optional [task completion operation](task-completion.md) nominates explicit already-reviewed candidates and publishes the existing active/done transitions. It retains all acceptance checks and creates no verdict or new UDL field.
+
 ## Publication, amendment and resumption
 
 All PX1 concurrency, path confinement, immutable E and history publication guarantees remain. V fields are immutable after publication except one-way `ob=+`; correcting a verdict adds a new V ID. A newly introduced V cannot already be superseded: it must first pass current validation and be published, then a later revision may supersede it. Existing IDs cannot disappear. A store rejects format changes during commit. Existing PX1 stores are not automatically upgraded because old state does not identify confirmed choices or required acceptance. Start a new explicitly authored PX2 project when these operations are needed; preserve the old project as its own source/history.
@@ -49,6 +53,12 @@ All PX1 concurrency, path confinement, immutable E and history publication guara
 For each newly published pass/fail V, the planned F and its complete semantic scope, including Q and C/choices, must already exist unchanged in the immediately preceding saved state. Save planning/criterion changes before collecting and publishing results. Initial PX2 publication cannot contain pass/fail V. Unavailable observations do not claim evaluation and are exempt from this ordering rule. This establishes recorded ordering between a plan and its verdict; it cannot independently attest when a person actually inspected an image.
 
 A done task must reopen when it or its relevant dependency closure changes. PX2 closure does not traverse through P: an unrelated intake choice or project display name does not reopen an accepted sample. Link actual semantic dependencies through its input/output contracts, choices, criteria, sources and decisions. Changing one of those dependencies requires reopening and superseding stale E/V before new evaluation. History remains available for cold resumption.
+
+The optional [selected-asset preparation adapter](asset-preparation.md) authors the
+existing candidate/sample records from exact reviewed PLAR artifacts and retains
+input bytes. Its explicit versioned report-X metadata binding also checks current
+PLAR identity before new job preparation/dispatch; it does not add record fields or
+relabel an expert candidate interpretation as owner-approved production.
 
 ## Operational boundaries
 

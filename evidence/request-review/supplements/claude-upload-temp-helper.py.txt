@@ -1,0 +1,10 @@
+import sys
+from PIL import Image
+for p in sys.argv[1:]:
+    im=Image.open(p).convert("RGBA"); print(p, im.size)
+    cols={}
+    for c in im.getdata(): cols[c]=cols.get(c,0)+1
+    keys=sorted(cols,key=lambda c:-cols[c]); print(cols)
+    sym={k:".#*o@"[i] if k[3] else " " for i,k in enumerate(keys)}
+    sym={k:(" " if k[3]==0 else "#tYxz"[i]) for i,k in enumerate([k for k in keys])}
+    for y in range(32): print("".join(sym[im.getpixel((x,y))] for x in range(32)))

@@ -35,6 +35,14 @@ Read its result to locate the prepared files and view IDs.
 
 ## View, then judge
 
+When the host file viewer omits delivery metadata, use `pixl_inspection` with
+`path`, `packet_id` and `view_ids` (1–8 prepared IDs per call). It returns the
+actual selected PNG image blocks plus matching hashes and `payload_size` dimensions,
+without resizing. View/forward the image blocks, not only their text metadata.
+Those dimensions describe this transmitted image payload; record any later host
+resizing separately, and keep delivery unknown if the host transforms it without
+reporting the result. A tool result alone does not establish that anyone viewed it.
+
 Open the retained candidate and reference views with the host's image viewer. Inspect
 native readability and enlarged structure on the selected backgrounds. Use individual
 views or complete crops for large inputs; a nominal 1x cell in a resized sheet is not
@@ -70,7 +78,7 @@ or `pixl_inspection_review`.
 
 The operation retains its report and creates bound E/V for supplied performed checks.
 It preserves failures and unavailable checks without nominating a candidate or marking
-the task done. Read `inspection` and `workflow` again. A revision is a new candidate;
+the task done. Read `inspection` and `workflow` again. Once all required checks and assigned integration are complete, use `task-complete` / `pixl_task_complete` with the accepted candidate IDs; then confirm the saved task is done. A revision is a new candidate;
 it begins with unperformed criteria and cannot inherit the rejected candidate's pass.
 If scope drift blocks review, amend the plan through the existing lifecycle rules and
 prepare fresh views. Do not relabel the old observation as current evidence.

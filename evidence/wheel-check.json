@@ -1,12 +1,21 @@
 {
   "status": "pass",
   "wheel": "pixl_agent-1.0.0-py3-none-any.whl",
-  "wheel_sha256": "54e4042dba03d3ef158c7bf1a63335814b6cb3cbf426593eaea03c159d6aba2b",
+  "wheel_sha256": "70c7da4513e88dbc84cb08fbfa6c00dc3e450e79bf512cfbeed31a5bdc986804",
   "sdist": "pixl_agent-1.0.0.tar.gz",
-  "sdist_sha256": "ff809369e223ff78ca60aa6cd967f4202c07e4afa049fac46db5d2275bbd6693",
-  "build_route": "checkout -> sdist -> wheel -> temporary installation",
+  "sdist_sha256": "b491c21761e313eed098774be19dfa9ffee8c9b597a621b5ca66c7a737357fdb",
+  "build_route": "checkout -> sdist -> wheel -> fresh runtime environment",
+  "runtime_packages": [
+    "attrs",
+    "jsonschema",
+    "jsonschema-specifications",
+    "pillow",
+    "pixl-agent",
+    "referencing",
+    "rpds-py"
+  ],
   "source_documents_verified": 5,
-  "wheel_files": 113,
+  "wheel_files": 119,
   "checks": [
     {
       "command": "plar",
@@ -15,6 +24,13 @@
     {
       "command": "plar reference handoff",
       "status": "pass"
+    },
+    {
+      "command": "retain-library",
+      "status": "pass",
+      "state_unchanged": true,
+      "original_source_sha256": "5be2723d583dfd9b53157a02921dbd525dfb0e08ffb08970eec87097dae96bc5",
+      "scope": "Isolated installed CLI; synthetic library-source replacement and cold workflow/source retrieval."
     },
     {
       "command": "sources",
@@ -54,6 +70,10 @@
     },
     {
       "command": "poc",
+      "status": "pass"
+    },
+    {
+      "command": "copied-plugin with runtime dependencies",
       "status": "pass"
     },
     {
@@ -302,5 +322,5 @@
     "fixture_sha256": "fc9fcef5fc390e036f1517424ceff2c2000808475e621c6a6bc39b3d6bc52b11",
     "scope": "Public isolated CLI from a retained synthetic preaccepted checkpoint; actual member copies, unavailable engine and amended membership; no real art/engine outcome."
   },
-  "scope": "uv default sdist-to-wheel build; temporary wheel installation; runtime dependencies reused; no global installation or source import; no whole-module coverage claim"
+  "scope": "uv default sdist-to-wheel build; fresh wheel installation with resolved production dependencies; copied-plugin execution; no global installation or source import; no whole-module coverage claim"
 }

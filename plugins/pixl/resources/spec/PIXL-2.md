@@ -4,6 +4,8 @@ PIXL/2 adds explicit intake and candidate acceptance to the existing agent-opera
 
 The complete PX2 field/type schema is [registry-v2.json](../pixl/registry-v2.json). Fields inherited unchanged from PX1 retain their defined meanings. Unknown kinds, fields and enum values fail. The JSON host adapter may include `format: 2`; absence means 1. The lifecycle commands never guess a format from fields. Library records can be copied with their complete dependency closure without changing record hashes; validate the destination document and its actual file paths.
 
+PX2 shares PX1's optional [library-source retention](library-retention.md): source resolution preserves the declared revision and reports its retained identity, while choice authority, adoption, candidate and verdict semantics remain unchanged.
+
 ## Intake and concrete contracts
 
 P owns a list `in` of I choices and can retain the brief in `br`. Its `ct` is optional. Initialization via `intake` creates no C, dimensions, projection, palette or alpha defaults. The user is a valid A role. Old `init` remains a PX1 initializer for compatibility.
@@ -41,6 +43,8 @@ Current pass/fail verdicts require non-superseded E of the matching outcome and 
 Semantic traversal in PX2 excludes P/E/T/J/N/V and includes I/F/Q as well as the original semantic kinds. Changing task states or superseding V therefore does not recursively change the evidence it summarizes. Changing a contract, applicable choice, plan or criterion invalidates live E bindings. Superseded V retains its old outcome and references but no longer requires current criterion membership or current E support. This permits an explicitly revised plan to retain historical rejected or obsolete requirements.
 
 A done task needs all prerequisite tasks done, at least one F, exactly one nominated X per F, and a current passing V for every Q on every nominee. Mechanical success alone cannot satisfy visual or engine criteria. Older rejected candidates remain recorded and do not prevent selecting a later candidate, but no unreviewed replacement inherits their proof.
+
+The optional [task completion operation](task-completion.md) nominates explicit already-reviewed candidates and publishes the existing active/done transitions. It retains all acceptance checks and creates no verdict or new UDL field.
 
 ## Publication, amendment and resumption
 

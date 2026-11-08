@@ -4,6 +4,7 @@ import copy
 import json
 import os
 import unittest
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -80,6 +81,16 @@ class DiscoveredRequestTests(unittest.TestCase):
             "properties": {"api_key": {"$ref": "#/$defs/credential"}},
         }
         self.assertEqual(self.request(arguments={}, schema=valid)["arguments"], {})
+
+    def test_future_discovery_rejected_on_prepare_without_reinterpreting_history(self):
+        future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+        discovery = {**DISCOVERY, "observed_at": future}
+        with self.assertRaisesRegex(PixlError, "cannot be in the future"):
+            self.request(discovery=discovery)
+        # Older version-1 envelopes remain readable with their exact original assertions.
+        historical = self.request()
+        historical["discovery"]["observed_at"] = future
+        self.assertEqual(platform.validate_discovered(historical), historical)
 
     def test_new_tool_retains_full_schema_arguments_and_caller_assertions(self):
         args = {"description": "wizard", "size": 512}

@@ -16,6 +16,8 @@ Supply the smallest complete assignment:
 | Resume | Existing store/task/output and pending provider IDs, when present |
 | Integration | Destination, relevant consumers, and authorized code/import work |
 
+Keep generated assets, request/review artifacts, helper scripts and scratch/previews inside the assigned consumer root unless the assignment names another authorized destination. Resolve paths against that root through each delegation and resumption; the shell's current directory or the kit's installation directory is not an implicit output destination. The caller checks returned paths against the agreed workspace as well as checking their bytes.
+
 For PLAR, call `pixl_plar_read` with `asset_id`. Pass its selected row, transitive dependencies, source bindings, visual references and `requirements_hash`. Queue summaries alone omit production context. The reader supplies absolute paths for this filesystem; if the delegate uses another workspace, rebase paths and verify the same source bytes there.
 
 The caller delegates to the native PIXL agent or a native specialist loading the shared PIXL skill. Keep the caller's model/tool/permission settings unless the assignment requires otherwise. Include the actual assignment in the delegation; naming a skill or saying “make the assets” does not transfer the parent's conversation. Credentials stay in the host's PixelLab connection.
@@ -30,6 +32,8 @@ Keep creative proposals explicit. Distinguish “the reference contains this” 
 
 Resume the same task/state where possible. Check retained provider attempts before another request. A failed or interrupted child is a handoff boundary; it is not permission for the parent to duplicate a potentially submitted generation.
 
+Before adopting a proposed production contract, use the [request and criteria handoff](request-review.md). The specialist returns exact source/request/criteria artifacts; the caller reads them independently and records a source-grounded comparison. Preserve specialist choices as choices, and continue within existing authorization once discrepancies are resolved.
+
 ## Specialist → caller at completion
 
 Return a compact structured result (JSON or equivalent named fields):
@@ -38,8 +42,13 @@ Return a compact structured result (JSON or equivalent named fields):
 - `asset_id` and `requirements_hash` when PLAR supplied them; direct-brief tasks identify their brief.
 - `artifacts`: project-relative paths, role, actual hashes and dimensions/frame metadata as relevant.
 - `checks`: actual mechanical, visual and integration findings, with evidence paths and unavailable checks.
+- `request_review`: packet and caller-review paths/hashes, with unresolved findings when applicable.
 - `provider`: observed resource/job IDs and the production-state location needed to resume.
 - `questions` or `next`: only outstanding decisions and the next concrete action.
+
+When durable production state is in use, finish its accepted-candidate selection and task state through `task-complete` / `pixl_task_complete` after the saved required checks pass. The caller reads `workflow` to confirm the completed state agrees with the delivered files; an open task remains an explicit unfinished part of the operation. A planning-only assignment does not need manufactured production state.
+
+Judge completion against the delegated scope. A planning-only assignment is delivered when its complete reviewed contract is returned; future generation remains outside that scope. A production assignment is still partial at contract handoff.
 
 Include only applicable fields. A generation-only task can deliver a reviewed artifact while explicitly leaving engine import unverified. If the assignment requires integration, unavailable integration keeps that part unfinished. Never use a provider's completed status as artistic acceptance.
 

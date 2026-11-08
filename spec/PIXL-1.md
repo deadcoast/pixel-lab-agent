@@ -55,6 +55,10 @@ Evidence `ob=+` marks a superseded receipt. Its original outcome, file and old b
 
 File checking is optional for structural validation and mandatory when accepting completion in a store. With a project root, X/E local paths and locally addressed S bytes must exist, remain within that root after symlink resolution, and match their declared SHA-256. URL sources are not downloaded by validation; their digest identifies a recorded snapshot and does not assert current remote truth. Source `ln` ranges are inclusive, one-based and valid for the local source. Empty palettes mean no exact palette restriction, not zero colors. C rules apply only to linked artifacts; source art can intentionally choose a different contract.
 
+### Explicit retention of imported library source revisions
+
+A project can opt into the versioned [library source retention operation](library-retention.md). It preserves the exact declared local S revision in project-owned storage before replacing an installed kit, or recovers it from a supplied original kit. If that S locator later changes or disappears, resolution may use its explicitly retained locator/digest entry. The retained bytes and original line range must pass the same checks; reports identify the old revision actually used. This does not relax X/E file checks or substitute old bytes for a different requested digest. No record, evidence binding or outcome is rewritten, and no old proof is promoted to evidence about a newer implementation.
+
 ## Retrieval and drift
 
 `context(focus)` includes the focus, all project roots and their transitive references, and the focus's transitive reference closure. For T focus it also includes associated J records and handoffs mentioning the focus. This is a conservative correctness baseline; it never silently truncates a required dependency or decision. If canonical packet bytes exceed a requested byte budget it returns a budget error with the required size. Bytes are not claimed to equal model tokens. Large project roots should not reference every task: tasks point to their project. Returned subsets keep the original revision and validate as closed documents.

@@ -1,6 +1,8 @@
 # PIXL scaffold review and development direction
 
-**Next milestone selected, 2026-11-05:** test a delegated generation request in
+**Current status and work order:** [overall plan and TODO](../TODO.md), reconciled 2026-11-07. The product request remains open. The review and selections below are dated history, not the current completion ledger.
+
+**Historical milestone selection, 2026-11-05 (bounded trial completed November 7):** test a delegated generation request in
 Claude and Codex through the official PixelLab integration. Exercise the production
 request, job, retrieval, inspection and delivery workflow with only external calls
 mocked; tests must not submit real generation jobs or consume credits.

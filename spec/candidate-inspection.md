@@ -5,6 +5,20 @@ adds no UDL syntax. The runtime prepares exact local inputs and verifies retaine
 records; callers supply actual observations and criterion judgments. Preparation,
 measurement, declared review, host viewing evidence and engine execution are distinct.
 
+## Image delivery through MCP
+
+The read-only `pixl_inspection` accepts optional `view_ids` (1–8 distinct IDs,
+requiring `packet_id`). After validating the retained packet it captures and
+rechecks each selected PNG against the saved hash and dimensions. It returns
+unmodified MCP image blocks and `image_payloads` metadata: view ID, zero-based
+index among image blocks, SHA-256 and `payload_size` [width,height]. The combined
+encoded files are limited to 8 MiB; request fewer views when exceeded. Unknown
+views or changed bytes fail rather than returning partial/unverified images.
+Omitting selection retains the existing text/report operation. This adds no
+saved-state or manifest fields and creates no observations/verdicts. Encoded
+payload dimensions do not certify physical display size, downstream host
+resizing, actual viewing or artistic acceptance.
+
 ## API and publication
 
 `prepare(folder, expected, candidate_id, packet_id, options, root=None)` requires a
