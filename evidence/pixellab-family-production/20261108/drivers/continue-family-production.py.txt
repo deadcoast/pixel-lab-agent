@@ -1,0 +1,236 @@
+import copy
+import hashlib
+import json
+import shutil
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+from pixl.codec import Document, Record, Ref, Symbol, digest, parse, record_hash
+from pixl.store import commit
+from pixl import jobs, lifecycle, delivery, plar, graph, inspection, completion, handoff
+
+BASE = REPO / 'evidence/style-family-rendering/20261108/native/codex-render-recheck-01/project'
+ROOT = REPO / 'evidence/pixellab-family-production/20261108/project'
+STORE = ROOT / '.pixl/assets/queue.ready'
+WORK = ROOT / 'work/live-family'
+
+def write(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def initialize():
+    if ROOT.exists():
+        raise RuntimeError('Use an existing continuation explicitly; refusing overwrite')
+    shutil.copytree(BASE, ROOT, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    WORK.mkdir(parents=True)
+    write(WORK / 'origin.json', {'source': str(BASE), 'copied_at': datetime.now(UTC).isoformat(), 'files': [{'path': p.relative_to(BASE).as_posix(), 'sha256': sha(p)} for p in BASE.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc']})
+    (ROOT / 'PRODUCTION-STAGE.md').write_text('''# Authorized official PixelLab family continuation
+
+Continue Working four-frame request, then Retry/Paused and collective family review, using this retained consumer. Actual PixelLab-generated quality is the open question to evaluate. The user authorizes the useful paid official API operations for this work; prior controlled-test restrictions are historical only. No new project, external messaging, global settings or replacement of Start/Ready is assigned.
+
+Carry forward Codex caller adoption in FAMILY-RESULT.json: compact readable silhouettes at 1x and 3x on #172336, deliberate clusters/steps, cool-blue accent related to Start, transparent background. No fixed palette, binary alpha, exact stroke or margins imposed. Ready remains a controlled fixture and Start remains the existing vector; new generated members have separate real provider provenance.
+
+Working is four horizontal 16x16 frames at 100ms each. Proposed motif: orbiting separated blocks/segments, without arrowheads or check marks. Generate a 16x16 seed using Ready as style only, then animate it. The connected animate_image returns input+4 generated frames: preserve all five; explicitly select four generated frames 1,2,3,4, assemble without resizing, and review actual loop including last-to-first. If that selection fails, retain failure and revise; no silent frame dropping or duplication.
+
+Retry proposal: a bent circular return arrow with an obvious arrowhead, distinct from the segmented Working motion. Paused proposal: two separate vertical bars. These are specialist design choices, not newly invented owner requirements. Both are static 16x16 on transparency with the same style anchor.
+
+Existing member/collective plans remain authoritative; add a preparatory Working seed output before submission. Save exact requests, declarations, reference bytes and caller comparisons; claim each durable job before the official tool call. Preserve failed candidates. Review mechanical fit, appearance, actual timing and the real consumers separately. Final family may only be accepted after all member and collective criteria pass.
+''', encoding='utf-8')
+    doc = parse((STORE / 'state.px').read_bytes())
+    for rid, rec in doc.records.items():
+        if rid.startswith('family.'):
+            print(rid, rec.kind, rec.fields)
+    write(WORK / 'starting-state.json', {'hash': digest(doc), 'revision': doc.revision})
+
+def document():
+    return parse((STORE / 'state.px').read_bytes())
+
+def snapshot(name):
+    doc = document()
+    graph.validate(doc, ROOT)
+    write(WORK / (name + '-workflow.json'), lifecycle.report(doc))
+    write(WORK / (name + '-jobs.json'), jobs.report(doc, ROOT))
+    write(WORK / (name + '-family.json'), delivery.report(doc, ROOT, 'family.delivery.output'))
+    return doc
+
+def plans():
+    doc = snapshot('before')
+    expected = digest(doc)
+    for member in ('working', 'retry', 'paused'):
+        selected = plar.read(ROOT, asset_id='queue.' + member, include_production=False)
+        path = WORK / (member + '-selection.json')
+        write(path, selected)
+        rid = 'live.' + member + '.selection'
+        doc.records[rid] = Record(rid, 'X', {'nm': 'Reviewed current PLAR selection', 'kd': Symbol('report'), 'ur': path.relative_to(ROOT).as_posix(), 'dg': sha(path), 'mt': {'binding': 'pixl.plar.selection/1', 'plar_path': 'plar.txt', 'asset_id': 'queue.' + member, 'requirements_hash': selected['requirements_hash']}})
+        doc.records['family.' + member + '.task'].fields['ip'].append(Ref(rid))
+    ct = copy.deepcopy(doc.records['family.paused.contract'])
+    ct.id = 'live.seed.contract'
+    ct.fields.update(nm='Working seed for animation', li='16x16 transparent cool-blue activity seed, proposed orbiting separated blocks; style only from Ready. Not yet the four-frame deliverable.')
+    doc.records[ct.id] = ct
+    for suffix, domain, mode, check in [('geometry', 'mechanical', 'local', 'Decode 16x16 PNG suitable as the first frame for the selected animation tool.'), ('visual', 'visual', 'visual', 'Compact cool-blue activity motif with transparent exterior, deliberate clusters, and no completion check or retry arrow; inspect native and enlarged relative to Ready.')]:
+        rid='live.seed.q.' + suffix
+        doc.records[rid]=Record(rid,'Q',{'nm':suffix,'dm':Symbol(domain),'md':Symbol(mode),'ck':check,'wh':Ref('actor'),'so':[Ref('render.source.brief')]})
+    doc.records['live.seed.output']=Record('live.seed.output','F',{'tk':Ref('live.seed.task'),'nm':'Working preparatory pose','kd':Symbol('sprite'),'ct':Ref(ct.id),'rq':[Ref('live.seed.q.geometry'),Ref('live.seed.q.visual')]})
+    task=copy.deepcopy(doc.records['family.working.task'])
+    task.id='live.seed.task'
+    task.fields.update(nm='Prepare Working animation input through official PixelLab',ph=Symbol('sample'),ip=[Ref('ready.retained')],op=[Ref('live.seed.output')])
+    doc.records[task.id]=task
+    doc.revision += 1
+    result=commit(STORE,doc,expected,ROOT)
+    write(WORK/'plans-publication.json',result)
+    snapshot('planned')
+    print(json.dumps(result))
+
+def schema(tool):
+    nullable=lambda type_: {'type':[type_,'null']}
+    if tool=='pixelart_workbench':
+        return {'type':'object','properties':{'argv':{'anyOf':[{'type':'string'},{'type':'array','items':{'type':'string'}},{'type':'null'}]},'mode':{'type':'string','enum':['low','high']},'notes':nullable('string')},'additionalProperties':False}
+    if tool=='animate_image':
+        props={k:nullable('string') for k in ('first_frame_base64','first_frame_url','last_frame_base64','last_frame_url','project_id')}
+        props.update(action={'type':'string'},frame_count={'type':'number'},no_background=nullable('boolean'),seed=nullable('number'))
+        return {'type':'object','properties':props,'required':['action'],'additionalProperties':False}
+    props={k:nullable('string') for k in ('palette_name','project_id')}
+    props.update(description={'type':'string'},width={'type':'number'},height={'type':'number'},no_background={'type':'boolean'},seed={'type':'number'},max_colors=nullable('number'),palette={'type':['array','null'],'items':{'type':'string'}},style_image={'type':['object','null'],'properties':{k:nullable('string') for k in ('base64','source_image_id','url','usage_description')},'additionalProperties':False},style_options={'type':['object','null'],'properties':{k:{'type':'boolean'} for k in ('color_palette','detail','outline','shading')},'additionalProperties':False})
+    return {'type':'object','properties':props,'required':['description'],'additionalProperties':False}
+
+def prepare(name):
+    requests=json.loads((WORK/'requests.json').read_text(encoding='utf-8'))
+    tool='pixelart_workbench' if any(x in name for x in ('repair','cutout','motion')) else 'animate_image' if name.startswith('working-animation') else 'create_image_pro_flash'
+    target='live.seed' if name=='working-seed' else 'family.' + ('working' if name.startswith('working-animation') else name.split('-')[0])
+    arguments=requests[name]
+    request={'provider':'pixellab-official-mcp','tool':tool,'arguments':arguments,'schema':schema(tool),'discovery':{'source':'Current connected official MCP declaration; tool-declarations.json','observed_at':datetime.now(UTC).isoformat(),'evidence':{'declaration_path':'work/live-family/tool-declarations.json','declaration_sha256':sha(WORK/'tool-declarations.json'),'schema_representation':'JSON Schema projection of the complete exposed TypeScript argument declaration; not a raw tools/list dump','official_docs':'https://api.pixellab.ai/mcp/docs'}},'authorization':{'scope':'User-authorized useful official PixelLab production for Working, Retry, Paused and collective family review in the existing consumer. Scope per PRODUCTION-STAGE.md.','evidence':{'source':'PRODUCTION-STAGE.md','sha256':sha(ROOT/'PRODUCTION-STAGE.md'),'user_request':'Next is Working four-frame request, then Retry/Paused and collective family review.'}}}
+    if tool=='pixelart_workbench':
+        request['discovery']['source']='Current official workbench declaration and observed edit contract'
+        request['discovery']['evidence'].update(declaration_path='work/live-family/workbench-declaration.json',declaration_sha256=sha(WORK/'workbench-declaration.json'))
+    write(WORK/(name+'-request.json'),request)
+    doc=snapshot(name+'-before')
+    criteria=[{'id':r.id,'check':doc.records[r.id].fields['ck']} for r in doc.records[target+'.output'].fields['rq']]
+    write(WORK/(name+'-caller-comparison.json'),{'reviewer':'development caller using PIXL production workflow in this host; no new native Claude/Codex trial claimed','request_sha256':sha(WORK/(name+'-request.json')),'target':target,'criteria':criteria,'checked':['Original brief, actual consumer dimensions and timing, retained scoped style decision and current PLAR selection','Actual Ready reference uploaded and used as style only; no forced palette or owner-invented numeric style threshold','For animation retain input+4 generated images and explicitly select four, preserve all raw outputs and evaluate actual loop','Provider output success does not accept visual or engine criteria'],'status':'consistent for scoped production','limitations':['16px Pro Flash is experimental','Exact motion/readability/loop quality must be inspected after retrieval']})
+    result=jobs.prepare(STORE,digest(doc),'live.'+name+'.job',target+'.task',[target+'.output'],root=ROOT,**request)
+    write(WORK/(name+'-prepared.json'),result)
+    result=jobs.dispatch(STORE,digest(document()),'live.'+name+'.job',root=ROOT)
+    write(WORK/(name+'-dispatch.json'),result)
+    print(json.dumps(result['dispatch_request']))
+
+def observe(name, state, remote_id=None):
+    path=WORK/(name+'-'+state+'-response.json')
+    evidence={'response_path':path.relative_to(ROOT).as_posix(),'sha256':sha(path),'observed_at':datetime.now(UTC).isoformat(),'origin':'actual official PixelLab MCP host response','simulated':False}
+    result=jobs.observe(STORE,digest(document()),'live.'+name+'.job',state,evidence,remote_id,ROOT)
+    write(WORK/(name+'-'+state+'-observation.json'),result)
+    print(json.dumps({k:result[k] for k in ('revision','hash','state')}))
+
+def import_candidate(name, filename):
+    target='live.seed' if name=='working-seed' else 'family.' + ('working' if name.startswith('working-animation') else name.split('-')[0])
+    candidate='live.'+name+'.candidate'
+    path=WORK/filename
+    result=jobs.import_artifact(STORE,digest(document()),'live.'+name+'.job',target+'.output',candidate,path.relative_to(ROOT).as_posix(),{'downloaded_path':path.relative_to(ROOT).as_posix(),'sha256':sha(path),'provenance':'Official PixelLab response and explicit local assembly where documented'},ROOT)
+    write(WORK/(name+'-import.json'),result)
+    options={'references':['ready.retained'],'scale':3,'backgrounds':['#172336'],'max_side':1024,'contexts':[]}
+    if name.startswith('working-animation'):
+        options['contexts']=[{'name':'working-cycle','kind':'frames','source':candidate,'source_frame':0,'rects':[[i*16,0,16,16] for i in range(4)],'durations_ms':[100]*4,'pivots':[None]*4}]
+    result=inspection.prepare(STORE,digest(document()),candidate,'live.'+name+'.packet',options,ROOT)
+    write(WORK/(name+'-inspection.json'),result)
+    print(json.dumps({'packet':result['packet'],'views':result['views']}))
+
+def review(name):
+    observation=json.loads((WORK/(name+'-review-input.json')).read_text(encoding='utf-8'))
+    result=inspection.review(STORE,digest(document()),'live.'+name+'.packet','live.'+name+'.review',observation,ROOT)
+    write(WORK/(name+'-review.json'),result)
+    print(json.dumps({k:result[k] for k in ('revision','hash','state')}))
+
+def finish_seed():
+    result=completion.complete(STORE,digest(document()),'live.seed.task',['live.working-seed.candidate'],ROOT)
+    write(WORK/'working-seed-completion.json',result)
+    doc=document(); expected=digest(doc)
+    doc.records['family.working.task'].fields['ip'].append(Ref('live.working-seed.candidate'))
+    doc.records['family.working.task'].fields['dp'].append(Ref('live.seed.task'))
+    doc.revision+=1
+    result=commit(STORE,doc,expected,ROOT)
+    write(WORK/'animation-input-publication.json',result)
+    print(json.dumps(result))
+
+def bound_verdict(candidate, criterion, key, evidence_file, reason):
+    doc=document(); expected=digest(doc)
+    output=doc.records[doc.records[candidate].fields['of'].id]
+    task=doc.records[output.fields['tk'].id]
+    source=WORK/evidence_file
+    scope=graph.proof_scope(doc,[candidate,criterion])
+    evidence_id='live.'+key+'.evidence'
+    verdict_id='live.'+key+'.verdict'
+    assert evidence_id not in doc.records and verdict_id not in doc.records
+    mode=doc.records[criterion].fields['md']
+    at=datetime.now(UTC).isoformat()
+    doc.records[evidence_id]=Record(evidence_id,'E',{'nm':'Actual scoped observation: '+key,'ur':source.relative_to(ROOT).as_posix(),'dg':sha(source),'rs':Symbol('pass'),'md':mode,'at':at,'bs':[{'rf':Ref(rid),'dg':record_hash(doc.records[rid])} for rid in sorted(scope)]})
+    doc.records[verdict_id]=Record(verdict_id,'V',{'tk':Ref(task.id),'rq':Ref(criterion),'xr':Ref(candidate),'st':Symbol('pass'),'wh':Ref('actor'),'wy':reason,'at':at,'ev':[Ref(evidence_id)]})
+    task.fields['vr'].append(Ref(verdict_id))
+    doc.revision+=1
+    result=commit(STORE,doc,expected,ROOT)
+    write(WORK/(key+'-publication.json'),result)
+
+def engine_and_members():
+    capture=json.loads((WORK/'render-02/render.json').read_text(encoding='utf-8'))
+    checks=json.loads((WORK/'render-02/checks.json').read_text(encoding='utf-8'))
+    assert checks['status']=='pass' and not capture['missing'] and not capture['errors']
+    write(WORK/'engine-observation.json',{'observed_at':datetime.now(UTC).isoformat(),'renderer':'Actual queue.ts/queue-view.ts modules, both statusCell and compactStatus, Chrome headless CDP1280x1000 DPR1','capture':{'path':'work/live-family/render-02/render.json','sha256':sha(WORK/'render-02/render.json')},'checks':{'path':'work/live-family/render-02/checks.json','sha256':sha(WORK/'render-02/checks.json'),'passed':len(checks['observations'])},'views':20,'transitions':capture['transitions'],'playback':{'status':capture['playback']['status'],'observed_frames':[{'elapsed':s['elapsed'],'frames':[c['frame'] for c in s['cells']]} for s in capture['playback']['samples']]},'visual_observation':'Opened destination screenshot at original1280x1000 and actual live frame images in both consumers across0/1/2/3/0. No matte, clipping, filtering blur or misplaced glyph in those views. Stable-clock quarter-turns wrap cleanly. Grayscale comparison separately reviewed.','limits':['Scoped fixture browser, not another game engine or human playtest','Ready is retained controlled fixture, Start existing vector','Final Working motion constructed from generated seed using PixelLab workbench; rejected model animation retained']})
+    for member,name in [('working','working-animation-motion-01'),('retry','retry'),('paused','paused-cutout-01')]:
+        candidate='live.'+name+'.candidate'
+        bound_verdict(candidate,'family.'+member+'.q.engine',member+'.engine','engine-observation.json','Actual final browser capture checks geometry, image hashes, real backend event mapping, both consumers1x/3x, alpha/sampling/placement; Working additionally observed13frame transitions across3cycles at100ms with exact source pixels.')
+        result=completion.complete(STORE,digest(document()),'family.'+member+'.task',[candidate],ROOT)
+        write(WORK/(member+'-completion.json'),result)
+    result=delivery.snapshot(STORE,digest(document()),'family.delivery.output','live.family.candidate',ROOT)
+    write(WORK/'family-snapshot.json',result)
+    snapshot('members-complete')
+    print(json.dumps({k:result.get(k) for k in ('hash','revision','candidate','manifest','files')}))
+
+def complete_family():
+    checks=json.loads((WORK/'render-package/checks.json').read_text(encoding='utf-8'))
+    assert checks['status']=='pass'
+    reason={
+        'continuity':'Exact package images match inspected candidates. Native/3x color and grayscale comparison: related cool-blue accent, deliberate clusters, transparent exteriors and readable distinct visual weights. Working maintains the same three cluster shapes through four exact clockwise quarter-turns and actual100ms loop wrap. Paused bars have greater area than Ready by meaning, not a style violation.',
+        'distinction':'Ready is an asymmetric check; Working is separated orbiting segments in every phase; Retry is an open circular arrow with a directional head; Paused is two separate upright bars. All remain distinguishable in the actual grayscale1x/3x comparison. Start triangle is preserved separately. No completion check appears in Working.',
+        'engine':'Exact saved package copies were placed at the unchanged consumer paths, then captured again. All404mechanical checks pass:20views,5backend transitions, both consumers, native/3x nearest compositing/placement,13live frame transitions with three wraps. No missing assets or browser errors.'}
+    write(WORK/'collective-review.json',{'observed_at':datetime.now(UTC).isoformat(),'reviewer':'PIXL production role within current Codex host; maintainer-operated continuation, no new native host trial','family_candidate':'live.family.candidate','snapshot':json.loads((WORK/'family-snapshot.json').read_text(encoding='utf-8')),'package_check':{'path':'work/live-family/package-integration.json','sha256':sha(WORK/'package-integration.json')},'views':[{'path':'work/live-family/'+p,'sha256':sha(WORK/p)} for p in ('family-comparison.png','review-views.json','render-package/destination.png','render-package/render.json','render-package/checks.json')],'findings':reason,'status':'pass for this exact family and browser consumer','limits':['Not broad generative quality or unaided host reliability','Ready baseline is controlled fixture, Start existingvector','Working pose generated; final motion is deterministic specialistconstruction through official PixelLab tools after rejected AIanimation','Review used exact images and recorded live frames/timing; no human usertest or another engine','Original Ready selection drift remains historical; no old jobs or verdicts rebound']})
+    for key,why in reason.items():
+        bound_verdict('live.family.candidate','family.q.'+key,'family.'+key,'collective-review.json',why)
+    result=completion.complete(STORE,digest(document()),'family.delivery.task',['live.family.candidate'],ROOT)
+    write(WORK/'family-completion.json',result)
+    doc=snapshot('family-complete')
+    # Progress-only PLAR update: preserve all five semantic requirement hashes.
+    before={row['id']:plar.read(ROOT,asset_id=row['id'],include_production=False)['requirements_hash'] for row in json.loads((ROOT/'plar.txt').read_text(encoding='utf-8'))['assets']}
+    queue=json.loads((ROOT/'plar.txt').read_text(encoding='utf-8'))
+    queue['coverage']['excluded']=[('Historical render-stage scope, superseded for generation by PRODUCTION-STAGE.md: '+line) if 'No new Start' in line else line for line in queue['coverage']['excluded']]
+    queue['coverage']['included'].append('PRODUCTION-STAGE: real official PixelLab generated Working seed, Retry and Paused; failed transparent Paused and failed AIanimation retained; official guarded background edits and seed-based motion construction; all members and exact package rendered in both actual consumers at1x/3x including live100ms playback; scoped color/grayscale collective review passed.')
+    queue['coverage']['unresolved']=['Account badge server registry remains outside this local asset request.','Broader generated quality and unaided nativeClaude/Codex production remain unproven by this maintainer-operated continuation.','Historical Ready requirement/selection drift remains explicit; old request and verdict identities are unchanged.']
+    for row in queue['assets']:
+        if row['id'] in ('queue.working','queue.retry','queue.paused'):
+            row['status']='integrated'
+            row['evidence'].append({'path':'work/live-family/collective-review.json','note':'Actual official PixelLab production and scoped collective/browser acceptance; includes exact delivery package and retained failures.'})
+            row['next']='Current member integrated and reviewed. Resume exact family package; revise only for a changed requirement or a newly observed defect. Broaderhostqualification remains developmentwork.'
+    result=plar.save(ROOT,queue,plar.read(ROOT)['hash'])
+    write(WORK/'plar-update.json',result)
+    after={asset:plar.read(ROOT,asset_id=asset,include_production=False)['requirements_hash'] for asset in before}
+    assert before==after
+    write(WORK/'requirements-preserved.json',{'before':before,'after':after,'unchanged':True})
+    selected=plar.read(ROOT,asset_id='queue.working')
+    result=handoff.save(ROOT,'queue.working',selected['requirements_hash'],digest(doc),{'status':'delivered','files':[{'path':'assets/'+name,'sha256':sha(ROOT/'assets'/name)} for name in ('working.png','error-retry.png','paused.png')],'family':'family.delivery.output','family_candidate':'live.family.candidate','review':'work/live-family/collective-review.json','caller_actions':['Use current saved family and exact files; historical Ready drift remains visible.'],'future_work':['Qualify ordinary nativehostdelegation without guided recovery on real provider outcomes.'],'provider_provenance':'Official PixelLab paid generation16generations total; deterministic workbench repairs free; Ready controlled and Startvector preserved.'})
+    write(WORK/'HANDOFF.json',result)
+    print(json.dumps(result))
+
+if __name__ == '__main__':
+    action=sys.argv[1] if len(sys.argv)>1 else 'initialize'
+    if action=='initialize': initialize()
+    elif action=='plans': plans()
+    elif action=='prepare': prepare(sys.argv[2])
+    elif action=='observe': observe(*sys.argv[2:])
+    elif action=='import': import_candidate(*sys.argv[2:])
+    elif action=='review': review(sys.argv[2])
+    elif action=='finish-seed': finish_seed()
+    elif action=='engine-and-members': engine_and_members()
+    elif action=='complete-family': complete_family()
+    elif action=='snapshot': snapshot(sys.argv[2])

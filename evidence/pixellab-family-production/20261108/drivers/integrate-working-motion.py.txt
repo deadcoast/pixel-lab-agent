@@ -1,0 +1,23 @@
+import hashlib
+import json
+import shutil
+from pathlib import Path
+from PIL import Image
+
+REPO=Path(__file__).resolve().parents[1]
+ROOT=REPO/'evidence/pixellab-family-production/20261108/project'
+WORK=ROOT/'work/live-family'
+seed=Image.open(WORK/'working-seed-download.png').convert('RGBA')
+candidate=Image.open(WORK/'working-animation-motion-01.png').convert('RGBA')
+assert candidate.size==(64,16)
+for i in range(4):
+    expected=seed.rotate(-90*i,expand=False,resample=Image.Resampling.NEAREST)
+    actual=candidate.crop((16*i,0,16*(i+1),16))
+    assert all(a[3]==b[3] and (a[3]==0 or a==b) for a,b in zip(actual.get_flattened_data(),expected.get_flattened_data()))
+# Preserve a directly recheckable consumer for the rejected render before revision.
+for name in ('src','assets'):
+    shutil.copytree(ROOT/name,WORK/'render-01/consumer'/name)
+shutil.copyfile(WORK/'working-animation-motion-01.png',ROOT/'assets/working.png')
+record={'source':'work/live-family/working-animation-motion-01.png','destination':'assets/working.png','sha256':hashlib.sha256((ROOT/'assets/working.png').read_bytes()).hexdigest(),'four_exact_seed_rotations_verified':True,'generated_seed_pixels_per_frame':32,'prior_render_consumer':'work/live-family/render-01/consumer','meaning':'Specialist-constructed motion from generated seed, executed by official PixelLab workbench; AI-animation originals remain rejected'}
+(WORK/'motion-integration.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(record))

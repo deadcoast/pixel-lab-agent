@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent independent of PIXL specialist",
+  "asset_id": "queue.ready",
+  "provider_simulated": true,
+  "provenance": "Retrieved evaluator fixture from existing pixellab-test job controlled-create-0002; no upstream generation claim.",
+  "packet": {
+    "path": "work/queue.ready-revision/request-review.json",
+    "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+  },
+  "contract_consistency": "consistent",
+  "diagnostics": [],
+  "stage_authority": "STAGE.md extends delivery scope without rewriting OWNER.md or original bound request sources.",
+  "comparisons": [
+    {
+      "id": "geometry",
+      "literal_check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+      "authority": "requirement",
+      "source_pointers": [
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "locator": "line 6 (succeeded: frames 1) and line 9 (display.cell [16, 16])",
+          "lines": [
+            3,
+            11
+          ]
+        }
+      ],
+      "basis": "Owner brief: 16x16 logical status cells and Ready is static. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+      "delta": "Preserves source outcome without extra palette, alpha, arm-ratio or construction thresholds.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Independent Pillow decode: PNG 16x16, one frame."
+    },
+    {
+      "id": "transparent-background",
+      "literal_check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+      "authority": "requirement",
+      "source_pointers": [
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'Use transparent backgrounds'",
+          "lines": [
+            3,
+            9
+          ]
+        }
+      ],
+      "basis": "Owner brief requires transparent backgrounds; it does not restrict alpha to binary values.",
+      "delta": "Preserves source outcome without extra palette, alpha, arm-ratio or construction thresholds.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Independent decode: 227 alpha-zero background pixels and 29 opaque subject pixels. Viewed downloaded PNG and panel views: no matte or fringe."
+    },
+    {
+      "id": "ready-meaning",
+      "literal_check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+      "authority": "requirement",
+      "source_pointers": [
+        {
+          "path": "src/queue.ts",
+          "locator": "line 3: ok -> succeeded",
+          "lines": [
+            1,
+            4
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "locator": "line 3 (idle: Start, assets/start.svg) and line 6 (succeeded: label Ready)",
+          "lines": [
+            3,
+            11
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'The working loop must communicate activity without looking like success'",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "assets/start.svg",
+          "locator": "line 1: play-triangle path M4 2L14 8L4 14Z",
+          "lines": [
+            1,
+            1
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "locator": "Current Ready requirement",
+          "lines": [
+            9,
+            9
+          ]
+        }
+      ],
+      "basis": "BRIEF.md line 9 expressly requires a check mark with asymmetrical arms conveying successful completion; stateAfter ok -> succeeded and statusVisuals.succeeded supplies Ready. No mandatory arm ratio, stroke width, backing shape, palette count or highlight recipe is imposed.",
+      "delta": "Preserves source outcome without extra palette, alpha, arm-ratio or construction thresholds.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Independently viewed native PNG and native/3x panel views: recognizable completion check with shorter left arm and longer rising right arm. Distinct from Start triangle defined in preserved SVG source."
+    },
+    {
+      "id": "readability-1x-3x",
+      "literal_check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+      "authority": "requirement",
+      "source_pointers": [
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "locator": "line 9: scale 3, filter nearest, background #172336",
+          "lines": [
+            3,
+            11
+          ]
+        }
+      ],
+      "basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel; #172336 is the consumer-observed panel colour (display.background).",
+      "delta": "Preserves source outcome without extra palette, alpha, arm-ratio or construction thresholds.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Opened exact saved native 16x16 and nearest 48x48 panel views on #172336. Check remains legible; no essential detail disappears."
+    },
+    {
+      "id": "cool-blue-accent",
+      "literal_check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+      "authority": "requirement",
+      "source_pointers": [
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'the existing UI's cool blue accent; a fixed palette is not required'",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "assets/start.svg",
+          "locator": "line 1: fill #70b9ed",
+          "lines": [
+            1,
+            1
+          ]
+        }
+      ],
+      "basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+      "delta": "Preserves source outcome without extra palette, alpha, arm-ratio or construction thresholds.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Viewed cool-blue subject relates to existing SVG accent. Independent decode reports visible RGBA [112,185,237,255]; exact equality observed, not a rejection rule."
+    },
+    {
+      "id": "sample-pixel-craft",
+      "literal_check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+      "authority": "proposal",
+      "source_pointers": [
+        {
+          "path": "BRIEF.md",
+          "locator": "line 3: 'Create coherent pixel-art status assets' and line 5: 'propose a representative status sample before expanding the family'",
+          "lines": [
+            3,
+            9
+          ]
+        }
+      ],
+      "basis": "Specialist expert judgment applying the brief's 'coherent pixel-art status assets' and representative-sample instruction.",
+      "delta": "Scoped expert quality choice adopted in prior caller comparison; does not establish family style.",
+      "alternative_disposition": "Other constructions satisfying this literal check remain eligible; no narrowed recipe added.",
+      "finding": "consistent",
+      "artifact_verdict": "pass",
+      "observation": "Viewed crisp connected stepped pixel clusters; no visible strays, blur or downscaled artifacts. Plausible family treatment; style adoption remains deferred."
+    }
+  ],
+  "viewed": [
+    {
+      "path": "work/queue.ready-delivery/downloaded.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0001.png",
+      "sha256": "0cb2e9b589d36cc5d12c90e6ffaf15715fbed5bca19e93729b77cbc6e11cdb95"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0002.png",
+      "sha256": "fac71a10bde018f1fcb47ae7d3d02473bf6d9c7823dd91bdbb23ca5841f1f9ac"
+    }
+  ],
+  "measurement": {
+    "method": "Selected Python Pillow decode and hashlib, independently of specialist measurements",
+    "size": [
+      16,
+      16
+    ],
+    "frames": 1,
+    "alpha_counts": {
+      "0": 227,
+      "255": 29
+    },
+    "visible_bbox_exclusive": [
+      3,
+      4,
+      14,
+      13
+    ],
+    "visible_colors": [
+      [
+        112,
+        185,
+        237,
+        255
+      ]
+    ]
+  },
+  "limits": [
+    "No graphical renderer supplied; source-module execution is separate evidence.",
+    "Family style adoption and source-bound baseline selection remain pending.",
+    "Working/Retry/Paused family comparison remains pending."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "local_links_checked": 196,
+  "missing": [],
+  "ruff": "pixl scripts tests evaluations passed",
+  "mypy": {
+    "scope": "pixl scripts",
+    "source_files": 46,
+    "status": "pass",
+    "limitation": "Untyped function bodies are not fully checked. An initial broader invocation including tests/evaluations failed module-name resolution; not reported as a type-check pass."
+  },
+  "maintainer_errors": [
+    {
+      "stage": "helper initialization",
+      "error": "codec.decode does not exist",
+      "effect": "Before state mutation; corrected to deepcopy."
+    },
+    {
+      "stage": "handoff save",
+      "error": "handoff_stale after passing PLAR file hash instead of production state hash",
+      "effect": "Nomination committed; handoff not written. Resumed save using exact state hash; no repeated commit."
+    }
+  ],
+  "frozen_helpers": "Original build-script bytes retained here for audit. Their original execution location is build/ under the repository root; restore there if replaying scripts that derive ROOT from parents[1]. Existing attempt archives are immutable and archive helper refuses overwrite."
+}

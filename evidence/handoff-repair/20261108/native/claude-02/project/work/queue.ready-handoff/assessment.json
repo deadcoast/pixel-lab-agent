@@ -1,0 +1,251 @@
+{
+  "version": 1,
+  "role": "PIXL specialist reassessment of the delivered Ready sample (PHASE.md stage)",
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "provenance": "assets/ready-confirmed.png is the controlled pixellab-test evaluator fixture served by get_image for job controlled-create-0002 (provider_simulated=true). It is not upstream PixelLab generation and this file makes no claim about live model output.",
+  "image": {
+    "path": "assets/ready-confirmed.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "byte_identical_copies": [
+      "work/queue.ready-delivery/downloaded.png",
+      ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+    ]
+  },
+  "viewing": {
+    "tool": "pixl_inspection packet ready.delivery.inspect (image blocks returned and viewed in this session) plus direct Pillow decode of assets/ready-confirmed.png",
+    "views": [
+      {
+        "id": "ready.delivery.inspect.view.0",
+        "sha256": "515a100db9cfafd6da3238b563d84c94309f4f89b64023381b8c9bf44e6effec",
+        "payload_size": [16, 16],
+        "background": null,
+        "seen": "Native transparent candidate: one light-blue check mark, short left arm, long right arm, empty cell around it; no stray pixels."
+      },
+      {
+        "id": "ready.delivery.inspect.view.1",
+        "sha256": "0cb2e9b589d36cc5d12c90e6ffaf15715fbed5bca19e93729b77cbc6e11cdb95",
+        "payload_size": [16, 16],
+        "background": "#172336",
+        "seen": "Native composite on the panel colour: the mark reads immediately as a check; the dark navy gives strong figure/ground separation."
+      },
+      {
+        "id": "ready.delivery.inspect.view.2",
+        "sha256": "fac71a10bde018f1fcb47ae7d3d02473bf6d9c7823dd91bdbb23ca5841f1f9ac",
+        "payload_size": [48, 48],
+        "background": "#172336",
+        "seen": "3x nearest composite: every logical pixel is a uniform 3x3 block; diagonal edges show an even staircase; both arms are clearly connected at the vertex; the pointed 1-px caps read as deliberate tapering, not noise."
+      }
+    ],
+    "host_resizing": "none reported; payload sizes match retained view sizes"
+  },
+  "measurements": {
+    "coordinate_convention": "zero-based pixel coordinates; boxes are [left, top, right, bottom] with exclusive right/bottom; rows and columns below are inclusive indices",
+    "source": "pixl_asset_check(path=assets/ready-confirmed.png, width=16, height=16, alpha=full, regions=['#70b9ed']) and independent Pillow decode in the selected Python",
+    "size": [16, 16],
+    "frames": 1,
+    "visible_pixels": 29,
+    "transparent_pixels": 227,
+    "alpha_values_present": [0, 255],
+    "fractional_alpha_pixels": 0,
+    "visible_colors": [
+      {
+        "rgba": [112, 185, 237, 255],
+        "hex": "#70b9edff",
+        "pixels": 29,
+        "component_count_4_connected": 1,
+        "boxes": [[3, 4, 14, 13]]
+      }
+    ],
+    "visible_bbox": [3, 4, 14, 13],
+    "bbox_size": [11, 9],
+    "margins_px": {
+      "left": 3,
+      "right": 2,
+      "top": 4,
+      "bottom": 3
+    },
+    "components": {
+      "4_connected": 1,
+      "8_connected": 1
+    },
+    "opaque_runs_per_row": {
+      "4": [[12, 12]],
+      "5": [[11, 13]],
+      "6": [[10, 12]],
+      "7": [[9, 11]],
+      "8": [[4, 4], [8, 10]],
+      "9": [[3, 5], [7, 9]],
+      "10": [[4, 8]],
+      "11": [[5, 7]],
+      "12": [[6, 6]]
+    },
+    "stroke_construction": {
+      "description": "Each arm is a 1-pixel 45-degree core line dilated by one pixel horizontally on each side (3-pixel horizontal runs), with a single-pixel cap at each end. Perpendicular stroke thickness is therefore 3/sqrt(2), about 2.1 px; the vertex row (row 10) is the 5-pixel union of both arms.",
+      "left_arm_core": [[4, 9], [5, 10], [6, 11]],
+      "left_arm_cap_pixels": [[4, 8], [6, 12]],
+      "right_arm_core": [[7, 10], [8, 9], [9, 8], [10, 7], [11, 6], [12, 5]],
+      "right_arm_cap_pixels": [[12, 4]],
+      "core_length_ratio_left_to_right": "3:6 (1:2)",
+      "included_angle_degrees": 90,
+      "run_lengths_present": [1, 3, 5]
+    },
+    "stair_steps": "Both arm contours advance exactly one pixel horizontally per one pixel vertically (uniform 1:1 step sequence) over their whole length; the only run-length changes are the designed 1-pixel caps and the vertex merge.",
+    "contrast_observation": {
+      "fill_relative_luminance": 0.4426,
+      "panel_relative_luminance": 0.0165,
+      "wcag_style_ratio": "7.41:1",
+      "status": "diagnostic observation only; no contrast threshold is an owner requirement"
+    },
+    "integration_recheck": {
+      "command": "node verify-integration.mjs assets/ready-confirmed.png",
+      "exit_code": 0,
+      "stdout_path": "work/queue.ready-handoff/integration-recheck-stdout.json",
+      "stdout_sha256": "de6a5efa2fca0a98bcdb15f84d8029f8f6c2435200e825d1c0805962dc4339a3",
+      "meaning": "Both source consumers (statusCell, compactStatus) resolve ok -> succeeded to assets/ready-confirmed.png with frames 1 and the PNG header is 16x16. This is module execution, not graphical renderer acceptance."
+    }
+  },
+  "methods_consulted": [
+    {
+      "id": "silhouette-readability",
+      "applied": "Inspected the opaque mask (the asset is already a flat single-colour mask) at native scale and on the declared dark panel; landmarks are the vertex, the short descending arm and the long ascending arm. All three remain separate and visible at 1x. The method's light/busy background comparison is an expert diagnostic; the consumer declares only #172336, so light-background readability is untested, not failed."
+    },
+    {
+      "id": "edge-rhythm",
+      "applied": "Traced boundary runs: uniform 1:1 staircase on all four diagonal edges; no accidental detour. The 1-pixel caps are intentional corners and must be protected in any cleanup."
+    },
+    {
+      "id": "integer-presentation",
+      "applied": "The 3x view expands every logical pixel into a uniform 3x3 block and introduces no new colours (2 colours before, 2 after compositing on one background). Consumer display.scale 3 with filter nearest is the matching integer presentation. Browser device-pixel-ratio and non-integer zoom remain renderer concerns."
+    },
+    {
+      "id": "alpha-contract",
+      "applied": "Alpha values are only 0 and 255; the plan's contract permits full alpha, so binary alpha is an observed fixture property, not a rule. Transparent pixels are RGBA 0,0,0,0 (no hidden RGB in cleared pixels). Straight-vs-premultiplied compositing is irrelevant for a binary-alpha asset, which removes one renderer risk."
+    },
+    {
+      "id": "semantic-clusters",
+      "applied": "One semantic cluster (the check) equals one 4-connected and one 8-connected component; there are no singleton details to protect or to mistake for noise."
+    },
+    {
+      "id": "state-driven-pixel-ui",
+      "applied": "Ready is a static state image mapped from the authoritative succeeded state (src/queue.ts line 3, src/queue-view.ts line 6); no decorative timing is involved. The method's guidance that animation should only report real events informs the Working proposal below."
+    },
+    {
+      "id": "frame-timing",
+      "applied": "Not applicable to the static Ready; used for the Working proposal: the consumer applies one uniform frameMs of 100 (src/queue-view.ts line 9), so four frames give a 400 ms loop and per-frame durations cannot be authored in this consumer."
+    }
+  ],
+  "authority_table": [
+    {
+      "property": "16x16 canvas, single static frame",
+      "observed": "16x16, 1 frame",
+      "authority": "owner requirement",
+      "source": "BRIEF.md line 3 and line 9; src/queue-view.ts line 6 (frames 1) and line 9 (cell [16,16])",
+      "reasoning": "A status cell is a fixed logical grid; any other canvas would be resampled or clipped by the view."
+    },
+    {
+      "property": "Transparent background",
+      "observed": "227 pixels alpha 0, no matte",
+      "authority": "owner requirement",
+      "source": "BRIEF.md line 3 ('Use transparent backgrounds') and line 9",
+      "reasoning": "The panel colour belongs to the view; baking it into the asset would break any future panel change."
+    },
+    {
+      "property": "Check mark with asymmetrical arms conveying success",
+      "observed": "left core 3 px, right core 6 px, 90-degree vertex",
+      "authority": "owner requirement (motif and asymmetry); the 1:2 ratio is a fixture property",
+      "source": "BRIEF.md line 9",
+      "reasoning": "A symmetric V reads as a chevron or arrow; making the rising arm about twice the falling arm is the conventional check gesture and is unmistakable even at 1x. Any clearly unequal ratio would satisfy the owner; 1:2 is not required."
+    },
+    {
+      "property": "Cool blue accent relationship",
+      "observed": "fill exactly #70b9ed",
+      "authority": "owner requirement (relationship); exact hex is a consumer observation from assets/start.svg line 1; exact equality is a fixture property",
+      "source": "BRIEF.md line 3; assets/start.svg line 1",
+      "reasoning": "Reusing the Start fill guarantees family coherence with the one existing control. A neighbouring cool blue would also satisfy the brief; equality is convenient, not mandatory."
+    },
+    {
+      "property": "Single flat fill, no highlight tone",
+      "observed": "1 visible colour",
+      "authority": "fixture property; expert acceptance",
+      "source": "none (the dispatched description left highlights open; the first-stage request's 'one lighter highlight tone' was a specialist proposal that the revision dropped)",
+      "reasoning": "At about 2 px of perpendicular stroke there is no interior row to carry a second tone without it becoming a 1-pixel sub-cluster that reads as noise at 1x. A flat fill maximises silhouette contrast against the navy panel. A highlight remains an open expert option for the family if a thicker stroke is adopted."
+    },
+    {
+      "property": "Stroke construction: 1-pixel caps, 3-pixel runs, 5-pixel vertex row (about 2.1 px perpendicular)",
+      "observed": "run lengths 1, 3, 5",
+      "authority": "fixture property; expert acceptance",
+      "source": "none; the request imposed no stroke width",
+      "reasoning": "A 1-px diagonal at 16x16 breaks up on a dark panel at 1x; 3-px runs give an effective 2-px stroke that survives 1x and becomes a solid 6-device-pixel stroke at 3x. Pointed caps keep the mark from looking like a blunt bar and are consistent with the Start triangle's sharp vertices."
+    },
+    {
+      "property": "Placement bbox [3,4,14,13], margins L3 R2 T4 B3",
+      "observed": "bbox centre (8.5, 8.5) versus cell centre (8, 8)",
+      "authority": "fixture property; expert acceptance",
+      "source": "none",
+      "reasoning": "An 11x9 figure cannot be exactly centred on a 16x16 grid; the half-pixel bias right and down is the normal rounding choice. All margins are at least 2 px so the 3x nearest view has no edge contact, and the occupied region (about 12x10 centred) is a usable shared envelope for Working, Retry and Paused."
+    },
+    {
+      "property": "Uniform 1:1 stair-step rhythm",
+      "observed": "no run-length anomalies",
+      "authority": "fixture property; expert judgment (edge-rhythm)",
+      "source": "none",
+      "reasoning": "Even steps are why the 3x view looks deliberate rather than jagged. A 45-degree stroke is the one diagonal angle that needs no anti-aliasing to look clean, which also keeps alpha binary."
+    },
+    {
+      "property": "Binary alpha",
+      "observed": "alpha only 0 and 255",
+      "authority": "fixture property; brief and plan permit partial alpha",
+      "source": "BRIEF.md line 3 does not restrict alpha; plan contract alpha 'full'",
+      "reasoning": "Binary alpha is the simplest contract for nearest-neighbour display and avoids premultiplication questions in the unknown renderer. It is accepted, not required."
+    },
+    {
+      "property": "No outline, no plate or badge behind the mark",
+      "observed": "single component, no secondary colour",
+      "authority": "fixture property; expert acceptance",
+      "source": "none",
+      "reasoning": "On a fixed dark panel the light fill already separates from the background (observed ratio about 7.4:1); an outline would spend 2 of 16 pixels of budget and a plate would compete with the plate-less Start triangle. If the family is ever shown on light or busy backgrounds this decision should be revisited (silhouette-readability)."
+    },
+    {
+      "property": "Single connected component",
+      "observed": "1 component (4- and 8-connected)",
+      "authority": "measurement only",
+      "source": "pixl_asset_check",
+      "reasoning": "A count is not a quality verdict; here it simply confirms the two arms are joined, which the check-mark reading depends on."
+    }
+  ],
+  "verdict_agreement": {
+    "statement": "The six retained verdicts (ready.delivery.review.verdict.0-5, reviewer actor, all pass) are not re-scored or superseded here. My own current viewing of the three retained views and the decoded PNG agrees with each pass.",
+    "per_criterion": {
+      "geometry": "agree: 16x16, one frame",
+      "transparent-background": "agree: exterior alpha 0, no matte or fringe",
+      "ready-meaning": "agree: clear check, unequal arms, not a triangle, bars, loop or cross",
+      "readability-1x-3x": "agree: readable at both scales on #172336",
+      "cool-blue-accent": "agree: fill equals the Start accent",
+      "sample-pixel-craft": "agree as a scoped expert judgment: crisp clusters, even steps, no strays; the treatment is extensible"
+    }
+  },
+  "family_guidance_proposals": {
+    "status": "specialist proposals only; family/style adoption and any generation are separate future work with their own authorization",
+    "shared_recipe": "Flat single-tone fills, effective 2-px stroke (3-pixel runs on diagonals, 2-pixel runs on orthogonals), 45-degree or orthogonal strokes with uniform step rhythm, pointed 1-px caps where a stroke ends, no outline or plate, binary alpha, content inside roughly columns 3-13 and rows 3-13 of the 16x16 cell.",
+    "working": {
+      "consumer_facts": "src/queue-view.ts line 4: assets/working.png, frames 4; line 9: frameMs 100, nearest, scale 3. BRIEF.md line 3: four horizontal frames, 100 ms, must communicate activity without looking like success.",
+      "proposal": "One 64x16 horizontal strip of four 16x16 frames (frame i at columns 16i..16i+15), uniform 100 ms, looping total 400 ms. Motif: a partial ring or three orbiting dots in the same #70b9ed stroke weight that rotates a quarter turn per frame so the silhouette changes every frame. Rule to test, not a requirement: no single frame may contain a two-arm check-like stroke, and no frame should be mistakable for Ready when the loop is stopped. Per state-driven-pixel-ui the loop should play only while state is running."
+    },
+    "retry": {
+      "consumer_facts": "src/queue-view.ts line 7: assets/error-retry.png, frames 1. BRIEF.md line 3: error/retry distinguishable without colour alone; line 7: path moved, purpose unchanged.",
+      "proposal": "Static circular arrow or an X-with-arrow form whose shape alone differs from the check; grayscale comparison at 1x and 3x against Ready is the test. A warmer accent may be added but may not be the only cue."
+    },
+    "paused": {
+      "consumer_facts": "src/queue-view.ts line 5: assets/paused.png, frames 1. BRIEF.md line 7: distinguishable from activity, completion and retry without colour alone.",
+      "proposal": "Two vertical 2-px bars with a 2-px gap, same height envelope as the check (rows 4-12), flat #70b9ed. Form is orthogonal where Ready is diagonal and Working is rotational, so grayscale distinction is carried by geometry."
+    },
+    "baseline_suitability": "The delivered Ready is suitable as the family style baseline (proposal). Its rules are few and transferable: one tone, one stroke weight, even steps, no decoration. Risk to record: a single flat tone leaves no shading vocabulary, so if the owner later wants depth or highlights the whole family would change together. Adoption remains the caller/owner decision and should be source-bound to assets/ready-confirmed.png sha256 fc5e43ae... when made."
+  },
+  "limits": [
+    "No graphical renderer was available; nearest sampling, alpha compositing and full/compact display are unverified beyond source-module execution.",
+    "Light or busy background readability was not tested because the consumer declares only #172336.",
+    "The image is a controlled evaluator fixture; nothing here measures live provider behaviour.",
+    "This assessment is specialist judgment; the independent caller comparison is pending."
+  ]
+}

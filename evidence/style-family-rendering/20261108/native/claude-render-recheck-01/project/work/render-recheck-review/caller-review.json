@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "role": "calling agent independent comparison for RENDER-RECHECK.md (renderer recheck) and the interrupted RENDER-STAGE.md family/style review; recorded after both PIXL rounds",
+  "recorded_at": "2026-11-08T11:00:17+00:00",
+  "verdict": "consistent",
+  "assignment": {
+    "RENDER-RECHECK.md": "3b3e6ad12336d77187d764d7c318dc16ebf418236c7027fed75a3129e8f95e35",
+    "RENDER-STAGE.md": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+    "AGENTS.md": "61165b45ce8fe216feada8c5ccf0bb11e5ab8228b61771a4257494b0e93a1b13"
+  },
+  "delegation": {
+    "round_1": {
+      "specialist": "native agent type 'pixl' (agents.json), Claude Code subagent a49b4d400a055050a, foreground (run_in_background false), 64 tool uses",
+      "assigned": "fresh renderer-recheck capture + check, visual review, the never-written render-stage review, renderer-recheck review, PLAR proposal (not saved) with requirements_hash probes",
+      "result": "delivered; plar.txt and PX2 untouched as instructed"
+    },
+    "round_2": {
+      "specialist": "native agent type 'pixl', Claude Code subagent a1622a7acdc67cf12, foreground; ARTIFACT-BASED RESTART because SendMessage to a49b4d400a055050a failed ('No transcript found for agent ID'); the saved assignment, round-1 files, caller decision and exact state identities were passed explicitly",
+      "assigned": "build and save the PLAR document per the caller's choices (adopt; drop U18; keep U11/U19; two caller evidence links), re-read, pixl_plar_handoff",
+      "result": "delivered; save performed through the kit CLI 'plar save' (same deterministic operation as pixl_plar_save, same expect) because the specialist chose to pass the document file; first pixl_plar_handoff call rejected for a free-text status and re-issued with status 'delivered' (no side effect)"
+    },
+    "previous_host_interruption": "The RENDER-STAGE.md stage's background PIXL child was stopped by the host; its drafts in work/render-stage-pixl/ were preserved and read, and its render-review.json (cited by its own drafts) was written in round 1 by the new instance as an artifact-based restart. Drafts were treated as useful work, not adoption."
+  },
+  "round_1_comparison": {
+    "hashes": "Every sha256 reported by the specialist matched disk (capture files, check output, measurements, render-review, render-recheck-review, proposals, ledgers).",
+    "capture_identity": "work/render-recheck-pixl-01/destination.png == work/render-recheck-caller-01/destination.png (a7f8ed81...); all eight view PNGs identical to each other's capture and to the historical work/render-caller-01 and work/render-pixl-01 views; render.json differs only in observed_at.",
+    "checker": "Caller re-ran renderer-recheck/check.py on the specialist capture: pass, 104 observations, failures []; observation list identical to the specialist's saved stdout (work/render-recheck-review/caller-check-of-pixl-capture.json). Caller's own capture also 104/104 (work/render-recheck-caller-01-check.json).",
+    "placement": "Caller confirmed every available canvas equals the screenshot crop at its reported integer bounds (zero difference) in the specialist capture; bounds x 247/463/679/895 equal the historical best-match positions (old reported x + 9).",
+    "old_vs_new": "Caller measured old (1d13cde1...) vs new (a7f8ed81...) screenshots: bbox (112,293)-(114,324), 8 differing pixels, max channel difference 1. Matches the specialist's statement.",
+    "label_gaps": "Caller re-measured first-ink gaps on the new screenshot: Ready 13 px (full) / 7 px (compact) at 1x and 3x; Start 12 / 6. Matches measurements.json.",
+    "review_files": "render-review.json 'viewed' entries cite only existing files with correct hashes; render-recheck-review.json resolves/cannot-resolve lists agree with the checker scope and with RENDER-RECHECK.md's limits; the explicit statement that no scoped style revision is required is consistent with pixel-identical canvases.",
+    "proposals": "Both proposal documents parse, keep version 1, the project block, the five asset IDs in order; all cited source/evidence paths exist; reference source IDs resolve. Hash probes used scratch copies; the live plar.txt was unchanged (71f493b9...) until round 2.",
+    "numerical_reconciliation": "Caller independently decoded the Start views: 28 non-accent non-panel pixels at 1x, 84 at 3x, 9 distinct colours, max diff 132 vs nearest upscale. The earlier caller note's '4 -> 12' is wrong; the specialist's 28/84 is right; the qualitative re-rasterisation conclusion stands. Fixture pixel map, arm runs and 29/227 counts confirmed.",
+    "visual": "Caller viewed destination.png (both captures), view-001/004/005 and the specialist's grayscale and 3x-column crops: check reads as completion beside 'Ready' in both consumers at 1x and 3x; panel shows through; 3x blocks uniform; Start is an anti-aliased vector beside it; absent members show 'Missing asset'. Agrees with the specialist's observations.",
+    "discrepancies": []
+  },
+  "caller_style_decision": {
+    "path": "work/render-recheck-review/caller-style-decision.json",
+    "sha256": "bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30",
+    "decision": "ADOPT (scoped) the delivered Ready sample fc5e43ae... as the family style baseline",
+    "choices_for_save": [
+      "adopt variant",
+      "drop U18 (queue.start requirements_hash kept stable)",
+      "keep U11 and U19",
+      "append caller decision artifact and caller capture to queue.ready evidence"
+    ]
+  },
+  "round_2_comparison": {
+    "plar_file": {
+      "old": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+      "new": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+      "retained_history": ".pixl/plar-history/71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de.json (sha256 equals the old file hash: True)"
+    },
+    "saved_document": "plar.txt JSON == work/render-recheck-pixl/plar-update-saved.json JSON (caller check True). Diff vs the adopt proposal is exactly: queue.start existing[0].role restored to the live text, plus two queue.ready evidence entries (caller decision artifact, caller capture). No other field differs.",
+    "cited_paths": "Every source and evidence path in the saved plar.txt exists (caller check: none missing).",
+    "requirements_hash": {
+      "queue.ready": "806a1f2d... -> 29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+      "queue.working": "02a94ddf... -> c6b5121c05396b2d21c68669dc9deffb8f71e9e44ddeb48ada7fec44d01126e5",
+      "queue.retry": "b864ea4e... -> c0404a1486c4a700a5342e3926de3abe363d8362a2ed11ef3a9756ede308bd4a",
+      "queue.paused": "1a18831f... -> 0bb25469522009a4ad8830b5d92b9e393da336d45d69179029bb82c7e5ecd935",
+      "queue.start": "d25bb898... unchanged (caller focused read)",
+      "matches_round_1_probes": true
+    },
+    "production_selection_diagnostic": "Caller fresh focused read and pixl_jobs/pixl_workflow: r.22e90a2a03fe453a.selection bound 806a1f2d..., current 29a330a3..., status 'changed'; selection_current false; derived next_action review_contract; new_request_allowed false; pending_jobs []; the done task now lists blocker 'plar_selection: current consumer requirements differ'. Preserved as the expected consequence of a deliberate requirements revision; no rebinding, no reopening, no verdict transfer.",
+    "px2_state": "pixl_validate after save and handoff: valid, revision 14, hash 7a97831f..., 87 records, files_verified; file sha256 identical. pixl_jobs: both jobs unchanged (first_request failed; r.22e90a2a03fe453a.request succeeded, candidate ready.retained).",
+    "handoff": {
+      "path": ".pixl/handoffs/ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67.json",
+      "sha256": "ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67",
+      "self_hash_matches_filename": true,
+      "resume_equals_fresh_focused_read": "store .pixl/assets/queue.ready, state_hash 7a97831f..., asset queue.ready, requirements_hash 29a330a3..., task r.22e90a2a03fe453a.task, action review_contract, job r.22e90a2a03fe453a.request/controlled-create-0002 succeeded: all equal to the caller's fresh pixl_plar_read continuation; selection.hash bb997899... equals the current plar.txt hash",
+      "details_checked": "status delivered (specialist scope) with status_statement; restart_note present; artifact hashes match disk; caller_actions and future_work present; production_selection_diagnostic present"
+    },
+    "unchanged_files": "renderer/ and renderer-recheck/ (all five files each), assets/ready-confirmed.png, assets/start.svg, src/*.ts, preserved drafts in work/render-stage-pixl/ and work/render-stage-review/, historical captures work/render-caller-01 and work/render-pixl-01, prior results PARENT/COLD/DELIVERY/HANDOFF-RESULT.json: hashes unchanged versus work/render-recheck-review/caller-notes-pre-specialist.json.",
+    "discrepancies": [],
+    "non_blocking_observations": [
+      "The specialist saved via the kit CLI rather than the pixl_plar_save MCP call; same operation, same expect token, result verified byte-for-byte, so accepted.",
+      "plar-after-save.json predates the handoff and does not list it; the handoff lists plar-after-save.json."
+    ]
+  },
+  "not_done_by_design": [
+    "no provider call or new generation",
+    "no edit to renderer/ or renderer-recheck/",
+    "no PX2 commit, family plan, rebinding or verdict transfer",
+    "no new artwork; absent members remain absent",
+    "no 'integrated' label (production-host display unverified)"
+  ]
+}

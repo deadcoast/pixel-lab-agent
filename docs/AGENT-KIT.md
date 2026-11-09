@@ -1,5 +1,24 @@
 # PIXL agent kit
 
+Start with [everyday asset production](../plugins/pixl/skills/pixl/references/everyday.md)
+for assignment, selected asset, official request, review and delivery/resume. The
+companion [hash/root/locator guide](../plugins/pixl/skills/pixl/references/identities-and-paths.md)
+explains the additive public `hash_domains` labels and runnable consumer examples.
+Both ship with the common skill; setup and advanced surfaces remain below.
+
+For ordinary candidate/family review, use [review-context and candidate-review](../spec/candidate-review.md):
+read exact criteria and bindings, supply actual observations and explicit judgments,
+then choose record, nominate or complete. The operation retains evidence and handles
+recoverable lifecycle publication through the same CLI/MCP implementation. Prepared
+inspection packets keep their own view-coverage contract.
+
+For successor authoring, use `context --view authoring` to read explicitly linked
+caller choices and the index of other intake choices. Use `request-review --view
+changes --plan NEW --against-plan OLD --root ROOT` for structural changes and
+review attention, then follow both full-report locators for literal comparison.
+These are optional views of the existing [connected-plan workflow](../spec/production-plan.md);
+direct result-file export avoids copying large JSON into commands.
+
 The [native host evaluation](../evaluations/README.md) now records the exact packaged
 instructions in authenticated Claude and Codex trials, including repeated visual
 rejection and cold intake continuation. The original Claude login failure is preserved
@@ -184,7 +203,9 @@ To edit through the supplied interfaces, `decode FILE` returns a tagged JSON ada
 
 Context budgets are **strict byte budgets**, not model-token estimates. They do not prove token savings. `ready` establishes readiness only under the declared local rules; it does not establish credentials, credit, remote capacity, visual acceptance, or successful game import.
 
-The 34 local MCP tools include `pixl_request_review`, `pixl_plar_read`, `pixl_plar_save`, `pixl_plar_prepare`, `pixl_retain_library`, `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_intake`, `pixl_task_complete`, `pixl_workflow`, `pixl_commit`, `pixl_catalog`, `pixl_sources`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, `pixl_job`, `pixl_job_prepare`, `pixl_job_dispatch`, `pixl_job_observe`, `pixl_job_import`, `pixl_jobs`, `pixl_family`, `pixl_family_snapshot`, `pixl_inspection`, `pixl_inspection_prepare` and `pixl_inspection_review`. Fetch actual schemas through `tools/list`. Optional `pixl_asset_check(regions=[...])` reports exact-color component boxes with the image hash. `pixl_inspection` can return selected prepared views as actual image blocks with payload dimensions through `packet_id` and `view_ids`, supporting hosts whose file viewer omits that metadata. The [inspection operation](../plugins/pixl/skills/pixl/references/inspection.md) prepares saved views and retains explicit reviews; actual viewing happens through the host. The [provider recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md) saves plan-bound requests, claims dispatch before a host call, retains observations and imports local candidates. Legacy `pixl_prepare`/`pixl_job` remain stateless. No local tool submits or polls PixelLab; remote observations are caller-supplied, and imported candidates still require acceptance.
+The local MCP tools include `pixl_review_context`, `pixl_candidate_review`, `pixl_production_plan`, `pixl_stage_prepare`, `pixl_plar_handoff`, `pixl_request_review`, `pixl_plar_read`, `pixl_plar_save`, `pixl_plar_prepare`, `pixl_retain_library`, `pixl_validate`, `pixl_context`, `pixl_ready`, `pixl_impact`, `pixl_init`, `pixl_intake`, `pixl_task_complete`, `pixl_workflow`, `pixl_commit`, `pixl_catalog`, `pixl_sources`, `pixl_source`, `pixl_asset_check`, `pixl_encode`, `pixl_knowledge`, `pixl_capabilities`, `pixl_prepare`, `pixl_job`, `pixl_job_prepare`, `pixl_job_dispatch`, `pixl_job_observe`, `pixl_job_import`, `pixl_jobs`, `pixl_family`, `pixl_family_snapshot`, `pixl_inspection`, `pixl_inspection_prepare` and `pixl_inspection_review`. Fetch actual schemas through `tools/list`. Optional `pixl_asset_check(regions=[...])` reports exact-color component boxes with the image hash. `pixl_inspection` can return selected prepared views as actual image blocks with payload dimensions through `packet_id` and `view_ids`, supporting hosts whose file viewer omits that metadata. The [inspection operation](../plugins/pixl/skills/pixl/references/inspection.md) prepares saved views and retains explicit reviews; actual viewing happens through the host. The [provider recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md) saves plan-bound requests, claims dispatch before a host call, retains observations and imports local candidates. Legacy `pixl_prepare`/`pixl_job` remain stateless. No local tool submits or polls PixelLab; remote observations are caller-supplied, and imported candidates still require acceptance.
+
+For connected families and staged requests, use [production-plan and stage-prepare](../spec/production-plan.md). Reviewed JSON supplies stages, existing contracts/baseline and collective requirements; the runtime wires dependencies, binds PLAR selections and exact accepted upstream candidates, then retains the executable request. The host still calls official PixelLab and performs artistic/consumer review. These operations are available through CLI and local MCP; neither creates acceptance.
 
 The [family operation](../plugins/pixl/skills/pixl/references/family-delivery.md) binds production members to the exact approved sample, plans collective continuity and destination requirements, and retains selected bytes in an immutable package. `family FILE [OUTPUT] --root ROOT` reports acceptance, pending jobs and historical snapshot drift; `family-snapshot STORE OUTPUT CANDIDATE --expect HASH --root ROOT` copies accepted member bytes and publishes only an unaccepted report candidate. A useful package can retain unavailable engine requirements and a concrete handoff. Copying does not nominate, evaluate or complete delivery.
 
@@ -314,7 +335,7 @@ CONSUMER` and MCP readiness apply the same current-selection checks as dispatch 
 completion. See [the allocation/production contract](../spec/asset-preparation.md)
 and [cohesion evidence](../evidence/plar-cohesion/README.md) for behavior and limits.
 
-Use `request-review PACKET --root CONSUMER --asset ID` (or `pixl_request_review`) to resolve exact file-local criterion sources for independent caller comparison. It reports bad locators and changed sources without certifying semantic consistency. Focused production includes `continuation` with the current provider-bound action and prerequisites before a later request; carry that object in the returned handoff. See [the evidence contract](../spec/request-review.md).
+Use `request-review PACKET --root CONSUMER --asset ID` (or `pixl_request_review`) to resolve exact file-local criterion sources for independent caller comparison. Connected authoring and stage preparation return `request_review` arguments for that same tool: the saved state, plan and optional job. This route includes every member and collective criterion, source excerpts, controls and the exact retained request. Pass the saved caller comparison through `comparison` to check its identity and coverage; the caller still judges meaning. It reports bad locators and changed sources without certifying semantic consistency. Focused production includes `continuation` with the current provider-bound action and prerequisites before a later request; carry that object in the returned handoff. See [the evidence contract](../spec/request-review.md) and [connected-plan review](../spec/production-plan.md#exact-criteria-handoff).
 
 ## Harness, knowledge and provider responsibilities — checked 2026-11-08
 
@@ -358,3 +379,8 @@ For a retained result, save expert observations in handoff `details` while the t
 preserves `resume` and `next` exactly. Completed caller checks and future work have
 separate fields. A later contract correction is retained as a new proposal/comparison,
 without rewriting the historical request, generated candidate or accepted verdicts.
+
+
+### Native continuation correction — checked 2026-11-08
+
+The official [Claude subagent continuation documentation](https://code.claude.com/docs/en/sub-agents#resume-subagents) uses `SendMessage` with the returned agent ID/name; a new `Agent` call creates another instance. The [tool reference](https://code.claude.com/docs/en/tools-reference) also distinguishes this from the removed `TaskOutput` tool. The installed trial host is Claude Code 2.1.318. Earlier handoff-repair trial tool lists omitted `SendMessage`, so their separate child instances establish artifact continuity, not native instance resumption. The evaluator now exposes `SendMessage` for communication with agents created for the assignment. This changes the isolated trial tool list, not user-global configuration. Shared delegation guidance uses the actual host continuation surface and records an artifact-based restart honestly when native continuation is unavailable.

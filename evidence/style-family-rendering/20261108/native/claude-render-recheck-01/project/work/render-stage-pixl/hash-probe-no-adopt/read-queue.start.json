@@ -1,0 +1,189 @@
+{
+  "hash": "87f0d46c192355900e5d68904cb32e673332e3ab55be158f31b90bd45fe72d91",
+  "project_root": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Current refresh: re-read BRIEF.md line 9 and src/queue-view.ts; retain queue.ready ID while moving its destination to assets/ready-confirmed.png and promoting the explicitly required asymmetrical-arm check mark. Other states and Start unchanged.",
+      "Render stage: ran renderer/capture.mjs (HeadlessChrome 156, DPR 1) against the actual src/queue.ts and src/queue-view.ts for every statusVisuals state in both statusCell and compactStatus at 1x and 3x; checked identities, canvas pixels, alpha compositing and nearest blocks with renderer/check.py; inspected the retained PNGs visually."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "The representative renderer in renderer/ is a scoped browser fixture that imports the real view modules; it is not the production UI, and its headless screenshot is laid out at the 1280 px window width while DOM bounds are measured at the 1262 px viewport, so renderer/check.py reports a 9 px horizontal offset (see queue.ready evidence). Production-host display acceptance remains unverified.",
+      "Style baseline: the delivered Ready fixture is a controlled pixellab-test sample (provider_simulated=true). Adopting it as the family style reference establishes edge treatment, stroke weight, fill/colour role, margin and alpha policy only; it does not establish the other members' silhouettes, motion or meaning, nor actual PixelLab output quality.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "Working, Retry and Paused have no artwork, no production store, no candidate and no review; timed loop playback at 100 ms can only be observed interactively (node renderer/server.mjs) because the capture samples frame boundaries, not real-time playback."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\BRIEF.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\assets\\start.svg"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.start",
+      "kind": "existing_vector_control",
+      "purpose": "Retain the existing idle Start control shared by both status consumers.",
+      "status": "deferred",
+      "next": "Preserve the existing vector file and idle mapping; delivery check 2 observed in the representative renderer (idle resolves to the preserved Start control in both consumers). No new Start asset is allocated.",
+      "issues": [
+        "missing evidence: work/render-pixl-01/render.json"
+      ],
+      "questions": []
+    }
+  ],
+  "dependency_issues": {},
+  "asset": {
+    "id": "queue.start",
+    "kind": "existing_vector_control",
+    "purpose": "Retain the existing idle Start control shared by both status consumers.",
+    "status": "deferred",
+    "consumers": [
+      {
+        "source": "queue-view",
+        "symbol": "statusVisuals.idle",
+        "usage": "Maps idle to the Start image path and frame count."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "statusCell",
+        "usage": "Full status consumer returns the shared idle descriptor."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "compactStatus",
+        "usage": "Compact status consumer returns the same idle descriptor; reuse one asset."
+      },
+      {
+        "source": "queue-state",
+        "symbol": "QueueState",
+        "usage": "The idle state remains valid; stateAfter handles started/ok/error/pause transitions while the Start descriptor remains unchanged."
+      }
+    ],
+    "existing": [
+      {
+        "path": "assets/start.svg",
+        "role": "Existing vector Start control reused unchanged (sha256 ee2ba2fe...); observed rendered by both consumers for idle in renderer/ (work/render-pixl-01): browser-rasterised with anti-aliased edges at 1x and smooth re-rasterisation at 3x."
+      }
+    ],
+    "requirements": [
+      {
+        "property": "preserve_existing",
+        "value": "Keep assets/start.svg unchanged; no replacement production is required.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF explicitly preserves the existing vector Start control."
+      },
+      {
+        "property": "existing_geometry",
+        "value": {
+          "width": 16,
+          "height": 16,
+          "viewBox": "0 0 16 16",
+          "frames": 1
+        },
+        "authority": "observation",
+        "sources": [
+          "start-vector",
+          "queue-view"
+        ],
+        "reason": "The SVG dimensions/viewBox and idle descriptor are consistent with one 16x16 cell."
+      },
+      {
+        "property": "existing_shape_and_fill",
+        "value": {
+          "path": "M4 2L14 8L4 14Z",
+          "fill": "#70b9ed"
+        },
+        "authority": "observation",
+        "sources": [
+          "start-vector"
+        ],
+        "reason": "The source defines a cool blue right-facing triangle without a background element."
+      },
+      {
+        "property": "deferral_reason",
+        "value": "Preserved existing asset; no new Start art is in the requested production scope.",
+        "authority": "observation",
+        "sources": [
+          "brief",
+          "queue-view",
+          "start-vector"
+        ],
+        "reason": "Deferred records deliberate reuse without claiming runtime integration was tested."
+      }
+    ],
+    "delivery": {
+      "path": "assets/start.svg",
+      "checks": [
+        "Keep the original SVG byte hash unchanged.",
+        "When a runnable UI is available, verify idle still resolves to the preserved Start control in both status consumers."
+      ]
+    },
+    "depends_on": [],
+    "questions": [],
+    "next": "Preserve the existing vector file and idle mapping; delivery check 2 observed in the representative renderer (idle resolves to the preserved Start control in both consumers). No new Start asset is allocated.",
+    "evidence": [
+      {
+        "path": "work/render-pixl-01/render.json",
+        "note": "idle -> Start with assets/start.svg (sha256 ee2ba2fe...) in both consumers at 1x and 3x; views view-000..003. Byte hash unchanged."
+      }
+    ]
+  },
+  "dependencies": [],
+  "visual_references": [],
+  "requirements_hash": "03c5e9c1f52c418d2427fb36124144bfda3bd145f85c01268c1fdda970906f97",
+  "production": {
+    "store": ".pixl/assets/queue.start",
+    "link_status": "unlinked",
+    "status": "not_started",
+    "next_action": "prepare",
+    "new_request_allowed": true
+  }
+}

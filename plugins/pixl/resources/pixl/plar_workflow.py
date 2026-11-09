@@ -4,6 +4,57 @@ from . import codec, graph, jobs, lifecycle, store
 from .codec import PixlError
 
 
+def _delivery_status(document, root, folder, asset, output_id, outputs):
+    """Report the exact nominated bytes and collective plans, without new verdicts."""
+    from . import delivery
+    from .plar import selection_bindings
+
+    output = next(row for row in outputs if row["id"] == output_id)
+    candidate_id = output["candidate"]
+    destination = graph.confined(root, asset["delivery"]["path"])
+    expected = document.records[candidate_id].fields["dg"] if candidate_id else None
+    observed = graph.file_hash(destination) if destination.is_file() else None
+    matching = expected is not None and observed == expected
+    related = {
+        record.id
+        for record in document.records.values()
+        if record.kind == "F"
+        and any(member.id == output_id for member in record.fields.get("mb", []))
+    }
+    families = []
+    if related:
+        for row in delivery.report(document, root)["families"]:
+            if row["output"] not in related:
+                continue
+            snapshot = next((s for s in row["snapshots"] if s["candidate"] == row["candidate"]), None)
+            # The baseline may intentionally retain a historical sample contract.
+            # Newly produced siblings must still match their explicit live selections.
+            member_bindings = [
+                binding
+                for member in row["members"]
+                if member["output"] != row["baseline"]["output"]
+                for binding in selection_bindings(document, member["task"], root, folder)
+            ]
+            members_current = all(b["status"] == "current" and b.get("selected_for_asset", True) for b in member_bindings)
+            accepted = (
+                row["state"] == "done" and not row["pending_jobs"]
+                and bool(snapshot) and not snapshot["stale"]
+                and all(q["status"] == "pass" for q in row["requirements"])
+                and members_current
+            )
+            families.append({"output": row["output"], "task": row["task"], "state": row["state"], "candidate": row["candidate"], "accepted": accepted,
+                             "member_selection_current": members_current,
+                             "manifest": snapshot["manifest"] if snapshot else None,
+                             "manifest_sha256": snapshot["sha256"] if snapshot else None})
+    return {
+        "destination": asset["delivery"]["path"], "candidate": candidate_id,
+        "expected_sha256": expected, "observed_sha256": observed,
+        "destination_matches": matching, "families": families,
+        "complete": matching and all(row["accepted"] for row in families),
+        "scope": "Current nominated bytes at the declared destination and acceptance of every saved containing family; only the declared criteria are established.",
+    }
+
+
 def owned_tasks(document, root, path, asset_id):
     """Select explicit asset bindings; never infer ownership from a task name."""
     result = []
@@ -26,6 +77,11 @@ def owned_tasks(document, root, path, asset_id):
 
 def current_bindings(document, task_id, root, folder=None):
     from .plar import selection_bindings
+    from .production_plan import blockers as plan_blockers
+
+    reasons = plan_blockers(document, task_id, root, folder)
+    if reasons:
+        raise PixlError("production_plan", "; ".join(reasons))
 
     bindings = selection_bindings(document, task_id, root, folder)
     changed = [
@@ -139,6 +195,14 @@ def report(root, selected, path):
             )
         if task.fields["st"].value == "done" and current:
             action = "review_delivery"
+        workflow = next(
+            t for t in lifecycle.report(document)["tasks"] if t["id"] == task_id
+        )
+        delivered = None
+        if task.fields["st"].value == "done" and current and link:
+            delivered = _delivery_status(document, root, folder, asset, link["output"], workflow["outputs"])
+            if delivered["complete"]:
+                action = "delivered"
         if pending:
             action = (
                 "reconcile"
@@ -149,9 +213,6 @@ def report(root, selected, path):
                 if current and all(j["next_action"] == "dispatch" for j in pending)
                 else "resolve_prepared_intent"
             )
-        workflow = next(
-            t for t in lifecycle.report(document)["tasks"] if t["id"] == task_id
-        )
         prerequisites = [
             {
                 "job": j["id"],
@@ -181,6 +242,7 @@ def report(root, selected, path):
             "task": task_id,
             "task_state": task.fields["st"].value,
             "outputs": workflow["outputs"],
+            "delivery": delivered,
             "selection_bindings": bindings,
             "selection_current": current,
             "jobs": rows,
@@ -193,6 +255,7 @@ def report(root, selected, path):
                 "requirements_hash": selected["requirements_hash"],
                 "task": task_id,
                 "action": action,
+                "delivery": delivered,
                 "jobs": [
                     {
                         k: row[k]

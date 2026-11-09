@@ -1,0 +1,988 @@
+{
+  "format": 2,
+  "revision": 104,
+  "hash": "e0a40aab9b181a67018b7c03bf78f4be122e9dbb64b652a6a209d444311add54",
+  "files_verified": true,
+  "families": [
+    {
+      "output": "successor-adoption-02.delivery.output",
+      "task": "successor-adoption-02.delivery.task",
+      "state": "open",
+      "baseline": {
+        "candidate": "ready.retained",
+        "output": "r.22e90a2a03fe453a.output.ready",
+        "task": "r.22e90a2a03fe453a.task",
+        "eligible": true,
+        "reasons": [],
+        "requirements": [
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+            "name": "geometry",
+            "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.0",
+            "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.0"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+            "name": "transparent-background",
+            "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.1",
+            "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.1"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+            "name": "ready-meaning",
+            "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.2",
+            "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.2"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+            "name": "readability-1x-3x",
+            "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.3",
+            "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.3"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+            "name": "cool-blue-accent",
+            "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.4",
+            "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.4"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+            "name": "sample-pixel-craft",
+            "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.5",
+            "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.5"
+            ]
+          }
+        ]
+      },
+      "destinations": [
+        {
+          "id": "focused-successor.choice.destination",
+          "project": "project",
+          "key": "family.destination.successor_adoption",
+          "status": "confirmed",
+          "value": {
+            "alpha": "full",
+            "cell": [
+              16,
+              16
+            ],
+            "consumers": [
+              "statusCell",
+              "compactStatus"
+            ],
+            "engine": "Versioned supplied browser fixture executing src/queue.ts and src/queue-view-successor.ts",
+            "frame_ms": 100,
+            "panel": "#172336",
+            "paths": {
+              "paused": "renderer-successor/assets/paused.png",
+              "ready": "renderer-successor/assets/ready-confirmed.png",
+              "retry": "renderer-successor/assets/error-retry.png",
+              "start": "renderer-successor/assets/start.svg",
+              "working": "renderer-successor/assets/working.png"
+            },
+            "placement_acceptance": "Requires fresh successor-scoped verdicts; old acceptance not transferred",
+            "sampling": "nearest",
+            "scale": [
+              1,
+              3
+            ],
+            "working_horizontal_frames": 4,
+            "working_normal": "Four horizontal cells at nominal 100ms only under no-preference",
+            "working_reduced": "Stationary frame zero while running; live preference switches reconcile once via change event or next-rAF matches"
+          },
+          "sources": [
+            "successor.source.view",
+            "successor.source.renderer",
+            "successor.source.assignment",
+            "successor.source.proposal",
+            "successor.source.comparison"
+          ],
+          "rationale": "Caller adopted local versioned destination in corrected retained comparison; SUCCESSOR-ADOPTION authorizes retention and fresh acceptance. Old destination preserved."
+        }
+      ],
+      "members": [
+        {
+          "output": "r.22e90a2a03fe453a.output.ready",
+          "task": "r.22e90a2a03fe453a.task",
+          "state": "done",
+          "candidate": "ready.retained",
+          "accepted": true,
+          "reasons": [],
+          "requirements": [
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+              "name": "geometry",
+              "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.0",
+              "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.0"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+              "name": "transparent-background",
+              "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.1",
+              "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.1"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+              "name": "ready-meaning",
+              "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.2",
+              "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.2"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+              "name": "readability-1x-3x",
+              "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.3",
+              "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.3"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+              "name": "cool-blue-accent",
+              "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.4",
+              "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.4"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+              "name": "sample-pixel-craft",
+              "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.5",
+              "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.5"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "ready.retained",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+                  "name": "geometry",
+                  "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.0",
+                  "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.0"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+                  "name": "transparent-background",
+                  "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.1",
+                  "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.1"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+                  "name": "ready-meaning",
+                  "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.2",
+                  "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.2"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+                  "name": "readability-1x-3x",
+                  "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.3",
+                  "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.3"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+                  "name": "cool-blue-accent",
+                  "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.4",
+                  "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.4"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+                  "name": "sample-pixel-craft",
+                  "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.5",
+                  "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.5"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "output": "successor-adoption-02.working.output",
+          "task": "successor-adoption-02.working.task",
+          "state": "open",
+          "candidate": null,
+          "accepted": false,
+          "reasons": [
+            "family_member: successor-adoption-02.working.output has no nominated candidate",
+            "family_member: successor-adoption-02.working.output task successor-adoption-02.working.task is open; it must be done"
+          ],
+          "requirements": [
+            {
+              "id": "successor-adoption-02.working.q.geometry",
+              "name": "geometry",
+              "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view-successor.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer-successor/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and, under no-preference only, advances floor(elapsed/100) mod 4 (nominal 400 ms cycle). Under reduced motion it selects frame zero without changing the four-cell sheet geometry.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.transparent-exterior.diagnostic",
+              "name": "transparent-exterior.diagnostic",
+              "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.transparent-exterior",
+              "name": "transparent-exterior",
+              "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.frame-assembly",
+              "name": "frame-assembly",
+              "check": "For this reuse-only successor, record the exact retained Working source cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc and verify the destination PNG is byte-identical. No new frame assembly, join, patch, resize, resample, recolor, duplication or drop is performed. Preserve the earlier raw provider outputs and assembly records unchanged. The obsolete prepared join and proposed seed-rotation step-two checks are non-applicable to this reuse path; a future construction change requires review of its own exact assembly policy.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.activity-not-success",
+              "name": "activity-not-success",
+              "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in successor-adoption-02.delivery.q.distinction. For reduced motion, frame zero shown alone with its Working label must read as the stationary Working indicator, distinct from Ready and Paused; the frame choice is this specialist's proposal, not an owner-prescribed motif.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.motion-continuity",
+              "name": "motion-continuity",
+              "check": "Normal motion only: play all four existing Working frames at 100 ms per frame at 1x and 3x on #172336 including fourth-to-first wrap; required outcome is one continuous activity loop without a visible discontinuity at the wrap. Stable center/anchor and visual volume are scoped expert quality checks from the Working contract. Evenly paced angular motion/no near-hold is the specialist's chosen quality criterion for this exact reused rotating-segment design, not an owner requirement; a different expressive timing design could satisfy the brief after review. No universal fixed cluster-count/no-morph recipe is imposed. Reduced motion is evaluated separately as stationary frame zero.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.style-coherence",
+              "name": "style-coherence",
+              "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "successor-adoption-02.working.q.consumers",
+              "name": "consumers",
+              "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path renderer-successor/assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render renderer-successor/assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Normal-motion (no-preference) frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed. Under prefers-reduced-motion: reduce, both consumers retain Working label and 64x16/four-cell source geometry but select stationary frame zero via statusFrame(state, elapsed, reduced) and suppress frame advancement. Observe the same frame and pixel hash over at least 800 ms while running in both consumers. Change the media preference to reduce while this page remains open: paint frame zero on both live and matrix Working cells when the media change event is delivered or when the next animation frame observes changed matchMedia.matches; reconcile only once per observed preference transition. Change back to no-preference in the same session: restart normal cycling at frame zero through all four 100 ms phases and wrap, without backend-state change, reload, stale canvas, or duplicate animation.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": [
+            {
+              "id": "successor-adoption-02.working.candidate",
+              "nominated": false,
+              "requirements": [
+                {
+                  "id": "successor-adoption-02.working.q.geometry",
+                  "name": "geometry",
+                  "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view-successor.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer-successor/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and, under no-preference only, advances floor(elapsed/100) mod 4 (nominal 400 ms cycle). Under reduced motion it selects frame zero without changing the four-cell sheet geometry.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.0",
+                  "reason": "Decoded exact saved PNG and source copy: Working 64x16 four horizontal16x16 cells, Retry/Paused16x16. Transparent in-cell margins preserved; no extra canvas/gutters.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.0"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.transparent-exterior.diagnostic",
+                  "name": "transparent-exterior.diagnostic",
+                  "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.1",
+                  "reason": "Fresh alpha-diagnostics.json retains each cell histogram and component boxes; flags are diagnostic only, never an acceptance cutoff; alpha-zero RGB ignored.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.1"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.transparent-exterior",
+                  "name": "transparent-exterior",
+                  "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.2",
+                  "reason": "All actual fresh native/3x panel views inspected: panel shows through intended exterior, no opaque canvas matte or fringe. Selective AA/full alpha allowed. Transparent Paused source may show alpha-zero stored RGB in raw host handling; composited views and actual engine pixels show correct cool-blue bars without matte.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.2"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.frame-assembly",
+                  "name": "frame-assembly",
+                  "check": "For this reuse-only successor, record the exact retained Working source cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc and verify the destination PNG is byte-identical. No new frame assembly, join, patch, resize, resample, recolor, duplication or drop is performed. Preserve the earlier raw provider outputs and assembly records unchanged. The obsolete prepared join and proposed seed-rotation step-two checks are non-applicable to this reuse path; a future construction change requires review of its own exact assembly policy.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.3",
+                  "reason": "New candidate and renderer-successor/assets/working.png hash cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc equal exact original retained motion candidate. No new assembly/edit/provider execution.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.3"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.activity-not-success",
+                  "name": "activity-not-success",
+                  "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in successor-adoption-02.delivery.q.distinction. For reduced motion, frame zero shown alone with its Working label must read as the stationary Working indicator, distinct from Ready and Paused; the frame choice is this specialist's proposal, not an owner-prescribed motif.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.4",
+                  "reason": "All four disconnected stepped orbital segment poses read as activity, no check or terminal success pose. Native/3x frame0 with Working label is distinct from Ready check and Paused bars. Fresh phase samples exercise every frame; direct real-time pacing is separately unavailable.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.4"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.motion-continuity",
+                  "name": "motion-continuity",
+                  "check": "Normal motion only: play all four existing Working frames at 100 ms per frame at 1x and 3x on #172336 including fourth-to-first wrap; required outcome is one continuous activity loop without a visible discontinuity at the wrap. Stable center/anchor and visual volume are scoped expert quality checks from the Working contract. Evenly paced angular motion/no near-hold is the specialist's chosen quality criterion for this exact reused rotating-segment design, not an owner requirement; a different expressive timing design could satisfy the brief after review. No universal fixed cluster-count/no-morph recipe is imposed. Reduced motion is evaluated separately as stationary frame zero.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "unavailable",
+                  "verdict": "successor02.working.motion.unavailable",
+                  "reason": "Full qualitative temporal criterion unavailable: actual browser ran and sampled every source phase and wrap at nominal100ms; still-only image host cannot judge perceived pacing, near-hold or visible wrap continuity in real time at1x/3x. Stable center/volume and shape observations do not satisfy this full condition. View exact retained Working playback directly, then add a superseding scoped visual review.",
+                  "reviewer": "actor",
+                  "evidence": []
+                },
+                {
+                  "id": "successor-adoption-02.working.q.style-coherence",
+                  "name": "style-coherence",
+                  "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.working.review.verdict.5",
+                  "reason": "Fresh native/3x candidate and Ready reference views show deliberate compact stepped clusters, perceptible cool-blue accent and readable silhouettes. Paused tall bars, Retry curved arrow and Working spaced segments have appropriate different footprints; identical weight/palette/alpha not required.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.review.evidence.5"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.working.q.consumers",
+                  "name": "consumers",
+                  "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path renderer-successor/assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render renderer-successor/assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Normal-motion (no-preference) frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed. Under prefers-reduced-motion: reduce, both consumers retain Working label and 64x16/four-cell source geometry but select stationary frame zero via statusFrame(state, elapsed, reduced) and suppress frame advancement. Observe the same frame and pixel hash over at least 800 ms while running in both consumers. Change the media preference to reduce while this page remains open: paint frame zero on both live and matrix Working cells when the media change event is delivered or when the next animation frame observes changed matchMedia.matches; reconcile only once per observed preference transition. Change back to no-preference in the same session: restart normal cycling at frame zero through all four 100 ms phases and wrap, without backend-state change, reload, stale canvas, or duplicate animation.",
+                  "domain": "engine",
+                  "mode": "live",
+                  "status": "pass",
+                  "verdict": "successor02.working.engine.verdict",
+                  "reason": "pass: Fresh renderer exercises real backend transitions and both shared consumers with matching label,path,frame count; all20 state/scale cells plus reduced state matrix/source hashes/alpha/nearest pixel checks passed. Working normal boundary phases and actual loop/source-vs-painted samples agree, reduced frame0 holds >800ms in both consumers, both live preference transitions repaint live/matrix and keep backend state; observed next-rAF route and single origin reset. Retry/Paused remain frames1 static.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.working.engine.evidence"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "output": "successor-adoption-02.retry.output",
+          "task": "successor-adoption-02.retry.task",
+          "state": "done",
+          "candidate": "successor-adoption-02.retry.candidate",
+          "accepted": true,
+          "reasons": [],
+          "requirements": [
+            {
+              "id": "successor-adoption-02.retry.q.geometry",
+              "name": "geometry",
+              "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "successor02.retry.review.verdict.0",
+              "reason": "Decoded exact saved PNG and source copy: Working 64x16 four horizontal16x16 cells, Retry/Paused16x16. Transparent in-cell margins preserved; no extra canvas/gutters.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.review.evidence.0"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.retry.q.transparent-exterior.diagnostic",
+              "name": "transparent-exterior.diagnostic",
+              "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "successor02.retry.review.verdict.1",
+              "reason": "Fresh alpha-diagnostics.json retains each cell histogram and component boxes; flags are diagnostic only, never an acceptance cutoff; alpha-zero RGB ignored.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.review.evidence.1"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.retry.q.transparent-exterior",
+              "name": "transparent-exterior",
+              "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.retry.review.verdict.2",
+              "reason": "All actual fresh native/3x panel views inspected: panel shows through intended exterior, no opaque canvas matte or fringe. Selective AA/full alpha allowed. Transparent Paused source may show alpha-zero stored RGB in raw host handling; composited views and actual engine pixels show correct cool-blue bars without matte.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.review.evidence.2"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.retry.q.retry-meaning-without-color",
+              "name": "retry-meaning-without-color",
+              "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.retry.review.verdict.3",
+              "reason": "Native/3x and grayscale show connected circular retry arrow for failed work, distinct from disconnected Working arcs, Ready check, Paused bars and preserved Start triangle; with Retry label its action is clear.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.review.evidence.3"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.retry.q.style-coherence",
+              "name": "style-coherence",
+              "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.retry.review.verdict.4",
+              "reason": "Fresh native/3x candidate and Ready reference views show deliberate compact stepped clusters, perceptible cool-blue accent and readable silhouettes. Paused tall bars, Retry curved arrow and Working spaced segments have appropriate different footprints; identical weight/palette/alpha not required.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.review.evidence.4"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.retry.q.consumers",
+              "name": "consumers",
+              "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+              "domain": "engine",
+              "mode": "live",
+              "status": "pass",
+              "verdict": "successor02.retry.engine.verdict",
+              "reason": "pass: Fresh renderer exercises real backend transitions and both shared consumers with matching label,path,frame count; all20 state/scale cells plus reduced state matrix/source hashes/alpha/nearest pixel checks passed. Working normal boundary phases and actual loop/source-vs-painted samples agree, reduced frame0 holds >800ms in both consumers, both live preference transitions repaint live/matrix and keep backend state; observed next-rAF route and single origin reset. Retry/Paused remain frames1 static.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.retry.engine.evidence"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "successor-adoption-02.retry.candidate",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "successor-adoption-02.retry.q.geometry",
+                  "name": "geometry",
+                  "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.retry.review.verdict.0",
+                  "reason": "Decoded exact saved PNG and source copy: Working 64x16 four horizontal16x16 cells, Retry/Paused16x16. Transparent in-cell margins preserved; no extra canvas/gutters.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.review.evidence.0"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.retry.q.transparent-exterior.diagnostic",
+                  "name": "transparent-exterior.diagnostic",
+                  "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.retry.review.verdict.1",
+                  "reason": "Fresh alpha-diagnostics.json retains each cell histogram and component boxes; flags are diagnostic only, never an acceptance cutoff; alpha-zero RGB ignored.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.review.evidence.1"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.retry.q.transparent-exterior",
+                  "name": "transparent-exterior",
+                  "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.retry.review.verdict.2",
+                  "reason": "All actual fresh native/3x panel views inspected: panel shows through intended exterior, no opaque canvas matte or fringe. Selective AA/full alpha allowed. Transparent Paused source may show alpha-zero stored RGB in raw host handling; composited views and actual engine pixels show correct cool-blue bars without matte.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.review.evidence.2"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.retry.q.retry-meaning-without-color",
+                  "name": "retry-meaning-without-color",
+                  "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.retry.review.verdict.3",
+                  "reason": "Native/3x and grayscale show connected circular retry arrow for failed work, distinct from disconnected Working arcs, Ready check, Paused bars and preserved Start triangle; with Retry label its action is clear.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.review.evidence.3"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.retry.q.style-coherence",
+                  "name": "style-coherence",
+                  "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.retry.review.verdict.4",
+                  "reason": "Fresh native/3x candidate and Ready reference views show deliberate compact stepped clusters, perceptible cool-blue accent and readable silhouettes. Paused tall bars, Retry curved arrow and Working spaced segments have appropriate different footprints; identical weight/palette/alpha not required.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.review.evidence.4"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.retry.q.consumers",
+                  "name": "consumers",
+                  "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+                  "domain": "engine",
+                  "mode": "live",
+                  "status": "pass",
+                  "verdict": "successor02.retry.engine.verdict",
+                  "reason": "pass: Fresh renderer exercises real backend transitions and both shared consumers with matching label,path,frame count; all20 state/scale cells plus reduced state matrix/source hashes/alpha/nearest pixel checks passed. Working normal boundary phases and actual loop/source-vs-painted samples agree, reduced frame0 holds >800ms in both consumers, both live preference transitions repaint live/matrix and keep backend state; observed next-rAF route and single origin reset. Retry/Paused remain frames1 static.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.retry.engine.evidence"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "output": "successor-adoption-02.paused.output",
+          "task": "successor-adoption-02.paused.task",
+          "state": "done",
+          "candidate": "successor-adoption-02.paused.candidate",
+          "accepted": true,
+          "reasons": [],
+          "requirements": [
+            {
+              "id": "successor-adoption-02.paused.q.geometry",
+              "name": "geometry",
+              "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "successor02.paused.review.verdict.0",
+              "reason": "Decoded exact saved PNG and source copy: Working 64x16 four horizontal16x16 cells, Retry/Paused16x16. Transparent in-cell margins preserved; no extra canvas/gutters.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.review.evidence.0"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.paused.q.transparent-exterior.diagnostic",
+              "name": "transparent-exterior.diagnostic",
+              "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "successor02.paused.review.verdict.1",
+              "reason": "Fresh alpha-diagnostics.json retains each cell histogram and component boxes; flags are diagnostic only, never an acceptance cutoff; alpha-zero RGB ignored.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.review.evidence.1"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.paused.q.transparent-exterior",
+              "name": "transparent-exterior",
+              "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.paused.review.verdict.2",
+              "reason": "All actual fresh native/3x panel views inspected: panel shows through intended exterior, no opaque canvas matte or fringe. Selective AA/full alpha allowed. Transparent Paused source may show alpha-zero stored RGB in raw host handling; composited views and actual engine pixels show correct cool-blue bars without matte.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.review.evidence.2"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.paused.q.pause-meaning-without-color",
+              "name": "pause-meaning-without-color",
+              "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.paused.review.verdict.3",
+              "reason": "Native/3x and grayscale show two separated straight bars, distinct by shape from Ready check, disconnected rotating segments and connected Retry arrow; Start remains a triangle. No color-only distinction.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.review.evidence.3"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.paused.q.style-coherence",
+              "name": "style-coherence",
+              "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "successor02.paused.review.verdict.4",
+              "reason": "Fresh native/3x candidate and Ready reference views show deliberate compact stepped clusters, perceptible cool-blue accent and readable silhouettes. Paused tall bars, Retry curved arrow and Working spaced segments have appropriate different footprints; identical weight/palette/alpha not required.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.review.evidence.4"
+              ]
+            },
+            {
+              "id": "successor-adoption-02.paused.q.consumers",
+              "name": "consumers",
+              "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+              "domain": "engine",
+              "mode": "live",
+              "status": "pass",
+              "verdict": "successor02.paused.engine.verdict",
+              "reason": "pass: Fresh renderer exercises real backend transitions and both shared consumers with matching label,path,frame count; all20 state/scale cells plus reduced state matrix/source hashes/alpha/nearest pixel checks passed. Working normal boundary phases and actual loop/source-vs-painted samples agree, reduced frame0 holds >800ms in both consumers, both live preference transitions repaint live/matrix and keep backend state; observed next-rAF route and single origin reset. Retry/Paused remain frames1 static.",
+              "reviewer": "actor",
+              "evidence": [
+                "successor02.paused.engine.evidence"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "successor-adoption-02.paused.candidate",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "successor-adoption-02.paused.q.geometry",
+                  "name": "geometry",
+                  "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.paused.review.verdict.0",
+                  "reason": "Decoded exact saved PNG and source copy: Working 64x16 four horizontal16x16 cells, Retry/Paused16x16. Transparent in-cell margins preserved; no extra canvas/gutters.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.review.evidence.0"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.paused.q.transparent-exterior.diagnostic",
+                  "name": "transparent-exterior.diagnostic",
+                  "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "successor02.paused.review.verdict.1",
+                  "reason": "Fresh alpha-diagnostics.json retains each cell histogram and component boxes; flags are diagnostic only, never an acceptance cutoff; alpha-zero RGB ignored.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.review.evidence.1"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.paused.q.transparent-exterior",
+                  "name": "transparent-exterior",
+                  "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.paused.review.verdict.2",
+                  "reason": "All actual fresh native/3x panel views inspected: panel shows through intended exterior, no opaque canvas matte or fringe. Selective AA/full alpha allowed. Transparent Paused source may show alpha-zero stored RGB in raw host handling; composited views and actual engine pixels show correct cool-blue bars without matte.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.review.evidence.2"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.paused.q.pause-meaning-without-color",
+                  "name": "pause-meaning-without-color",
+                  "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.paused.review.verdict.3",
+                  "reason": "Native/3x and grayscale show two separated straight bars, distinct by shape from Ready check, disconnected rotating segments and connected Retry arrow; Start remains a triangle. No color-only distinction.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.review.evidence.3"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.paused.q.style-coherence",
+                  "name": "style-coherence",
+                  "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "successor02.paused.review.verdict.4",
+                  "reason": "Fresh native/3x candidate and Ready reference views show deliberate compact stepped clusters, perceptible cool-blue accent and readable silhouettes. Paused tall bars, Retry curved arrow and Working spaced segments have appropriate different footprints; identical weight/palette/alpha not required.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.review.evidence.4"
+                  ]
+                },
+                {
+                  "id": "successor-adoption-02.paused.q.consumers",
+                  "name": "consumers",
+                  "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+                  "domain": "engine",
+                  "mode": "live",
+                  "status": "pass",
+                  "verdict": "successor02.paused.engine.verdict",
+                  "reason": "pass: Fresh renderer exercises real backend transitions and both shared consumers with matching label,path,frame count; all20 state/scale cells plus reduced state matrix/source hashes/alpha/nearest pixel checks passed. Working normal boundary phases and actual loop/source-vs-painted samples agree, reduced frame0 holds >800ms in both consumers, both live preference transitions repaint live/matrix and keep backend state; observed next-rAF route and single origin reset. Retry/Paused remain frames1 static.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "successor02.paused.engine.evidence"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "candidate": null,
+      "requirements": [
+        {
+          "id": "successor-adoption-02.delivery.q.continuity",
+          "name": "continuity",
+          "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames, its actual 100 ms playback with the wrap under no-preference, and its stationary frame-zero presentation under reduce; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+          "domain": "continuity",
+          "mode": "visual",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "successor-adoption-02.delivery.q.distinction",
+          "name": "distinction",
+          "check": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable. Include stationary Working frame zero shown alone in the non-color comparison: required reduced-motion distinction is from Ready and Paused. Distinction from Retry and preserved Start is the shared-consumer inference from the same status set, not a literal owner motif requirement.",
+          "domain": "continuity",
+          "mode": "visual",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "successor-adoption-02.delivery.q.destination",
+          "name": "destination",
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the caller-reviewed proposed successor destination paths: labels, frame counts, horizontal slicing, under no-preference only, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; renderer-successor/assets/start.svg byte hash unchanged. Caller-reviewed proposed successor destination is src/queue-view-successor.ts plus renderer-successor/, with copied exact assets at renderer-successor/assets/{start.svg,working.png,ready-confirmed.png,error-retry.png,paused.png}; old src/queue-view.ts, renderer/ and assets/ remain byte-unchanged. Exercise running under both prefers-reduced-motion settings and switch each direction while open; assert both consumers update together without changing queue.ts backend state. Reduced mode draws stationary Working source rectangle [0,0,16,16] with no advancement, normal mode retains all four frames at 100 ms. Preference changes may be applied through the media change event or by comparing matchMedia.matches on the next animation frame; record the observed route. No requirement that this browser dispatch a change event is inferred. Reset the animation origin once per observed preference transition and repaint both live and matrix Working cells.",
+          "domain": "engine",
+          "mode": "live",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        }
+      ],
+      "candidates": [],
+      "blockers": [
+        "task_prerequisite: successor-adoption-02.working.task is open; it must be done"
+      ],
+      "snapshot_blockers": [
+        "family_member: successor-adoption-02.working.output has no nominated candidate",
+        "family_member: successor-adoption-02.working.output task successor-adoption-02.working.task is open; it must be done"
+      ],
+      "pending_jobs": [],
+      "snapshots": []
+    }
+  ]
+}

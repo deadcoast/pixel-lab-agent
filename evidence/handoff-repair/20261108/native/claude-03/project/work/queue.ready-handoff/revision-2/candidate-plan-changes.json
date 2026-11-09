@@ -1,0 +1,383 @@
+{
+  "version": 1,
+  "purpose": "Explicit old-to-new change log for the corrected criteria proposal. The historical plan is unchanged evidence of the contract used for delivery. The corrected plan is a future proposal: it does not re-verdict candidate ready.retained, does not alter the completed task r.22e90a2a03fe453a.task, and authorizes no new generation. asset-plan.schema.json forbids additional top-level fields in the plan itself, so the change log lives in this sibling file.",
+  "historical_plan": {
+    "path": "work/queue.ready-revision/candidate-plan.json",
+    "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"
+  },
+  "corrected_plan": {
+    "path": "work/queue.ready-handoff/revision-2/candidate-plan.json",
+    "sha256": "20d8112d2dcec2433370922cf969935e64a95e16e41970045d7d1c0439ab5b5e",
+    "supersedes": {
+      "path": "work/queue.ready-handoff/candidate-plan.json",
+      "sha256": "a22f704dfd4432f2750cfacb7a37efda98925d1da40830981cb07da3a88baa3f",
+      "note": "Revision-1 corrected plan; retained byte-for-byte. Differs from revision 2 only in the ready-meaning basis."
+    }
+  },
+  "method": "For each rejection rule: (1) derive the source obligation from the cited text at file-local bounds; (2) compare the literal check for added or omitted clauses; (3) construct a brief-conforming alternative that the added clause would reject; (4) keep the required outcome and demote or clarify unsupported narrowing. Citation bounds are corrected so each pointer pins only the cited text (request-review.md: file-local inclusive bounds).",
+  "plan_level_changes": [
+    {
+      "field": "scope",
+      "change": "Rewritten to name the delivered candidate and destination, to state that this is a corrected proposal that does not replace the delivery contract or re-verdict the candidate, and to list the deferred obligations explicitly.",
+      "defect": "Historical scope described a pre-delivery sample 'for style review before family expansion' and named the destination as future; stale after delivery."
+    },
+    {
+      "field": "outputs[ready].contract.intent",
+      "change": "Updated to say the icon is delivered at assets/ready-confirmed.png, to label the sole-fill extent of the accent as a specialist choice, and to keep Ready-as-sample as a proposal.",
+      "defect": "Historical intent said 'for later assets/ready-confirmed.png' and 'cool blue accent relationship' without distinguishing role from extent."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "geometry",
+      "authority": "requirement (unchanged)",
+      "old_check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+      "new_check": "unchanged",
+      "old_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            3,
+            11
+          ]
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            9,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            6,
+            6
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            9,
+            9
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 3: 16 by 16 logical cells; Ready static. Line 9: keep the existing 16x16 canvas and static behavior. src/queue-view.ts line 6: frames 1; line 9: cell [16,16].",
+      "literal_additions": "'no horizontal strip, no extra canvas' restates exactly 16x16 single frame; a 16x16 single-frame image cannot be a strip. No narrowing.",
+      "discriminating_alternative": "None exists: any brief-conforming Ready is 16x16 static. No clause rejects a conforming alternative.",
+      "disposition": "Keep check text. Fix citation bounds: BRIEF.md [3,9] spanned lines 3-9 while quoting line 3 only; src/queue-view.ts [3,11] spanned nine lines while citing lines 6 and 9. Add the line 9 brief pointer because the current update restates canvas and static behavior.",
+      "defect": "Over-wide bounds (defect 2 in the assignment).",
+      "effect_on_delivered_candidate": "None. Historical verdict ready.delivery.review.verdict.0 stands under the historical text. The delivered bytes measure 16x16, one frame (pixl_asset_check), so the unchanged text is also satisfied; this is a specialist observation, not a new verdict."
+    },
+    {
+      "id": "transparent-background",
+      "authority": "requirement (unchanged)",
+      "old_check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+      "new_check": "The cell exterior is transparent: pixels that are not part of the subject (the check mark plus any deliberate edge treatment, glow or backing shape) have alpha 0, and no opaque or translucent matte, box or canvas fill covers the cell as an unintended background. Partial alpha on subject pixels, including authored soft edges, is permitted; binary alpha is not required.",
+      "old_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ]
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            9,
+            9
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 3 'Use transparent backgrounds'; line 9 'Keep the existing ... transparent background'. The brief says nothing about alpha depth, edge treatment, glows or backing shapes.",
+      "literal_additions": "Old text listed 'fringe' among things that must not 'fill the cell' and defined 'subject' implicitly. 'Fringe' can be read as an authored anti-aliased edge, which the brief permits (no fixed palette, no alpha restriction).",
+      "discriminating_alternative": "A check mark with authored 1-pixel partial-alpha edge pixels, or with a deliberate soft glow of partial alpha around the mark and a fully transparent exterior, satisfies 'transparent background'. Under the old wording a reviewer could reject the glow/edge as 'fringe' or as 'pixels outside the subject' with alpha > 0. The new wording treats the glow or soft edge as part of the subject and rejects only an unintended matte/canvas fill.",
+      "disposition": "Clarify wording (PROFILE 'Transparency and subject construction'); keep the required outcome. Fix bounds [3,9] -> [3,3] plus [9,9].",
+      "defect": "Ambiguous wording that could reject a brief-conforming alternative; over-wide bounds.",
+      "effect_on_delivered_candidate": "None. Historical verdict stands. Delivered bytes: 227 pixels alpha 0, 29 pixels alpha 255, no fractional alpha (measured); satisfies both wordings as an observation."
+    },
+    {
+      "id": "ready-meaning",
+      "authority": "requirement (unchanged)",
+      "old_check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+      "new_check": "Viewed alone at the declared display conditions, Ready visibly uses a check mark with asymmetrical arms (one arm clearly shorter than the other) and reads as successful completion. It must not read as the existing idle Start triangle (assets/start.svg), and it must not read generically as activity, failure or pause. Comparison against actual Working, Retry and Paused art is a deferred family obligation, not part of this check.",
+      "old_sources": [
+        {
+          "path": "src/queue.ts",
+          "lines": [
+            1,
+            4
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            3,
+            11
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ],
+          "locator": "line 3: 'The working loop must communicate activity without looking like success'"
+        },
+        {
+          "path": "assets/start.svg",
+          "lines": [
+            1,
+            1
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            9,
+            9
+          ],
+          "locator": "Current Ready requirement"
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            9,
+            9
+          ]
+        },
+        {
+          "path": "src/queue.ts",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            6,
+            6
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "assets/start.svg",
+          "lines": [
+            1,
+            1
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 9: a check mark with asymmetrical arms that conveys successful completion. src/queue.ts line 3 and src/queue-view.ts line 6 bind the succeeded state to the Ready label and this file. src/queue-view.ts line 3 and assets/start.svg line 1 identify the only existing sibling, the Start triangle.",
+      "literal_additions": "'reads as completion rather than activity, failure, pause' is entailed by 'convey successful completion' (a mark read as activity does not convey completion). 'Rather than the idle Start control' is supported by the existing Start asset in the same row. 'Asymmetrical arms' is explained as one arm clearly shorter than the other, which is the plain meaning; no arm ratio is imposed.",
+      "discriminating_alternative": "A thin single-pixel check, a check with a round backing plate and transparent exterior, or a check with a different arm ratio all satisfy line 9 and pass both wordings. No brief-conforming alternative is rejected by the retained clauses. The one risk in the old text was that 'rather than activity, failure, pause' could be read as requiring comparison against Working/Retry/Paused art that does not exist; the new text names that as a deferred family obligation.",
+      "disposition": "Keep the owner requirement verbatim in substance; make the generic-vs-family distinction explicit. Drop the BRIEF.md line 3 pointer ('working loop ... without looking like success'): that sentence binds Working, not Ready, and it is kept as deferred obligation family-working-not-success. Fix bounds: src/queue.ts [1,4] -> [3,3]; src/queue-view.ts [3,11] -> [6,6] and [3,3]; BRIEF.md [3,9] removed; BRIEF.md [9,9] kept with a quoted locator.",
+      "defect": "Over-wide bounds; one pointer cited an obligation that binds a different asset; implicit family comparison.",
+      "effect_on_delivered_candidate": "None. Historical verdict stands. Specialist observation (not a verdict): the delivered mark has a 7-pixel short arm and a 19-pixel long arm by column partition and reads as a check; see specialist-assessment.json."
+    },
+    {
+      "id": "readability-1x-3x",
+      "authority": "requirement (unchanged)",
+      "old_check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+      "new_check": "unchanged",
+      "old_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            3,
+            11
+          ]
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            9,
+            9
+          ]
+        },
+        {
+          "path": "src/queue-view.ts",
+          "lines": [
+            9,
+            9
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 3: readable silhouettes; inspect at 1x and 3x nearest display scale on the actual dark panel. Line 9: keep the review display conditions. src/queue-view.ts line 9 supplies the actual panel colour, scale and filter.",
+      "literal_additions": "'no essential detail lost into the panel colour' operationalizes 'readable' at the stated conditions; no numeric threshold is introduced.",
+      "discriminating_alternative": "Any readable silhouette of another construction passes; a contrast ratio or component count is not required. No conforming alternative is rejected.",
+      "disposition": "Keep check text; basis now labels #172336/scale 3/nearest as consumer observations resolving the brief's 'actual dark panel'. Fix bounds.",
+      "defect": "Over-wide bounds; basis did not separate the owner requirement from the consumer-observed values.",
+      "effect_on_delivered_candidate": "None. Historical verdict stands. Specialist observation: the delivered mark remains legible in the retained 1x and 3x panel views (opened), and the 3x view contains exactly two colours with uniform 3x3 blocks (measured)."
+    },
+    {
+      "id": "cool-blue-accent",
+      "authority": "requirement (unchanged label; extent clause demoted)",
+      "old_check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+      "new_check": "The existing UI's cool blue accent is visibly used in the mark so that its relationship to the Start control's fill (assets/start.svg, observed #70b9ed) is perceptible when both appear in the same status row. This is a visual relationship judgement: it does not require an exact hex value, a palette count, or that cool blue be the dominant or only colour.",
+      "old_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ]
+        },
+        {
+          "path": "assets/start.svg",
+          "lines": [
+            1,
+            1
+          ]
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "assets/start.svg",
+          "lines": [
+            1,
+            1
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 3: 'Use ... the existing UI's cool blue accent; a fixed palette is not required.' The brief names a colour role (accent) and explicitly leaves palette open; it says nothing about coverage or dominance.",
+      "literal_additions": "'The dominant colour treatment' adds an extent requirement (dominance) to the accent role.",
+      "discriminating_alternative": "A mostly neutral light-grey or white check mark with a clear cool-blue (#70b9ed-like) edge, inner stroke or small backing accent uses the existing accent perceptibly while its dominant colour is not blue. The brief does not exclude it; the old literal check would reject it on the word 'dominant'. Per PROFILE 'Visual roles', dominance is an extent choice, stated as a proposal unless the brief requires it. BRIEF.md does not.",
+      "disposition": "Keep the required outcome (accent visibly used, relationship to Start perceptible). Remove 'dominant' from the rejection rule. Record the delivered sample's sole flat #70b9ed fill as a specialist extent choice in request-review.json choices and in the criterion basis. Fix bounds [3,9] -> [3,3].",
+      "defect": "An unsupported extent restriction promoted to owner authority (defect 6 in the assignment); over-wide bounds.",
+      "effect_on_delivered_candidate": "None. Historical verdict stands under the historical text. The delivered mark is a single flat #70b9ed fill (measured), which satisfies both wordings; the extent was the specialist's choice and is a reasonable baseline for a flat-fill family coherent with the flat-fill Start SVG."
+    },
+    {
+      "id": "sample-pixel-craft",
+      "authority": "proposal (unchanged)",
+      "old_check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+      "new_check": "As a representative family sample, the image shows deliberate pixel-art construction: readable pixel clusters with consistent edge stepping, no accidental stray pixels, no resampling blur or downscaled-illustration artifacts (authored anti-aliasing or sub-pixel shading is not an artifact), and a stroke and colour treatment that could plausibly be carried to Working, Retry and Paused.",
+      "old_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            9
+          ],
+          "locator": "line 3 ... and line 5 ..."
+        }
+      ],
+      "new_sources": [
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            3,
+            3
+          ]
+        },
+        {
+          "path": "BRIEF.md",
+          "lines": [
+            5,
+            5
+          ]
+        }
+      ],
+      "source_obligation": "BRIEF.md line 3 'Create coherent pixel-art status assets'; line 5 'propose a representative status sample before expanding the family'. These support a coherence goal and a sample-first process; they do not supply a construction recipe. The criterion's basis is expert judgment and its authority is proposal.",
+      "literal_additions": "'clean ... edges' and 'blur' could be read as banning authored anti-aliasing, which the brief permits ('a fixed palette is not required'; no alpha restriction). 'Treatment that could plausibly be extended' is an expert extensibility judgement.",
+      "discriminating_alternative": "A check with deliberately anti-aliased diagonal edges (two or three blue tones) is brief-conforming. The old wording could reject it as 'blur'; the new wording rejects only accidental resampling blur and downscaled-illustration artifacts.",
+      "disposition": "Keep as a scoped expert proposal (artistic-authority.md: a quality criterion attributed to expert judgment with explicit scope). Clarify artifact vs authored treatment (PROFILE 'Pixel craft'). Split the single [3,9] pointer that cited two lines into [3,3] and [5,5].",
+      "defect": "One pointer cited two separate lines with one wide range; wording ambiguous toward a construction ban the brief does not impose.",
+      "effect_on_delivered_candidate": "None. Historical verdict stands. Specialist observation: both arms are regular 1:1 diagonal staircases with 3-row column runs and single-pixel tapered caps; no stray pixels; one colour; no resampling artifacts (measured and viewed)."
+    }
+  ],
+  "removed_or_added_criteria": "None. All six historical criterion IDs are retained; no criterion is added. The first-stage criterion 'silhouette-without-color' (historical plan aeb1ab7a..., task 'task') remains correctly absent: the brief places non-colour distinction obligations on Retry (line 3) and Paused (line 7) relative to the family, not on Ready alone; that outcome is retained as deferred family obligations.",
+  "not_done": [
+    "No verdict is recorded against the corrected criteria; the only verdicts on ready.retained are the historical ready.delivery.review verdicts under the historical text.",
+    "No PX2 state was committed; revision 14 hash 7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81 is unchanged.",
+    "No generation, dispatch or provider call was made.",
+    "Revision 2 adds no verdict, no state commit and no generation; it only clarifies one basis and corrects one packet locator bound."
+  ],
+  "revision_2": {
+    "supersedes": {
+      "path": "work/queue.ready-handoff/candidate-plan-changes.json",
+      "sha256": "a4629aa44561944a1e929232b4ea8b564f1ffacd7e6b931eb1cd422bf5ece40c"
+    },
+    "trigger": "Independent caller comparison of the revision-1 packet (14eb7e3e...) returned two findings; this revision resolves both. Neither finding changes any check text, authority, scope or source pointer in the plan.",
+    "criterion_changes": [
+      {
+        "id": "ready-meaning",
+        "field": "basis",
+        "old_check": "Viewed alone at the declared display conditions, Ready visibly uses a check mark with asymmetrical arms (one arm clearly shorter than the other) and reads as successful completion. It must not read as the existing idle Start triangle (assets/start.svg), and it must not read generically as activity, failure or pause. Comparison against actual Working, Retry and Paused art is a deferred family obligation, not part of this check.",
+        "new_check": "unchanged",
+        "old_basis": "BRIEF.md line 9 is the owner requirement for the check-mark motif, the asymmetrical arms and the successful-completion meaning. succeeded is the state reached by an ok result (src/queue.ts line 3) and maps to the Ready label and this asset (src/queue-view.ts line 6). Start is the only existing sibling asset (src/queue-view.ts line 3; assets/start.svg line 1). The owner leaves arm ratio, stroke width, end caps, backing shape, palette count and highlights open; none is imposed here. The historical citation of BRIEF.md line 3 ('working loop must communicate activity without looking like success') binds Working, not Ready, and is retained only as a deferred family obligation.",
+        "new_basis": "BRIEF.md line 9 is the owner requirement for the check-mark motif, the asymmetrical arms and the successful-completion meaning. The parenthetical 'one arm clearly shorter than the other' in the check is the specialist's reading of the owner's term 'asymmetrical arms', not additional owner wording: asymmetry is read as unequal arm length, which is the conventional check-mark form (a short stroke meeting a longer stroke at a low vertex). A V shape with equal-length arms distinguished only by unequal stroke weight is not what 'check mark' names, so this reading excludes no brief-conforming check mark. No arm ratio is imposed; any clearly unequal pair of arm lengths satisfies the clause. succeeded is the state reached by an ok result (src/queue.ts line 3) and maps to the Ready label and this asset (src/queue-view.ts line 6). Start is the only existing sibling asset (src/queue-view.ts line 3; assets/start.svg line 1). The owner leaves arm ratio, stroke width, end caps, backing shape, palette count and highlights open; none is imposed here. The historical citation of BRIEF.md line 3 ('working loop must communicate activity without looking like success') binds Working, not Ready, and is retained only as a deferred family obligation.",
+        "caller_finding": "The check adds '(one arm clearly shorter than the other)' to the owner's phrase 'asymmetrical arms' (BRIEF.md line 9). The caller accepts this as the plain reading of a check mark but requires the basis to say explicitly that it is the specialist's reading of the owner's term, that an equal-arm V with unequal stroke weight is not what 'check mark' names, and that no arm ratio is imposed.",
+        "source_obligation": "BRIEF.md line 9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion.' The owner names the motif (check mark) and the asymmetry; the owner does not define asymmetry or fix a ratio.",
+        "literal_additions": "None to the check. The basis now states who supplied the parenthetical (the specialist), what reading it encodes (unequal arm length, the conventional check-mark form), what it does not exclude (any brief-conforming check mark) and what it does not impose (an arm ratio).",
+        "discriminating_alternative": "A V shape whose two arms are equal in length and differ only in stroke weight. It is not rejected by the asymmetry parenthetical as an excluded check mark; it is not a check mark in the first place, because 'check mark' names the short-stroke/long-stroke form. Every check mark with clearly unequal arm lengths, of any ratio, stroke width, cap or backing, passes.",
+        "disposition": "Clarify the basis only; keep the check text, authority (requirement), scope and the five source pointers identical to revision 1.",
+        "effect_on_delivered_candidate": "None. Historical verdict ready.delivery.review.verdict.2 stands under the historical text; no new verdict is recorded."
+      }
+    ],
+    "packet_changes_noted": [
+      "request-review.json sources[OWNER.md].locators: 'lines 8-9: ... integration and art acceptance remain future work' corrected to 'lines 8-10'. OWNER.md line 8 ends at 'the accepted revised request:', line 9 carries 'no image or renderer is supplied, no style is already approved, and integration and', and the clause 'art acceptance remain future work' is on line 10. The paraphrase was right; its stated bound was one line short (caller finding 1).",
+      "Every other string locator in request-review.json sources[] (BRIEF.md 3/5/7/9; SOURCE-MAP.md 3; src/queue.ts 1, 3; src/queue-view.ts 3, 6, 9, 10-11; assets/start.svg 1; provider-schemas.json 2-33, 34-42; provider-contract-origin.json 4; OWNER.md 2-11, 7; STAGE.md 2-6, 7-8, 10-11, 13-14; PHASE.md 2-6, 7, 10-11; work/queue.ready-revision/connection.json 2, 50) was re-opened against the file and found to sit inside its stated inclusive bounds. No other correction was needed."
+    ],
+    "unchanged": "All six criterion IDs, every check text, authority label, scope and sources[].lines are identical to revision 1. The revision-1 per-criterion comparisons above remain the old-to-new record against the historical plan."
+  }
+}

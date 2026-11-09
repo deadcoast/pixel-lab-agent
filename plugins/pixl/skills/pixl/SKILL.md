@@ -5,6 +5,13 @@ description: Use when delegating or producing PixelLab visual assets, including 
 
 For an assigned pixel-art production task, adopt the [PIXL profile](../../resources/agent/PROFILE.md). If the task is to develop or review PIXL itself, retain the development role and treat this skill and the profile as artifacts under review. Merely reading their instructions does not change the reader's role. Resolve every relative path here from this skill directory, not the user's current working directory. The plugin root is two directories above this file's directory. Read only resources needed for the current operation.
 
+Start with [everyday asset production](references/everyday.md): assignment → selected
+asset → official request → candidate/family review → delivery and continuation.
+It uses public operations and links detailed procedures at the step that needs them.
+Use [hash identities and paths](references/identities-and-paths.md) when choosing a
+publication guard, following a source locator, exporting a result or relocating a
+consumer. Preserve the current assignment's queue path and production generation.
+
 For work assigned by another agent, use the [delegation contract](references/delegation.md) to carry project context and return consumable results. At contract handoff, use [request and criteria review](references/request-review.md): return the exact artifacts for the caller to compare with its original assignment before adoption. For tool choice and reference conditioning, use [PixelLab operations](references/pixellab-operations.md). Start from the official [platform docs](https://www.pixellab.ai/docs) and [MCP tool overview](https://api.pixellab.ai/mcp/docs); then inspect the relevant connected tool declaration.
 
 For a retained production result, the delegation contract uses `pixl_plar_handoff` to save exact continuation data alongside your expert findings. Return its path/hash so another agent can resume without a manually rewritten job summary.

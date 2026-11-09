@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "role": "PIXL specialist renderer-recheck review (RENDER-RECHECK.md continuation). Explicitly guided by a maintainer renderer repair; the historical renderer/ trial and its 95/104 result are not relabelled.",
+  "assignment": {"RENDER-RECHECK.md": "3b3e6ad12336d77187d764d7c318dc16ebf418236c7027fed75a3129e8f95e35", "RENDER-STAGE.md": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2", "AGENTS.md": "61165b45ce8fe216feada8c5ccf0bb11e5ab8228b61771a4257494b0e93a1b13"},
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "fresh_capture": {
+    "command": "node renderer-recheck/capture.mjs --out work/render-recheck-pixl-01",
+    "exit_code": 0,
+    "stdout": {"missing": ["assets/working.png", "assets/paused.png", "assets/error-retry.png"], "errors": []},
+    "browser_process_exit_code": 0,
+    "directory": "work/render-recheck-pixl-01",
+    "files": {
+      "render.json": "904a7a6102ab59b850cec00c24c6373430a0bd3976a40b684cabe42070337c1d",
+      "destination.png": "a7f8ed81e9cb944ed28bafdadb1ef8c0c1a42ed6da2c39c33d224c16db1801d8",
+      "launch.json": "e65b0b824bbacc31367966110e499f55574f04b96deccb89f7e8d59e79b96e66",
+      "browser-process.json": "dfa13fdb5dfef0c9e67124c6de354ad883d5d89bbc25e45d40379cd553b900b6",
+      "capture-commands.json": "b159e7dc819d39828dce421db76d3aee10c6c769d4858178fd9e6060da1ab351",
+      "view-000.png": "b56abdb3e3ccc349ea7610a5028664d84e29ef49ac5e2549a82dda50be625742",
+      "view-001.png": "06e908335b21de40e212c6630fc9c12169515dff75f057f6596396263e2d5a88",
+      "view-002.png": "b56abdb3e3ccc349ea7610a5028664d84e29ef49ac5e2549a82dda50be625742",
+      "view-003.png": "06e908335b21de40e212c6630fc9c12169515dff75f057f6596396263e2d5a88",
+      "view-004.png": "dc9d6e930fd6b22025c70ca438863c513a864d47dd02dda12c239bdad687e7c1",
+      "view-005.png": "8343cf7a697453d6eb02cbeb3326b76fac67623843141b53dce4d62fdb9735f9",
+      "view-006.png": "dc9d6e930fd6b22025c70ca438863c513a864d47dd02dda12c239bdad687e7c1",
+      "view-007.png": "8343cf7a697453d6eb02cbeb3326b76fac67623843141b53dce4d62fdb9735f9"
+    },
+    "capture_facts_verified": {
+      "capture_method": "CDP metrics before navigation, page report, layout, screenshot in the same page session",
+      "cdp_commands_in_order": ["Browser.getVersion", "Target.createTarget", "Target.attachToTarget", "Page.enable", "Emulation.setDeviceMetricsOverride {1280x1000, deviceScaleFactor 1, mobile false}", "Page.navigate", "Runtime.evaluate (captureComplete)", "Runtime.evaluate (two rAF)", "Page.getLayoutMetrics", "Page.captureScreenshot", "Browser.close"],
+      "browser": "Chrome/156.0.8078.80 (HeadlessChrome/156.0.0.0 UA), protocol 1.3, devicePixelRatio 1",
+      "reported_viewport": {"width": 1280, "height": 1000, "clientWidth": 1280},
+      "capture_layout": {"layoutViewport": [1280, 1000], "visualViewport": [1280, 1000], "contentSize": [1280, 1000], "scale": 1, "zoom": 1},
+      "screenshot_size": [1280, 1000],
+      "screenshot_equals_reported_viewport": true,
+      "screenshot_equals_layout_viewport": true,
+      "renderer_files_bound_in_report_match_disk": true,
+      "served_files_bound_in_report_match_disk": true,
+      "renderer_recheck_vs_renderer_identity": {"capture.mjs": "differs (f0659023... vs f0e3df48...)", "server.mjs": "identical 0a7fbb72...", "index.html": "identical 05fbe0a3...", "view.mjs": "identical 5f64fc51...", "check.py": "identical 01f482c9..."}
+    }
+  },
+  "checker": {
+    "command": "C:/github/pixel-lab-agent/.venv/Scripts/python.exe renderer-recheck/check.py --project . --capture work/render-recheck-pixl-01 > work/render-recheck-pixl/check-render-recheck-pixl-01.json",
+    "exit_code": 0,
+    "status": "pass",
+    "observations": 104,
+    "failures": [],
+    "available_views": 8,
+    "missing": ["assets/working.png", "assets/paused.png", "assets/error-retry.png"],
+    "stdout_file": {"path": "work/render-recheck-pixl/check-render-recheck-pixl-01.json", "sha256": "af8cfc0097be88e25d688dd183c0d59716ba4970bec63d7a483a481084c7414f"},
+    "renderer_not_altered": "renderer-recheck/ and renderer/ files were not edited; their hashes equal the caller's baseline-hashes record (work/render-recheck-review/caller-notes-pre-specialist.json).",
+    "checker_scope": "Identities, DOM/canvas dimensions, screenshot pixel correspondence, PNG alpha compositing, nearest blocks and frame-boundary crops. Not an artistic/style verdict and not acceptance of absent members."
+  },
+  "comparison": {
+    "with_caller_recheck_capture": {"directory": "work/render-recheck-caller-01", "destination_png_identical": true, "eight_view_hashes_identical": true, "bounds_identical": true, "render_json_differs_only_in": ["observed_at"], "caller_checker": "work/render-recheck-caller-01-check.json 0d404b486034a32d135371872f51bbbaf567c3168d7ade72ac7d556dda60170e, 104/104 pass (not reused or overwritten)"},
+    "with_historical_captures": {"directories": ["work/render-caller-01", "work/render-pixl-01"], "eight_view_hashes_identical": true, "screenshot": "old 1d13cde1... vs new a7f8ed81...: 8 differing pixels at x 112-113, y 293-323, max channel difference 1 (panel border antialiasing rounding); page content otherwise identical", "reported_viewport": "old 1262x904 vs new 1280x1000", "bounds": "old x 238/454/670/886 -> new 247/463/679/895 (+9), y identical (431/415/617/601)", "explanation": "The old capture.mjs read DOM bounds before Chromium applied the final 1280 px screenshot viewport; the centred 1120 px body shifted by (1280-1262)/2 = 9 px. The pixels were already correct (zero-difference match at dx=+9 in work/render-stage-pixl/measurements.json and work/render-stage-review/screenshot-offset-search.json); only the bookkeeping was off. The corrected helper sets device metrics before navigation and measures and screenshots in one page session, so bounds now match at dx=0.", "old_results_kept": ["work/render-stage-pixl/check-render-pixl-01.json (95/104)", "work/render-stage-review/check-render-caller-01.json (95/104)", "work/render-stage-pixl/measurements.json", "work/render-stage-review/screenshot-offset-search.json"]},
+    "consumers": {
+      "statusCell_vs_compactStatus": "Both resolve the same statusVisuals entry (src/queue-view.ts lines 10-11 return statusVisuals[state]); for succeeded both return {label 'Ready', path 'assets/ready-confirmed.png', frames 1}; canvases are byte-identical per scale (view-004 = view-006, view-005 = view-007); only the CSS gap differs (12 px full, 6 px compact; first label ink at 13/7 px for 'Ready').",
+      "asset_paths_from_source": {"idle": "assets/start.svg (served sha ee2ba2fe... = disk)", "running": "assets/working.png (404, missing)", "paused": "assets/paused.png (404, missing)", "succeeded": "assets/ready-confirmed.png (served sha fc5e43ae... = disk = PX2 artifact)", "failed": "assets/error-retry.png (404, missing)"},
+      "transitions_observed": ["idle -> Start available in both consumers", "started -> running -> Working unavailable", "pause -> paused -> Paused unavailable", "ok -> succeeded -> Ready available, sha fc5e43ae...", "error -> failed -> Retry unavailable"],
+      "placement": "All eight available canvases match the screenshot at their reported integer bounds with zero difference (best match dx=0, dy=0); live panel has two exact 3x Ready copies at (131,225) and (323,225)."
+    },
+    "measurements_file": {"path": "work/render-recheck-pixl/measurements.json", "sha256": "51c7960787a13d244de078278776ed8304107e95682c87027d91e4d392dd76a3"}
+  },
+  "viewed": "See work/render-stage-pixl/render-review.json 'viewed' for per-image observations with hashes (destination.png, view-000/001/004/005/006/007 and the derived diagnostic crops in work/render-recheck-pixl/). The compact views 002/003 are byte-identical to 000/001.",
+  "resolves": [
+    {"item": "queue.ready delivery check 4: 'Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.'", "outcome": "Observed in the representative renderer: ok -> succeeded -> label Ready with assets/ready-confirmed.png (sha fc5e43ae...) in both consumers at 1x and 3x; screenshot/bounds correspondence verified 104/104. Production-host display remains unverified.", "scope": "representative fixture renderer only"},
+    {"item": "queue.ready delivery check 3 (display aspect): inspect at 1x and 3x nearest on #172336", "outcome": "The actual browser canvases are exact straight-alpha composites with nearest 3x3 blocks (zero difference vs Pillow); visually inspected at both scales in both consumers.", "scope": "fixture renderer; style judgment is in render-review.json"},
+    {"item": "queue.start delivery check 2: 'When a runnable UI is available, verify idle still resolves to the preserved Start control in both status consumers.'", "outcome": "Observed: idle -> Start with assets/start.svg (sha ee2ba2fe... unchanged) in both consumers at 1x and 3x; browser-rasterised with anti-aliasing.", "scope": "fixture renderer"},
+    {"item": "Screenshot/viewport correspondence for the two AVAILABLE members (Ready, Start)", "outcome": "Resolved: screenshot 1280x1000 equals the reported viewport and the CDP layout viewport; every available canvas matches at dx=0. The historical 9 failures are explained as a capture bookkeeping offset, not a rendering defect."},
+    {"item": "HANDOFF-RESULT.json unresolved obligation 'Graphical renderer: no runnable UI exists ... remain unverified'", "outcome": "Resolved for the representative fixture (full/compact display of ok -> succeeded, nearest sampling, alpha compositing on #172336). Not resolved for the production host."},
+    {"item": "PLAR coverage.unresolved items 'No executable UI entry point...' and 'The supplied SVG was inspected as source only'", "outcome": "No longer true; replaced in the proposal by the renderer's actual limits."}
+  ],
+  "cannot_resolve": [
+    "Absent members queue.working, queue.retry, queue.paused: the renderer shows 'Missing asset'; no view, candidate or review exists and none is invented.",
+    "Working animation playback: all nine timeline samples are unavailable; even with a strip, the capture samples frame boundaries (0, 99, 100, ... 400 ms), so real-time 100 ms playback and the 300 -> 400 ms wrap are only observable interactively (node renderer-recheck/server.mjs).",
+    "Non-colour distinction (Retry, Paused vs Ready/Working): requires the actual members in grayscale side by side; the Ready-alone grayscale crop is a diagnostic only.",
+    "Paused comparison (BRIEF.md line 7) and the collective family continuity criterion: no PX2 family plan exists (pixl_family: families []), and a collective criterion cannot pass with members absent.",
+    "Production-host display: only headless Chrome 156 at DPR 1, viewport 1280x1000; no other browsers, DPR, zoom, or the real application shell.",
+    "Actual PixelLab-generated quality: the Ready bytes are a controlled pixellab-test fixture (provider_simulated=true)."
+  ],
+  "style_recommendation_revision_required": {
+    "required": false,
+    "statement": "No scoped revision of the style recommendation is required by the new evidence. The recheck renders the same fixture bytes to pixel-identical canvases (all eight view hashes equal the historical captures); only the capture bookkeeping (viewport/bounds) changed. The recommendation in work/render-stage-pixl/render-review.json (adopt the Ready sample as the scoped baseline: edge treatment, stroke weight, fill/colour role, margin/footprint, alpha policy; nothing about other members' silhouettes, motion, meaning, non-colour distinction or PixelLab quality) stands unchanged."
+  },
+  "production_selection_note": "Adopting the baseline (or even the unconditional hash-covered refreshes U04-U07) changes queue.ready's requirements_hash, so the done task's selection binding will read 'changed' (production-selection diagnostic). This must be preserved and reported, not repaired by rebinding old jobs or transferring the six historical verdicts to the new contract. The done sample task is not reopened.",
+  "artifacts_written_this_stage": ["work/render-recheck-pixl-01/ (fresh capture)", "work/render-recheck-pixl/check-render-recheck-pixl-01.json", "work/render-recheck-pixl/measure.py", "work/render-recheck-pixl/measurements.json", "work/render-recheck-pixl/crop-*.png (9 diagnostic crops)", "work/render-stage-pixl/render-review.json", "work/render-recheck-pixl/render-recheck-review.json", "work/render-recheck-pixl/propose.py", "work/render-recheck-pixl/plar-update-proposal.json (+ -no-adopt)", "work/render-recheck-pixl/plar-change-ledger.json (+ -no-adopt)", "work/render-recheck-pixl/hash-probe-adopt/, hash-probe-no-adopt/ (scratch copies for requirements_hash probing)"],
+  "not_done": ["plar.txt not saved", "PX2 state unchanged (7a97831f... rev 14)", "no pixl_plar_handoff", "no FAMILY-RESULT.json / RENDER-RECHECK-RESULT.json (caller files)", "no provider call, no renderer edit, no new artwork"]
+}

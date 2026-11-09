@@ -8,6 +8,99 @@ from pathlib import Path
 from . import assets, catalog, codec, graph, jobs, store
 from .codec import PixlError
 
+RESULT_EXPORT_TOOLS = {
+    "pixl_context", "pixl_request_review", "pixl_review_context", "pixl_candidate_review",
+    "pixl_family", "pixl_family_snapshot", "pixl_plar_handoff",
+}
+
+
+def describe_result(operation, result):
+    """Add presentation-only hash domains; never alter stored bytes or identities."""
+    if not isinstance(result, dict):
+        return result
+    operation = operation.removeprefix("pixl_").replace("-", "_")
+    state_operations = {
+        "validate", "context", "ready", "init", "intake", "commit", "workflow",
+        "retain_library", "task_complete", "family", "family_snapshot", "jobs",
+        "job_prepare", "job_dispatch", "job_observe", "job_import", "inspection",
+        "inspection_prepare", "inspection_review", "production_plan", "stage_prepare",
+        "plar_prepare", "review_context", "candidate_review",
+    }
+    fields = {}
+    if operation in state_operations:
+        fields["hash"] = "canonical_state_sha256"
+    if operation in {"plar_read", "plar_save"}:
+        fields.update({"hash": "file_sha256", "production.continuation.state_hash": "canonical_state_sha256"})
+    if operation in {"plar_read", "plar_save", "plar_prepare", "plar_handoff"}:
+        fields["requirements_hash"] = "selected_requirements_sha256"
+    if operation in {"review_context", "candidate_review", "plar_handoff"}:
+        fields["state_hash"] = "canonical_state_sha256"
+    if operation in {"review_context", "candidate_review"}:
+        fields.update({"binding_hash": "candidate_bindings_sha256", "review_sha256": "file_sha256",
+                       "candidate_file.sha256": "file_sha256",
+                       "snapshot_acceptance.source_state_hash": "canonical_state_sha256"})
+    if operation == "request_review":
+        fields.update({"state.sha256": "canonical_state_sha256", "plan.sha256": "file_sha256",
+                       "review_scope_sha256": "review_scope_sha256", "comparison_sha256": "comparison_report_sha256",
+                       "before.review_scope_sha256": "review_scope_sha256", "after.review_scope_sha256": "review_scope_sha256",
+                       "before.plan.sha256": "file_sha256", "after.plan.sha256": "file_sha256",
+                       "packet.sha256": "file_sha256", "request.sha256": "file_sha256",
+                       "criteria.sha256": "file_sha256", "request.intent_sha256": "provider_intent_sha256"})
+    if operation in {"source", "plar_handoff", "asset_check"}:
+        fields["sha256"] = "file_sha256"
+    labels = dict(result.get("hash_domains", {}))
+    for field, domain in fields.items():
+        value = result
+        for part in field.split("."):
+            value = value.get(part) if isinstance(value, dict) else None
+        if value is not None:
+            labels[field] = domain
+    return {**result, "hash_domains": labels} if labels else result
+
+
+def operation_error(operation, error):
+    """Keep error codes stable while naming the expected publication identity."""
+    if error.code != "stale_write":
+        return error
+    operation = operation.removeprefix("pixl_").replace("-", "_")
+    hint = ("expect is the current PLAR file SHA-256 from plar read.hash (or new for first save)"
+            if operation == "plar_save" else
+            "expect is the current canonical production state hash from validate.hash or review-context.state_hash; not a PLAR, requirements, binding or exported-file hash")
+    return error if hint in error.detail else PixlError(error.code, f"{error.detail}; {hint}")
+
+
+def result_destination(root, relative):
+    """Preflight a fresh project-relative output before a potentially mutating call."""
+    if root is None:
+        raise PixlError("result_path", "an explicit project root is required")
+    path = graph.confined(root, relative)
+    if path.exists():
+        raise PixlError("result_exists", "choose a fresh result path; existing files are preserved")
+    return path
+
+
+def save_result(result, root, relative, data=None):
+    """Save exact output without model transcription; retain operation results on I/O failure."""
+    encoded = data if data is not None else (json.dumps(result, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    try:
+        path = result_destination(root, relative)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("xb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+    except (OSError, PixlError) as error:
+        return {"result_saved": False, "result_path": relative,
+                "result_error": str(error), "operation_result": result,
+                **({"wire_result": data.decode("utf-8")} if data is not None else {})}
+    return {"result_saved": True, "result_path": relative,
+            "result_sha256": hashlib.sha256(encoded).hexdigest(), "result_bytes": len(encoded),
+            "media_type": "text/plain" if data is not None else "application/json",
+            "hash_domains": {"result_sha256": "file_sha256", **({key: domain for key, domain in result.get("hash_domains", {}).items()
+                            if key in ("hash", "state_hash")} if isinstance(result, dict) else {})},
+            **({key: result[key] for key in ("state_hash", "hash", "revision", "review", "candidate", "task_status", "reused_review", "status", "pass")
+                if key in result} if isinstance(result, dict) else {})}
+
 
 def resource_root():
     if plugin := os.environ.get("PIXL_PLUGIN_ROOT"):
@@ -294,6 +387,23 @@ def inspection_report(path, root, packet_id=None):
 
 
 def call(name, args, root):
+    if "result_path" in args:
+        if name not in RESULT_EXPORT_TOOLS:
+            raise PixlError("result_path", "this operation does not support result export")
+        relative = args["result_path"]
+        result_destination(root, relative)
+        value = call(name, {key: value for key, value in args.items() if key != "result_path"}, root)
+        return save_result(value, root, relative)
+    try:
+        return describe_result(name, _call(name, args, root))
+    except PixlError as error:
+        described = operation_error(name, error)
+        if described is error:
+            raise
+        raise described from error
+
+
+def _call(name, args, root):
     root = Path(root).resolve()
 
     def path(key):
@@ -302,6 +412,18 @@ def call(name, args, root):
     if name == "pixl_validate":
         return inspect_document(path("path"), root)
     if name in ("pixl_context", "pixl_ready", "pixl_impact"):
+        if name == "pixl_context":
+            view = args.get("view", "complete")
+            if view not in ("complete", "authoring"):
+                raise PixlError("context_view", view)
+            if view == "authoring":
+                from .authoring_context import report
+
+                if args.get("budget") is not None:
+                    raise PixlError("context_budget", "budget applies only to complete wire context")
+                return report(path("path"), args["focus"], root, args.get("plar_path"), args.get("asset_id"))
+            if args.get("plar_path") is not None or args.get("asset_id") is not None:
+                raise PixlError("context_view", "selection arguments require view=authoring")
         doc = load_document(path("path"))
         graph.validate(doc, root)
         if name == "pixl_ready":
@@ -336,6 +458,14 @@ def call(name, args, root):
         )
     if name == "pixl_workflow":
         return workflow(path("path"), root)
+    if name == "pixl_review_context":
+        from . import candidate_review
+
+        return candidate_review.context(load_document(path("path")), root, args["candidate_id"])
+    if name == "pixl_candidate_review":
+        from . import candidate_review
+
+        return candidate_review.submit(path("store"), args["expect"], args["candidate_id"], args["review_id"], args["observation"], root)
     if name == "pixl_inspection":
         return inspection_report(path("path"), root, args.get("packet_id"))
     if name == "pixl_inspection_prepare":
@@ -360,6 +490,14 @@ def call(name, args, root):
             args["observation"],
             root,
         )
+    if name == "pixl_production_plan":
+        from . import production_plan
+
+        return production_plan.author(path("store"), args["expect"], args["plan"], root)
+    if name == "pixl_stage_prepare":
+        from . import production_plan
+
+        return production_plan.prepare(path("store"), args["expect"], args["plan"], args["stage"], args["job"], args["packet"], root)
     if name == "pixl_family":
         return family_report(path("path"), root, args.get("output"))
     if name == "pixl_family_snapshot":
@@ -435,7 +573,7 @@ def call(name, args, root):
     if name == "pixl_request_review":
         from .request_review import report
 
-        return report(root, args["packet"], args.get("asset_id"), args.get("path", "plar.txt"))
+        return report(root, args["packet"], args.get("asset_id"), args.get("path", "plar.txt"), args.get("plan"), args.get("job"), args.get("comparison"), args.get("view", "complete"), args.get("against_plan"))
     if name == "pixl_plar_prepare":
         from . import plar_prepare
 

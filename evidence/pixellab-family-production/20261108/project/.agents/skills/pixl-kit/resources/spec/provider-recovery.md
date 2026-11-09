@@ -1,0 +1,26 @@
+# Provider recovery journal version 1
+
+This is the normative external-file contract for the opt-in [PX2 durable J](PIXL-2.md) extension. Files are UTF-8 canonical JSON (sorted keys, compact separators, no ASCII escaping, finite values) followed by one LF. Hashes are SHA-256 of exact bytes unless described as a canonical JSON value hash (which omits the final LF). Every object has closed fields; arbitrary supplied evidence and argument values remain bounded JSON objects.
+
+The top-level fields are `version` (integer 1), `intent`, `intent_sha256` (canonical value hash of intent), `events`, `state`, `remote_id`. Intent has `job` (PIXL identifier), `request`, `context`. Context has `task`, distinct nonempty `outputs`, `task_sha256` and `bindings` (record IDs to hashes, including every output). Task hash covers its record without mutable st/ca/vr. Bindings cover selected outputs and the semantic closure of task inputs, decisions and methods. Context is immutable after preparation.
+
+Request fields are `version` (1), `provider`, `tool`, `arguments`, `schema`, `schema_sha256`, `request_sha256`, `discovery`, `authorization`, `prepared_at`, `policy` (`caller_schema`), `remote_executed` (false), `cached_assessment`. Request hash covers the provider/tool/arguments/schema object. The exact supplied schema governs argument validation. Discovery has source, observed_at and nonempty evidence. Authorization has scope and nonempty evidence. Dates are ISO timestamps. Provider/tool/source/scope are nonempty strings. These are caller assertions; they neither authenticate a remote service nor grant additional authority.
+
+New request preparation rejects a discovery observation later than the local preparation clock. This check applies before publishing new intent; existing version-1 histories retain their original caller assertions and remain readable without rewriting their bytes.
+
+Cached assessment is a retained advisory result, never recomputed to reinterpret old intent. It has advisory=true, source, retrieved_at, status and findings. Status describes passed/conflict/unlisted/unavailable/not_applicable; findings contain code/detail. A caller-schema-valid request may report a cache conflict without rewriting arguments or claiming the cache is current. Credential fields in supplied values are rejected. This is a field-name guard, not detection of every secret that could be embedded in prose.
+
+Each event has `sequence` (1-based contiguous integer), `event`, `recorded_at`, `remote_id`, nonempty `evidence`, and `artifact`. Artifact is null except for imported, where it has `id`, `output`, `record_sha256`. The candidate ID is unique in the journal, and output must belong to intent. State and identity are derived by replay; they cannot be edited independently. All request and event timestamps require an explicit UTC offset and support at most six fractional-second digits. Event instants cannot run backward or precede preparation; different offset spellings of the same instant are permitted. Unsupported precision is rejected without truncation. Evidence remains caller-supplied data.
+
+Dispatch occurs once from prepared, has no remote ID and yields unknown. Before dispatch, only failed may abandon preparation. After dispatch, submitted/running/unknown observations may repeat; running cannot regress to submitted, including through unknown. Accepted states submitted/running/succeeded require an observed ID. Once known, that ID remains identical on every later event. Succeeded and failed are terminal for observations. Imported is allowed only after succeeded and retains that state and identity. No event permits returning to prepared. A retry is a new authorized intent, after prior pending work has been reconciled.
+
+The complete prefix history is retained through successive J.ev receipts and immutable journal X files. Each update publishes one additional event and one new snapshot; no prefix can be rewritten or omitted. An imported artifact's current X record hash must match its retained event. Publication checks the unchanged F plan before linking a new candidate. These guarantees establish local history and relationships, not the actual truth of remote observations or artistic acceptance.
+
+Plans created by [selected-asset preparation](asset-preparation.md) opt into an explicit
+`pixl.plar.selection/1` report-X input binding. Its current PLAR requirements identity
+is checked at new intent/dispatch publication, including generic commits. Retained
+input bytes keep reports and reconciliation of existing submissions available after
+consumer changes. Job reports expose selection state without rewriting the immutable
+intent. This adds no journal field and does not reinterpret legacy untagged inputs.
+
+PLAR-bound continuation uses the [allocation/revision contract](asset-preparation.md#allocation-and-revised-work). Pending attempts for the same explicitly tagged asset exclude new jobs even under different task/output IDs. New task activation/completion checks the current selection and selected generation; retained historical validation is unchanged.

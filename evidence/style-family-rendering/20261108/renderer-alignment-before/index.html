@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Queue status consumer</title>
+<style>
+  :root { color-scheme: dark; font: 15px/1.45 system-ui, sans-serif; color: #d8e8f6; background: #0c1521; }
+  * { box-sizing: border-box; }
+  body { max-width: 1120px; padding: 24px 32px; margin: auto; }
+  h1 { font-size: 27px; margin: 0 0 8px; } h2 { font-size: 17px; margin: 0 0 14px; }
+  p { color: #a8bdd0; margin: 6px 0 16px; }
+  button { background: #21374d; border: 1px solid #536d85; color: inherit; padding: 8px 16px; cursor: pointer; border-radius: 5px; }
+  button:hover, button:focus-visible { background: #304d68; outline-color: #70b9ed; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .panel { background: var(--panel); border: 1px solid #34485d; border-radius: 8px; padding: 18px; margin: 16px 0; }
+  .live { display: flex; gap: 32px; align-items: center; min-height: 64px; }
+  .live .cell { width: 160px; }
+  .cell { display: inline-flex; align-items: center; gap: 12px; min-height: 52px; }
+  .compact { gap: 6px; } .missing { color: #d1b89b; font-size: 12px; }
+  .glyph { display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  canvas { display: block; image-rendering: pixelated; }
+  .panel { overflow-x: auto; }
+  .matrix { display: grid; grid-template-columns: 100px repeat(4, 200px); gap: 10px 16px; align-items: center; }
+  .heading { font-size: 12px; color: #a8bdd0; padding-bottom: 8px; }
+  .row-label { font-weight: 600; }
+  #coverage { margin: 0; } footer { color: #91a8bd; font-size: 12px; }
+  @media(max-width: 800px) { body { padding: 16px; } }
+</style>
+<h1>Queue status</h1>
+<p>Live state changes and the shared full and compact consumers.</p>
+<nav aria-label="Queue events">
+  <button data-event="idle">Reset</button><button data-event="started">Start</button>
+  <button data-event="pause">Pause</button><button data-event="ok">Complete</button><button data-event="error">Fail</button>
+</nav>
+<section class="panel"><h2 id="live-title">Current queue state</h2><div id="live" class="live"></div></section>
+<section class="panel"><h2>State comparison</h2><div id="matrix" class="matrix"></div></section>
+<p id="coverage" role="status"></p>
+<footer>Missing artwork stays marked as missing. This view does not supply a replacement asset.</footer>
+<script type="module" src="/view.mjs"></script>
+</html>

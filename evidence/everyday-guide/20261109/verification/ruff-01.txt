@@ -1,0 +1,13 @@
+PLW1510 `subprocess.run` without explicit `check` argument
+  --> tests\test_public_guidance.py:31:16
+   |
+29 |         # Source entry point avoids depending on a previously built bundle.
+30 |         code = "import runpy,sys; sys.path.insert(0,sys.argv.pop(1)); runpy.run_module('pixl',run_name='__main__')"
+31 |         return subprocess.run([sys.executable, "-c", code, str(Path(__file__).resolve().parents[1]), *map(str, args)], cwd=cwd, captur…
+   |                ^^^^^^^^^^^^^^
+32 |
+33 |     def test_canonical_state_is_not_arbitrary_wire_file_sha256(self):
+   |
+help: Add explicit `check=False`
+
+Found 1 error.

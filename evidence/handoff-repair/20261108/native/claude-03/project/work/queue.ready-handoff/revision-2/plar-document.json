@@ -1,0 +1,973 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Current refresh: re-read BRIEF.md line 9 and src/queue-view.ts; retain queue.ready ID while moving its destination to assets/ready-confirmed.png and promoting the explicitly required asymmetrical-arm check mark. Other states and Start unchanged."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "No executable UI entry point, renderer, importer, package manifest or runtime capture was supplied. Descriptor inspection does not verify rendered behavior, frame cropping, alpha compositing or integration.",
+      "No approved style reference exists. Ready remains the proposed representative sample; Working, Retry and Paused depend on its review before family expansion.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "The supplied SVG was inspected as source only. No artwork was generated, rendered, or visually accepted during allocation or refresh."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab"
+    },
+    {
+      "id": "source-map",
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"
+    }
+  ],
+  "assets": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "consumers": [
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.succeeded",
+          "usage": "Maps succeeded to the Ready image path and frame count."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared succeeded descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same succeeded descriptor; reuse one asset."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "stateAfter",
+          "usage": "An ok result transitions to succeeded, which resolves to the Ready visual."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/ready-confirmed.png",
+          "role": "Current Ready destination is missing; assets/ready.png is superseded. Existing attempts remain retained."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "cell_size_px",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF fixes logical status cells and display.cell agrees."
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+        },
+        {
+          "property": "pixel_art_readability",
+          "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+        },
+        {
+          "property": "panel_background",
+          "value": "#172336",
+          "authority": "observation",
+          "sources": [
+            "queue-view"
+          ],
+          "reason": "display.background is the supplied dark-panel color; use it for future previews."
+        },
+        {
+          "property": "color_direction",
+          "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+        },
+        {
+          "property": "existing_accent",
+          "value": "#70b9ed",
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+        },
+        {
+          "property": "approved_style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+        },
+        {
+          "property": "image_geometry",
+          "value": {
+            "width": 16,
+            "height": 16,
+            "frames": 1
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "Ready is static and occupies one 16 by 16 logical cell."
+        },
+        {
+          "property": "state_meaning",
+          "value": "Communicate success/completion, distinct from Working activity and Retry failure.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-state",
+            "queue-view"
+          ],
+          "reason": "The succeeded state is Ready, and the working loop must not look like success."
+        },
+        {
+          "property": "family_sample",
+          "value": "Use Ready as the representative sample; review its silhouette, edges and color treatment before expanding Working and Retry.",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF requires a representative status sample first but does not choose which status."
+        },
+        {
+          "property": "sample_motif",
+          "value": "Ready must visibly use a check mark with asymmetrical arms to convey successful completion.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Current BRIEF.md line 9 explicitly supplies the motif and asymmetric arms; this supersedes the earlier proposal."
+        },
+        {
+          "property": "paused_family_distinction",
+          "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+        }
+      ],
+      "delivery": {
+        "path": "assets/ready-confirmed.png",
+        "checks": [
+          "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+          "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+          "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+          "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+          "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+          "Review and record the representative sample decision before expanding the other status assets; source-bind the approved visual reference for later handoff.",
+          "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+          "Confirm Ready visibly uses a check mark with asymmetrical arms to convey successful completion (BRIEF.md line 9)."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+      ],
+      "next": "reassess_handoff (revision 2): the caller independently compared the revision-1 corrected packet (work/queue.ready-handoff/request-review.json, sha256 14eb7e3eb53a78e4393425fcd800b5355935adb1c5880e06ee2d1978befc47e9) with the sources and returned two findings; PIXL resolved both in the revision-2 packet work/queue.ready-handoff/revision-2/request-review.json (sha256 98fbd98d6635661747908d0359cec3d6a7c67e50c6d3c2afed3f569a88d3457d): the OWNER.md locator 'lines 8-9' is corrected to 'lines 8-10' (the cited clause 'art acceptance remain future work' is on line 10) and the ready-meaning basis now states explicitly that '(one arm clearly shorter than the other)' is the specialist's reading of the owner's 'asymmetrical arms', that an equal-arm V with unequal stroke weight is not a check mark, and that no arm ratio is imposed. Revision 1 is superseded for that locator fix and basis clarification but retained byte-for-byte; zero evidence diagnostics on revision 2. The historical contract, verdicts and PX2 state (revision 14, 7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81) are unchanged and the bounded Ready fixture delivery remains complete. Next: the caller inspects the revision-2 packet and records its review at work/queue.ready-handoff/caller-review.json; the owner/caller records the style-baseline decision (BRIEF.md line 5) and source-binds the approved Ready bytes before Working/Retry/Paused expansion; supply a graphical renderer to verify full/compact display and alpha compositing. No new request assigned; preserve pixellab-test fixture provenance and all old history.",
+      "evidence": [
+        {
+          "path": "work/queue.ready/request-review.json",
+          "note": "First Ready candidate request/criteria packet (sha256 c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a); prepared job first_request in .pixl/assets/queue.ready, not dispatched; provider_simulated=true; no image, review or integration."
+        },
+        {
+          "path": "work/queue.ready/caller-review.json",
+          "note": "Independent caller comparison of request-review.json (c9f17ecb...) against BRIEF/OWNER/source: consistent, no discrepancies; sha256 15b41fd2e544f838dcb12ca0211b9eddf80004711f104365995efa783216015a."
+        },
+        {
+          "path": "work/queue.ready/provider-response.json",
+          "note": "Actual pixellab-test create_image_pro_flash response and list_jobs: job_id controlled-create-0001, status queued, provider_simulated=true; no image. sha256 da8b5e2dfc905b6023042f4f7b14db6c6e9544db52582c6bacfe500042b553f9."
+        },
+        {
+          "path": "work/queue.ready/submission-comparison.json",
+          "note": "Caller comparison: submitted/echoed arguments equal reviewed provider-arguments.json (48a6a03c...). sha256 802280897255f352770ee556ecb71904448d53f0e3928ac524382b92545838cf."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/state.px",
+          "note": "PX2 store after observation: revision 3, hash 375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2; job first_request submitted; task 'task' open; output.ready has no candidate."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/plans/22e90a2a03fe453ac366e736fdc18f134ac8bfc4083656df4505326f11a528a7.json",
+          "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/caller-review.json",
+          "note": "Revised request-stage caller evidence; sha256 e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/caller-source-report.json",
+          "note": "Revised request-stage caller evidence; sha256 026c375b110b62b4b222d0fafa2452ecb2f80f2c7ef798e69ba2a4f8a84092cf. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/provider-response.json",
+          "note": "Revised request-stage caller evidence; sha256 ed8b4a969011dfa969e850f9db7175cb3558b5d12482fe0a376e1a4adf2ed4d1. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/submission-comparison.json",
+          "note": "Revised request-stage caller evidence; sha256 8957ed6df6e9adde809b09c29db7959d34762d5e823e9ccfa77ca0c37e689cc6. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-delivery/integration.json",
+          "note": "Both actual source consumers executed for ok -> succeeded; exact Ready PNG hash fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5. No graphical renderer acceptance."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/manifest.json",
+          "note": "Exact retained candidate native and 3x panel inspection, ready.delivery.review passes six unchanged criteria with complete viewed coverage; simulated evaluator fixture."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/state.px",
+          "note": "Revised sample task r.22e90a2a03fe453a.task done, nominated ready.retained, state revision 14 hash 7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81. Original failed job and old open superseded task remain retained. Family adoption and renderer checks remain open."
+        },
+        {
+          "path": "work/queue.ready-delivery/caller-review.json",
+          "note": "Independent caller source/contract and actual native/3x artifact review; six criteria pass; family style adoption and renderer acceptance deferred."
+        },
+        {
+          "path": "work/queue.ready-delivery/caller-integration.json",
+          "note": "Independent caller executed actual Node consumers and opened delivered artifact; exact candidate hash verified, no graphical renderer claimed."
+        },
+        {
+          "path": "work/queue.ready-handoff/request-review.json",
+          "note": "Reassessment-stage corrected proposal packet (sha256 14eb7e3eb53a78e4393425fcd800b5355935adb1c5880e06ee2d1978befc47e9): file-local citation bounds, request.provider/connection bound to work/queue.ready-revision/connection.json, historical_contract block. Does not replace the delivery contract or re-verdict ready.retained; no new request."
+        },
+        {
+          "path": "work/queue.ready-handoff/candidate-plan.json",
+          "note": "Corrected criteria proposal (sha256 a22f704dfd4432f2750cfacb7a37efda98925d1da40830981cb07da3a88baa3f); six historical criterion IDs retained; cool-blue dominance demoted to a specialist choice; no verdicts recorded against it."
+        },
+        {
+          "path": "work/queue.ready-handoff/candidate-plan-changes.json",
+          "note": "Explicit old-to-new criterion change log with source obligation, literal additions, discriminating alternative and disposition (sha256 a4629aa44561944a1e929232b4ea8b564f1ffacd7e6b931eb1cd422bf5ece40c)."
+        },
+        {
+          "path": "work/queue.ready-handoff/request-review-report.json",
+          "note": "pixl_request_review evidence report on the corrected packet: zero diagnostics, 44 resolved excerpts, production revision 14 hash 7a97831f... selection_current true (sha256 b762493f42fd14b122739f4ce584ef1582d06eda26bbaef023abdba2c765a341)."
+        },
+        {
+          "path": "work/queue.ready-handoff/specialist-assessment.json",
+          "note": "PIXL pixel-art assessment of the delivered fixture: measured pixel map, arm asymmetry, edge rhythm, 3x integer presentation, contrast diagnostic, viewed native/1x/3x views, family-extension guidance as proposals (sha256 9ed5ee872d6c493c67fea746f1345618b7b2fad48429e87ecd0bf62b8f3b892b). Not acceptance evidence."
+        },
+        {
+          "path": "work/queue.ready-handoff/integration-recheck.json",
+          "note": "Re-executed node verify-integration.mjs assets/ready-confirmed.png in this consumer: exit 0, same result object as the delivery-stage integration.json; not a renderer (sha256 fe5de0a3a1e00437581e4d94ee180e14aefd4706a4d06ac520823e3b750c44ed)."
+        },
+        {
+          "path": "work/queue.ready-handoff/revision-2/request-review.json",
+          "note": "Revision-2 corrected proposal packet (sha256 98fbd98d6635661747908d0359cec3d6a7c67e50c6d3c2afed3f569a88d3457d); supersedes revision 1 (14eb7e3e...) for the OWNER.md locator fix (lines 8-9 -> 8-10) and the ready-meaning basis clarification requested by the caller's independent comparison; request still bound to the historical provider-arguments.json / connection.json; no new request, no re-verdict."
+        },
+        {
+          "path": "work/queue.ready-handoff/revision-2/candidate-plan.json",
+          "note": "Revision-2 corrected criteria proposal (sha256 20d8112d2dcec2433370922cf969935e64a95e16e41970045d7d1c0439ab5b5e); identical to revision 1 (a22f704d...) except the ready-meaning basis, which now attributes '(one arm clearly shorter than the other)' to the specialist's reading of 'asymmetrical arms' and states that no arm ratio is imposed; schema-valid; no verdicts recorded against it."
+        },
+        {
+          "path": "work/queue.ready-handoff/revision-2/candidate-plan-changes.json",
+          "note": "Revision-2 change log (sha256 5e0707f90258b4196999fd0d992774be8a1607725e39b75ab874f0da84005c6f); revision-1 per-criterion comparisons retained plus a revision_2 section for the basis clarification and the packet locator fix."
+        },
+        {
+          "path": "work/queue.ready-handoff/revision-2/request-review-report.json",
+          "note": "pixl request-review evidence report on the revision-2 packet: zero diagnostics, 44 resolved excerpts, OWNER.md excerpt at lines 8-10, production revision 14 hash 7a97831f... selection_current true (sha256 f9618df512a391285cc84182d60921f351a720fd1343158ce61d92cb05e22987)."
+        }
+      ],
+      "production": {
+        "store": ".pixl/assets/queue.ready",
+        "task": "r.22e90a2a03fe453a.task",
+        "output": "r.22e90a2a03fe453a.output.ready"
+      }
+    },
+    {
+      "id": "queue.working",
+      "kind": "animated_status_sprite_strip",
+      "purpose": "Communicate ongoing work in both full and compact status cells without implying success.",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.running",
+          "usage": "Maps running to the Working image path and frame count."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared running descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same running descriptor; reuse one asset."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "stateAfter",
+          "usage": "A started result transitions to running, which resolves to the Working visual."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/working.png",
+          "role": "Required consumer destination is currently missing; no animation frames were supplied."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "cell_size_px",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF fixes logical status cells and display.cell agrees."
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+        },
+        {
+          "property": "pixel_art_readability",
+          "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+        },
+        {
+          "property": "panel_background",
+          "value": "#172336",
+          "authority": "observation",
+          "sources": [
+            "queue-view"
+          ],
+          "reason": "display.background is the supplied dark-panel color; use it for future previews."
+        },
+        {
+          "property": "color_direction",
+          "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+        },
+        {
+          "property": "existing_accent",
+          "value": "#70b9ed",
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+        },
+        {
+          "property": "approved_style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+        },
+        {
+          "property": "image_geometry",
+          "value": {
+            "width": 64,
+            "height": 16,
+            "frame_width": 16,
+            "frame_height": 16,
+            "frames": 4,
+            "layout": "horizontal"
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "Four horizontal frames in 16 by 16 cells imply a 64 by 16 image strip."
+        },
+        {
+          "property": "animation",
+          "value": {
+            "frame_duration_ms": 100,
+            "loop": true,
+            "nominal_cycle_ms": 400
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires a working loop with four frames at 100 ms each; a complete cycle totals 400 ms."
+        },
+        {
+          "property": "state_meaning",
+          "value": "Show activity, avoiding completion/success silhouettes or a success-like terminal pose.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-state",
+            "queue-view"
+          ],
+          "reason": "The brief explicitly separates Working from success."
+        },
+        {
+          "property": "motion_motif",
+          "value": "A four-phase rotating or pulsing activity mark is a proposal; choose its final form against the reviewed Ready sample.",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "The brief fixes timing and frame count but leaves the activity motif open."
+        },
+        {
+          "property": "renderer_frame_extraction",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "queue-view",
+            "source-map"
+          ],
+          "reason": "The supplied view returns descriptors; no frame crop implementation, anchor policy or executable renderer was supplied."
+        },
+        {
+          "property": "paused_family_distinction",
+          "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+        }
+      ],
+      "delivery": {
+        "path": "assets/working.png",
+        "checks": [
+          "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+          "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+          "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+          "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+          "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+          "Verify exactly four horizontal 16x16 frames and no unintended frame gaps.",
+          "Play the loop at 100 ms per frame and inspect the fourth-to-first transition for continuity and stable placement.",
+          "Compare Working against Ready at both scales and confirm activity cannot be mistaken for successful completion.",
+          "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry."
+        ]
+      },
+      "depends_on": [
+        "queue.ready"
+      ],
+      "questions": [
+        "Which activity motif and frame placement should be adopted after the representative Ready sample is reviewed?",
+        "Where is the executable renderer that crops and advances the four-frame strip?"
+      ],
+      "next": "After the Ready sample is reviewed and bound as a style reference, specify and produce the four-frame Working strip at assets/working.png, then review the timed loop in the actual renderer.",
+      "evidence": []
+    },
+    {
+      "id": "queue.retry",
+      "kind": "static_status_icon",
+      "purpose": "Show failed work and the Retry action in both full and compact status cells with a shape that remains distinguishable without color.",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.failed",
+          "usage": "Maps failed to the Retry label, current assets/error-retry.png path and one static frame."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared failed descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same failed descriptor; reuse one asset."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "stateAfter",
+          "usage": "An error result transitions to failed, which resolves to the Retry visual."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/error-retry.png",
+          "role": "Current required failure/retry destination is missing; the previous assets/retry.png target is superseded by the updated view."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "cell_size_px",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF fixes logical status cells and display.cell agrees."
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+        },
+        {
+          "property": "pixel_art_readability",
+          "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+        },
+        {
+          "property": "panel_background",
+          "value": "#172336",
+          "authority": "observation",
+          "sources": [
+            "queue-view"
+          ],
+          "reason": "display.background is the supplied dark-panel color; use it for future previews."
+        },
+        {
+          "property": "color_direction",
+          "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+        },
+        {
+          "property": "existing_accent",
+          "value": "#70b9ed",
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+        },
+        {
+          "property": "approved_style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+        },
+        {
+          "property": "image_geometry",
+          "value": {
+            "width": 16,
+            "height": 16,
+            "frames": 1
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "Retry is static and occupies one 16 by 16 logical cell."
+        },
+        {
+          "property": "state_meaning",
+          "value": "Signal failed work / retry and remain distinguishable from the other statuses without color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-state",
+            "queue-view"
+          ],
+          "reason": "BRIEF explicitly requires non-color differentiation for error/retry; failed maps to Retry."
+        },
+        {
+          "property": "retry_motif",
+          "value": "A return/retry arrow with a distinct silhouette is a proposal; avoid a shape that could be confused with the Working activity loop.",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "The exact error/retry symbol is not specified and must be judged alongside the other statuses."
+        },
+        {
+          "property": "paused_family_distinction",
+          "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+        },
+        {
+          "property": "destination_update",
+          "value": "The current failure visual destination is assets/error-retry.png; the established queue.retry asset identity and failure/retry purpose are unchanged.",
+          "authority": "observation",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "The updated brief states that the failure visual moved while its purpose stayed unchanged; statusVisuals.failed supplies the new path. Previous allocation bytes remain in PLAR history."
+        }
+      ],
+      "delivery": {
+        "path": "assets/error-retry.png",
+        "checks": [
+          "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+          "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+          "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+          "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+          "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+          "Inspect the silhouette and a grayscale comparison with Start, Ready and all Working frames at 1x and 3x to assess differentiation without color alone.",
+          "Verify the error-to-failed transition selects Retry in both full and compact consumers.",
+          "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+          "Confirm statusVisuals.failed resolves assets/error-retry.png; do not deliver new Retry art to the superseded assets/retry.png path."
+        ]
+      },
+      "depends_on": [
+        "queue.ready"
+      ],
+      "questions": [
+        "Which Retry silhouette best distinguishes failure/retry from the reviewed Ready sample and the planned Working motion?"
+      ],
+      "next": "After the Ready sample is reviewed and bound as a style reference, produce the distinct static Retry icon at assets/error-retry.png and assess its silhouette alongside Working and Paused.",
+      "evidence": []
+    },
+    {
+      "id": "queue.start",
+      "kind": "existing_vector_control",
+      "purpose": "Retain the existing idle Start control shared by both status consumers.",
+      "status": "deferred",
+      "consumers": [
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.idle",
+          "usage": "Maps idle to the Start image path and frame count."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared idle descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same idle descriptor; reuse one asset."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "QueueState",
+          "usage": "The idle state remains valid; stateAfter handles started/ok/error/pause transitions while the Start descriptor remains unchanged."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/start.svg",
+          "role": "Existing vector Start control to reuse unchanged; inspected as SVG source, not rendered UI."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "preserve_existing",
+          "value": "Keep assets/start.svg unchanged; no replacement production is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly preserves the existing vector Start control."
+        },
+        {
+          "property": "existing_geometry",
+          "value": {
+            "width": 16,
+            "height": 16,
+            "viewBox": "0 0 16 16",
+            "frames": 1
+          },
+          "authority": "observation",
+          "sources": [
+            "start-vector",
+            "queue-view"
+          ],
+          "reason": "The SVG dimensions/viewBox and idle descriptor are consistent with one 16x16 cell."
+        },
+        {
+          "property": "existing_shape_and_fill",
+          "value": {
+            "path": "M4 2L14 8L4 14Z",
+            "fill": "#70b9ed"
+          },
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The source defines a cool blue right-facing triangle without a background element."
+        },
+        {
+          "property": "deferral_reason",
+          "value": "Preserved existing asset; no new Start art is in the requested production scope.",
+          "authority": "observation",
+          "sources": [
+            "brief",
+            "queue-view",
+            "start-vector"
+          ],
+          "reason": "Deferred records deliberate reuse without claiming runtime integration was tested."
+        }
+      ],
+      "delivery": {
+        "path": "assets/start.svg",
+        "checks": [
+          "Keep the original SVG byte hash unchanged.",
+          "When a runnable UI is available, verify idle still resolves to the preserved Start control in both status consumers."
+        ]
+      },
+      "depends_on": [],
+      "questions": [],
+      "next": "Preserve the existing vector file and idle mapping during future status integration; no new Start asset is allocated.",
+      "evidence": []
+    },
+    {
+      "id": "queue.paused",
+      "kind": "static_status_icon",
+      "purpose": "Show paused work in both full and compact status cells, distinguishable from activity, completion and retry without color alone.",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "queue-state",
+          "symbol": "stateAfter",
+          "usage": "A pause result transitions to paused, which resolves to the Paused visual."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "QueueState",
+          "usage": "The updated queue state union includes paused."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.paused",
+          "usage": "Maps paused to the Paused label, assets/paused.png path and one static frame."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared paused descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same paused descriptor; reuse one asset."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/paused.png",
+          "role": "New required consumer destination is missing; no reusable Paused image was supplied."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "cell_size_px",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF fixes logical status cells and display.cell agrees."
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+        },
+        {
+          "property": "pixel_art_readability",
+          "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+        },
+        {
+          "property": "panel_background",
+          "value": "#172336",
+          "authority": "observation",
+          "sources": [
+            "queue-view"
+          ],
+          "reason": "display.background is the supplied dark-panel color; use it for future previews."
+        },
+        {
+          "property": "color_direction",
+          "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+        },
+        {
+          "property": "existing_accent",
+          "value": "#70b9ed",
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+        },
+        {
+          "property": "approved_style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+        },
+        {
+          "property": "image_geometry",
+          "value": {
+            "width": 16,
+            "height": 16,
+            "frames": 1
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "The updated Paused descriptor uses one frame in the existing 16 by 16 logical cell."
+        },
+        {
+          "property": "paused_family_distinction",
+          "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+        },
+        {
+          "property": "paused_motif",
+          "value": "A pair of pause bars is a proposed starting point; confirm the final silhouette is distinct from the reviewed Ready, Working and Retry family.",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "The updated brief specifies meaning and differentiation but leaves the exact pause motif open."
+        },
+        {
+          "property": "family_sample_dependency",
+          "value": "Use the reviewed Ready sample as the style baseline before producing Paused.",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The existing representative-sample-first approach is retained for the new family member; no approved sample exists yet."
+        }
+      ],
+      "delivery": {
+        "path": "assets/paused.png",
+        "checks": [
+          "Decode the delivered PNG and confirm one static 16x16 image.",
+          "Confirm a transparent background without an opaque matte; no fixed palette or binary-alpha constraint is specified.",
+          "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, clean edges and the shared cool blue accent.",
+          "Compare Paused with Ready, Retry and every Working frame at both scales, including grayscale/non-color comparison; require a clearly distinct silhouette.",
+          "Exercise pause -> paused through stateAfter and confirm both statusCell and compactStatus use assets/paused.png with the Paused label in an actual renderer.",
+          "Record visual review and integration evidence separately from mechanical checks; neither has been completed for Paused."
+        ]
+      },
+      "depends_on": [
+        "queue.ready"
+      ],
+      "questions": [
+        "Does the proposed pause-bar silhouette remain distinct from the reviewed Ready sample, planned Working loop and Retry icon without color alone?",
+        "Where is the executable renderer for the actual pause transition and display checks?"
+      ],
+      "next": "After the Ready sample is reviewed and bound as a style reference, produce the static 16x16 Paused icon at assets/paused.png and compare its silhouette with Working, Ready and Retry before integration.",
+      "evidence": []
+    }
+  ]
+}

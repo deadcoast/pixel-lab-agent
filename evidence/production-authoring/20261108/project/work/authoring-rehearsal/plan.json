@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "id": "authoring.rehearsal",
+  "project": "project",
+  "actor": "actor",
+  "baseline": "ready.retained",
+  "decisions": [
+    "render.decision.style"
+  ],
+  "knowledge": [],
+  "stages": [
+    {
+      "id": "working",
+      "name": "Authoring rehearsal: Working status asset",
+      "phase": "production",
+      "kind": "animation",
+      "contract": "family.working.contract",
+      "needs": [
+        "live.seed.output"
+      ],
+      "criteria": [
+        {
+          "id": "criterion0",
+          "check": "Decode PNG at64x16; four horizontal16x16 frames with100ms duration.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion1",
+          "check": "View actual Working at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Four horizontal16x16 frames at100ms/frame; activity must not look like success. Review every frame and actual loop,loop boundary,anchor and volume stability.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion2",
+          "check": "Exercise backend transition and both actual consumers using assets/working.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Review actual100ms loop and frame boundaries.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "retry",
+      "name": "Authoring rehearsal: Retry status asset",
+      "phase": "production",
+      "kind": "sprite",
+      "contract": "family.retry.contract",
+      "needs": [],
+      "criteria": [
+        {
+          "id": "criterion0",
+          "check": "Decode PNG at16x16; one static16x16 frame.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion1",
+          "check": "View actual Retry at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Static16x16 error/retry meaning; distinguish without color alone.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion2",
+          "check": "Exercise backend transition and both actual consumers using assets/error-retry.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Confirm static behavior.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "paused",
+      "name": "Authoring rehearsal: Paused status asset",
+      "phase": "production",
+      "kind": "sprite",
+      "contract": "family.paused.contract",
+      "needs": [],
+      "criteria": [
+        {
+          "id": "criterion0",
+          "check": "Decode PNG at16x16; one static16x16 frame.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion1",
+          "check": "View actual Paused at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Static16x16 pause meaning; distinguish from activity,completion and retry without color alone.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "criterion2",
+          "check": "Exercise backend transition and both actual consumers using assets/paused.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Confirm static behavior.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.assessment",
+            "render.source.caller"
+          ]
+        }
+      ]
+    }
+  ],
+  "delivery": {
+    "name": "Connected authoring rehearsal family",
+    "members": [
+      "r.22e90a2a03fe453a.output.ready",
+      "working",
+      "retry",
+      "paused"
+    ],
+    "destinations": [
+      "render.choice.destination"
+    ],
+    "criteria": [
+      {
+        "id": "criterion0",
+        "check": "Compare all4actual members at1x/3x nearest on#172336 against exact Ready baseline: coherent deliberate pixel treatment,readable visual weight,perceptible cool-blue accent and transparency. Inspect Working100ms playback including loop boundary. No exact palette,alpha,stroke,margins or copied completion motif.",
+        "domain": "continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.assessment",
+          "render.source.caller"
+        ]
+      },
+      {
+        "id": "criterion1",
+        "check": "View actual Ready,Working(all4frames/playback),Retry,Paused together at1x/3x including grayscale/non-color comparison: Working activity never success; Retry and Paused distinct by shape/structure without color alone. Preserve existing Start separately.",
+        "domain": "continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.assessment",
+          "render.source.caller"
+        ]
+      },
+      {
+        "id": "criterion2",
+        "check": "Exercise all backend transitions through both actual consumers using exact retained family files; verify labels,sheet slicing,timing,nearest,alpha and recorded integer placement against screenshot. Resolve current viewport/screenshot-coordinate failure before overall destination acceptance.",
+        "domain": "engine",
+        "mode": "live",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.assessment",
+          "render.source.caller"
+        ]
+      }
+    ]
+  }
+}

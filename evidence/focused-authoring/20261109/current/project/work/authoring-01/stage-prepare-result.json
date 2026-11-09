@@ -1,0 +1,62 @@
+{
+  "call": "pixl_stage_prepare",
+  "store": ".pixl/assets/queue.ready",
+  "expect": "1903038503a87e5c7a17ad8f4722bd951e10eadd6878f5b245f46c87392efef0",
+  "plan": "authoring-01.plan",
+  "stage": "working",
+  "job": "authoring-01.working.join-01",
+  "packet_file": "work/authoring-01/stage-packet.json",
+  "packet_file_sha256": "892a94d7e2f7d214c9189e0f8c0ba7bd87b9196a1b1b0418b400874b1b84eeba",
+  "packet_file_sha256_note": "sha256 of the file bytes as written (CRLF line endings on Windows). The builder's in-memory LF rendering hashed 71428626d17d299d1d143b009fb2e3657cfae515254ddf02399abffbd4dc9175; the JSON content is identical and compares equal to the server-retained stage-request file 84dcf243f2cd22b69fa7ac906bfc33e7abd55bf113c2cc6db7566cb87bd4b1f8.",
+  "packet_submitted_identical_to_file": true,
+  "result_summary": {
+    "revision": 88,
+    "hash": "3484cf385c91c8c28fa04316fb2c7c5b52c740178b505ccbd88631f57c893c9b",
+    "state": ".pixl/assets/queue.ready/state.px",
+    "already_prepared": false,
+    "remote_executed": false,
+    "job": {
+      "id": "authoring-01.working.join-01",
+      "durable": true,
+      "state": "prepared",
+      "remote_id": null,
+      "intent_sha256": "1be8269529ddd615a33d430deeee4ed9bab8788b37f72fd3d9bbe76b2f5e7450",
+      "stale": [],
+      "blockers": [],
+      "next_action_reported_by_adapter": "dispatch",
+      "dispatch_performed": false,
+      "request": {
+        "provider": "pixellab-official-mcp",
+        "tool": "mcp__pixellab__pixelart_workbench",
+        "schema_sha256": "b770a5cb286033dea3499a989155bf0337982d465624abd725c5dfa3976a5d45",
+        "request_sha256": "c67c972dae27b8374320df51eb7e11c44f282177daceea2f060e49af13b2b362",
+        "prepared_at": "2026-11-09T08:32:59.260592+00:00",
+        "policy": "caller_schema",
+        "cached_assessment": {"advisory": true, "source": null, "retrieved_at": null, "status": "not_applicable", "findings": []},
+        "arguments_argv_shape": ["join", "<data:image/png;base64 seed x4, 310 chars each>", "--as", "sheet", "--columns", "4"],
+        "arguments_mode": "low",
+        "full_request_retained_in": "the durable job journal under .pixl/assets/queue.ready/jobs (see jobs-after-update.json) and the stage packet X record below"
+      },
+      "context": {
+        "task": "authoring-01.working.task",
+        "outputs": ["authoring-01.working.output"],
+        "task_sha256": "017282f994d165c6924304db8fd8407af212ebad71d7296c369b2eb8eba0838f"
+      },
+      "selection_bindings_at_prepare": [
+        {
+          "input": "authoring-01.working.selection",
+          "asset_id": "queue.working",
+          "plar_path": "authoring-plar.txt",
+          "requirements_hash": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027",
+          "current_requirements_hash": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027",
+          "status": "current"
+        }
+      ],
+      "stage_packet_record": "stage.request.84dcf243f2cd22b69fa7ac906bfc33e7abd55bf113c2cc6d",
+      "events": [],
+      "candidates": []
+    },
+    "evaluation_observation": {"kind": "caller_requirement_updated", "path": "AUTHORING-UPDATE.md", "asset": "queue.working"}
+  },
+  "observation": "State advanced 86 -> 88 (input/packet attachment, then durable job preparation). The prepared request is retained; it was not dispatched and no remote call was made. Immediately after this first successful preparation the server reported the declared caller requirement update event for queue.working."
+}

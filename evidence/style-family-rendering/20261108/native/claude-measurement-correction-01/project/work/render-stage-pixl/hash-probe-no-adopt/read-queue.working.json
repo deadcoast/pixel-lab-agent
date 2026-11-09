@@ -1,0 +1,676 @@
+{
+  "hash": "87f0d46c192355900e5d68904cb32e673332e3ab55be158f31b90bd45fe72d91",
+  "project_root": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Current refresh: re-read BRIEF.md line 9 and src/queue-view.ts; retain queue.ready ID while moving its destination to assets/ready-confirmed.png and promoting the explicitly required asymmetrical-arm check mark. Other states and Start unchanged.",
+      "Render stage: ran renderer/capture.mjs (HeadlessChrome 156, DPR 1) against the actual src/queue.ts and src/queue-view.ts for every statusVisuals state in both statusCell and compactStatus at 1x and 3x; checked identities, canvas pixels, alpha compositing and nearest blocks with renderer/check.py; inspected the retained PNGs visually."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "The representative renderer in renderer/ is a scoped browser fixture that imports the real view modules; it is not the production UI, and its headless screenshot is laid out at the 1280 px window width while DOM bounds are measured at the 1262 px viewport, so renderer/check.py reports a 9 px horizontal offset (see queue.ready evidence). Production-host display acceptance remains unverified.",
+      "Style baseline: the delivered Ready fixture is a controlled pixellab-test sample (provider_simulated=true). Adopting it as the family style reference establishes edge treatment, stroke weight, fill/colour role, margin and alpha policy only; it does not establish the other members' silhouettes, motion or meaning, nor actual PixelLab output quality.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "Working, Retry and Paused have no artwork, no production store, no candidate and no review; timed loop playback at 100 ms can only be observed interactively (node renderer/server.mjs) because the capture samples frame boundaries, not real-time playback."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\BRIEF.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\assets\\start.svg"
+    },
+    {
+      "id": "renderer-view",
+      "path": "renderer/view.mjs",
+      "sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+      "binding": "current",
+      "observed_sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-01\\project\\work\\render-stage-pixl\\hash-probe-no-adopt\\renderer\\view.mjs"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.working",
+      "kind": "animated_status_sprite_strip",
+      "purpose": "Communicate ongoing work in both full and compact status cells without implying success.",
+      "status": "todo",
+      "next": "After the style decision is saved: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer/capture.mjs --out work/NEW_DIR and renderer/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer/server.mjs.",
+      "issues": [
+        "missing Required consumer destination is currently missing; no animation frames were supplied.: assets/working.png",
+        "missing evidence: work/render-pixl-01/render.json"
+      ],
+      "questions": [
+        "Which activity motif and frame placement should be adopted under the Ready baseline (specialist proposal: rotating 3- or 4-segment arc, no frame containing a check-like diagonal pair, constant footprint box)?"
+      ]
+    }
+  ],
+  "dependency_issues": {
+    "queue.ready": [
+      "missing evidence: work/queue.ready/request-review.json",
+      "missing evidence: work/queue.ready/caller-review.json",
+      "missing evidence: work/queue.ready/provider-response.json",
+      "missing evidence: work/queue.ready/submission-comparison.json",
+      "missing evidence: work/queue.ready-revision/caller-review.json",
+      "missing evidence: work/queue.ready-revision/caller-source-report.json",
+      "missing evidence: work/queue.ready-revision/provider-response.json",
+      "missing evidence: work/queue.ready-revision/submission-comparison.json",
+      "missing evidence: work/queue.ready-delivery/integration.json",
+      "missing evidence: work/queue.ready-delivery/caller-review.json",
+      "missing evidence: work/queue.ready-delivery/caller-integration.json",
+      "missing evidence: work/queue.ready-reassessment/request-review.json",
+      "missing evidence: work/queue.ready-reassessment/candidate-plan.json",
+      "missing evidence: work/queue.ready-reassessment/contract-correction.json",
+      "missing evidence: work/queue.ready-reassessment/art-assessment.json",
+      "missing evidence: work/queue.ready-reassessment/request-review-report.json",
+      "missing evidence: work/queue.ready-reassessment/integration.json",
+      "missing evidence: work/queue.ready-reassessment/caller-review.json",
+      "missing evidence: .pixl/handoffs/193d971414213cf407e19fa244b3f1f9f51f593c808f7236c7b41b2c8388427c.json",
+      "missing evidence: work/render-pixl-01/render.json",
+      "missing evidence: work/render-pixl-01/destination.png",
+      "missing evidence: work/render-stage-pixl/check-render-pixl-01.json",
+      "missing evidence: work/render-stage-pixl/measurements.json",
+      "missing evidence: work/render-stage-pixl/render-review.json"
+    ]
+  },
+  "asset": {
+    "id": "queue.working",
+    "kind": "animated_status_sprite_strip",
+    "purpose": "Communicate ongoing work in both full and compact status cells without implying success.",
+    "status": "todo",
+    "consumers": [
+      {
+        "source": "queue-view",
+        "symbol": "statusVisuals.running",
+        "usage": "Maps running to the Working image path and frame count."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "statusCell",
+        "usage": "Full status consumer returns the shared running descriptor."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "compactStatus",
+        "usage": "Compact status consumer returns the same running descriptor; reuse one asset."
+      },
+      {
+        "source": "queue-state",
+        "symbol": "stateAfter",
+        "usage": "A started result transitions to running, which resolves to the Working visual."
+      }
+    ],
+    "existing": [
+      {
+        "path": "assets/working.png",
+        "role": "Required consumer destination is currently missing; no animation frames were supplied."
+      }
+    ],
+    "requirements": [
+      {
+        "property": "cell_size_px",
+        "value": [
+          16,
+          16
+        ],
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF fixes logical status cells and display.cell agrees."
+      },
+      {
+        "property": "background",
+        "value": "transparent",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+      },
+      {
+        "property": "pixel_art_readability",
+        "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+      },
+      {
+        "property": "panel_background",
+        "value": "#172336",
+        "authority": "observation",
+        "sources": [
+          "queue-view"
+        ],
+        "reason": "display.background is the supplied dark-panel color; use it for future previews."
+      },
+      {
+        "property": "color_direction",
+        "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+      },
+      {
+        "property": "existing_accent",
+        "value": "#70b9ed",
+        "authority": "observation",
+        "sources": [
+          "start-vector"
+        ],
+        "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+      },
+      {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      {
+        "property": "image_geometry",
+        "value": {
+          "width": 64,
+          "height": 16,
+          "frame_width": 16,
+          "frame_height": 16,
+          "frames": 4,
+          "layout": "horizontal"
+        },
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "Four horizontal frames in 16 by 16 cells imply a 64 by 16 image strip."
+      },
+      {
+        "property": "animation",
+        "value": {
+          "frame_duration_ms": 100,
+          "loop": true,
+          "nominal_cycle_ms": 400
+        },
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-view"
+        ],
+        "reason": "BRIEF requires a working loop with four frames at 100 ms each; a complete cycle totals 400 ms."
+      },
+      {
+        "property": "state_meaning",
+        "value": "Show activity, avoiding completion/success silhouettes or a success-like terminal pose.",
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "queue-state",
+          "queue-view"
+        ],
+        "reason": "The brief explicitly separates Working from success."
+      },
+      {
+        "property": "motion_motif",
+        "value": "A four-phase rotating or pulsing activity mark is a proposal; choose its final form against the reviewed Ready sample.",
+        "authority": "proposal",
+        "sources": [],
+        "reason": "The brief fixes timing and frame count but leaves the activity motif open."
+      },
+      {
+        "property": "renderer_frame_extraction",
+        "value": {
+          "module": "renderer/view.mjs paint()",
+          "strip": "horizontal; frame i is source rect [i*16, 0, 16, 16]",
+          "frame_index": "floor(max(elapsed,0) / 100) % 4",
+          "geometry_gate": "drawn only when image width == 16*frames and height == 16; otherwise 'Wrong sheet size' is shown and the canvas stays panel-coloured",
+          "sampling": "imageSmoothingEnabled=false, CSS image-rendering: pixelated, destination 16*scale square",
+          "capture_timeline": "frame-boundary samples at 0, 99, 100, 199, 200, 299, 300, 399 and 400 ms (expected frames 0,0,1,1,2,2,3,3,0) as 1x statusCell canvases; real-time loop playback is only observable interactively"
+        },
+        "authority": "observation",
+        "sources": [
+          "renderer-view",
+          "queue-view"
+        ],
+        "reason": "Observed in the representative renderer fixture; a production host may crop differently, so retain this as the fixture's behaviour."
+      },
+      {
+        "property": "paused_family_distinction",
+        "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+      }
+    ],
+    "delivery": {
+      "path": "assets/working.png",
+      "checks": [
+        "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+        "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+        "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+        "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+        "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+        "Verify exactly four horizontal 16x16 frames and no unintended frame gaps.",
+        "Play the loop at 100 ms per frame and inspect the fourth-to-first transition for continuity and stable placement.",
+        "Compare Working against Ready at both scales and confirm activity cannot be mistaken for successful completion.",
+        "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry."
+      ]
+    },
+    "depends_on": [
+      "queue.ready"
+    ],
+    "questions": [
+      "Which activity motif and frame placement should be adopted under the Ready baseline (specialist proposal: rotating 3- or 4-segment arc, no frame containing a check-like diagonal pair, constant footprint box)?"
+    ],
+    "next": "After the style decision is saved: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer/capture.mjs --out work/NEW_DIR and renderer/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer/server.mjs.",
+    "evidence": [
+      {
+        "path": "work/render-pixl-01/render.json",
+        "note": "Renderer observation for this member's transition: descriptor resolved with label and path, asset 404 -> 'Missing asset' shown; no view invented, no candidate exists."
+      }
+    ]
+  },
+  "dependencies": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "consumers": [
+        {
+          "source": "queue-view",
+          "symbol": "statusVisuals.succeeded",
+          "usage": "Maps succeeded to the Ready image path and frame count."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "statusCell",
+          "usage": "Full status consumer returns the shared succeeded descriptor."
+        },
+        {
+          "source": "queue-view",
+          "symbol": "compactStatus",
+          "usage": "Compact status consumer returns the same succeeded descriptor; reuse one asset."
+        },
+        {
+          "source": "queue-state",
+          "symbol": "stateAfter",
+          "usage": "An ok result transitions to succeeded, which resolves to the Ready visual."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/ready-confirmed.png",
+          "role": "Delivered Ready sample (candidate ready.retained, sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5, 16x16, one frame) from controlled pixellab-test job controlled-create-0002; assets/ready.png is superseded. Rendered by both consumers for ok -> succeeded in renderer/ (work/render-pixl-01). Earlier attempts remain retained."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "cell_size_px",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF fixes logical status cells and display.cell agrees."
+        },
+        {
+          "property": "background",
+          "value": "transparent",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+        },
+        {
+          "property": "pixel_art_readability",
+          "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+        },
+        {
+          "property": "panel_background",
+          "value": "#172336",
+          "authority": "observation",
+          "sources": [
+            "queue-view"
+          ],
+          "reason": "display.background is the supplied dark-panel color; use it for future previews."
+        },
+        {
+          "property": "color_direction",
+          "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+        },
+        {
+          "property": "existing_accent",
+          "value": "#70b9ed",
+          "authority": "observation",
+          "sources": [
+            "start-vector"
+          ],
+          "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+        },
+        {
+          "property": "approved_style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+        },
+        {
+          "property": "image_geometry",
+          "value": {
+            "width": 16,
+            "height": 16,
+            "frames": 1
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-view"
+          ],
+          "reason": "Ready is static and occupies one 16 by 16 logical cell."
+        },
+        {
+          "property": "state_meaning",
+          "value": "Communicate success/completion, distinct from Working activity and Retry failure.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "queue-state",
+            "queue-view"
+          ],
+          "reason": "The succeeded state is Ready, and the working loop must not look like success."
+        },
+        {
+          "property": "family_sample",
+          "value": "Use Ready as the representative sample; review its silhouette, edges and color treatment before expanding Working and Retry.",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "BRIEF requires a representative status sample first but does not choose which status."
+        },
+        {
+          "property": "sample_motif",
+          "value": "Ready must visibly use a check mark with asymmetrical arms to convey successful completion.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Current BRIEF.md line 9 explicitly supplies the motif and asymmetric arms; this supersedes the earlier proposal."
+        },
+        {
+          "property": "paused_family_distinction",
+          "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+        },
+        {
+          "property": "renderer_display_observation",
+          "value": {
+            "renderer": "renderer/ (HeadlessChrome 156, devicePixelRatio 1)",
+            "consumers": [
+              "statusCell",
+              "compactStatus"
+            ],
+            "scales": [
+              1,
+              3
+            ],
+            "observed": "ok -> succeeded -> label Ready with assets/ready-confirmed.png in both consumers; canvases are exact alpha composites on #172336 with nearest 3x3 blocks (zero difference from an independent Pillow composite); canvases sit vertically centred on the row axis with a 12 px (full) / 6 px (compact) CSS gap to the label; the SVG Start control is browser-rasterised with anti-aliasing (9 tones at 1x, smooth re-rasterisation at 3x) beside the hard-edged Ready mark."
+          },
+          "authority": "observation",
+          "sources": [
+            "renderer-view",
+            "queue-view",
+            "queue-state"
+          ],
+          "reason": "Measured in work/render-pixl-01 and work/render-stage-pixl/measurements.json; this is the representative fixture's behaviour, not production-host acceptance."
+        }
+      ],
+      "delivery": {
+        "path": "assets/ready-confirmed.png",
+        "checks": [
+          "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+          "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+          "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+          "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition. Status: observed in renderer/ for ok -> succeeded (label Ready, assets/ready-confirmed.png, both consumers, 1x and 3x; work/render-pixl-01/render.json). Production-host display remains unverified.",
+          "Record visual review and consumer integration evidence separately from mechanical checks. Status: six historical verdicts pass (ready.delivery.review), specialist art assessment and render-stage browser review retained; mechanical/visual/integration evidence are linked separately in this row's evidence.",
+          "Review and record the representative sample decision before expanding the other status assets; source-bind the approved visual reference for later handoff.",
+          "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+          "Confirm Ready visibly uses a check mark with asymmetrical arms to convey successful completion (BRIEF.md line 9)."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Caller style decision pending at proposal time: does the delivered Ready sample become the family style baseline (recommended by the specialist in work/render-stage-pixl/render-review.json)?"
+      ],
+      "next": "render_stage: browser capture work/render-pixl-01 (errors [], destination.png 1d13cde1..., eight views pixel-identical to the caller's capture) and renderer/check.py (95/104 pass; the 9 failures are the screenshot-layout offset dx=9 explained in work/render-stage-pixl/render-review.json, not a consumer defect) retained. Next: after the caller's style decision is saved in this row, keep status in_progress until production-host display is verified or the owner labels integration; do not reopen the done sample task; new Ready generation only under explicit new authorization against the corrected packet (work/queue.ready-reassessment/request-review.json).",
+      "evidence": [
+        {
+          "path": "work/queue.ready/request-review.json",
+          "note": "First Ready candidate request/criteria packet (sha256 c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a); prepared job first_request in .pixl/assets/queue.ready, not dispatched; provider_simulated=true; no image, review or integration."
+        },
+        {
+          "path": "work/queue.ready/caller-review.json",
+          "note": "Independent caller comparison of request-review.json (c9f17ecb...) against BRIEF/OWNER/source: consistent, no discrepancies; sha256 15b41fd2e544f838dcb12ca0211b9eddf80004711f104365995efa783216015a."
+        },
+        {
+          "path": "work/queue.ready/provider-response.json",
+          "note": "Actual pixellab-test create_image_pro_flash response and list_jobs: job_id controlled-create-0001, status queued, provider_simulated=true; no image. sha256 da8b5e2dfc905b6023042f4f7b14db6c6e9544db52582c6bacfe500042b553f9."
+        },
+        {
+          "path": "work/queue.ready/submission-comparison.json",
+          "note": "Caller comparison: submitted/echoed arguments equal reviewed provider-arguments.json (48a6a03c...). sha256 802280897255f352770ee556ecb71904448d53f0e3928ac524382b92545838cf."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/state.px",
+          "note": "PX2 store after observation: revision 3, hash 375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2; job first_request submitted; task 'task' open; output.ready has no candidate."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/plans/22e90a2a03fe453ac366e736fdc18f134ac8bfc4083656df4505326f11a528a7.json",
+          "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/caller-review.json",
+          "note": "Revised request-stage caller evidence; sha256 e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/caller-source-report.json",
+          "note": "Revised request-stage caller evidence; sha256 026c375b110b62b4b222d0fafa2452ecb2f80f2c7ef798e69ba2a4f8a84092cf. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/provider-response.json",
+          "note": "Revised request-stage caller evidence; sha256 ed8b4a969011dfa969e850f9db7175cb3558b5d12482fe0a376e1a4adf2ed4d1. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-revision/submission-comparison.json",
+          "note": "Revised request-stage caller evidence; sha256 8957ed6df6e9adde809b09c29db7959d34762d5e823e9ccfa77ca0c37e689cc6. provider_simulated=true; no image/art/integration acceptance."
+        },
+        {
+          "path": "work/queue.ready-delivery/integration.json",
+          "note": "Both actual source consumers executed for ok -> succeeded; exact Ready PNG hash fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5. No graphical renderer acceptance."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/manifest.json",
+          "note": "Exact retained candidate native and 3x panel inspection, ready.delivery.review passes six unchanged criteria with complete viewed coverage; simulated evaluator fixture."
+        },
+        {
+          "path": ".pixl/assets/queue.ready/state.px",
+          "note": "Revised sample task r.22e90a2a03fe453a.task done, nominated ready.retained, state revision 14 hash 7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81. Original failed job and old open superseded task remain retained. Family adoption and renderer checks remain open."
+        },
+        {
+          "path": "work/queue.ready-delivery/caller-review.json",
+          "note": "Independent caller source/contract and actual native/3x artifact review; six criteria pass; family style adoption and renderer acceptance deferred."
+        },
+        {
+          "path": "work/queue.ready-delivery/caller-integration.json",
+          "note": "Independent caller executed actual Node consumers and opened delivered artifact; exact candidate hash verified, no graphical renderer claimed."
+        },
+        {
+          "path": "work/queue.ready-reassessment/request-review.json",
+          "note": "Reassessment-stage corrected future contract packet (sha256 bef24027acbd0eb223cb96f2576823f9c17921c7a1435659bf848371670fe405); 0 request-review diagnostics; binds the same historical provider arguments fd0fa324... and connection e137fb43...; not retroactive; dispatch not authorized."
+        },
+        {
+          "path": "work/queue.ready-reassessment/candidate-plan.json",
+          "note": "Corrected criteria (sha256 f5e23c7c9673a60dfda42418913cf2005a7eecc67ac39b25d1a33e81a35a33d8): 6 owner/consumer criteria incl. split transparent-exterior-measured/transparent-background-visual, 2 scoped proposals; no verdicts recorded against it."
+        },
+        {
+          "path": "work/queue.ready-reassessment/contract-correction.json",
+          "note": "Old-to-new correction ledger C01-C18 (sha256 6a42dd118bdcc5e78f7883602d5b65130fa9e5e585854973ce76e4fdfea300ad): citation bounds, unresolved locators, OWNER.md 2-12 -> 2-11, mixed review route split, 'dominant' demoted to proposal, stale resume/roles, dropped 7th criterion judged justified and kept as diagnostic, workspace paths; historical contract/verdicts/candidate unchanged."
+        },
+        {
+          "path": "work/queue.ready-reassessment/art-assessment.json",
+          "note": "Specialist pixel-art assessment of delivered fixture fc5e43ae... (sha256 576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d): viewed retained views 0000-0002 and grayscale diagnostics; measured arm geometry/stroke/contrast with coordinate convention; owner requirements vs observations vs expert choices; family recommendations as proposals."
+        },
+        {
+          "path": "work/queue.ready-reassessment/request-review-report.json",
+          "note": "pixl_request_review CLI report on the corrected packet (sha256 4c22d45bbdd82f7b1072883780695644aa243d78d287dc10a61e9e2ed065d3ec): 10 source bindings current, all excerpts resolved, diagnostics []."
+        },
+        {
+          "path": "work/queue.ready-reassessment/integration.json",
+          "note": "Recheck: node verify-integration.mjs assets/ready-confirmed.png exit 0 on Node v25.8.1 in this workspace (sha256 a2dbbed0c218496164cd6739985afdd5a8c578d7de51b6d725799050d1bf8106); stdout JSON equals the retained delivery-stage result; source-module execution only, no graphical renderer."
+        },
+        {
+          "path": "work/queue.ready-reassessment/caller-review.json",
+          "note": "Independent caller comparison of the corrected reassessment packet bef24027... against BRIEF.md, src/queue.ts, src/queue-view.ts, assets/start.svg and the stage files: consistent; all cited line bounds, measurements and 0 request-review diagnostics verified; historical files re-hashed unchanged; no provider call. sha256 26cc65d4f7eaad7cffb3e296a59a23620ca8daf52353a38a5b15c6ddf9e87fdc. Not art, style or renderer acceptance."
+        },
+        {
+          "path": ".pixl/handoffs/193d971414213cf407e19fa244b3f1f9f51f593c808f7236c7b41b2c8388427c.json",
+          "note": "Exact resumable pixl_plar_handoff snapshot for the reassessment stage: state 7a97831f... revision 14, requirements_hash 806a1f2d..., derived next review_delivery, specialist details status delivered (specialist scope). Snapshot selection hash ee978ad9... predates this evidence link; requirements and state identity unchanged."
+        },
+        {
+          "path": "work/render-pixl-01/render.json",
+          "note": "Specialist browser capture (sha256 881c11dc363de46d376fee60a8a8d2267b2db8a6fd194597f9b0c2d68b5983d7): HeadlessChrome 156, DPR 1, errors [], missing working/paused/error-retry; eight available views; served/renderer file hashes bound. Not a visual verdict."
+        },
+        {
+          "path": "work/render-pixl-01/destination.png",
+          "note": "Headless screenshot 1280x1000 (sha256 1d13cde1c01a24a91901382b2669b4ce34108f8751b92b13a14cc7f53036317e); byte-identical to work/render-caller-01/destination.png."
+        },
+        {
+          "path": "work/render-stage-pixl/check-render-pixl-01.json",
+          "note": "renderer/check.py stdout (sha256 147abf86e439fe259c484e81c320e6428d5e5a5a4fe1fc08bd356f4db6f48d97): status fail, 95 of 104 observations pass; failures are 'screenshot and observed viewport dimensions' and eight 'screenshot matches canvas pixels'. Diagnosed as a capture-layout offset (dx=+9, dy=0, exact match) not a rendering defect."
+        },
+        {
+          "path": "work/render-stage-pixl/measurements.json",
+          "note": "Independent Pillow measurements (sha256 6147a1063f12f6ff77ddec85e57b21331b70997aca449873bfc2ec0aff6b74e6): exact-match offsets, zero-difference composites, label gaps, Start SVG rasterisation, fixture geometry/contrast."
+        },
+        {
+          "path": "work/render-stage-pixl/render-review.json",
+          "note": "Specialist render-stage review: per-view observations with hashes, checker diagnosis, prior-assessment fact verification, style recommendation with carried/not-established properties, family inventory. Recommendation only; the caller owns the style decision."
+        }
+      ],
+      "production": {
+        "store": ".pixl/assets/queue.ready",
+        "task": "r.22e90a2a03fe453a.task",
+        "output": "r.22e90a2a03fe453a.output.ready"
+      },
+      "issues": [
+        "missing evidence: work/queue.ready/request-review.json",
+        "missing evidence: work/queue.ready/caller-review.json",
+        "missing evidence: work/queue.ready/provider-response.json",
+        "missing evidence: work/queue.ready/submission-comparison.json",
+        "missing evidence: work/queue.ready-revision/caller-review.json",
+        "missing evidence: work/queue.ready-revision/caller-source-report.json",
+        "missing evidence: work/queue.ready-revision/provider-response.json",
+        "missing evidence: work/queue.ready-revision/submission-comparison.json",
+        "missing evidence: work/queue.ready-delivery/integration.json",
+        "missing evidence: work/queue.ready-delivery/caller-review.json",
+        "missing evidence: work/queue.ready-delivery/caller-integration.json",
+        "missing evidence: work/queue.ready-reassessment/request-review.json",
+        "missing evidence: work/queue.ready-reassessment/candidate-plan.json",
+        "missing evidence: work/queue.ready-reassessment/contract-correction.json",
+        "missing evidence: work/queue.ready-reassessment/art-assessment.json",
+        "missing evidence: work/queue.ready-reassessment/request-review-report.json",
+        "missing evidence: work/queue.ready-reassessment/integration.json",
+        "missing evidence: work/queue.ready-reassessment/caller-review.json",
+        "missing evidence: .pixl/handoffs/193d971414213cf407e19fa244b3f1f9f51f593c808f7236c7b41b2c8388427c.json",
+        "missing evidence: work/render-pixl-01/render.json",
+        "missing evidence: work/render-pixl-01/destination.png",
+        "missing evidence: work/render-stage-pixl/check-render-pixl-01.json",
+        "missing evidence: work/render-stage-pixl/measurements.json",
+        "missing evidence: work/render-stage-pixl/render-review.json"
+      ]
+    }
+  ],
+  "visual_references": [],
+  "requirements_hash": "063fff5213701e45cd54fcba7f22b47a4d625bdb2077ef5746eec6a6d35c10de",
+  "production": {
+    "store": ".pixl/assets/queue.working",
+    "link_status": "unlinked",
+    "status": "not_started",
+    "next_action": "prepare",
+    "new_request_allowed": true
+  }
+}

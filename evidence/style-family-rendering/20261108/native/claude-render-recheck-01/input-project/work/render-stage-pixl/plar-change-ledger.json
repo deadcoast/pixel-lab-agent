@@ -1,0 +1,561 @@
+{
+  "version": 1,
+  "variant": "adopt (specialist recommendation)",
+  "scope": "Proposed pixl_plar_save document for plar.txt; NOT saved. Entries prefixed U are unconditional refreshes; entries prefixed A apply only if the caller adopts the delivered Ready sample as the family style baseline, with the fallback given in if_not_adopted. Entries with 'optional' may be dropped by the caller.",
+  "base_plar_sha256": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+  "proposal_path": "work/render-stage-pixl/plar-update-proposal.json",
+  "proposal_sha256": "68070a1d78d187c8adbb20b21dbc736b527542269c59b46f32d2d22aea4d8f72",
+  "expect_for_save": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+  "entries": [
+    {
+      "id": "U01",
+      "where": "sources",
+      "field": "sources",
+      "old": null,
+      "new": [
+        {
+          "id": "ready-sample",
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+        },
+        {
+          "id": "renderer-view",
+          "path": "renderer/view.mjs",
+          "sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04"
+        },
+        {
+          "id": "render-stage",
+          "path": "RENDER-STAGE.md",
+          "sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2"
+        }
+      ],
+      "why": "Bind the exact delivered sample bytes (fc5e43ae...) so a style baseline can be cited by source ID; bind the representative browser renderer module whose crop/scale/compositing behaviour is now observed; bind RENDER-STAGE.md as the authority that delegates the scoped style decision to the caller.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U02",
+      "where": "coverage",
+      "field": "coverage.included",
+      "old": null,
+      "new": "Render stage: ran renderer/capture.mjs (HeadlessChrome 156, DPR 1) against the actual src/queue.ts and src/queue-view.ts for every statusVisuals state in both statusCell and compactStatus at 1x and 3x; checked identities, canvas pixels, alpha compositing and nearest blocks with renderer/check.py; inspected the retained PNGs visually.",
+      "why": "Record the render-stage scan boundary.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U03",
+      "where": "coverage",
+      "field": "coverage.unresolved",
+      "old": [
+        "No executable UI entry point, renderer, importer, package manifest or runtime capture was supplied. Descriptor inspection does not verify rendered behavior, frame cropping, alpha compositing or integration.",
+        "No approved style reference exists. Ready remains the proposed representative sample; Working, Retry and Paused depend on its review before family expansion.",
+        "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+        "The supplied SVG was inspected as source only. No artwork was generated, rendered, or visually accepted during allocation or refresh."
+      ],
+      "new": [
+        "The representative renderer in renderer/ is a scoped browser fixture that imports the real view modules; it is not the production UI, and its headless screenshot is laid out at the 1280 px window width while DOM bounds are measured at the 1262 px viewport, so renderer/check.py reports a 9 px horizontal offset (see queue.ready evidence). Production-host display acceptance remains unverified.",
+        "Style baseline: the delivered Ready fixture is a controlled pixellab-test sample (provider_simulated=true). Adopting it as the family style reference establishes edge treatment, stroke weight, fill/colour role, margin and alpha policy only; it does not establish the other members' silhouettes, motion or meaning, nor actual PixelLab output quality.",
+        "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+        "Working, Retry and Paused have no artwork, no production store, no candidate and no review; timed loop playback at 100 ms can only be observed interactively (node renderer/server.mjs) because the capture samples frame boundaries, not real-time playback."
+      ],
+      "why": "The first and fourth unresolved items ('no executable UI entry point', 'SVG inspected as source only') are no longer true after the browser capture; replaced by the renderer's actual limits. The style-reference item is restated to name what adoption does and does not establish.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U04",
+      "where": "queue.ready",
+      "field": "existing[0].role",
+      "old": "Current Ready destination is missing; assets/ready.png is superseded. Existing attempts remain retained.",
+      "new": "Delivered Ready sample (candidate ready.retained, sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5, 16x16, one frame) from controlled pixellab-test job controlled-create-0002; assets/ready.png is superseded. Rendered by both consumers for ok -> succeeded in renderer/ (work/render-pixl-01). Earlier attempts remain retained.",
+      "why": "Stale: the destination is no longer missing (HANDOFF-RESULT.json deliberately_not_edited; ledger C17). Refreshed now as a deliberate requirements revision.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U05",
+      "where": "queue.ready",
+      "field": "delivery.checks[4]",
+      "old": "Record visual review and consumer integration evidence separately from mechanical checks; no delivered art has yet been reviewed.",
+      "new": "Record visual review and consumer integration evidence separately from mechanical checks. Status: six historical verdicts pass (ready.delivery.review), specialist art assessment and render-stage browser review retained; mechanical/visual/integration evidence are linked separately in this row's evidence.",
+      "why": "Stale clause 'no delivered art has yet been reviewed' contradicted by the retained verdicts and reviews.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U06",
+      "where": "queue.ready",
+      "field": "delivery.checks[3]",
+      "old": "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+      "new": "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition. Status: observed in renderer/ for ok -> succeeded (label Ready, assets/ready-confirmed.png, both consumers, 1x and 3x; work/render-pixl-01/render.json). Production-host display remains unverified.",
+      "why": "Record that the representative renderer exercised this check; keep the production-host boundary explicit.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "A01",
+      "where": "queue.ready",
+      "field": "requirements[approved_style_reference]",
+      "old": {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      "new": {
+        "property": "approved_style_reference",
+        "value": {
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "candidate": "ready.retained",
+          "store": ".pixl/assets/queue.ready",
+          "task": "r.22e90a2a03fe453a.task",
+          "scope": "Family style baseline for Working, Retry and Paused: flat single cool-blue fill (#70b9ed as rendered), hard pixel edges with no anti-aliasing or outline, about 2 px perpendicular stroke (3-pixel runs on 45-degree diagonals; 2-pixel orthogonal strokes), no backing plate, transparent exterior, footprint about 11x9 within 2-3 px margins of the 16x16 cell. It does not prescribe the other members' silhouettes, motion or meaning and is not evidence of PixelLab-generated quality (provider_simulated=true)."
+        },
+        "authority": "requirement",
+        "sources": [
+          "render-stage",
+          "ready-sample",
+          "brief"
+        ],
+        "reason": "RENDER-STAGE.md lines 4-6 authorize the caller's scoped style decision for this representative consumer; this value records adoption of the exact delivered sample bytes as the approved reference the brief (line 5) said did not yet exist. Adoption scope and limits are stated in the value."
+      },
+      "why": "Source-bind the approved baseline by exact identity if the caller adopts the sample.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Keep authority 'unknown' and value null; append the caller's decision artifact to evidence; the other rows keep 'After the Ready sample is reviewed and bound as a style reference' in next.",
+      "optional": null
+    },
+    {
+      "id": "U07",
+      "where": "queue.ready",
+      "field": "requirements[renderer_display_observation]",
+      "old": null,
+      "new": {
+        "property": "renderer_display_observation",
+        "value": {
+          "renderer": "renderer/ (HeadlessChrome 156, devicePixelRatio 1)",
+          "consumers": [
+            "statusCell",
+            "compactStatus"
+          ],
+          "scales": [
+            1,
+            3
+          ],
+          "observed": "ok -> succeeded -> label Ready with assets/ready-confirmed.png in both consumers; canvases are exact alpha composites on #172336 with nearest 3x3 blocks (zero difference from an independent Pillow composite); canvases sit vertically centred on the row axis with a 12 px (full) / 6 px (compact) CSS gap to the label; the SVG Start control is browser-rasterised with anti-aliasing (9 tones at 1x, smooth re-rasterisation at 3x) beside the hard-edged Ready mark."
+        },
+        "authority": "observation",
+        "sources": [
+          "renderer-view",
+          "queue-view",
+          "queue-state"
+        ],
+        "reason": "Measured in work/render-pixl-01 and work/render-stage-pixl/measurements.json; this is the representative fixture's behaviour, not production-host acceptance."
+      },
+      "why": "Record the renderer evidence as an observation on the delivered row.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U08",
+      "where": "queue.ready",
+      "field": "questions",
+      "old": [
+        "Does the proposed Ready sample establish an acceptable shared pixel-art treatment before Working and Retry are produced?"
+      ],
+      "new": [
+        "Caller style decision pending at proposal time: does the delivered Ready sample become the family style baseline (recommended by the specialist in work/render-stage-pixl/render-review.json)?"
+      ],
+      "why": "Narrow the open question to the single pending decision.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U09",
+      "where": "queue.ready",
+      "field": "next",
+      "old": "reassessment_consumed: corrected Ready contract (work/queue.ready-reassessment/request-review.json bef24027...) independently compared by the caller and found consistent; delivered fixture fc5e43ae... remains at assets/ready-confirmed.png under its historical contract and six verdicts. Next: owner/caller style decision on the delivered Ready sample and source-binding of an approved baseline before Working/Retry/Paused; supply a graphical renderer for full/compact display and alpha compositing; refresh the stale hash-covered row text (existing role, delivery check 5) only at the next deliberate requirements revision. No new request assigned; preserve pixellab-test fixture provenance and all history.",
+      "new": "render_stage: browser capture work/render-pixl-01 (errors [], destination.png 1d13cde1..., eight views pixel-identical to the caller's capture) and renderer/check.py (95/104 pass; the 9 failures are the screenshot-layout offset dx=9 explained in work/render-stage-pixl/render-review.json, not a consumer defect) retained. Next: after the caller's style decision is saved in this row, keep status in_progress until production-host display is verified or the owner labels integration; do not reopen the done sample task; new Ready generation only under explicit new authorization against the corrected packet (work/queue.ready-reassessment/request-review.json).",
+      "why": "Replace the consumed reassessment continuation with the render-stage continuation.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U10",
+      "where": "queue.ready",
+      "field": "evidence",
+      "old": "(+0)",
+      "new": "(+5 render-stage links)",
+      "why": "Link the render-stage evidence (hash-safe field).",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "A02-queue.working",
+      "where": "queue.working",
+      "field": "references",
+      "old": null,
+      "new": [
+        {
+          "source": "ready-sample",
+          "role": "style",
+          "instructions": "Match the approved Ready sample's treatment: flat single #70b9ed fill, hard pixel edges without anti-aliasing or outline, about 2 px perpendicular strokes (3-pixel runs on 45-degree diagonals, 2-pixel orthogonals), no backing plate, transparent exterior, footprint 9-12 px inside the centred 12x12 safe area of the 16x16 cell, visual mass comparable to the sample's 29 pixels. Do not copy its silhouette; this member's own shape, meaning and (for Working) motion are decided by its own requirements and review."
+        }
+      ],
+      "why": "Source-bound style reference to the exact sample if adopted (format.md reference-role extension).",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Omit the references field entirely.",
+      "optional": null
+    },
+    {
+      "id": "A03-queue.working",
+      "where": "queue.working",
+      "field": "requirements[approved_style_reference]",
+      "old": {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      "new": {
+        "property": "approved_style_reference",
+        "value": {
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "establishes": [
+            "stroke weight",
+            "edge construction",
+            "fill treatment",
+            "colour role",
+            "margin/footprint",
+            "alpha policy"
+          ],
+          "does_not_establish": [
+            "this member's silhouette",
+            "motion/timing legibility",
+            "meaning",
+            "PixelLab-generated quality"
+          ]
+        },
+        "authority": "requirement",
+        "sources": [
+          "render-stage",
+          "ready-sample",
+          "brief"
+        ],
+        "reason": "Caller's scoped style decision under RENDER-STAGE.md lines 4-6 adopting the delivered sample as the family baseline; limits stated in the value."
+      },
+      "why": "Mirror the adopted baseline on each dependent row.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Keep authority 'unknown' and value null.",
+      "optional": null
+    },
+    {
+      "id": "A02-queue.retry",
+      "where": "queue.retry",
+      "field": "references",
+      "old": null,
+      "new": [
+        {
+          "source": "ready-sample",
+          "role": "style",
+          "instructions": "Match the approved Ready sample's treatment: flat single #70b9ed fill, hard pixel edges without anti-aliasing or outline, about 2 px perpendicular strokes (3-pixel runs on 45-degree diagonals, 2-pixel orthogonals), no backing plate, transparent exterior, footprint 9-12 px inside the centred 12x12 safe area of the 16x16 cell, visual mass comparable to the sample's 29 pixels. Do not copy its silhouette; this member's own shape, meaning and (for Working) motion are decided by its own requirements and review."
+        }
+      ],
+      "why": "Source-bound style reference to the exact sample if adopted (format.md reference-role extension).",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Omit the references field entirely.",
+      "optional": null
+    },
+    {
+      "id": "A03-queue.retry",
+      "where": "queue.retry",
+      "field": "requirements[approved_style_reference]",
+      "old": {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      "new": {
+        "property": "approved_style_reference",
+        "value": {
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "establishes": [
+            "stroke weight",
+            "edge construction",
+            "fill treatment",
+            "colour role",
+            "margin/footprint",
+            "alpha policy"
+          ],
+          "does_not_establish": [
+            "this member's silhouette",
+            "motion/timing legibility",
+            "meaning",
+            "PixelLab-generated quality"
+          ]
+        },
+        "authority": "requirement",
+        "sources": [
+          "render-stage",
+          "ready-sample",
+          "brief"
+        ],
+        "reason": "Caller's scoped style decision under RENDER-STAGE.md lines 4-6 adopting the delivered sample as the family baseline; limits stated in the value."
+      },
+      "why": "Mirror the adopted baseline on each dependent row.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Keep authority 'unknown' and value null.",
+      "optional": null
+    },
+    {
+      "id": "A02-queue.paused",
+      "where": "queue.paused",
+      "field": "references",
+      "old": null,
+      "new": [
+        {
+          "source": "ready-sample",
+          "role": "style",
+          "instructions": "Match the approved Ready sample's treatment: flat single #70b9ed fill, hard pixel edges without anti-aliasing or outline, about 2 px perpendicular strokes (3-pixel runs on 45-degree diagonals, 2-pixel orthogonals), no backing plate, transparent exterior, footprint 9-12 px inside the centred 12x12 safe area of the 16x16 cell, visual mass comparable to the sample's 29 pixels. Do not copy its silhouette; this member's own shape, meaning and (for Working) motion are decided by its own requirements and review."
+        }
+      ],
+      "why": "Source-bound style reference to the exact sample if adopted (format.md reference-role extension).",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Omit the references field entirely.",
+      "optional": null
+    },
+    {
+      "id": "A03-queue.paused",
+      "where": "queue.paused",
+      "field": "requirements[approved_style_reference]",
+      "old": {
+        "property": "approved_style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF says no approved style reference exists; review a representative status sample first."
+      },
+      "new": {
+        "property": "approved_style_reference",
+        "value": {
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+          "establishes": [
+            "stroke weight",
+            "edge construction",
+            "fill treatment",
+            "colour role",
+            "margin/footprint",
+            "alpha policy"
+          ],
+          "does_not_establish": [
+            "this member's silhouette",
+            "motion/timing legibility",
+            "meaning",
+            "PixelLab-generated quality"
+          ]
+        },
+        "authority": "requirement",
+        "sources": [
+          "render-stage",
+          "ready-sample",
+          "brief"
+        ],
+        "reason": "Caller's scoped style decision under RENDER-STAGE.md lines 4-6 adopting the delivered sample as the family baseline; limits stated in the value."
+      },
+      "why": "Mirror the adopted baseline on each dependent row.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": true,
+      "if_not_adopted": "Keep authority 'unknown' and value null.",
+      "optional": null
+    },
+    {
+      "id": "U11",
+      "where": "queue.working",
+      "field": "requirements[renderer_frame_extraction]",
+      "old": {
+        "property": "renderer_frame_extraction",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "queue-view",
+          "source-map"
+        ],
+        "reason": "The supplied view returns descriptors; no frame crop implementation, anchor policy or executable renderer was supplied."
+      },
+      "new": {
+        "property": "renderer_frame_extraction",
+        "value": {
+          "module": "renderer/view.mjs paint()",
+          "strip": "horizontal; frame i is source rect [i*16, 0, 16, 16]",
+          "frame_index": "floor(max(elapsed,0) / 100) % 4",
+          "geometry_gate": "drawn only when image width == 16*frames and height == 16; otherwise 'Wrong sheet size' is shown and the canvas stays panel-coloured",
+          "sampling": "imageSmoothingEnabled=false, CSS image-rendering: pixelated, destination 16*scale square",
+          "capture_timeline": "frame-boundary samples at 0, 99, 100, 199, 200, 299, 300, 399 and 400 ms (expected frames 0,0,1,1,2,2,3,3,0) as 1x statusCell canvases; real-time loop playback is only observable interactively"
+        },
+        "authority": "observation",
+        "sources": [
+          "renderer-view",
+          "queue-view"
+        ],
+        "reason": "Observed in the representative renderer fixture; a production host may crop differently, so retain this as the fixture's behaviour."
+      },
+      "why": "The unknown is resolved for the representative renderer; anchor policy is now concrete (left-to-right 16 px frames, no padding).",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U12",
+      "where": "queue.working",
+      "field": "questions",
+      "old": [
+        "Which activity motif and frame placement should be adopted after the representative Ready sample is reviewed?",
+        "Where is the executable renderer that crops and advances the four-frame strip?"
+      ],
+      "new": [
+        "Which activity motif and frame placement should be adopted under the Ready baseline (specialist proposal: rotating 3- or 4-segment arc, no frame containing a check-like diagonal pair, constant footprint box)?"
+      ],
+      "why": "The renderer question is answered by renderer/view.mjs; the motif question remains.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U13",
+      "where": "queue.working",
+      "field": "next",
+      "old": "After the Ready sample is reviewed and bound as a style reference, specify and produce the four-frame Working strip at assets/working.png, then review the timed loop in the actual renderer.",
+      "new": "After the style decision is saved: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer/capture.mjs --out work/NEW_DIR and renderer/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer/server.mjs.",
+      "why": "Concrete next work tied to the renderer's actual capabilities and PLAR delivery checks.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U14",
+      "where": "queue.retry",
+      "field": "questions",
+      "old": [
+        "Which Retry silhouette best distinguishes failure/retry from the reviewed Ready sample and the planned Working motion?"
+      ],
+      "new": [
+        "Which Retry silhouette best distinguishes failure/retry from the Ready check and the planned Working arc without colour (specialist proposal: circular arrow with a clear gap and 2-pixel arrowhead)?"
+      ],
+      "why": "Carry the open motif question with the specialist proposal named.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U15",
+      "where": "queue.retry",
+      "field": "next",
+      "old": "After the Ready sample is reviewed and bound as a style reference, produce the distinct static Retry icon at assets/error-retry.png and assess its silhouette alongside Working and Paused.",
+      "new": "After the style decision is saved: request the static 16x16 Retry icon for assets/error-retry.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture in renderer/: expect error -> failed -> label Retry with the new asset in both consumers at 1x and 3x; compare grayscale silhouettes against Start, Ready and every Working frame; keep the superseded assets/retry.png path unused.",
+      "why": "Concrete renderer-tied next work.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U16",
+      "where": "queue.paused",
+      "field": "questions",
+      "old": [
+        "Does the proposed pause-bar silhouette remain distinct from the reviewed Ready sample, planned Working loop and Retry icon without color alone?",
+        "Where is the executable renderer for the actual pause transition and display checks?"
+      ],
+      "new": [
+        "Does the proposed two-bar pause silhouette (2-pixel bars, 2-pixel gap, 8-9 px tall) remain distinct from the Ready check, Working arc and Retry arrow without colour?"
+      ],
+      "why": "The renderer question is answered (renderer/ exercises pause -> paused); the silhouette question remains.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U17",
+      "where": "queue.paused",
+      "field": "next",
+      "old": "After the Ready sample is reviewed and bound as a style reference, produce the static 16x16 Paused icon at assets/paused.png and compare its silhouette with Working, Ready and Retry before integration.",
+      "new": "After the style decision is saved: request the static 16x16 Paused icon for assets/paused.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture in renderer/: expect pause -> paused -> label Paused with the new asset in both consumers at 1x and 3x; compare at both scales and in grayscale with Ready, Retry and all Working frames.",
+      "why": "Concrete renderer-tied next work.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    },
+    {
+      "id": "U18",
+      "where": "queue.start",
+      "field": "existing[0].role",
+      "old": "Existing vector Start control to reuse unchanged; inspected as SVG source, not rendered UI.",
+      "new": "Existing vector Start control reused unchanged (sha256 ee2ba2fe...); observed rendered by both consumers for idle in renderer/ (work/render-pixl-01): browser-rasterised with anti-aliased edges at 1x and smooth re-rasterisation at 3x.",
+      "why": "The 'inspected as SVG source, not rendered UI' clause is no longer true; the idle mapping was exercised in the renderer.",
+      "hash_covered": true,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": "Hash-covered: changes queue.start's requirements_hash (no production link exists, so nothing breaks). Drop this entry to keep queue.start's hash d25bb898... stable; the renderer observation then lives only in evidence/next."
+    },
+    {
+      "id": "U19",
+      "where": "queue.start",
+      "field": "next",
+      "old": "Preserve the existing vector file and idle mapping during future status integration; no new Start asset is allocated.",
+      "new": "Preserve the existing vector file and idle mapping; delivery check 2 observed in the representative renderer (idle resolves to the preserved Start control in both consumers). No new Start asset is allocated.",
+      "why": "Record that the runnable-UI check has been exercised.",
+      "hash_covered": false,
+      "conditional_on_style_adoption": false,
+      "if_not_adopted": null,
+      "optional": null
+    }
+  ]
+}

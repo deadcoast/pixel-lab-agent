@@ -18,13 +18,13 @@ def save(root, asset_id, requirements_hash, expect, details, path="plar.txt"):
         raise PixlError("handoff_details", "Derived fields belong to the snapshot; use caller_actions and future_work for commentary")
     selected = plar.read(root, path, asset_id)
     if selected["requirements_hash"] != requirements_hash:
-        raise PixlError("handoff_stale", "Selected requirements changed; reread the asset")
+        raise PixlError("handoff_stale", "Selected requirements changed or wrong identity supplied; requirements_hash must match plar read.requirements_hash; reread the asset")
     production = selected.get("production") or {}
     continuation = production.get("continuation")
     if not continuation:
         raise PixlError("handoff_state", "No production continuation is available; retain the allocation diagnostic in the ordinary result")
     if continuation["state_hash"] != expect:
-        raise PixlError("handoff_stale", "Production state changed; reread before handing it back")
+        raise PixlError("handoff_stale", "Production state changed or wrong identity supplied; expect must match the canonical production state hash at production.continuation.state_hash; reread selected PLAR, not its top-level file hash")
     document = {
         "version": 1,
         "asset_id": asset_id,

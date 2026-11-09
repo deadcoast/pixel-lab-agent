@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "scope": "Corrected proposal for the already-delivered representative Ready status sample (queue.ready; candidate ready.retained; assets/ready-confirmed.png sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5). This plan corrects citation bounds, authority wording and extent language found in the historical plan work/queue.ready-revision/candidate-plan.json (sha256 e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6). It does not replace the contract used for delivery, does not re-verdict the delivered candidate and proposes no new generation. Only this candidate's own mechanical, meaning, readability, accent-relationship and sample-craft checks are rejection rules here. Family distinction (Working/Retry/Paused versus Ready), graphical renderer integration of statusCell/compactStatus and the style-approval decision remain deferred obligations recorded in request-review.json and PLAR, not rejection rules for this sample.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready status icon sample",
+      "kind": "sprite",
+      "contract": {
+        "size": [16, 16],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static 16x16 Ready status icon, delivered at assets/ready-confirmed.png. Owner-required check mark with asymmetrical arms conveys successful completion. Transparent cell exterior, full alpha permitted, no fixed palette. The existing cool blue UI accent is used; its extent (sole flat fill in the delivered sample) is a specialist choice. Ready as representative sample is a specialist proposal, not approved family style."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+          "basis": "Owner brief: status cells are 16 by 16 logical pixels and Ready is a static image (BRIEF.md line 3); the current update keeps the existing 16x16 canvas and static behavior (line 9). Consumer: statusVisuals.succeeded declares frames: 1 (src/queue-view.ts line 6) and display.cell is [16, 16] (line 9).",
+          "scope": "This Ready candidate file.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'",
+              "lines": [3, 3]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "line 9: 'Keep the existing 16x16 canvas, static behavior'",
+              "lines": [9, 9]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 6: succeeded descriptor, frames: 1",
+              "lines": [6, 6]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 9: display.cell [16, 16]",
+              "lines": [9, 9]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "transparent-background",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "The cell exterior is transparent: pixels that are not part of the subject (the check mark plus any deliberate edge treatment, glow or backing shape) have alpha 0, and no opaque or translucent matte, box or canvas fill covers the cell as an unintended background. Partial alpha on subject pixels, including authored soft edges, is permitted; binary alpha is not required.",
+          "basis": "Owner brief requires transparent backgrounds (BRIEF.md line 3) and the current update keeps the transparent background (line 9). The brief does not restrict alpha to binary values and does not forbid deliberate subject components. The PIXL profile's transparency/subject-construction distinction separates an unintended opaque matte from an intentional backing or edge treatment; the historical wording 'no ... fringe fills the cell' was ambiguous about authored soft edges and is clarified here.",
+          "scope": "This Ready candidate file. The delivered sample happens to use binary alpha (227 alpha-0 pixels, 29 alpha-255 pixels; observation), which is not thereby required.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Use transparent backgrounds'",
+              "lines": [3, 3]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "line 9: 'Keep the existing ... transparent background'",
+              "lines": [9, 9]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "ready-meaning",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Viewed alone at the declared display conditions, Ready visibly uses a check mark with asymmetrical arms (one arm clearly shorter than the other) and reads as successful completion. It must not read as the existing idle Start triangle (assets/start.svg), and it must not read generically as activity, failure or pause. Comparison against actual Working, Retry and Paused art is a deferred family obligation, not part of this check.",
+          "basis": "BRIEF.md line 9 is the owner requirement for the check-mark motif, the asymmetrical arms and the successful-completion meaning. succeeded is the state reached by an ok result (src/queue.ts line 3) and maps to the Ready label and this asset (src/queue-view.ts line 6). Start is the only existing sibling asset (src/queue-view.ts line 3; assets/start.svg line 1). The owner leaves arm ratio, stroke width, end caps, backing shape, palette count and highlights open; none is imposed here. The historical citation of BRIEF.md line 3 ('working loop must communicate activity without looking like success') binds Working, not Ready, and is retained only as a deferred family obligation.",
+          "scope": "This Ready candidate on its own plus the existing Start vector.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'",
+              "lines": [9, 9]
+            },
+            {
+              "path": "src/queue.ts",
+              "locator": "line 3: ok -> succeeded",
+              "lines": [3, 3]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 6: succeeded -> label Ready, assets/ready-confirmed.png",
+              "lines": [6, 6]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 3: idle -> label Start, assets/start.svg",
+              "lines": [3, 3]
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "line 1: play-triangle path M4 2L14 8L4 14Z",
+              "lines": [1, 1]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "readability-1x-3x",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+          "basis": "Owner brief requires readable silhouettes and inspection at 1x and 3x nearest display scale on the actual dark panel (BRIEF.md line 3); the current update keeps the review display conditions (line 9). #172336, scale 3 and nearest filtering are consumer observations from the display descriptor (src/queue-view.ts line 9) that resolve the brief's 'actual dark panel'; they are not owner-chosen aesthetic values.",
+          "scope": "This Ready candidate at the declared display conditions.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'",
+              "lines": [3, 3]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "line 9: 'Keep the existing ... review display conditions'",
+              "lines": [9, 9]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 9: scale 3, filter nearest, background #172336",
+              "lines": [9, 9]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "cool-blue-accent",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The existing UI's cool blue accent is visibly used in the mark so that its relationship to the Start control's fill (assets/start.svg, observed #70b9ed) is perceptible when both appear in the same status row. This is a visual relationship judgement: it does not require an exact hex value, a palette count, or that cool blue be the dominant or only colour.",
+          "basis": "Owner brief: 'Use ... the existing UI's cool blue accent; a fixed palette is not required' (BRIEF.md line 3). #70b9ed is an observation from the Start SVG fill (assets/start.svg line 1), not an approved palette. An accent names a colour role; the brief leaves its extent open. The historical check required a 'dominant' cool-blue treatment; that extent was a specialist choice, not an owner requirement, and is now recorded as a choice in request-review.json instead of a rejection clause.",
+          "scope": "This Ready candidate compared with the existing Start vector.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'the existing UI's cool blue accent; a fixed palette is not required'",
+              "lines": [3, 3]
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "line 1: fill #70b9ed",
+              "lines": [1, 1]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "sample-pixel-craft",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "As a representative family sample, the image shows deliberate pixel-art construction: readable pixel clusters with consistent edge stepping, no accidental stray pixels, no resampling blur or downscaled-illustration artifacts (authored anti-aliasing or sub-pixel shading is not an artifact), and a stroke and colour treatment that could plausibly be carried to Working, Retry and Paused.",
+          "basis": "Specialist expert judgment applying the brief's 'coherent pixel-art status assets' (BRIEF.md line 3) and its representative-sample instruction (line 5). This is not an owner construction rule; the brief imposes no palette, anti-aliasing or stroke policy. The historical wording 'blur' is clarified to accidental resampling blur so that authored selective anti-aliasing, which the brief permits, is not rejected.",
+          "scope": "This Ready sample only, assessed for style review; passing does not approve the family style and does not bind Working, Retry or Paused to this construction.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Create coherent pixel-art status assets'",
+              "lines": [3, 3]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "line 5: 'propose a representative status sample before expanding the family'",
+              "lines": [5, 5]
+            }
+          ],
+          "authority": "proposal"
+        }
+      ]
+    }
+  ]
+}

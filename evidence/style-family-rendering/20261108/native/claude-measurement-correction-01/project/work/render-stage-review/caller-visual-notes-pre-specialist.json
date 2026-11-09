@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "role": "calling agent, recorded BEFORE reading any specialist output for this stage",
+  "recorded_at": "2026-11-08T10:04:50+00:00",
+  "capture": "work/render-caller-01 (render.json observed_at 2026-11-08T10:00:23.365Z, HeadlessChrome/156.0.0.0, devicePixelRatio 1)",
+  "viewed": [
+    {
+      "path": "work/render-caller-01/destination.png",
+      "sha256": "1d13cde1c01a24a91901382b2669b4ce34108f8751b92b13a14cc7f53036317e",
+      "size": [
+        1280,
+        1000
+      ],
+      "saw": "Full page: live panel 'Current queue state \u00b7 succeeded' with two 3x checks labelled Ready (full and compact consumers); matrix rows idle (Start triangle at 1x/3x in both consumers), running/paused/failed marked 'Missing asset' with their labels Working/Paused/Retry, succeeded with the check at 1x/3x in both consumers; coverage line '3 status assets are still missing: assets/working.png, assets/paused.png, assets/error-retry.png'."
+    },
+    {
+      "path": "work/render-caller-01/view-004.png",
+      "sha256": "dc9d6e930fd6b22025c70ca438863c513a864d47dd02dda12c239bdad687e7c1",
+      "size": [
+        16,
+        16
+      ],
+      "saw": "native check on #172336, exactly the fixture composite; short left arm, long right arm; readable as a check at 1x"
+    },
+    {
+      "path": "work/render-caller-01/view-005.png",
+      "sha256": "8343cf7a697453d6eb02cbeb3326b76fac67623843141b53dce4d62fdb9735f9",
+      "size": [
+        48,
+        48
+      ],
+      "saw": "3x nearest: uniform 3x3 blocks, two colours only, clean staircases, no blur or fringe"
+    },
+    {
+      "path": "work/render-caller-01/view-000.png",
+      "sha256": "b56abdb3e3ccc349ea7610a5028664d84e29ef49ac5e2549a82dda50be625742",
+      "size": [
+        16,
+        16
+      ],
+      "saw": "Start triangle rasterised from SVG with anti-aliased edges (9 distinct colours)"
+    },
+    {
+      "path": "work/render-caller-01/view-001.png",
+      "sha256": "06e908335b21de40e212c6630fc9c12169515dff75f057f6596396263e2d5a88",
+      "size": [
+        48,
+        48
+      ],
+      "saw": "Start at 3x: smooth vector edges, not 3x3 blocks; the SVG is re-rasterised at destination size (anti-aliased edge pixel count 4 -> 12, linear not 9x)"
+    },
+    {
+      "path": "work/render-stage-review/crop-live-succeeded-2x.png",
+      "derived": true,
+      "saw": "both consumers show the identical check beside the Ready label; the mark's vertical centre sits level with the label's x-height band; comfortable 12 px gap (full) and 6 px gap (compact)"
+    },
+    {
+      "path": "work/render-stage-review/crop-matrix-idle-succeeded-rows-2x.png",
+      "derived": true,
+      "saw": "at 3x the check (crisp blocks) sits beside the anti-aliased vector Start triangle; visual weights comparable (triangle footprint 10x12, check 11x9 logical px); at 1x both are small but legible; the check's lower-left vertex tapers to a single pixel which reads slightly thin at 1x"
+    },
+    {
+      "path": "work/render-stage-review/crop-full-ready-1x-cell-8x.png",
+      "derived": true,
+      "saw": "1x full cell: check pixels crisp, text anti-aliased; mark reads as a check next to 15 px text; its footprint is about the text x-height, slightly small but not lost"
+    }
+  ],
+  "measured": {
+    "ready_views": "view-004/006 identical (16x16: 29 px #70b9ed, 227 px #172336), view-005/007 identical (48x48: 261 px #70b9ed = 29*9, 2043 px #172336); each equals an independent Pillow alpha_composite + NEAREST x3 of assets/ready-confirmed.png with zero difference",
+    "screenshot_vs_viewport": "destination.png 1280x1000; report viewport 1262x904 (innerWidth/innerHeight). Every available canvas matches the screenshot pixel-exactly at dx=+9, dy=0 (pixel search, work/render-stage-review/screenshot-offset-search.json). 9 = (1280-1262)/2, the centred body's margin shift. So the checker's 9 failures are a headless-screenshot-size versus reported-viewport mismatch, not a rendering defect.",
+    "checker": "renderer/check.py exit 1: 95 of 104 observations pass; failures: 'screenshot and observed viewport dimensions' and 8 x 'screenshot matches canvas pixels'. All identity, sampling-setting, canvas-dimension, integer-bounds, asset-identity, decoded-sheet, alpha-compositing and nearest-block checks pass.",
+    "transitions": "idle->Start (available), started->running->Working (missing), pause->paused->Paused (missing), ok->succeeded->Ready (available, sha fc5e43ae...), error->failed->Retry (missing); identical descriptors in statusCell and compactStatus"
+  },
+  "caller_pre_assessment_opinion": "The rendered Ready mark reads as a completion check in both consumers at both scales, with the panel showing through (no matte) and nearest sampling preserved. The only stylistic tension is that the Start control is an anti-aliased vector while the status family will be hard-pixel art; the brief preserves Start, so this is an accepted mixed treatment, not a defect of the sample. Pending the specialist's view, I lean toward adopting the sample as the family baseline for stroke weight, flat single accent fill, binary-clean edges, transparent exterior and footprint, while not treating it as evidence of upstream PixelLab quality."
+}

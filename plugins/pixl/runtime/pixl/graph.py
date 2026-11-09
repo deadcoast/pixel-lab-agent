@@ -67,10 +67,10 @@ def confined(root, name):
     root = Path(root).resolve()
     path = Path(name)
     if path.is_absolute() or not name or "\\" in name or ":" in name:
-        raise PixlError("path_escape", name)
+        raise PixlError("path_escape", f"{name!r}: use a nonempty forward-slash relative path inside declared root {root}; absolute paths, backslashes and drive prefixes are not accepted here")
     path = (root / path).resolve()
     if not path.is_relative_to(root) or path == root:
-        raise PixlError("path_escape", name)
+        raise PixlError("path_escape", f"{name!r}: resolved path must remain inside declared root {root}; parent or symlink escape is not accepted")
     return path
 
 

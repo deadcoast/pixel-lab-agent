@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "scope": "Corrected future planning proposal only, not the historical contract used for completed delivery. Ready representative sample, no new generation assigned. Existing verdicts remain bound to original six Q records. Later style/family/renderer obligations are retained separately.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready status icon sample",
+      "kind": "sprite",
+      "contract": {
+        "size": [
+          16,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static 16x16 Ready candidate for later assets/ready-confirmed.png. Required asymmetrical-arm check mark conveys success. Transparent background, full alpha permitted, no fixed palette. Cool blue accent relationship; Ready as representative sample is a specialist proposal, not approved style."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+          "basis": "Owner brief: 16x16 logical status cells and Ready is static. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+          "scope": "This Ready candidate file.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 6 (succeeded: frames 1) and line 9 (display.cell [16, 16])",
+              "lines": [
+                3,
+                9
+              ]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "transparent-background",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "The background outside the intentional subject is transparent (alpha 0), without an unintended opaque matte. Intentional backing motifs may be part of the subject; partial-alpha subject edges and effects are permitted.",
+          "basis": "Owner brief requires transparent backgrounds; it does not restrict alpha to binary values.",
+          "scope": "This Ready candidate file.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Use transparent backgrounds'",
+              "lines": [
+                3,
+                3
+              ]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "ready-meaning",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Ready visibly uses a check mark with asymmetrical arms to convey successful completion. Assess this candidate alone; actual family distinction is a later collective check.",
+          "basis": "BRIEF.md line 9 expressly requires a check mark with asymmetrical arms conveying successful completion; stateAfter ok -> succeeded and statusVisuals.succeeded supplies Ready. No mandatory arm ratio, stroke width, backing shape, palette count or highlight recipe is imposed.",
+          "scope": "This Ready candidate on its own, plus the already-existing Start vector.",
+          "sources": [
+            {
+              "path": "src/queue.ts",
+              "locator": "line 3: ok -> succeeded",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 3 (idle: Start, assets/start.svg) and line 6 (succeeded: label Ready)",
+              "lines": [
+                3,
+                9
+              ]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'The working loop must communicate activity without looking like success'",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "line 1: play-triangle path M4 2L14 8L4 14Z",
+              "lines": [
+                1,
+                1
+              ]
+            },
+            {
+              "path": "BRIEF.md",
+              "locator": "Current Ready requirement",
+              "lines": [
+                9,
+                9
+              ]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "readability-1x-3x",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+          "basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel; #172336 is the consumer-observed panel colour (display.background).",
+          "scope": "This Ready candidate at the declared display conditions.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "line 9: scale 3, filter nearest, background #172336",
+              "lines": [
+                9,
+                9
+              ]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "cool-blue-accent",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The image visibly uses the existing UI cool blue accent direction, with assets/start.svg fill #70b9ed as a colour cue. Other colours may dominate; exact hex equality and palette count are not required.",
+          "basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+          "scope": "This Ready candidate compared with the existing Start vector.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'the existing UI's cool blue accent; a fixed palette is not required'",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "assets/start.svg",
+              "locator": "line 1: fill #70b9ed",
+              "lines": [
+                1,
+                1
+              ]
+            }
+          ],
+          "authority": "requirement"
+        },
+        {
+          "id": "sample-pixel-craft",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "For this proposed representative sample, pixel clusters, contours and detail placement appear deliberate and support recognition at 1x and 3x on the panel. Judge accidental stray pixels or resampling defects by their visible effect on readability and craft. Intentional isolated details, selective authored antialiasing, partial alpha, shading and backing motifs are permitted. Do not infer or reject a production route from appearance. This expert sample criterion does not approve a family style.",
+          "basis": "Specialist expert quality proposal serving the coherent pixel-art and representative-sample outcome in BRIEF.md lines 3 and 5; no universal cluster count, edge recipe or workflow ban.",
+          "scope": "This Ready sample, assessed for style review; passing does not approve the family style.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "line 3: 'Create coherent pixel-art status assets' and line 5: 'propose a representative status sample before expanding the family'",
+              "lines": [
+                3,
+                5
+              ]
+            }
+          ],
+          "authority": "proposal"
+        }
+      ]
+    }
+  ]
+}

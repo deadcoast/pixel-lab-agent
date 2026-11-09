@@ -22,6 +22,40 @@ For PLAR, call `pixl_plar_read` with `asset_id`. Pass its selected row, transiti
 
 The caller delegates to the native PIXL agent or a native specialist loading the shared PIXL skill. Keep the caller's model/tool/permission settings unless the assignment requires otherwise. Include the actual assignment in the delegation; naming a skill or saying “make the assets” does not transfer the parent's conversation. Credentials stay in the host's PixelLab connection.
 
+When the assignment is to reassess or correct retained work, separate two scopes in
+the delegation. **Historical evidence stays unchanged:** the original request, plan,
+criteria, candidate, verdicts and provider history remain the record of what happened.
+**The new proposal is editable:** PIXL may correct its check text, authority, basis,
+scope, source pointers and proposed request wherever comparison reveals a defect.
+Preserve the owner's actual requirements, not a prior agent's interpretation of them.
+A prior accepted criterion is evidence of that earlier decision, not proof the source
+requires it. Do not tell the specialist to keep all new criterion text identical while
+also assigning contract correction; that prevents the requested work. Require an
+explicit old-to-new change explanation and retain both artifact identities instead.
+Corrections do not retroactively accept the old candidate or authorize resubmission.
+
+For follow-up, use the host's continuation tool for the returned native agent ID
+when available. Current [Claude Code](https://code.claude.com/docs/en/sub-agents#resume-subagents)
+uses `SendMessage` to that ID/name; another `Agent` invocation starts another instance.
+Codex supplies its own continuation/message tools. Do not infer instance memory merely
+from the same PIXL profile name. If continuation is unavailable, pass the saved
+assignment, current contract, previous findings and exact handoff to a new instance,
+and describe that as an artifact-based restart. This preserves useful work without
+claiming an unobserved resumed conversation.
+
+When the caller's deliverable depends on PIXL's result, keep that delegation on the
+critical path. Ask the host to run it in the foreground and wait when supported.
+Background work is useful while the caller has independent work, but a progress
+message saying that the specialist is still running does not deliver the assignment.
+Wait for its completion notification, inspect the returned artifacts and finish the
+caller comparison and handoff before ending. In a non-interactive host, do not assume
+that background work will survive the parent's final response. If the host stops the
+child, retain its saved work, report the interruption and continue from those files;
+an exit code of zero alone does not establish task completion. Current [Claude Code
+foreground/background behavior](https://code.claude.com/docs/en/sub-agents#run-subagents-in-foreground-or-background)
+depends on the host mode; use its available wait/continuation mechanism rather than
+changing the user's global configuration.
+
 A direct brief can proceed without first manufacturing a PLAR document. Use PLAR when allocation, dependencies or ongoing project work benefit from it. The caller owns application-wide priorities; PIXL owns art direction, appropriate PixelLab operation selection, reference use and visual evaluation within the assignment.
 
 ## Specialist → caller while working
@@ -55,13 +89,19 @@ Include only applicable fields. A generation-only task can deliver a reviewed ar
 The caller opens the returned files and checks the relevant result against its original assignment. Compare a fresh selected PLAR packet if source context changed. `requirements_hash` tracks the selected requirements, reference bytes and dependency requirements; status/next-action changes alone do not change it. It is neither a spend authorization nor a readiness verdict. The existing file `hash` still governs PLAR writes.
 
 For a PLAR-bound result, reread the selected asset after the last state change, then
-use `pixl_plar_handoff` with its `asset_id`, `requirements_hash`, production `hash` as
-`expect`, and your `details` object. CLI: `plar handoff DETAILS_JSON --asset ID
+use `pixl_plar_handoff` with its `asset_id`, `requirements_hash`,
+`production.continuation.state_hash` as `expect`, and your `details` object. The
+selected read's top-level `hash` identifies the PLAR file, not production state.
+CLI: `plar handoff DETAILS_JSON --asset ID
 --requirements HASH --expect STATE_HASH --root PROJECT`. The operation saves the
 complete derived continuation and immediate `next` unchanged in an immutable file.
 Return that file's path/hash as `handoff`; the caller opens it and compares its state
 identity with fresh focused PLAR. Do not copy selected fields into a rewritten resume.
 Older handoffs remain readable; their original bytes are not migrated or relabelled.
+Before returning a reviewed open task, check its current nominee and workflow
+requirements. Saved verdicts on an unselected candidate do not describe the
+active output. Nominate the intended candidate through normal state authoring
+when appropriate; preserve unavailable verdicts and leave the task open.
 
 `details` contains your assignment status, delivered artifacts, request-review links,
 expert reasoning, actual checks, unresolved issues and future work. Keep completed

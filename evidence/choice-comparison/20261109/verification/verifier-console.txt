@@ -1,0 +1,48 @@
+Verification failed during distribution
+Traceback (most recent call last):
+  File "C:\github\pixel-lab-agent\scripts\verify.py", line 282, in verify
+    _verify(summary, run, stage)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\github\pixel-lab-agent\scripts\verify.py", line 181, in _verify
+    summary["distribution"] = check_wheel(log_dir=run)
+                              ~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\github\pixel-lab-agent\scripts\check_wheel.py", line 341, in run
+    authoring = run_production_plan_probe(cli, cwd / "family-fixture")
+  File "C:\github\pixel-lab-agent\scripts\production_plan_probe.py", line 163, in run_production_plan_probe
+    change_export = invoke(["request-review", state, "--plan", "authored-successor.plan",
+                            "--against-plan", "authored.plan", "--view", "changes", "--root", root,
+                            "--result-path", "successor-changes.json"])
+  File "C:\github\pixel-lab-agent\scripts\check_wheel.py", line 196, in cli
+    raise RuntimeError(result.stderr.decode("utf-8"))
+RuntimeError: {"error": "path_escape", "detail": "path_escape: C:\\github\\pixel-lab-agent\\build\\candidate-review-verifier-temp\\pixl-wheel-2c7a3o04\\project\\family-fixture\\.pixl\\state.px"}
+
+
+RuntimeError: {"error": "path_escape", "detail": "path_escape: C:\\github\\pixel-lab-agent\\build\\candidate-review-verifier-temp\\pixl-wheel-2c7a3o04\\project\\family-fixture\\.pixl\\state.px"}
+
+
+{"runs": 1, "errors": 1}
+{
+  "status": "fail",
+  "stage": "distribution",
+  "run_directory": "evidence/verification-runs/20261109T173426.892348Z",
+  "tests": {
+    "status": "pass",
+    "discovered": 591,
+    "run": 591,
+    "passed": 590,
+    "failures": 0,
+    "errors": 0,
+    "skipped": [
+      {
+        "test": "test_history_symlink_cannot_redirect_publication (tests.test_store.StoreTests.test_history_symlink_cannot_redirect_publication)",
+        "reason": "symlink privilege unavailable"
+      }
+    ]
+  },
+  "art_pocs": {
+    "status": "pass",
+    "total": 39,
+    "passed": 39,
+    "methods_with_reference_checks": 43
+  }
+}

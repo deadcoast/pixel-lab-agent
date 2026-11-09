@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-08T14:34:09.698443+00:00",
+  "caller": "Claude Fable 5.1 native caller (Claude Code 2.1.318), PACKAGE-CONSUMPTION evaluation",
+  "assignment": {
+    "path": "PACKAGE-CONSUMPTION.md",
+    "sha256": "fe1c219de6250f9e9f6ce9ef0dcb77076d1de837861dc4e739954cdc5746264b",
+    "bytes": 1634
+  },
+  "specialist": {
+    "agent_type": "pixl (agents.json profile, native Claude Code subagent)",
+    "agent_id": "a5bc1206e811b8dfa",
+    "mode": "foreground Agent call with run_in_background false; caller waited for completion",
+    "reported_duration_ms": 520752,
+    "reported_tool_uses": 54,
+    "result": {
+      "path": "work/cold-package/specialist-result.json",
+      "sha256": "c0ae08b5c8f322827e0e976f36d7fe251397fe094d648f0fe7cddaa47eb8b5d3",
+      "bytes": 27543
+    },
+    "status_claimed": "delivered",
+    "mismatches_claimed": [],
+    "resumption": "No SendMessage follow-up was needed; the specialist completed in one conversation. No artifact-based restart occurred."
+  },
+  "claims_checked": [
+    {
+      "claim": "package copy = artifact source = destination = manifest sha256 for all four members; manifest candidates equal nominees",
+      "caller_result": "confirmed",
+      "evidence": "work/cold-package-caller/hashes.json"
+    },
+    {
+      "claim": "manifest.json sha256 equals its directory name 78d45b4d...",
+      "caller_result": "confirmed"
+    },
+    {
+      "claim": "renderer-live capture exit 0; check.py pass with 404 observations, 0 failures, 20 views",
+      "caller_result": "confirmed by caller re-run: exit 0, status pass, 404 observations, failures [], views 20",
+      "evidence": "work/cold-package-caller/check-rerun.json"
+    },
+    {
+      "claim": "frames 1-3 are exact clockwise quarter-turns of frame 0; frame 0 equals seed visible pixels; three clusters 8/9/15 per frame; 32 visible px per frame",
+      "caller_result": "confirmed by independent Pillow computation",
+      "evidence": "work/cold-package-caller/asset-measurements.json"
+    },
+    {
+      "claim": "live playback 13 samples, sequence 0,1,2,3 three times then 0, wraps at 403.3/803.3/1203.3 ms, both consumers",
+      "caller_result": "confirmed from render.json: 13 samples, wraps 3, frames [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0]",
+      "evidence": "work/cold-package-caller/render-summary.json"
+    },
+    {
+      "claim": "transitions idle/started/pause/ok/error map to Start/Working/Paused/Ready/Retry in both consumers, all available, no errors, no missing",
+      "caller_result": "confirmed from render.json transitions; errors [] and missing []"
+    },
+    {
+      "claim": "capture ran against this copied consumer, not the original production workspace",
+      "caller_result": "confirmed: work/cold-package/render-01/launch.json project is this project root; served consumer bytes equal current src/ and assets/ hashes; browser-process.json code 0"
+    },
+    {
+      "claim": "no pre-existing file modified; only the new handoff d2d79e43... was added",
+      "caller_result": "confirmed by caller inventory diff: 1015 -> 1016 files, added ['.pixl/handoffs/d2d79e431ae1d7ac30ae15fdad33610b2173f403ea3b229d6e12a05020ac0e8e.json'], removed [], changed []",
+      "evidence": "work/cold-package-caller/preservation-diff.json"
+    },
+    {
+      "claim": "plar read queue.working still returns delivered with state ef6de040 revision 85 after the session",
+      "caller_result": "confirmed: next_action delivered, hash ef6de040, revision 85, pending_jobs [], selection_current True",
+      "evidence": "work/cold-package-caller/plar-read-working-after.json"
+    },
+    {
+      "claim": "provider job IDs cited for seed, animation, repair, motion, retry and paused attempts",
+      "caller_result": "all ten cited remote IDs, including controlled-create-0001/0002, found in work/cold-package/jobs.json; the three Working job IDs also appear in the current handoff resume.jobs"
+    },
+    {
+      "claim": "acceptance occurred at revisions 84-85 after the revision-80 snapshot",
+      "caller_result": "confirmed: work/live-family/family-completion.json publications revision 84 (8bc85500...) and 85 (ef6de040...); snapshot revision 80"
+    },
+    {
+      "claim": "historical Ready drift: r.22e90a2a03fe453a.task and the open 'task' carry plar_selection blockers",
+      "caller_result": "confirmed in work/cold-package/workflow.json task blockers; both are historical Ready-stage tasks; family and production member tasks have no blockers"
+    },
+    {
+      "claim": "visual: full and compact views identical; Start triangle, Working three orbiting segments, Paused two bars, Ready asymmetric check, Retry circular arrow with head",
+      "caller_result": "confirmed by the caller viewing destination.png and caller-built 8x and 4x sheets from the capture views; caller also notes visible blue-to-teal hue variation inside the Paused bars and mild shading inside Working and Retry clusters, all readable at 1x; Ready is a single colour",
+      "evidence": [
+        "work/cold-package/render-01/destination.png",
+        "work/cold-package-caller/caller-matrix-8x.png",
+        "work/cold-package-caller/caller-playback-4x.png"
+      ]
+    },
+    {
+      "claim": "Working motion: rigid quarter-turn steps, no morphing, clean 3->0 wrap",
+      "caller_result": "confirmed visually on caller-playback-4x.png: every 100 ms step including each wrap is the same quarter-turn of the same three shapes; both consumer rows identical"
+    }
+  ],
+  "discrepancies": [
+    {
+      "severity": "none",
+      "note": "The specialist wrote an optional new handoff record (.pixl/handoffs/d2d79e431ae1d7ac30ae15fdad33610b2173f403ea3b229d6e12a05020ac0e8e.json) restating the unchanged continuation: next delivered, same state and requirements hashes. The caller permitted this only as a new file; the inventory diff confirms no pre-existing file changed. The authoritative current handoff remains 4465bc20..., cited by CURRENT-HANDOFF.md through work/live-family/HANDOFF-current.json."
+    },
+    {
+      "severity": "none",
+      "note": "The specialist did not save raw MCP tool outputs; it saved CLI equivalents under work/cold-package/. The caller re-derived the key facts (state hash, revision, task states, family acceptance) from its own plar read runs and those CLI files."
+    },
+    {
+      "severity": "informational",
+      "note": "Neither the specialist nor the caller regenerated a grayscale comparison; non-colour distinction was judged from silhouettes on enlarged colour sheets. The retained grayscale verdict (live.family.distinction.verdict) is historical evidence and was not re-established here."
+    }
+  ],
+  "caller_independent_checks": {
+    "preservation": {
+      "baseline_count": 1015,
+      "after_count": 1016,
+      "added": [
+        ".pixl/handoffs/d2d79e431ae1d7ac30ae15fdad33610b2173f403ea3b229d6e12a05020ac0e8e.json"
+      ],
+      "removed": [],
+      "changed": []
+    },
+    "hashes": "work/cold-package-caller/hashes.json",
+    "check_rerun": {
+      "command": "python -I renderer-live/check.py --project . --capture work/cold-package/render-01",
+      "exit_code": 0,
+      "status": "pass",
+      "observations": 404,
+      "failures": [],
+      "available_views": 20,
+      "capture_sha256": "f3b5eb4d92606a9b1fae7e99e249e06b072318ecb9b2ac44716b78f61aa077a9"
+    },
+    "asset_measurements": "work/cold-package-caller/asset-measurements.json",
+    "render_summary": "work/cold-package-caller/render-summary.json",
+    "source_consumer_executor": {
+      "command": "node verify-integration.mjs assets/ready-confirmed.png",
+      "exit_code": 0,
+      "result": "work/cold-package-caller/verify-integration-ready.json",
+      "meaning": "statusCell and compactStatus both return assets/ready-confirmed.png with 1 frame for the succeeded state; PNG header 16x16; display filter nearest. Not a renderer."
+    },
+    "plar_read_before": "work/cold-package-caller/plar-read-working-before.json",
+    "plar_read_after": "work/cold-package-caller/plar-read-working-after.json",
+    "images_viewed_by_caller": [
+      "work/cold-package/render-01/destination.png",
+      "work/cold-package-caller/caller-matrix-8x.png",
+      "work/cold-package-caller/caller-playback-4x.png"
+    ]
+  },
+  "verdict": "Specialist evidence agrees with the assignment, the real files and both consumers; no mismatch prevents honest consumption."
+}

@@ -1,0 +1,130 @@
+{
+  "state_hash": "23718b6d027836af49f3548fcb38979bd4afca032e8113d7a9222c7c570c8c49",
+  "revision": 126,
+  "binding_hash": "d3180f24035e282132e90d85be28ee3a9767f1530f67fedde503c197f46f7666",
+  "candidate": "provenance-correction.retry.candidate",
+  "candidate_file": {
+    "path": ".pixl/assets/queue.ready/artifacts/0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4.png",
+    "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+  },
+  "output": "provenance-correction.retry.output",
+  "task": "provenance-correction.retry.task",
+  "task_status": "done",
+  "nominated": true,
+  "criteria": [
+    {
+      "id": "provenance-correction.retry.q.geometry",
+      "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "domain": "mechanical",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.review.verdict.0"
+    },
+    {
+      "id": "provenance-correction.retry.q.transparent-exterior.diagnostic",
+      "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+      "domain": "mechanical",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.review.verdict.1"
+    },
+    {
+      "id": "provenance-correction.retry.q.transparent-exterior",
+      "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+      "domain": "visual",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.review.verdict.2"
+    },
+    {
+      "id": "provenance-correction.retry.q.retry-meaning-without-color",
+      "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+      "domain": "visual",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.review.verdict.3"
+    },
+    {
+      "id": "provenance-correction.retry.q.style-coherence",
+      "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "domain": "visual",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.review.verdict.4"
+    },
+    {
+      "id": "provenance-correction.retry.q.consumers",
+      "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+      "domain": "engine",
+      "mode": "live",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "provenance.source.view",
+        "provenance.source.renderer",
+        "provenance.source.assignment",
+        "provenance.source.proposal",
+        "provenance.source.comparison",
+        "provenance.source.backend"
+      ],
+      "status": "pass",
+      "verdict": "provenance.retry.engine.verdict"
+    }
+  ],
+  "current_acceptance": {
+    "all_required_pass": true,
+    "task_complete": true
+  },
+  "files_verified": true,
+  "automatic_artistic_judgment": false
+}

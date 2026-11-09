@@ -1,0 +1,144 @@
+{
+  "assignment": "AUTHORING-STAGE.md (sha256 29e73af9a110353dd1453b1bbbb73d7166cf42a0b8eb97f71b53e73701b600aa) in the copied consumer; PIXL specialist report. Paths are project-relative.",
+  "role_and_limits": "Request preparation and recovery only. No remote PixelLab tool was called, no pixl_job_dispatch claim was made, no candidate was imported, inspected, nominated or accepted. Preparation, schema validity and prior reviews are not acceptance of any new output.",
+  "store": ".pixl/assets/queue.ready",
+  "state_hash_sequence": [
+    {"revision": 85, "hash": "ef6de040931d9ce9e6e9a09fe2c57d6cad1242db6fb6c9579ef1eac0fd70759d", "event": "starting state read via pixl_workflow/pixl_family/pixl_jobs/pixl_ready"},
+    {"revision": 86, "hash": "1903038503a87e5c7a17ad8f4722bd951e10eadd6878f5b245f46c87392efef0", "event": "pixl_production_plan published authoring-01 (32 records); allocation link write interrupted by declared evaluation event (needs_reconciliation)"},
+    {"revision": 86, "hash": "1903038503a87e5c7a17ad8f4722bd951e10eadd6878f5b245f46c87392efef0", "event": "identical plan repeated with the new expect: already_authored=true, no new state revision, three PLAR links completed in authoring-plar.txt"},
+    {"revision": 88, "hash": "3484cf385c91c8c28fa04316fb2c7c5b52c740178b505ccbd88631f57c893c9b", "event": "pixl_stage_prepare for stage working: input/packet attachment then durable job preparation (revision 87 was the intermediate commit inside the same call); declared caller requirement update event fired immediately after"}
+  ],
+  "authoring_plar_hash_sequence": [
+    {"hash": "c7e585de2bb18d21858924f22601347b59b8bb3ea266ce6bc8a19d3cd7dac7a4", "event": "original authoring-plar.txt (queue.working/retry/paused todo, unlinked)"},
+    {"hash": "1734673626129b1a719ca256b0e3116701282d4dbb05cde416a99ec34b6a2720", "event": "after recovered allocation links (production links + plan evidence rows added to the three assets); retained at .pixl/plar-history/1734673626129b1a719ca256b0e3116701282d4dbb05cde416a99ec34b6a2720.json"},
+    {"hash": "7c6c54fb55f0cb46fb8f5707468b3776438bd62ab102beafb49c2e91e50e3b41", "event": "after the server's caller update to queue.working purpose (only /assets[1]/purpose changed); AUTHORING-UPDATE.md sha256 495c8450391dcb26191ec2c0ad02dc8542a58b712e4009f813c51c2169e74b58"}
+  ],
+  "preserved_unchanged": {
+    "plar.txt": "a462ecf3b6b45c0382d3483b0f4f6912a9d0bd1d68e75253143faa1423837344",
+    "original_production": "family.working.task / family.retry.task / family.paused.task / family.delivery.task remain done with their candidates and verdicts; live.family.candidate untouched",
+    "assets_src_old_work": "not modified; only work/authoring-01/ was created by the specialist, the adapters wrote .pixl/assets/queue.ready/{state.px,production-plans,stage-requests,jobs,history} and authoring-plar.txt (+ .pixl/plar-history, .pixl/plar-lock), and the evaluation server wrote AUTHORING-UPDATE.md and the queue.working purpose"
+  },
+  "plan": {
+    "id": "authoring-01",
+    "marker": "authoring-01.plan",
+    "snapshot": ".pixl/assets/queue.ready/production-plans/b025e867d863f5ad28b47127d3384ea5f191d459573394521504243abd95d826.json",
+    "submitted_json": "work/authoring-01/plan.json",
+    "baseline": "ready.retained (X on r.22e90a2a03fe453a.output.ready, task r.22e90a2a03fe453a.task, sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5)",
+    "decisions": ["render.decision.style", "recheck.decision.destination"],
+    "knowledge": [],
+    "knowledge_note": "No K records exist in the store; knowledge list is empty by fact, not omission.",
+    "stages": {
+      "working": {"task": "authoring-01.working.task", "output": "authoring-01.working.output", "selection": "authoring-01.working.selection", "contract": "family.working.contract", "kind": "animation", "needs": ["live.seed.output"], "criteria": ["authoring-01.working.q.geometry", "authoring-01.working.q.transparent-exterior", "authoring-01.working.q.frame-assembly", "authoring-01.working.q.activity-not-success", "authoring-01.working.q.motion-continuity", "authoring-01.working.q.style-coherence", "authoring-01.working.q.consumers"]},
+      "retry": {"task": "authoring-01.retry.task", "output": "authoring-01.retry.output", "selection": "authoring-01.retry.selection", "contract": "family.retry.contract", "kind": "sprite", "needs": ["r.22e90a2a03fe453a.output.ready"], "criteria": ["authoring-01.retry.q.geometry", "authoring-01.retry.q.transparent-exterior", "authoring-01.retry.q.retry-meaning-without-color", "authoring-01.retry.q.style-coherence", "authoring-01.retry.q.consumers"]},
+      "paused": {"task": "authoring-01.paused.task", "output": "authoring-01.paused.output", "selection": "authoring-01.paused.selection", "contract": "family.paused.contract", "kind": "sprite", "needs": ["r.22e90a2a03fe453a.output.ready"], "criteria": ["authoring-01.paused.q.geometry", "authoring-01.paused.q.transparent-exterior", "authoring-01.paused.q.pause-meaning-without-color", "authoring-01.paused.q.style-coherence", "authoring-01.paused.q.consumers"]}
+    },
+    "delivery": {"task": "authoring-01.delivery.task", "output": "authoring-01.delivery.output", "members_in_order": ["r.22e90a2a03fe453a.output.ready", "authoring-01.working.output", "authoring-01.retry.output", "authoring-01.paused.output"], "destinations": ["render.choice.destination"], "criteria": ["authoring-01.delivery.q.continuity", "authoring-01.delivery.q.distinction", "authoring-01.delivery.q.destination"]},
+    "needs_rationale": "Working needs only live.seed.output because the chosen operation consumes only the seed bytes; the Ready baseline is already bound at task level (baseline X in ip, baseline task in dp, F.bs). Retry and Paused need r.22e90a2a03fe453a.output.ready because their prior official generations used the exact Ready bytes as the style anchor, so a future prepare must bind those bytes explicitly.",
+    "criteria_sources": "Every criterion cites retained S ids: render.source.brief (BRIEF.md 1-9), render.source.view (src/queue-view.ts 1-14), r.22e90a2a03fe453a.source.4 (retained src/queue.ts 1-4, same hash as the current file, for stateAfter), render.source.assignment, render.source.caller, render.source.assessment, recheck.source.findings. Ready's measured colour, alpha and cluster count were not turned into requirements; style criteria are qualitative.",
+    "existing_start": "queue.start untouched; the delivery destination criterion requires assets/start.svg byte hash unchanged.",
+    "record_count_check": "after publication: 408 records total, no duplicate ids, exactly 32 authoring-01.* records; the repeat call created none."
+  },
+  "evaluation_events_observed": [
+    {"event": "allocation write interrupted", "where": "first pixl_production_plan result", "payload": {"status": "needs_reconciliation", "reason": "Evaluation event: allocation write interrupted after successful plan publication"}, "recovery": "reread state (pixl_ready hash 19030385...; authoring-plar.txt still c7e585de..., no production links), repeated the identical plan JSON with expect 19030385...; result already_authored=true and all three assets linked; no duplicate records; state hash unchanged", "evidence": ["work/authoring-01/production-plan-result-01-failed-allocation.json", "work/authoring-01/production-plan-result-02-recovered.json"]},
+    {"event": "caller requirement update", "where": "pixl_stage_prepare result field evaluation_observation", "payload": {"kind": "caller_requirement_updated", "path": "AUTHORING-UPDATE.md", "asset": "queue.working"}, "effect": "authoring-plar.txt queue.working purpose appended with a reduced-motion requirement; requirements_hash changed; selection binding status changed; working task and prepared job blocked", "evidence": ["AUTHORING-UPDATE.md", "work/authoring-01/plar-read-queue-working-after-update.json", "work/authoring-01/jobs-after-update.json", "work/authoring-01/workflow-after-update.json"]}
+  ],
+  "prepared_request": {
+    "job": "authoring-01.working.join-01",
+    "task": "authoring-01.working.task",
+    "output": "authoring-01.working.output",
+    "state": "prepared (durable), remote_id null, events [], candidates []",
+    "packet_file": "work/authoring-01/stage-packet.json",
+    "packet_file_sha256": "892a94d7e2f7d214c9189e0f8c0ba7bd87b9196a1b1b0418b400874b1b84eeba",
+    "retained_packet_record": "stage.request.84dcf243f2cd22b69fa7ac906bfc33e7abd55bf113c2cc6d",
+    "retained_packet_file": ".pixl/assets/queue.ready/stage-requests/84dcf243f2cd22b69fa7ac906bfc33e7abd55bf113c2cc6db7566cb87bd4b1f8.json",
+    "retained_packet_sha256": "84dcf243f2cd22b69fa7ac906bfc33e7abd55bf113c2cc6db7566cb87bd4b1f8",
+    "retained_equals_submitted": true,
+    "inputs": {"live.seed.output": {"candidate": "live.working-seed.candidate", "sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629", "artifact": ".pixl/assets/queue.ready/artifacts/21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629.png", "bytes": 214, "base64_chars": 288, "base64_roundtrip_sha256_verified": true}},
+    "provider": "pixellab-official-mcp",
+    "tool": "mcp__pixellab__pixelart_workbench",
+    "arguments": {"argv": ["join", "<data:image/png;base64,... seed>", "<same>", "<same>", "<same>", "--as", "sheet", "--columns", "4"], "mode": "low", "notes": "see packet"},
+    "schema_sha256": "b770a5cb286033dea3499a989155bf0337982d465624abd725c5dfa3976a5d45",
+    "request_sha256": "c67c972dae27b8374320df51eb7e11c44f282177daceea2f060e49af13b2b362",
+    "intent_sha256": "1be8269529ddd615a33d430deeee4ed9bab8788b37f72fd3d9bbe76b2f5e7450",
+    "context_task_sha256": "017282f994d165c6924304db8fd8407af212ebad71d7296c369b2eb8eba0838f",
+    "prepared_at": "2026-11-09T08:32:59.260592+00:00",
+    "discovery": {"declaration_path": "official-discovery.json", "declaration_sha256": "671cf0859791c54c2a6efc22d4db96d4aef3fa700474c47bff6a4e0fe1e14bea", "declaration_text_embedded": true, "observed_at": "2026-11-09T08:31:55+00:00"},
+    "authorization": {"source": "PRODUCTION-STAGE.md cf596689393394fcc5a1c50ac61866e8a953bd784f937fb171f64febfd5bf7ad", "continuation": "AUTHORING-STAGE.md 29e73af9a110353dd1453b1bbbb73d7166cf42a0b8eb97f71b53e73701b600aa", "note": "preparation only; no dispatch claim; workbench declared free for subscribers"},
+    "dispatched": false,
+    "remote_executed": false
+  },
+  "tool_choice_justification": {
+    "chosen": "Deterministic construction through the official pixelart_workbench (free pixel tools), two official operations: (1) join four copies of the exact seed into the 64x16 sheet (this prepared request), (2) guarded patch_pixels rotating cells 2-4 by 90/180/270 degrees clockwise (next distinct job, not yet prepared).",
+    "rejected": "animate_image (AI model) with the seed as first_frame data URL.",
+    "pixel_art_reasoning": [
+      "The Working motif is three separated segments orbiting an empty centre in a 16x16 cell at four 100 ms phases; a four-phase orbit of a point-symmetric three-cluster shape is exactly a 90-degree rotation per frame, so the correct in-between frames are lossless pixel permutations of the seed and there is nothing for a generative model to invent.",
+      "Retained evidence: the AI animation of this same seed (live.working-animation-01.job, 5 frames returned, frames 1-4 selected) produced an opaque #808080 background in one frame (193 pixels, repaired by guarded patch), then visibly morphing/near-hold segments across phases 2/3 and a jump at the wrap (live.working-animation-repair-01 rejected). The accepted motion live.working-animation-motion-01.candidate is exactly clockwise quarter-turns of the seed executed through official guarded edits.",
+      "Local verification: cw rotation dst(x,y)=src(y,15-x) reproduces all four accepted motion-01 cells with 0 visible-pixel differences (counter-clockwise gives 58 differences on cell 1), so the construction policy is pinned to the accepted direction.",
+      "Volume and anchor stability, uniform angular velocity and a seamless wrap are guaranteed by construction, which is what the member criteria motion-continuity and transparent-exterior demand; the workbench path also costs no paid generation and carries the actual seed bytes as a data URL (fresh transport, not an old upload handle)."
+    ],
+    "why_join_first": "The seed is 16x16 and an edit cannot grow the canvas; join is the official operation that produces the 64x16 destination geometry from the seed bytes. The rotation edit then operates on the official join result id, keeping the whole construction inside official tools."
+  },
+  "frame_selection_assembly_policy": {
+    "file": "work/authoring-01/working-rotation-policy.json",
+    "file_sha256": "ba4cfb88742bce0c14d3af0534c92f010c19d930267db6959a3ebde96f3e3af2",
+    "summary": "Expected step-1 result is already the destination geometry (64x16, cells at x=0,16,32,48), so no frame selection from a larger set is intended. If the provider result differs (gutters, padding, other size or order): retain the raw output, never resize/crop-and-guess or silently drop/duplicate frames; either re-request join with corrected flags or perform a documented lossless cell extraction recording exact source rectangles in play order, each verified pixel-equal to the seed. Step 2 patches 160 pixels (cells 2-4) with expected/replacement pairs computed from the seed; transparent expected value assumed #00000000 (all 224 transparent seed pixels are RGBA 0,0,0,0) and must be confirmed with workbench measure after join (the earlier AI output used #80808000). Play order cell 0->1->2->3->0, each step a further 90-degree clockwise turn at 100 ms.",
+    "separate_review_obligations": ["mechanical: 64x16, four cells, alpha-0 exterior, no gutters", "pixel-exact: each delivered cell equals cw^k(seed) (local check)", "visual: native and 3x on #172336, every frame and live 100 ms playback with wrap; activity never reads as success; cluster count and volume stable", "family: grayscale/non-color distinction against Ready, Retry, Paused and Start", "engine: started->running through stateAfter, both statusCell and compactStatus, nearest 1x/3x, observed frame advance"]
+  },
+  "requirements_hashes": {
+    "queue.working_original_bound": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027",
+    "queue.working_current_after_update": "2901c7107d4f162e98653140ea8061dfe213821b22a5e1338d9d2d6de5b4ad0c",
+    "queue.retry": "5aad84985537c469a60845815d4d6a8caf11295bf034e9e6bc044dc5081f5fbd (unchanged, binding current)",
+    "queue.paused": "222d80d572d65eec7a54918ba857e0c40e5e1b90289c4c01b646e4f27c0c9b1f (unchanged, binding current)"
+  },
+  "blocked_now": {
+    "authoring-01.working.task": {
+      "workflow_blockers": ["production_plan: production_plan: authoring-01.working.task: production_plan: PLAR requirements changed; compare before authoring"],
+      "selection_binding": {"input": "authoring-01.working.selection", "bound_requirements_hash": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027", "current_requirements_hash": "2901c7107d4f162e98653140ea8061dfe213821b22a5e1338d9d2d6de5b4ad0c", "status": "changed"},
+      "no_longer_in_pixl_ready": true
+    },
+    "authoring-01.working.join-01": {
+      "state": "prepared",
+      "job_blockers": ["production_plan: authoring-01.working.task: production_plan: PLAR requirements changed; compare before authoring", "plar_selection: queue.working is changed (selected=True); compare current requirements with the retained plan"],
+      "next_action_reported": "resolve_context",
+      "plar_production_view": {"status": "available", "next_action": "resolve_prepared_intent", "new_request_allowed": false, "selection_current": false, "pending_jobs": ["authoring-01.working.join-01"]},
+      "meaning": "The retained request binds requirements e0614bd9...; the current queue.working requirements are 2901c710... (reduced-motion purpose appended). Dispatch and any new request for this asset are blocked until the drift is reconciled. The request was not deleted, rewritten or re-prepared."
+    },
+    "authoring-01.delivery.task": {"workflow_blockers": ["task_prerequisite: authoring-01.working.task is open; it must be done", "task_prerequisite: authoring-01.retry.task is open; it must be done", "task_prerequisite: authoring-01.paused.task is open; it must be done", "production_plan: production_plan: authoring-01.delivery.task: production_plan: PLAR requirements changed; compare before authoring"]},
+    "authoring-01.retry.task": {"workflow_blockers": [], "pixl_ready": true, "note": "not prepared in this assignment"},
+    "authoring-01.paused.task": {"workflow_blockers": [], "pixl_ready": true, "note": "not prepared in this assignment"},
+    "why_only_working_is_blocked": "Selection drift is per bound asset: only queue.working's requirements_hash changed. The plan marker remains current (no record in its scope changed); the delivery task inherits the working stage's PLAR drift because it checks all allocated members."
+  },
+  "reduced_motion_consumer_comparison": {
+    "new_requirement_text": "Caller update for this authoring branch: the reduced-motion mode must use a stationary Working symbol distinguishable from Ready and Paused. Confirm its consumer mapping before any further generation.",
+    "src_queue_view_ts": "statusVisuals has one running descriptor {label Working, path assets/working.png, frames 4}; display = {cell [16,16], scale 3, filter nearest, frameMs 100, background #172336}; statusCell and compactStatus both return the same descriptor. There is no reduced-motion key, no alternate path, no frames-1 variant for running, no matchMedia/prefers-reduced-motion check, and no flag on display. Grep for reduced|motion|prefers|matchMedia in src/ matched only the statusVisuals frames entries.",
+    "src_queue_ts": "QueueState is idle|running|succeeded|failed|paused; stateAfter maps started|ok|error|pause. No reduced-motion state or transition exists.",
+    "renderer": "renderer/view.mjs and renderer/index.html contain no reduced-motion handling (grep returned nothing); the paint loop always advances floor(elapsed/frameMs) mod frames.",
+    "conclusion": "The reduced-motion requirement currently has no consumer anchor: neither source file exposes a reduced-motion mapping, so the requirement cannot yet be bound to a symbol/usage, a destination path or a frame geometry. It is also outside the bound contract family.working.contract (px [64,16], four 100 ms frames) and outside the authored plan (changed plan content cannot reuse id authoring-01).",
+    "open_design_questions_for_the_consumer_review": [
+      "Mapping: a new statusVisuals descriptor or path (for example a frames-1 running variant) versus a renderer rule that holds one frame of the existing strip when reduced motion is requested; which function (statusCell, compactStatus, renderer) consults the preference.",
+      "Destination: a separate 16x16 static file or a designated frame of assets/working.png; whether both consumers share it.",
+      "Geometry/contract: whether the stationary symbol needs its own contract (16x16 static) or an amendment of family.working.contract, and whether it becomes a new PLAR asset row depending on queue.working or a new requirement row inside queue.working.",
+      "Distinction: a stationary Working symbol must be told apart from Ready (asymmetric check) and Paused (two upright bars) by shape alone; the seed's three orbiting segments at rest are a plausible proposal but this is a specialist proposal, not an owner requirement, and must be judged in grayscale at 1x/3x."
+    ]
+  },
+  "next_concrete_action": [
+    "Caller/owner consumer and contract review (no generation): decide and implement the reduced-motion consumer mapping in src/queue-view.ts (and renderer if applicable), then bind the changed sources in authoring-plar.txt as requirement rows with authority (requirement vs proposal), a destination path and delivery checks; re-read pixl_plar_read queue.working to obtain the new requirements_hash.",
+    "Resolve the prepared intent authoring-01.working.join-01 per provider-recovery before any new request: either keep it retained as historical unexecuted intent superseded by the drift, or, if the animated strip remains required alongside a stationary symbol, reconcile and re-bind under the reviewed requirements. Do not dispatch while plar_selection is changed.",
+    "Author a new plan id (or the explicit revision path) that binds queue.working to the reviewed requirements_hash and adds the stationary-symbol stage/criteria; retry and paused stages of authoring-01 remain current and ready and can be prepared independently when assigned."
+  ],
+  "not_completed_by_design": ["no dispatch, remote execution, import, inspection, nomination or acceptance", "Retry and Paused stage requests not prepared (not assigned)", "no revision of the plan or the prepared request after the caller update (assignment stops at truthful recovery)", "no family snapshot (delivery prerequisites open)"],
+  "evidence_files": {
+    "plan.json": "exact plan JSON submitted twice",
+    "production-plan-result-01-failed-allocation.json": "first result with needs_reconciliation",
+    "production-plan-result-02-recovered.json": "identical repeat, already_authored, links completed",
+    "build-packet.py": "script that computed the base64 data URL, packet and rotation policy (run with -I from the project root)",
+    "stage-packet.json": "exact packet submitted (base64 included), sha256 892a94d7e2f7d214c9189e0f8c0ba7bd87b9196a1b1b0418b400874b1b84eeba",
+    "working-rotation-policy.json": "frame-selection/assembly policy and step-2 patch list, sha256 ba4cfb88742bce0c14d3af0534c92f010c19d930267db6959a3ebde96f3e3af2",
+    "stage-prepare-result.json": "pixl_stage_prepare result summary with all identities",
+    "plar-read-queue-working-after-update.json": "full pixl_plar_read after the caller update",
+    "jobs-after-update.json": "full pixl_jobs report after the caller update (includes the complete retained request)",
+    "workflow-after-update.json": "full pixl_workflow report after the caller update",
+    "specialist-report.json": "this report",
+    "hash_note": "File hashes are of the bytes on disk (CRLF line endings on Windows for files written by build-packet.py). The builder printed LF in-memory hashes 71428626... (packet) and a2c241c1... (policy); JSON content is identical, and the submitted packet compares equal to the server-retained stage-request file."
+  }
+}

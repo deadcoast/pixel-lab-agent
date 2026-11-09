@@ -1,11 +1,17 @@
 # Runtime and tool boundaries
 
+Use [everyday production](everyday.md) for the normal operation sequence and
+[identities and paths](identities-and-paths.md) for hash domains, root-relative
+versus filesystem arguments and exact source retrieval. JSON CLI/MCP results add
+presentation labels without changing saved state or existing digest meanings.
+
 Read the bundled specification before producing UDL. The runtime's actual CLI help and MCP `tools/list` responses define callable arguments. Resolve `../../../scripts/pixl.py` relative to this reference directory, then invoke it with Python 3.11+ from the user's project directory. The selected Python environment also needs Pillow 10+ and jsonschema 4.18+. Use a project virtual environment; install the source package with `python -m pip install -e .` from the source checkout, or install the bundle's `../../../requirements.txt` with `python -m pip install -r "<resolved requirements path>"` in the destination environment. The plugin includes PIXL's own runtime source, not a Python interpreter or third-party packages.
 
 | Operation | CLI form | What it establishes |
 | --- | --- | --- |
 | Validate | `validate FILE --root ROOT` | The implemented syntax, schema, and reference checks |
 | Focus context | `context FILE FOCUS --budget BYTES` | Dependency closure within a strict byte budget; bytes are not model tokens |
+| Authoring context | `context STATE TASK_OR_OUTPUT_OR_PLAN --view authoring --root ROOT [--plar PATH --asset ID]` | Current planning index, exact criteria and source retrieval links; no history expansion or acceptance |
 | Ready work | `ready FILE` | State-level readiness according to declared prerequisites |
 | Change impact | `impact FILE ID` | Declared relationships affected by a proposed change |
 | Commit candidate | `commit STORE CANDIDATE --expect SHA256 --root ROOT` | Validated state replacement if the current canonical hash matches |
@@ -53,4 +59,32 @@ On validation failure, preserve the candidate and report the exact diagnostic. O
 
 ## Requirements and direct planning
 
+Retain large JSON reports without embedding the tool result in a shell command:
+that can exceed Windows command-length limits and can change quoting or Unicode.
+Copy a host-spilled response as bytes when available. Otherwise run the equivalent
+bundled CLI command and stream stdout into a binary file with `subprocess.run`:
+
+```python
+with open(report_path, "xb") as output:
+    subprocess.run([python, runner, "context", state, focus,
+                    "--view", "authoring", "--root", project_root],
+                   stdout=output, check=True)
+```
+
+Use actual resolved paths; create the parent directory first. Parse the saved JSON
+explicitly as UTF-8. MCP may return both text `content` and `structuredContent`;
+verify they agree before selecting one for a formatted report. The wrapper is not
+a second independent observation. When rerunning a read, record its current state
+hash rather than claiming it is the exact earlier response after state changed.
+
 Use `pixl_plar_read` / `pixl_plar_save` for the consumer project's requirements queue; [PLAR](../../plar/SKILL.md) defines the semantic inventory operation. Use `pixl_commit` with inline `document` for a complete next-revision JSON plan when available. It accepts the same JSON shape as `pixl_encode` and runs the same state validation, without requiring a temporary wire file. Supply exactly one of `document` or `candidate`, along with `store` and the current `expect` hash. CLI equivalent: `commit STORE PLAN.json --json --expect HASH --root PROJECT`.
+
+## Direct result files
+
+Context, request-review, review-context, candidate-review, family, family-snapshot
+and PLAR handoff accept CLI `--result-path` / MCP `result_path`. Supply an explicit
+consumer root and fresh relative path. The tool returns a compact path/hash/size
+summary and writes the full result (JSON, or CLI full wire context as PX text).
+On `result_saved:false`, inspect the returned `operation_result` and current state:
+publication may have succeeded even though file export failed. Default output and
+existing operation recovery rules remain unchanged.

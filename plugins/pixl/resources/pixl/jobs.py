@@ -58,6 +58,9 @@ def _blockers(doc, task_id, root=None, dispatching=False, folder=None):
     reasons = lifecycle.blockers(doc, task_id)
     if root is not None:
         from .plar import selection_bindings
+        from .production_plan import blockers as plan_blockers
+
+        reasons.extend(plan_blockers(doc, task_id, root, folder))
 
         reasons.extend(
             f"plar_selection: {row.get('asset_id', row['input'])} is {row['status']} (selected={row.get('selected_for_asset', True)}); compare current requirements with the retained plan"

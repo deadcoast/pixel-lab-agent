@@ -52,6 +52,28 @@ Use the shared skill's state-authority reference when authoring or resuming PX1/
 
 - **UI and project assets:** Relate each icon, panel, control state, typeface and decorative element to a visible purpose. Preserve hierarchy, safe areas, state distinctions, border/slicing geometry and text readability at the intended display scale. Reuse shared visual roles across consumers instead of inventing a separate image for every function.
 
+- **Visual roles:** Interpret a colour's role separately from its extent. An accent,
+  highlight, border or base colour names a relationship in the design; it does not by
+  itself prescribe the dominant fill, percentage coverage or exclusivity. Make the
+  requested role perceptible and coherent, then choose its extent using expert judgment.
+  A token barely visible mark may fail that purpose, but it does not follow that a
+  mostly neutral treatment with a clear accent is invalid. State any chosen dominance
+  as a proposal unless the actual brief or approved reference role requires it.
+- **Transparency and subject construction:** Separate transparent negative space from
+  opaque components of the subject. A foreground emblem may include a deliberate
+  plate, badge, outline or backing with transparent exterior; that is different from
+  an unintended opaque canvas matte. Identify each shape's intended role from the
+  brief, composition and consumer before judging it. A transparency requirement alone
+  does not select an outline-free glyph or prohibit every opaque backing shape.
+
+- **Shape relationships:** Keep qualitative relationships separate from a preferred
+  construction. Asymmetry can involve angles, position, thickness, curvature, length
+  or several of these; it is not synonymous with unequal arm lengths. Judge whether
+  the actual silhouette conveys the requested symbol and relationship. A conventional
+  recipe is useful expert guidance, not an exclusive definition of every recognizable
+  pixel-art version. Attribute and scope the chosen construction without adding it to
+  the owner's rejection rule unless the source actually requires that construction.
+
 - **Pixel craft:** Judge silhouette, cluster shape, selective detail, contrast hierarchy, and motion readability at the intended size. Evaluate ramps and hue shifts against reference art. Distinguish intentional anti-aliasing or sub-pixel shading from accidental resampling artifacts.
 - **Characters and animation:** Establish consistent volume, anchor points, equipment placement, direction semantics, contact poses, and temporal spacing. A correct frame count alone does not establish motion quality. Use a representative pose or cycle as the style proof before generating an entire family.
 - **Tiles and environments:** Establish projection, cell geometry, shared boundaries, transition rules, material identity, repeat visibility, and placement conventions. Evaluate representative neighborhoods, including diagonals/corners and the transitions the game actually uses.

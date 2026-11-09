@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "role": "calling agent",
+  "status": "delivered",
+  "status_scope": "RENDER-STAGE.md stage completed in this explicitly guided continuation after the original caller was interrupted (its background PIXL child was stopped by the host; no FAMILY-RESULT.json existed). The representative Ready sample was reviewed in the actual rendered consumers, the caller made the scoped style decision (ADOPT), PLAR was updated with the source-bound baseline and renderer evidence, and an exact handoff was retained. The family remains unfinished: Working, Retry and Paused are absent (never produced, not rejected). No generation, provider call, credential, install, host-setting, renderer or PX2 change occurred. This is not an unassisted pass of the original trial: the renderer repair in RENDER-RECHECK.md supplied the capture correction, and the original renderer/ captures with their 9 failed checks remain the historical record.",
+  "recorded_at": "2026-11-08T11:00:17+00:00",
+  "assignment": {
+    "RENDER-STAGE.md": {
+      "path": "RENDER-STAGE.md",
+      "sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+      "bytes": 2473
+    },
+    "continued_under": {
+      "path": "RENDER-RECHECK.md",
+      "sha256": "3b3e6ad12336d77187d764d7c318dc16ebf418236c7027fed75a3129e8f95e35",
+      "bytes": 2804
+    }
+  },
+  "workspace": "C:/github/pixel-lab-agent/evidence/style-family-rendering/20261108/native/claude-render-recheck-01/project",
+  "asset_id": "queue.ready",
+  "requirements_hash": {
+    "at_stage_start": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+    "after_style_decision_save": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e"
+  },
+  "provider_simulated": true,
+  "interrupted_original_delivery": {
+    "what_was_preserved": "Caller pre-specialist notes (work/render-stage-review/caller-visual-notes-pre-specialist.json), caller capture work/render-caller-01 with renderer/check.py 95/104 and offset search; specialist capture work/render-pixl-01 with 95/104, measurements.json, assessment-crosscheck.json, adopt/no-adopt PLAR proposals and ledgers, hash probes and crops in work/render-stage-pixl/. The specialist's render-review.json was never written and no PLAR/PX2 save or handoff occurred.",
+    "how_resolved": "A new PIXL instance wrote work/render-stage-pixl/render-review.json as an artifact-based restart from those drafts plus a fresh corrected capture; the caller independently compared the drafts, the new review and its own evidence before deciding.",
+    "numerical_reconciliation": "Earlier caller note claimed Start vector anti-aliased edge pixels '4 -> 12'; decoded images show 28 at 1x and 84 at 3x (9 colours, linear 3x). The specialist's measurements were correct; all other preserved numbers (pixel map, arms 7/19 px, bbox 11x9, dx=+9, gaps 12/6, 29/261 accent px, triangle 10x12) confirmed."
+  },
+  "style_decision": {
+    "decision": "ADOPT the delivered Ready sample assets/ready-confirmed.png (sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5; PX2 candidate ready.retained, task r.22e90a2a03fe453a.task done) as the scoped family style baseline for queue.working, queue.retry and queue.paused.",
+    "decided_by": "calling agent under RENDER-STAGE.md lines 4-6, using the specialist recommendation (work/render-stage-pixl/render-review.json) and the caller's independent review",
+    "artifact": {
+      "path": "work/render-recheck-review/caller-style-decision.json",
+      "sha256": "bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30",
+      "bytes": 6501
+    },
+    "establishes": [
+      "hard binary pixel edges, no anti-aliasing or outline",
+      "about 2 px perpendicular stroke (3-px diagonal runs, 2-px orthogonals)",
+      "flat single cool-blue primary fill (#70b9ed as rendered, equal to the Start fill); no fixed palette",
+      "footprint about 9-12 px in a centred 12x12 safe area, mass comparable to 29 px",
+      "transparent exterior, no plate; binary alpha in practice (full alpha still permitted by the contract)"
+    ],
+    "does_not_establish": [
+      "silhouettes of Working, Retry, Paused",
+      "Working motion/timing or that it cannot read as success",
+      "non-colour distinction among members",
+      "Paused comparison and collective family continuity",
+      "PixelLab-generated quality (controlled pixellab-test fixture)",
+      "production-host display acceptance"
+    ],
+    "separation_of_acceptances": {
+      "sample_style_adoption": "done (this decision)",
+      "available_member_destination": "Ready and Start exercised in the representative fixture renderer in both consumers at 1x/3x with 104/104 checks; production host unverified",
+      "collective_family_acceptance": "not possible: members absent, no PX2 family plan",
+      "pixellab_generated_quality": "not established (provider_simulated=true)"
+    }
+  },
+  "renderer_evidence": {
+    "historical_renderer": {
+      "captures": [
+        "work/render-caller-01",
+        "work/render-pixl-01"
+      ],
+      "checker": "renderer/check.py 95/104 (work/render-stage-review/check-render-caller-01.json, work/render-stage-pixl/check-render-pixl-01.json)",
+      "failures": "'screenshot and observed viewport dimensions' + 8 'screenshot matches canvas pixels'; diagnosed then and confirmed now as a dx=+9 capture-layout bookkeeping offset (DOM measured at 1262x904, screenshot 1280x1000), not a rendering defect; preserved unchanged"
+    },
+    "corrected_renderer": {
+      "captures": [
+        "work/render-recheck-caller-01 (caller)",
+        "work/render-recheck-pixl-01 (specialist)"
+      ],
+      "screenshot_sha256": "a7f8ed81e9cb944ed28bafdadb1ef8c0c1a42ed6da2c39c33d224c16db1801d8 (both captures byte-identical)",
+      "checker": "renderer-recheck/check.py 104/104 on both captures; caller re-ran it on the specialist capture",
+      "canvases": "all eight view PNGs byte-identical to the historical captures"
+    },
+    "observed": "ok -> succeeded -> label Ready with assets/ready-confirmed.png in statusCell and compactStatus at 1x and 3x; canvases are exact alpha composites on #172336 with nearest 3x3 blocks; idle -> Start renders the preserved anti-aliased SVG; running/paused/failed show 'Missing asset' with labels Working/Paused/Retry; no view invented for absent members."
+  },
+  "family_state": {
+    "available": [
+      {
+        "asset_id": "queue.ready",
+        "path": "assets/ready-confirmed.png",
+        "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+        "status": "in_progress; delivered sample, adopted scoped baseline; six historical verdicts pass; selection binding now 'changed' (see production_selection_diagnostic)"
+      },
+      {
+        "asset_id": "queue.start",
+        "path": "assets/start.svg",
+        "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+        "status": "deferred (preserved existing vector); rendered for idle in both consumers; requirements_hash unchanged d25bb898..."
+      }
+    ],
+    "absent_not_rejected": [
+      {
+        "asset_id": "queue.working",
+        "path": "assets/working.png",
+        "frames": 4,
+        "status": "todo; references[style] and approved_style_reference now bound to ready-sample"
+      },
+      {
+        "asset_id": "queue.retry",
+        "path": "assets/error-retry.png",
+        "status": "todo; same bindings"
+      },
+      {
+        "asset_id": "queue.paused",
+        "path": "assets/paused.png",
+        "status": "todo; same bindings"
+      }
+    ],
+    "rejected": "none; failed job first_request (controlled-create-0001) produced no image and is retained provider history",
+    "px2_family_plan": "none (pixl_family: families []); not manufactured"
+  },
+  "plar_update": {
+    "old_hash": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+    "new_hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "saved_document": {
+      "path": "work/render-recheck-pixl/plar-update-saved.json",
+      "sha256": "9ca220194cdda47c9aa704c0640ec93c6995ac80d9034efe6f4c33c9b903c083",
+      "bytes": 63849
+    },
+    "delta_vs_proposal": {
+      "path": "work/render-recheck-pixl/plar-saved-delta.json",
+      "sha256": "e2fce77e0cdb629c25f2c5b18b4e5975f91b95c7db218aa3891989daacef64b4",
+      "bytes": 4197
+    },
+    "change_ledger": {
+      "path": "work/render-recheck-pixl/plar-change-ledger.json",
+      "sha256": "a270c3bb0fdfd4eeef3f7e0cb353a41b27a5b37e27292d624c48c9aa73332c48",
+      "bytes": 38002
+    },
+    "save_result": {
+      "path": "work/render-recheck-pixl/plar-save-result.json",
+      "sha256": "1f9566c511d87d37011a92b4bfeaa25f4e8ca51c54f4495b7a719e2285555973",
+      "bytes": 14238
+    },
+    "after_save": {
+      "path": "work/render-recheck-pixl/plar-after-save.json",
+      "sha256": "ca7726924b3878fdf495cba9604d2aaccfd032e0777de678d329a3e758b24dcf",
+      "bytes": 6689
+    },
+    "history_retained": ".pixl/plar-history/71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de.json",
+    "hash_covered_changes": [
+      "sources +ready-sample, renderer-view (renderer-recheck/view.mjs), render-stage, render-recheck",
+      "queue.ready existing role, delivery checks 4 and 5 refreshed (stale text from ledger C17)",
+      "queue.ready approved_style_reference -> requirement (adopted baseline)",
+      "queue.ready renderer_display_observation added (observation)",
+      "queue.working/retry/paused references[style] + approved_style_reference -> requirement",
+      "queue.working renderer_frame_extraction unknown -> observation"
+    ],
+    "hash_safe_changes": [
+      "coverage included/unresolved",
+      "questions and next on all rows",
+      "evidence links (+10 queue.ready, +1 each other row)"
+    ],
+    "requirements_hash_by_row": {
+      "queue.ready": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+      "queue.working": "c6b5121c05396b2d21c68669dc9deffb8f71e9e44ddeb48ada7fec44d01126e5",
+      "queue.retry": "c0404a1486c4a700a5342e3926de3abe363d8362a2ed11ef3a9756ede308bd4a",
+      "queue.paused": "0bb25469522009a4ad8830b5d92b9e393da336d45d69179029bb82c7e5ecd935",
+      "queue.start": "d25bb8982e69cb1f0a2fb448893bfa29432f21f498368312e58cbdba26250c42"
+    },
+    "status_labels": "queue.ready in_progress (unchanged; integrated would be a caller claim without production-host display); working/retry/paused todo; start deferred"
+  },
+  "production_selection_diagnostic": {
+    "task": "r.22e90a2a03fe453a.task (done)",
+    "bound_requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+    "current_requirements_hash": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+    "selection_status": "changed",
+    "derived_next_action": "review_contract",
+    "handling": "preserved; the six historical verdicts remain valid for the historical contract only; old jobs not rebound, done task not reopened, verdicts not transferred; new Ready generation only under explicit new authorization against the corrected packet work/queue.ready-reassessment/request-review.json"
+  },
+  "px2_state": {
+    "path": ".pixl/assets/queue.ready/state.px",
+    "sha256": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "changed_this_stage": false
+  },
+  "independent_comparison": {
+    "path": "work/render-recheck-review/caller-review.json",
+    "sha256": "736befa0ea6143962830aa77671e9b2f9d506c423f27f0ebc4a3ebba7828c1bd",
+    "bytes": 9683,
+    "verdict": "consistent"
+  },
+  "handoff": {
+    "path": ".pixl/handoffs/ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67.json",
+    "sha256": "ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67",
+    "bytes": 15049,
+    "saved_by": "pixl_plar_handoff (specialist, round 2)",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "requirements_hash": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+    "derived_next": "review_contract",
+    "selection_hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "caller_verification": "resume block equals the caller's fresh pixl_plar_read continuation"
+  },
+  "specialist_artifacts": [
+    {
+      "path": "work/render-stage-pixl/render-review.json",
+      "sha256": "facb266d84951feaeb843a6afa52d8303f7af1ec34acaa4ad98cac9365492554",
+      "bytes": 26659,
+      "role": "specialist render-stage review and style recommendation (adopt, scoped)"
+    },
+    {
+      "path": "work/render-recheck-pixl/render-recheck-review.json",
+      "sha256": "bc972635806f88c1aedd0e708e47e1f8952e826dac40b12a16ed8b2ce56c21c9",
+      "bytes": 13087,
+      "role": "specialist renderer-recheck review"
+    },
+    {
+      "path": "work/render-recheck-pixl/measurements.json",
+      "sha256": "51c7960787a13d244de078278776ed8304107e95682c87027d91e4d392dd76a3",
+      "bytes": 28560,
+      "role": "specialist Pillow measurements of the recheck capture"
+    },
+    {
+      "path": "work/render-recheck-pixl/check-render-recheck-pixl-01.json",
+      "sha256": "af8cfc0097be88e25d688dd183c0d59716ba4970bec63d7a483a481084c7414f",
+      "bytes": 11045,
+      "role": "renderer-recheck/check.py 104/104"
+    },
+    {
+      "path": "work/render-recheck-pixl-01/render.json",
+      "sha256": "904a7a6102ab59b850cec00c24c6373430a0bd3976a40b684cabe42070337c1d",
+      "bytes": 18351,
+      "role": "specialist recheck capture report"
+    },
+    {
+      "path": "work/render-recheck-pixl-01/destination.png",
+      "sha256": "a7f8ed81e9cb944ed28bafdadb1ef8c0c1a42ed6da2c39c33d224c16db1801d8",
+      "bytes": 41087,
+      "role": "specialist recheck screenshot"
+    }
+  ],
+  "caller_artifacts": [
+    {
+      "path": "work/render-recheck-review/caller-notes-pre-specialist.json",
+      "sha256": "94b0ee569249663bf218ce805fb92d69f27e124f9e43f57245266f6af6d0d88f",
+      "bytes": 11863,
+      "role": "caller notes and baseline hashes before delegation"
+    },
+    {
+      "path": "work/render-recheck-caller-01/render.json",
+      "sha256": "d47c54a20abdff5d59f122d5e97415a9bdd613f696eeb088169608177f6632d9",
+      "bytes": 18351,
+      "role": "caller recheck capture report"
+    },
+    {
+      "path": "work/render-recheck-caller-01/destination.png",
+      "sha256": "a7f8ed81e9cb944ed28bafdadb1ef8c0c1a42ed6da2c39c33d224c16db1801d8",
+      "bytes": 41087,
+      "role": "caller recheck screenshot"
+    },
+    {
+      "path": "work/render-recheck-caller-01-check.json",
+      "sha256": "0d404b486034a32d135371872f51bbbaf567c3168d7ade72ac7d556dda60170e",
+      "bytes": 11045,
+      "role": "renderer-recheck/check.py on the caller capture, 104/104"
+    },
+    {
+      "path": "work/render-recheck-review/caller-check-of-pixl-capture.json",
+      "sha256": "af8cfc0097be88e25d688dd183c0d59716ba4970bec63d7a483a481084c7414f",
+      "bytes": 11045,
+      "role": "caller re-run of the checker on the specialist capture, 104/104"
+    },
+    {
+      "path": "work/render-recheck-review/caller-style-decision.json",
+      "sha256": "bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30",
+      "bytes": 6501,
+      "role": "caller scoped style decision"
+    },
+    {
+      "path": "work/render-recheck-review/caller-review.json",
+      "sha256": "736befa0ea6143962830aa77671e9b2f9d506c423f27f0ebc4a3ebba7828c1bd",
+      "bytes": 9683,
+      "role": "caller independent comparison"
+    },
+    {
+      "path": "work/render-recheck-review/write-results.py",
+      "sha256": "e98c96f7f37cc745090772593f290d408b448cb03475c269af2c8b2777d7351b",
+      "bytes": 33990,
+      "role": "script that wrote caller-review.json, FAMILY-RESULT.json and RENDER-RECHECK-RESULT.json"
+    }
+  ],
+  "preserved_historical": [
+    {
+      "path": "work/render-stage-review/caller-visual-notes-pre-specialist.json",
+      "sha256": "e632adeaae62276706181c63294f6d3f28c60f2f5554a5a7e8dc8e77bb5aff89",
+      "bytes": 5288
+    },
+    {
+      "path": "work/render-stage-review/check-render-caller-01.json",
+      "sha256": "ad351fd3a193219617e0aded90580a878786e2dcf00c004a8091f1562b418104",
+      "bytes": 11621
+    },
+    {
+      "path": "work/render-stage-review/screenshot-offset-search.json",
+      "sha256": "e8c705a82f68ab9ec96bd33b75809cf9a10c0e284c57d25906d7970e0efd8e15",
+      "bytes": 2441
+    },
+    {
+      "path": "work/render-stage-pixl/check-render-pixl-01.json",
+      "sha256": "147abf86e439fe259c484e81c320e6428d5e5a5a4fe1fc08bd356f4db6f48d97",
+      "bytes": 11621
+    },
+    {
+      "path": "work/render-stage-pixl/measurements.json",
+      "sha256": "6147a1063f12f6ff77ddec85e57b21331b70997aca449873bfc2ec0aff6b74e6",
+      "bytes": 14112
+    },
+    {
+      "path": "work/render-stage-pixl/assessment-crosscheck.json",
+      "sha256": "0369f3f3c74648e97523630d856744f5feb06ba87aaec07fd94bc9543b3c50e4",
+      "bytes": 7112
+    },
+    {
+      "path": "work/render-stage-pixl/plar-update-proposal.json",
+      "sha256": "68070a1d78d187c8adbb20b21dbc736b527542269c59b46f32d2d22aea4d8f72",
+      "bytes": 58699
+    },
+    {
+      "path": "work/render-stage-pixl/plar-change-ledger.json",
+      "sha256": "2f9530050a73a4f274799f39f4f6f5007b1cf19f1ab23b2d4fd9d83ebda964a0",
+      "bytes": 30928
+    },
+    {
+      "path": "work/render-caller-01/destination.png",
+      "sha256": "1d13cde1c01a24a91901382b2669b4ce34108f8751b92b13a14cc7f53036317e",
+      "bytes": 41089
+    },
+    {
+      "path": "work/render-pixl-01/destination.png",
+      "sha256": "1d13cde1c01a24a91901382b2669b4ce34108f8751b92b13a14cc7f53036317e",
+      "bytes": 41089
+    },
+    {
+      "path": "HANDOFF-RESULT.json",
+      "sha256": "75582aa6d6b2e98bec90d196e2bf9d1b87c4e91d8377b508768718f3ab593601",
+      "bytes": 20103
+    },
+    {
+      "path": "DELIVERY-RESULT.json",
+      "sha256": "2f32346b177c6e27da1f579d1e18064f123f4f8ff27ef91537a116034c450253",
+      "bytes": 23326
+    },
+    {
+      "path": "COLD-RESULT.json",
+      "sha256": "6b38569fd4ae4a6a4627ca1759792a19f49423fb7901225696386c39bfe29aa7",
+      "bytes": 18173
+    },
+    {
+      "path": "PARENT-RESULT.json",
+      "sha256": "902c613aa726aa23f865ae72b78a841775779ccbbc7d0fea34209ed1e0bee6c9",
+      "bytes": 7250
+    },
+    {
+      "path": ".pixl/handoffs/193d971414213cf407e19fa244b3f1f9f51f593c808f7236c7b41b2c8388427c.json",
+      "sha256": "193d971414213cf407e19fa244b3f1f9f51f593c808f7236c7b41b2c8388427c",
+      "bytes": 16968
+    }
+  ],
+  "unresolved_obligations": [
+    "Working, Retry and Paused production under the adopted baseline: each needs a fresh caller-compared request/criteria packet, pixl_plar_prepare, explicit new provider authorization, renderer-recheck capture and check, grayscale non-colour comparison; Working additionally needs interactive playback review (node renderer-recheck/server.mjs).",
+    "PX2 family plan (baseline ready.retained, members, destination choices, collective continuity criterion) before any collective acceptance.",
+    "Production-host display verification before labelling queue.ready integrated.",
+    "queue.ready selection binding 'changed' remains a visible diagnostic until a deliberate decision on the sample contract; any new Ready generation needs explicit new authorization."
+  ],
+  "not_done_by_design": [
+    "no new generation, provider call, job preparation or dispatch",
+    "no edits to renderer/ or renderer-recheck/, historical contracts, verdicts, candidate, PX2 state, PLAR history or prior results",
+    "no family plan, family snapshot or completed-family claim",
+    "no relabelling of the historical renderer trial"
+  ],
+  "next": "Produce the absent members under the adopted baseline, one at a time, starting with queue.working (fresh caller-compared packet, pixl_plar_prepare, explicit new authorization), then capture each with renderer-recheck/ and compare the family in grayscale; resume from the handoff ea4a61e1... after rereading focused PLAR (plar bb997899..., state 7a97831f...)."
+}

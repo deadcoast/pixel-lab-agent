@@ -76,6 +76,16 @@ requirements remain readable. Queue `status` remains an authored progress label.
 `new_request_allowed` is only a local selection/pending-work advisory; preparation
 still validates the exact reviewed request, current source identity and connection.
 
+After the selected task is accepted, `production.delivery` compares its nominated
+bytes with the declared destination and reports every saved containing family's
+current acceptance and manifest. `next_action: delivered` requires matching bytes,
+current requirements and completed containing families, including current explicit
+PLAR selections for their production members; it creates no new verdict. An older
+sample baseline retains its historical contract and separately scoped adoption.
+Missing/changed destination files or unfinished collective review keep
+`review_delivery`. Pending jobs and changed requirements retain their earlier
+recovery priority. The authored `integrated` label cannot establish completion.
+
 Single-output preparation links the resulting store/task/output and snapshot evidence
 back to the row. A failed concurrent queue save leaves the prepared job intact; resume
 the same preparation to repair its link. The default asset store is discoverable;

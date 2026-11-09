@@ -10,6 +10,7 @@ The retained provider evidence and image are controlled fixtures, not upstream a
 The completed production and original contracts/reviews remain historical evidence.
 No new generation, credentials, package installs or global settings are assigned.
 The caller owns the independent comparison and final consumption.
+Native messages are limited to the agents created for this assignment, not other sessions.
 """
 PROMPT = """You are the calling agent continuing PHASE.md. Delegate the retained consumer to
 one native PIXL specialist, explicitly supplying its assignment and installed skill.

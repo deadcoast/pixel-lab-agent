@@ -1,0 +1,1239 @@
+{
+  "role": "caller /root; not a specialist result",
+  "coverage": {
+    "before": 20,
+    "after": 23,
+    "exact_index_identity_verified": true
+  },
+  "mapping": [
+    {
+      "before": {
+        "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters, padding or extra canvas; the consumer slices frame*16,0,16,16 for frames=4 and advances at display.frameMs 100 ms per frame (nominal 400 ms cycle).",
+        "domain": "mechanical",
+        "id": "authoring-01.working.q.geometry",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.view"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "2ed1c002b7e74113a05691c6f1049a5d2687d9cd3d6edc72487c70b289f2b4e1",
+        "record_status": "current",
+        "current_record_sha256": "2ed1c002b7e74113a05691c6f1049a5d2687d9cd3d6edc72487c70b289f2b4e1",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view-successor.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer-successor/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and, under no-preference only, advances floor(elapsed/100) mod 4 (nominal 400 ms cycle). Under reduced motion it selects frame zero without changing the four-cell sheet geometry.",
+          "domain": "mechanical",
+          "id": "provenance-correction.working.q.geometry",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "21f49b637b1d2fa7484882349a3e78ed3e4ad40af658a9130a8169ca914873fd",
+          "record_status": "current",
+          "current_record_sha256": "21f49b637b1d2fa7484882349a3e78ed3e4ad40af658a9130a8169ca914873fd",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3, src/queue-view-successor.ts:4-9, renderer-successor/view.mjs paint()",
+      "caller_literal_analysis": "Required dimensions and layout; consumer slicing is implementation evidence. Transparent in-cell margins are composition, not added canvas.",
+      "discriminating_alternative": "A valid 64x16 sheet with generous transparent margins remains permissible; a gutter that changes slicing does not.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "In every cell, all pixels outside the activity marks have alpha 0; no opaque matte, plate, grey tile or fringe in any frame (the rejected generated frame whose background held 193 opaque #808080 pixels is this failure class). Partial alpha on mark pixels is permitted; binary alpha is not required.",
+        "domain": "mechanical",
+        "id": "authoring-01.working.q.transparent-exterior",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "a2a7a4b732d9f595aca9d557d1a16fbce9e9498d24a3d72a7a3e12a502374c83",
+        "record_status": "current",
+        "current_record_sha256": "a2a7a4b732d9f595aca9d557d1a16fbce9e9498d24a3d72a7a3e12a502374c83",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "id": "provenance-correction.working.q.transparent-exterior.diagnostic",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "0fb138e91076b9acc555690bacd0db1ac0df21f4018b19486303bf9fb7eca36f",
+          "record_status": "current",
+          "current_record_sha256": "0fb138e91076b9acc555690bacd0db1ac0df21f4018b19486303bf9fb7eca36f",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "id": "provenance-correction.working.q.transparent-exterior",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "680724bf6f950b42c68bc841d9d9908162bdc691f8c8fd44bc98e96bf57661ba",
+          "record_status": "current",
+          "current_record_sha256": "680724bf6f950b42c68bc841d9d9908162bdc691f8c8fd44bc98e96bf57661ba",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; adopted style in work/family-render-review/caller-comparison-final.json style_decision; SUCCESSOR-ADOPTION.md:25-31",
+      "caller_literal_analysis": "Old outside-mark alpha rule mixes measurement with subject judgment. New visual check judges intended exterior and permits deliberate backing and selective AA; new local diagnostics flag for review without rejection thresholds.",
+      "discriminating_alternative": "A deliberate backing or a glyph spanning the cell can be valid despite a component flag. An unintended opaque matte remains a visual failure. Alpha-zero magenta RGB is invisible.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "When the provider result is not already the exact 64x16 four-cell sheet (more frames than four, another layout, gutters or padding), the retained assembly record names the exact source frames or cell rectangles in play order and every delivered cell is a lossless copy: no resize, resample, recolor, duplication or silent frame drop; all raw provider frames are retained beside the assembled strip.",
+        "domain": "mechanical",
+        "id": "authoring-01.working.q.frame-assembly",
+        "mode": "local",
+        "sources": [
+          "render.source.view",
+          "render.source.assignment"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "f524a8f70a0cdf6b7c6b3888c87930cc0dfe0a73db4b35ca57fecc307233fca2",
+        "record_status": "current",
+        "current_record_sha256": "f524a8f70a0cdf6b7c6b3888c87930cc0dfe0a73db4b35ca57fecc307233fca2",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "For this reuse-only successor, record the exact retained Working source cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc and verify the destination PNG is byte-identical. No new frame assembly, join, patch, resize, resample, recolor, duplication or drop is performed. Preserve the earlier raw provider outputs and assembly records unchanged. The obsolete prepared join and proposed seed-rotation step-two checks are non-applicable to this reuse path; a future construction change requires review of its own exact assembly policy.",
+          "domain": "mechanical",
+          "id": "provenance-correction.working.q.frame-assembly",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "65dc0e256e0a312bbe31ee042a6299734bc95815c5c8571cd7eb684a44a90a0d",
+          "record_status": "current",
+          "current_record_sha256": "65dc0e256e0a312bbe31ee042a6299734bc95815c5c8571cd7eb684a44a90a0d",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "SUCCESSOR-ADOPTION.md:39-44; work/focused-successor/specialist-proposal-r4.json reuse_assets",
+      "caller_literal_analysis": "Old conditional lossless assembly policy is retained history. Current reuse-only path binds exact Working bytes, performs no assembly and makes obsolete join/seed rotation checks non-applicable.",
+      "discriminating_alternative": "A freshly assembled but visually identical strip does not satisfy this exact-byte reuse path; it needs its own reviewed construction policy.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Viewed at 1x and 3x nearest on #172336 beside the exact Ready baseline, each frame and the running loop read as ongoing activity: no frame forms a check mark, an arrowhead, pause bars or a success-like terminal pose.",
+        "domain": "visual",
+        "id": "authoring-01.working.q.activity-not-success",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller",
+          "render.source.assessment"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "a5719b7cef8299db0608afec30c2b0e8ee2a732c482663b38fae283d1aac1e30",
+        "record_status": "current",
+        "current_record_sha256": "a5719b7cef8299db0608afec30c2b0e8ee2a732c482663b38fae283d1aac1e30",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in provenance-correction.delivery.q.distinction. For reduced motion, frame zero shown alone with its Working label must read as the stationary Working indicator, distinct from Ready and Paused; the frame choice is this specialist's proposal, not an owner-prescribed motif.",
+          "domain": "visual",
+          "id": "provenance-correction.working.q.activity-not-success",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "4e414f7f7b75583451e545fed999acf50ae1d113dce1db7bf8c2c5a321ca32d5",
+          "record_status": "current",
+          "current_record_sha256": "4e414f7f7b75583451e545fed999acf50ae1d113dce1db7bf8c2c5a321ca32d5",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; AUTHORING-UPDATE.md:2-5; FOCUSED-SUCCESSOR.md:13-18",
+      "caller_literal_analysis": "Required activity versus completion survives. Old categorical arrowhead/pause-bar bans become scoped expert guidance, with actual family distinction separately binding. Frame zero for reduced motion is an adopted specialist choice, not an owner motif.",
+      "discriminating_alternative": "A non-success activity design may use an arrow-like segment if it remains distinguishable; a different stationary frame could satisfy the owner outcome after review.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Play the actual four frames at 100 ms per frame including the fourth-to-first wrap: stable center and anchor, stable cluster count and volume in every phase, deliberate stepped phases with no morphing, near-hold or wrap jump (the rejected AI-animation failure class).",
+        "domain": "visual",
+        "id": "authoring-01.working.q.motion-continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.assessment"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "3c047ce9c41259f17f2afeb2ca2dc4c62aa931cd7e61a99c14d62acdcff0ea54",
+        "record_status": "current",
+        "current_record_sha256": "3c047ce9c41259f17f2afeb2ca2dc4c62aa931cd7e61a99c14d62acdcff0ea54",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Normal motion only: play all four existing Working frames at 100 ms per frame at 1x and 3x on #172336 including fourth-to-first wrap; required outcome is one continuous activity loop without a visible discontinuity at the wrap. Stable center/anchor and visual volume are scoped expert quality checks from the Working contract. Evenly paced angular motion/no near-hold is the specialist's chosen quality criterion for this exact reused rotating-segment design, not an owner requirement; a different expressive timing design could satisfy the brief after review. No universal fixed cluster-count/no-morph recipe is imposed. Reduced motion is evaluated separately as stationary frame zero.",
+          "domain": "visual",
+          "id": "provenance-correction.working.q.motion-continuity",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "82767375b7b4eea2b70694610383a7430b2e7b6fc9db75998cd447b9c26faddc",
+          "record_status": "current",
+          "current_record_sha256": "82767375b7b4eea2b70694610383a7430b2e7b6fc9db75998cd447b9c26faddc",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; work/focused-successor/caller-comparison-final.json prior_corrections_verified.D2; successor motion check literal",
+      "caller_literal_analysis": "100ms is required nominal frame selection, not proof of even perceived angular pacing. Stable center/volume and no near-hold are expert checks scoped to this rotating segment design. New clause removes universal cluster-count/no-morph recipe and scopes playback to normal motion.",
+      "discriminating_alternative": "A deliberately expressive morphing or held pose loop at 100ms can satisfy the brief after expert design review; it need not satisfy the chosen even-pacing check for these reused bytes.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+        "domain": "visual",
+        "id": "authoring-01.working.q.style-coherence",
+        "mode": "visual",
+        "sources": [
+          "render.source.caller",
+          "render.source.assessment",
+          "render.source.brief"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "066b5cffb06e93e2f3a4aad785a06ce9328b77547852b26059f115176a6b01db",
+        "record_status": "current",
+        "current_record_sha256": "066b5cffb06e93e2f3a4aad785a06ce9328b77547852b26059f115176a6b01db",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "provenance-correction.working.q.style-coherence",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "a0cf23ac087b8b245832753ea958ba45066ef031a89e9c78fefba3adfb0fb21a",
+          "record_status": "current",
+          "current_record_sha256": "a0cf23ac087b8b245832753ea958ba45066ef031a89e9c78fefba3adfb0fb21a",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; render.choice.style via render.decision.style and work/family-render-review/caller-comparison-final.json style_decision",
+      "caller_literal_analysis": "Required readable coherent family with cool-blue relationship remains qualitative. Selective intentional AA explicitly allowed; no exact palette, stroke, footprint or margin is imposed.",
+      "discriminating_alternative": "A heavier Paused glyph and lighter segmented Working can cohere without identical footprint or stroke thickness.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Exercise started -> running through stateAfter and both statusCell and compactStatus with assets/working.png in the actual consumer renderer: label Working, frames 4, nearest sampling at scale 1 and 3, alpha compositing on #172336, and observed live 100 ms frame advance including the wrap.",
+        "domain": "engine",
+        "id": "authoring-01.working.q.consumers",
+        "mode": "live",
+        "sources": [
+          "render.source.view",
+          "r.22e90a2a03fe453a.source.4",
+          "recheck.source.findings"
+        ],
+        "stage": "working",
+        "output": "authoring-01.working.output",
+        "record_sha256": "ed2091c5d4fcc40b51a4ac9deba9c35e60e93e9e070d04101c3beefd7bde8084",
+        "record_status": "current",
+        "current_record_sha256": "ed2091c5d4fcc40b51a4ac9deba9c35e60e93e9e070d04101c3beefd7bde8084",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path renderer-successor/assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render renderer-successor/assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Normal-motion (no-preference) frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed. Under prefers-reduced-motion: reduce, both consumers retain Working label and 64x16/four-cell source geometry but select stationary frame zero via statusFrame(state, elapsed, reduced) and suppress frame advancement. Observe the same frame and pixel hash over at least 800 ms while running in both consumers. Change the media preference to reduce while this page remains open: paint frame zero on both live and matrix Working cells when the media change event is delivered or when the next animation frame observes changed matchMedia.matches; reconcile only once per observed preference transition. Change back to no-preference in the same session: restart normal cycling at frame zero through all four 100 ms phases and wrap, without backend-state change, reload, stale canvas, or duplicate animation.",
+          "domain": "engine",
+          "id": "provenance-correction.working.q.consumers",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "working",
+          "output": "provenance-correction.working.output",
+          "record_sha256": "ce6c5546e6f852df3a20893febd0903d8cd0bd4075504260fed1b93f8b68d5a3",
+          "record_status": "current",
+          "current_record_sha256": "ce6c5546e6f852df3a20893febd0903d8cd0bd4075504260fed1b93f8b68d5a3",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "src/queue.ts:1-4; src/queue-view-successor.ts:2-22; renderer-successor/view.mjs paint/applyMotionPreference/animate; FOCUSED-SUCCESSOR.md:33-37",
+      "caller_literal_analysis": "New versioned destination replaces paths in scope, not old files. Both full and compact share descriptors. Working adds reduce frame zero, >=800ms stable frame/hash and same-session switches both directions, once-per-transition reconciliation and restart. Timeline samples establish nominal phase mapping, not measured wall-clock 100ms precision. Static Retry/Paused remain one-frame.",
+      "discriminating_alternative": "A host updating matchMedia.matches without a change event can pass using next-rAF reconciliation. Requiring a dispatched change event would add an unsupported host restriction.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+        "domain": "mechanical",
+        "id": "authoring-01.retry.q.geometry",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.view"
+        ],
+        "stage": "retry",
+        "output": "authoring-01.retry.output",
+        "record_sha256": "b9181108856b1221fe79ffbe6b773d347dfd2b1cab6cb6faaf8be1de7ad072dd",
+        "record_status": "current",
+        "current_record_sha256": "b9181108856b1221fe79ffbe6b773d347dfd2b1cab6cb6faaf8be1de7ad072dd",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "id": "provenance-correction.retry.q.geometry",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "396c5a90cc691afd593ed728f95a6b4042fdfa708bd8e5bfed55af5511020ef3",
+          "record_status": "current",
+          "current_record_sha256": "396c5a90cc691afd593ed728f95a6b4042fdfa708bd8e5bfed55af5511020ef3",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3, src/queue-view-successor.ts:4-9, renderer-successor/view.mjs paint()",
+      "caller_literal_analysis": "Required dimensions and layout; consumer slicing is implementation evidence. Transparent in-cell margins are composition, not added canvas.",
+      "discriminating_alternative": "A valid 64x16 sheet with generous transparent margins remains permissible; a gutter that changes slicing does not.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "All pixels outside the mark have alpha 0; no opaque matte, plate or fringe. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+        "domain": "mechanical",
+        "id": "authoring-01.retry.q.transparent-exterior",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller"
+        ],
+        "stage": "retry",
+        "output": "authoring-01.retry.output",
+        "record_sha256": "f076bd55723bcb531f46bd21450bc11bf170b91c8b79d83d19153b29da02e4d4",
+        "record_status": "current",
+        "current_record_sha256": "f076bd55723bcb531f46bd21450bc11bf170b91c8b79d83d19153b29da02e4d4",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "id": "provenance-correction.retry.q.transparent-exterior.diagnostic",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "777a823959250e08b4bdc3084ca7d8aadad7f1b5db7dcc7ad8ba259253a84043",
+          "record_status": "current",
+          "current_record_sha256": "777a823959250e08b4bdc3084ca7d8aadad7f1b5db7dcc7ad8ba259253a84043",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "id": "provenance-correction.retry.q.transparent-exterior",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "e875f64143fb0f3c077ab80f8e30ebe5c27d7a7803bcb1f4200fd76b8a050314",
+          "record_status": "current",
+          "current_record_sha256": "e875f64143fb0f3c077ab80f8e30ebe5c27d7a7803bcb1f4200fd76b8a050314",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; adopted style in work/family-render-review/caller-comparison-final.json style_decision; SUCCESSOR-ADOPTION.md:25-31",
+      "caller_literal_analysis": "Old outside-mark alpha rule mixes measurement with subject judgment. New visual check judges intended exterior and permits deliberate backing and selective AA; new local diagnostics flag for review without rejection thresholds.",
+      "discriminating_alternative": "A deliberate backing or a glyph spanning the cell can be valid despite a component flag. An unintended opaque matte remains a visual failure. Alpha-zero magenta RGB is invisible.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Viewed at 1x and 3x nearest on #172336 in color and in grayscale, the mark reads as failed work / retry and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; it must not be confusable with the Working activity loop.",
+        "domain": "visual",
+        "id": "authoring-01.retry.q.retry-meaning-without-color",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller",
+          "render.source.assessment"
+        ],
+        "stage": "retry",
+        "output": "authoring-01.retry.output",
+        "record_sha256": "021696acc3bb3ec4ed48cc1465c685825830f0c63b5622862c3f2a689bec58c9",
+        "record_status": "current",
+        "current_record_sha256": "021696acc3bb3ec4ed48cc1465c685825830f0c63b5622862c3f2a689bec58c9",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+          "domain": "visual",
+          "id": "provenance-correction.retry.q.retry-meaning-without-color",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "451e910aecaea326e93cc38c3a82e8028eefd52f675243319507796e71e01bfa",
+          "record_status": "current",
+          "current_record_sha256": "451e910aecaea326e93cc38c3a82e8028eefd52f675243319507796e71e01bfa",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3,7; adopted family review; successor check literal",
+      "caller_literal_analysis": "Required failed-work/retry recognition and shape distinction survive. Non-color comparison may be grayscale or binarized; an arrow motif is not mandatory.",
+      "discriminating_alternative": "A readable non-arrow retry mark may satisfy this criterion if distinguishable from Working and other states.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+        "domain": "visual",
+        "id": "authoring-01.retry.q.style-coherence",
+        "mode": "visual",
+        "sources": [
+          "render.source.caller",
+          "render.source.assessment",
+          "render.source.brief"
+        ],
+        "stage": "retry",
+        "output": "authoring-01.retry.output",
+        "record_sha256": "ff724740ecd4df5840f310e12c8e22c59228f486e2d82ea979bfedf98865ec96",
+        "record_status": "current",
+        "current_record_sha256": "ff724740ecd4df5840f310e12c8e22c59228f486e2d82ea979bfedf98865ec96",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "provenance-correction.retry.q.style-coherence",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "47e425ee629c8e9160d3e6e2977c2f93ee7d85913fc5eda44c192bce0ad3c8fd",
+          "record_status": "current",
+          "current_record_sha256": "47e425ee629c8e9160d3e6e2977c2f93ee7d85913fc5eda44c192bce0ad3c8fd",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; render.choice.style via render.decision.style and work/family-render-review/caller-comparison-final.json style_decision",
+      "caller_literal_analysis": "Required readable coherent family with cool-blue relationship remains qualitative. Selective intentional AA explicitly allowed; no exact palette, stroke, footprint or margin is imposed.",
+      "discriminating_alternative": "A heavier Paused glyph and lighter segmented Working can cohere without identical footprint or stroke thickness.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Exercise error -> failed through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Retry, frames 1, path assets/error-retry.png (not the superseded assets/retry.png), nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior.",
+        "domain": "engine",
+        "id": "authoring-01.retry.q.consumers",
+        "mode": "live",
+        "sources": [
+          "render.source.view",
+          "r.22e90a2a03fe453a.source.4",
+          "recheck.source.findings"
+        ],
+        "stage": "retry",
+        "output": "authoring-01.retry.output",
+        "record_sha256": "63bb9a45e56d01026c98299c05c79c19cf0bd6ae4b2abb56242af3c543d4014f",
+        "record_status": "current",
+        "current_record_sha256": "63bb9a45e56d01026c98299c05c79c19cf0bd6ae4b2abb56242af3c543d4014f",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+          "domain": "engine",
+          "id": "provenance-correction.retry.q.consumers",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "retry",
+          "output": "provenance-correction.retry.output",
+          "record_sha256": "65d28437aa8b76e17e6a74bfb768d667737d83c711a67e82de5bcfa7bdad96c9",
+          "record_status": "current",
+          "current_record_sha256": "65d28437aa8b76e17e6a74bfb768d667737d83c711a67e82de5bcfa7bdad96c9",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "src/queue.ts:1-4; src/queue-view-successor.ts:2-22; renderer-successor/view.mjs paint/applyMotionPreference/animate; FOCUSED-SUCCESSOR.md:33-37",
+      "caller_literal_analysis": "New versioned destination replaces paths in scope, not old files. Both full and compact share descriptors. Working adds reduce frame zero, >=800ms stable frame/hash and same-session switches both directions, once-per-transition reconciliation and restart. Timeline samples establish nominal phase mapping, not measured wall-clock 100ms precision. Static Retry/Paused remain one-frame.",
+      "discriminating_alternative": "A host updating matchMedia.matches without a change event can pass using next-rAF reconciliation. Requiring a dispatched change event would add an unsupported host restriction.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+        "domain": "mechanical",
+        "id": "authoring-01.paused.q.geometry",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.view"
+        ],
+        "stage": "paused",
+        "output": "authoring-01.paused.output",
+        "record_sha256": "6ddf39c0e5ded6d3eb64e2324ee27de7fa7b2e718e033338ed9059088ae77bae",
+        "record_status": "current",
+        "current_record_sha256": "6ddf39c0e5ded6d3eb64e2324ee27de7fa7b2e718e033338ed9059088ae77bae",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "id": "provenance-correction.paused.q.geometry",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "769cea3fe8aabf815aab4aabc62f7924da0c741f70180f3991b4656f327bfedb",
+          "record_status": "current",
+          "current_record_sha256": "769cea3fe8aabf815aab4aabc62f7924da0c741f70180f3991b4656f327bfedb",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3, src/queue-view-successor.ts:4-9, renderer-successor/view.mjs paint()",
+      "caller_literal_analysis": "Required dimensions and layout; consumer slicing is implementation evidence. Transparent in-cell margins are composition, not added canvas.",
+      "discriminating_alternative": "A valid 64x16 sheet with generous transparent margins remains permissible; a gutter that changes slicing does not.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "All pixels outside the mark have alpha 0; no opaque matte, plate or fringe (the rejected opaque magenta intermediate is this failure class). Partial alpha on mark pixels is permitted; binary alpha is not required.",
+        "domain": "mechanical",
+        "id": "authoring-01.paused.q.transparent-exterior",
+        "mode": "local",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller"
+        ],
+        "stage": "paused",
+        "output": "authoring-01.paused.output",
+        "record_sha256": "3825694288a35fe5986e104f343e0a667ee8943a9f5b9c1062a7053e979a4e91",
+        "record_status": "current",
+        "current_record_sha256": "3825694288a35fe5986e104f343e0a667ee8943a9f5b9c1062a7053e979a4e91",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "id": "provenance-correction.paused.q.transparent-exterior.diagnostic",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "0f1b7091d8e819cd40b5a7842b3e0779bcc7782e4fbfec8a60c8da89ba07f495",
+          "record_status": "current",
+          "current_record_sha256": "0f1b7091d8e819cd40b5a7842b3e0779bcc7782e4fbfec8a60c8da89ba07f495",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "id": "provenance-correction.paused.q.transparent-exterior",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "ecf3f012ee4b43215cd247998a839cd64c0b0feb2c52598d140bebba54cbb1b9",
+          "record_status": "current",
+          "current_record_sha256": "ecf3f012ee4b43215cd247998a839cd64c0b0feb2c52598d140bebba54cbb1b9",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; adopted style in work/family-render-review/caller-comparison-final.json style_decision; SUCCESSOR-ADOPTION.md:25-31",
+      "caller_literal_analysis": "Old outside-mark alpha rule mixes measurement with subject judgment. New visual check judges intended exterior and permits deliberate backing and selective AA; new local diagnostics flag for review without rejection thresholds.",
+      "discriminating_alternative": "A deliberate backing or a glyph spanning the cell can be valid despite a component flag. An unintended opaque matte remains a visual failure. Alpha-zero magenta RGB is invisible.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Viewed at 1x and 3x nearest on #172336 in color and in grayscale, the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle.",
+        "domain": "visual",
+        "id": "authoring-01.paused.q.pause-meaning-without-color",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller",
+          "render.source.assessment"
+        ],
+        "stage": "paused",
+        "output": "authoring-01.paused.output",
+        "record_sha256": "249bc83e1b2813fcfde4209acf1bcc34ac5a5580cd665d2bd639b5e9136bf777",
+        "record_status": "current",
+        "current_record_sha256": "249bc83e1b2813fcfde4209acf1bcc34ac5a5580cd665d2bd639b5e9136bf777",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+          "domain": "visual",
+          "id": "provenance-correction.paused.q.pause-meaning-without-color",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "4de69fa622312ede19e37dc40aa608ddc792e8c78ac18076d7fff0b5d2fafa76",
+          "record_status": "current",
+          "current_record_sha256": "4de69fa622312ede19e37dc40aa608ddc792e8c78ac18076d7fff0b5d2fafa76",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:7; adopted family review; successor check literal",
+      "caller_literal_analysis": "Required pause recognition and non-color distinction survive. Paired bars are not required; grayscale-only recipe expands to other non-color silhouette evidence.",
+      "discriminating_alternative": "A distinct non-bar paused symbol may satisfy the required semantic outcome.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+        "domain": "visual",
+        "id": "authoring-01.paused.q.style-coherence",
+        "mode": "visual",
+        "sources": [
+          "render.source.caller",
+          "render.source.assessment",
+          "render.source.brief"
+        ],
+        "stage": "paused",
+        "output": "authoring-01.paused.output",
+        "record_sha256": "fb4d6d176c9029e2cee15bd8fca3681b1c3f080a6a67d621ee499ebf71530141",
+        "record_status": "current",
+        "current_record_sha256": "fb4d6d176c9029e2cee15bd8fca3681b1c3f080a6a67d621ee499ebf71530141",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "provenance-correction.paused.q.style-coherence",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "ec645ecc352c1e4badf4b67b89bff411309c4c3c6cdbcbd0e13293655a5e7566",
+          "record_status": "current",
+          "current_record_sha256": "ec645ecc352c1e4badf4b67b89bff411309c4c3c6cdbcbd0e13293655a5e7566",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; render.choice.style via render.decision.style and work/family-render-review/caller-comparison-final.json style_decision",
+      "caller_literal_analysis": "Required readable coherent family with cool-blue relationship remains qualitative. Selective intentional AA explicitly allowed; no exact palette, stroke, footprint or margin is imposed.",
+      "discriminating_alternative": "A heavier Paused glyph and lighter segmented Working can cohere without identical footprint or stroke thickness.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Exercise pause -> paused through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Paused, frames 1, path assets/paused.png, nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior.",
+        "domain": "engine",
+        "id": "authoring-01.paused.q.consumers",
+        "mode": "live",
+        "sources": [
+          "render.source.view",
+          "r.22e90a2a03fe453a.source.4",
+          "recheck.source.findings"
+        ],
+        "stage": "paused",
+        "output": "authoring-01.paused.output",
+        "record_sha256": "cf34749f0a5f4696e02a2ca9c1b6ed5e924345c3a21581edf2321726d34e4aa1",
+        "record_status": "current",
+        "current_record_sha256": "cf34749f0a5f4696e02a2ca9c1b6ed5e924345c3a21581edf2321726d34e4aa1",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+          "domain": "engine",
+          "id": "provenance-correction.paused.q.consumers",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "paused",
+          "output": "provenance-correction.paused.output",
+          "record_sha256": "636b76835783fe750958a331a1f351c7678f1de8d99c837d50037f822640dc3c",
+          "record_status": "current",
+          "current_record_sha256": "636b76835783fe750958a331a1f351c7678f1de8d99c837d50037f822640dc3c",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "src/queue.ts:1-4; src/queue-view-successor.ts:2-22; renderer-successor/view.mjs paint/applyMotionPreference/animate; FOCUSED-SUCCESSOR.md:33-37",
+      "caller_literal_analysis": "New versioned destination replaces paths in scope, not old files. Both full and compact share descriptors. Working adds reduce frame zero, >=800ms stable frame/hash and same-session switches both directions, once-per-transition reconciliation and restart. Timeline samples establish nominal phase mapping, not measured wall-clock 100ms precision. Static Retry/Paused remain one-frame.",
+      "discriminating_alternative": "A host updating matchMedia.matches without a change event can pass using next-rAF reconciliation. Requiring a dispatched change event would add an unsupported host restriction.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight, perceptible cool-blue accent and transparent exteriors, including Working's four frames and its actual 100 ms playback with the wrap; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+        "domain": "continuity",
+        "id": "authoring-01.delivery.q.continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.caller",
+          "render.source.assessment",
+          "render.source.brief"
+        ],
+        "stage": "delivery",
+        "output": "authoring-01.delivery.output",
+        "record_sha256": "6df7e20ca123e5df9d02960a3c5413b8c3b0b4824ac14dcba5dba3e25b59a84b",
+        "record_status": "current",
+        "current_record_sha256": "6df7e20ca123e5df9d02960a3c5413b8c3b0b4824ac14dcba5dba3e25b59a84b",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames, its actual 100 ms playback with the wrap under no-preference, and its stationary frame-zero presentation under reduce; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+          "domain": "continuity",
+          "id": "provenance-correction.delivery.q.continuity",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "delivery",
+          "output": "provenance-correction.delivery.output",
+          "record_sha256": "1556465d606d7cbc3d1e3592c966a6c118b268e386a2fde262882699bc2080c1",
+          "record_status": "current",
+          "current_record_sha256": "1556465d606d7cbc3d1e3592c966a6c118b268e386a2fde262882699bc2080c1",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3; caller style_decision.not_prescribed; AUTHORING-UPDATE.md:2-5",
+      "caller_literal_analysis": "Family coherence and readable weight are qualitative; identical weight is not required. Normal playback and reduced stationary frame-zero presentation both need collective review.",
+      "discriminating_alternative": "Different visual mass can be coherent and readable; checking identical weight would wrongly reject a valid family.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable.",
+        "domain": "continuity",
+        "id": "authoring-01.delivery.q.distinction",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.caller"
+        ],
+        "stage": "delivery",
+        "output": "authoring-01.delivery.output",
+        "record_sha256": "495b765b7d19e863bc8fa14ee344478d9b690552717be8c7dbe09cb735dd78a7",
+        "record_status": "current",
+        "current_record_sha256": "495b765b7d19e863bc8fa14ee344478d9b690552717be8c7dbe09cb735dd78a7",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable. Include stationary Working frame zero shown alone in the non-color comparison: required reduced-motion distinction is from Ready and Paused. Distinction from Retry and preserved Start is the shared-consumer inference from the same status set, not a literal owner motif requirement.",
+          "domain": "continuity",
+          "id": "provenance-correction.delivery.q.distinction",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "delivery",
+          "output": "provenance-correction.delivery.output",
+          "record_sha256": "0f396ace3a5258d7bda45d845323b0f7a82cb1737ee5c6a64243e776cbb5f0d2",
+          "record_status": "current",
+          "current_record_sha256": "0f396ace3a5258d7bda45d845323b0f7a82cb1737ee5c6a64243e776cbb5f0d2",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "BRIEF.md:3,7; AUTHORING-UPDATE.md:2-5; src/queue-view-successor.ts:2-11",
+      "caller_literal_analysis": "Required non-color distinction remains. Reduced frame zero must distinguish Ready/Paused. Extra Start/Retry comparison follows the shared consumer set, not an owner-prescribed motif.",
+      "discriminating_alternative": "Distinct glyphs can use different motifs; grayscale static distinction does not establish real-time wrap quality.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    },
+    {
+      "before": {
+        "check": "Exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the confirmed destination paths: labels, frame counts, horizontal slicing, 100 ms timing, nearest sampling at scale 1 and 3, alpha compositing on #172336 and recorded integer placement against the screenshot; assets/start.svg byte hash unchanged.",
+        "domain": "engine",
+        "id": "authoring-01.delivery.q.destination",
+        "mode": "live",
+        "sources": [
+          "render.source.view",
+          "r.22e90a2a03fe453a.source.4",
+          "recheck.source.findings",
+          "render.source.assignment"
+        ],
+        "stage": "delivery",
+        "output": "authoring-01.delivery.output",
+        "record_sha256": "f9d04bde1905a8223494dc3c3ce1573a54b99c3e80e543367edb69055104c5a6",
+        "record_status": "current",
+        "current_record_sha256": "f9d04bde1905a8223494dc3c3ce1573a54b99c3e80e543367edb69055104c5a6",
+        "authority": "unclassified",
+        "comparison": "unperformed"
+      },
+      "after": [
+        {
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the caller-reviewed proposed successor destination paths: labels, frame counts, horizontal slicing, under no-preference only, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; renderer-successor/assets/start.svg byte hash unchanged. Caller-reviewed proposed successor destination is src/queue-view-successor.ts plus renderer-successor/, with copied exact assets at renderer-successor/assets/{start.svg,working.png,ready-confirmed.png,error-retry.png,paused.png}; old src/queue-view.ts, renderer/ and assets/ remain byte-unchanged. Exercise running under both prefers-reduced-motion settings and switch each direction while open; assert both consumers update together without changing queue.ts backend state. Reduced mode draws stationary Working source rectangle [0,0,16,16] with no advancement, normal mode retains all four frames at 100 ms. Preference changes may be applied through the media change event or by comparing matchMedia.matches on the next animation frame; record the observed route. No requirement that this browser dispatch a change event is inferred. Reset the animation origin once per observed preference transition and repaint both live and matrix Working cells.",
+          "domain": "engine",
+          "id": "provenance-correction.delivery.q.destination",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.caller",
+            "provenance.source.view",
+            "provenance.source.renderer",
+            "provenance.source.assignment",
+            "provenance.source.proposal",
+            "provenance.source.comparison",
+            "provenance.source.backend"
+          ],
+          "stage": "delivery",
+          "output": "provenance-correction.delivery.output",
+          "record_sha256": "2413612361f46dc01483a90981bd2e1e4b851053703c0bf9d4fdb7c18fdb48c5",
+          "record_status": "current",
+          "current_record_sha256": "2413612361f46dc01483a90981bd2e1e4b851053703c0bf9d4fdb7c18fdb48c5",
+          "authority": "unclassified",
+          "comparison": "unperformed"
+        }
+      ],
+      "authority_and_locator": "SUCCESSOR-ADOPTION.md:39-49; FOCUSED-SUCCESSOR.md:33-37; src/queue-view-successor.ts; renderer-successor/view.mjs",
+      "caller_literal_analysis": "Versioned copied assets and unchanged old files are adopted scope. Integer screenshot placement is adopted checking method. Normal nominal phase timeline is separate from perceived motion. Both consumers must switch media preference together without backend change or duplicate scheduler.",
+      "discriminating_alternative": "A browser that does not dispatch media change events may pass via matches reconciliation. A screenshot alone cannot prove live switching or exact wall-clock cadence.",
+      "disposition": "Prepared caller interpretation; native specialist comparison remains unperformed."
+    }
+  ],
+  "source_byte_checks": [
+    {
+      "id": "render.source.brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "render.source.view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "render.source.caller",
+      "path": "work/family-render-review/caller-comparison-final.json",
+      "sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "observed_sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          211
+        ]
+      ]
+    },
+    {
+      "id": "render.source.assignment",
+      "path": "RENDER-STAGE.md",
+      "sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+      "observed_sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          33
+        ]
+      ]
+    },
+    {
+      "id": "render.source.assessment",
+      "path": "work/family-render-review/specialist-assessment.json",
+      "sha256": "63ff66194a32b28f1d16e32f75ba8c3c371d90bf5d707f2349c50069bc6db75e",
+      "observed_sha256": "63ff66194a32b28f1d16e32f75ba8c3c371d90bf5d707f2349c50069bc6db75e",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          264
+        ]
+      ]
+    },
+    {
+      "id": "r.22e90a2a03fe453a.source.4",
+      "path": ".pixl/assets/queue.ready/inputs/de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "recheck.source.findings",
+      "path": "work/pixl-render-recheck-01/findings.json",
+      "sha256": "2339d6def7ebb876f0addc9d5f6b4ec787f7ae996510782d37e5889e2dbbe098",
+      "observed_sha256": "2339d6def7ebb876f0addc9d5f6b4ec787f7ae996510782d37e5889e2dbbe098",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          270
+        ]
+      ]
+    },
+    {
+      "id": "render.source.brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "render.source.caller",
+      "path": "work/family-render-review/caller-comparison-final.json",
+      "sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "observed_sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          211
+        ]
+      ]
+    },
+    {
+      "id": "provenance.source.view",
+      "path": "src/queue-view-successor.ts",
+      "sha256": "4ace984b2b53d5b30d99f41b1f2ee72fa3581a29e552b340010e82b6f7b9e80a",
+      "observed_sha256": "4ace984b2b53d5b30d99f41b1f2ee72fa3581a29e552b340010e82b6f7b9e80a",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          22
+        ]
+      ]
+    },
+    {
+      "id": "provenance.source.renderer",
+      "path": "renderer-successor/view.mjs",
+      "sha256": "8e01a73c9144de815b5b573982a1931eee71935e6c31cc37e7730258ac99b862",
+      "observed_sha256": "8e01a73c9144de815b5b573982a1931eee71935e6c31cc37e7730258ac99b862",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          158
+        ]
+      ]
+    },
+    {
+      "id": "provenance.source.assignment",
+      "path": "SUCCESSOR-ADOPTION.md",
+      "sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+      "observed_sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          59
+        ]
+      ]
+    },
+    {
+      "id": "provenance.source.proposal",
+      "path": "work/focused-successor/specialist-proposal-r4.json",
+      "sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+      "observed_sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+      "matches": true,
+      "lines": []
+    },
+    {
+      "id": "provenance.source.comparison",
+      "path": "work/focused-successor/caller-comparison-final.json",
+      "sha256": "38a2716f9439b8ea14622293cc6bec550390ba1679d5f644a2e891e0507711b8",
+      "observed_sha256": "38a2716f9439b8ea14622293cc6bec550390ba1679d5f644a2e891e0507711b8",
+      "matches": true,
+      "lines": []
+    },
+    {
+      "id": "provenance.source.backend",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "matches": true,
+      "lines": [
+        [
+          1,
+          4
+        ]
+      ]
+    }
+  ]
+}

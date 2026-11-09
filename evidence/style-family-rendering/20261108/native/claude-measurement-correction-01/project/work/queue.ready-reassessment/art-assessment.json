@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "candidate": {
+    "id": "ready.retained",
+    "delivered_path": "assets/ready-confirmed.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "provenance": "Controlled pixellab-test fixture (job controlled-create-0002, provider_simulated=true); not upstream PixelLab art. Same bytes as the download, the immutable artifact and the inspection input."
+  },
+  "viewed": [
+    {"view": "ready.delivery.inspect.view.0", "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0000.png", "sha256": "515a100db9cfafd6da3238b563d84c94309f4f89b64023381b8c9bf44e6effec", "payload_size": [16, 16], "how": "pixl_inspection image block", "saw": "native transparent 16x16: single light-blue check mark, empty surrounding cell"},
+    {"view": "ready.delivery.inspect.view.1", "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0001.png", "sha256": "0cb2e9b589d36cc5d12c90e6ffaf15715fbed5bca19e93729b77cbc6e11cdb95", "payload_size": [16, 16], "how": "pixl_inspection image block", "saw": "native on #172336: the check reads as a check at 1x; the short left arm and long right arm are both distinguishable"},
+    {"view": "ready.delivery.inspect.view.2", "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0002.png", "sha256": "fac71a10bde018f1fcb47ae7d3d02473bf6d9c7823dd91bdbb23ca5841f1f9ac", "payload_size": [48, 48], "how": "pixl_inspection image block", "saw": "3x nearest on #172336: uniform 3x3 blocks, regular one-step-per-row staircases on both arms, no blur, no stray pixels"},
+    {"path": "assets/ready-confirmed.png", "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5", "payload_size": [16, 16], "how": "host Read image viewer", "saw": "same mark as view.0"},
+    {"path": "work/queue.ready-reassessment/diagnostic-grayscale-3x-panel.png", "sha256": "c57d754b3079cd71cfe62bea2b1c767b3c619289fe5ac080d377432ca17e154c", "payload_size": [48, 48], "how": "host Read image viewer (derived diagnostic, not new art)", "saw": "check legible in grayscale; asymmetry still evident"},
+    {"path": "work/queue.ready-reassessment/diagnostic-grayscale-1x-panel.png", "sha256": "b7472d348b5d244d893947b40a9b195508f6b4afef41204adbb47ab013ed3e9f", "payload_size": [16, 16], "how": "host Read image viewer (derived diagnostic, not new art)", "saw": "check legible in grayscale at 1x"}
+  ],
+  "viewing_limits": "The host image viewer does not report its display scaling; payload sizes are the encoded dimensions. No graphical renderer of the queue UI was available; no Working, Retry or Paused art exists for family comparison.",
+  "measured": {
+    "source": "pixl_asset_check(regions=['#70b9ed']) and Pillow decode in the selected Python; sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "coordinates": "zero-based pixel indices; boxes [left, top, right, bottom] with exclusive right/bottom; centres in pixel-edge coordinates where the canvas centre is (8.0, 8.0)",
+    "size": [16, 16],
+    "frames": 1,
+    "opaque_pixels": 29,
+    "transparent_pixels": 227,
+    "fractional_alpha_pixels": 0,
+    "colors": {"opaque": ["#70b9ed (112,185,237,255)"], "transparent": ["(0,0,0,0)"]},
+    "components_4_connected": 1,
+    "visible_bbox": [3, 4, 14, 13],
+    "bbox_size": [11, 9],
+    "bbox_centre": [8.5, 8.5],
+    "mass_centroid": [8.5, 8.74],
+    "pixel_map": [
+      "................",
+      "................",
+      "................",
+      "................",
+      "............#...",
+      "...........###..",
+      "..........###...",
+      ".........###....",
+      "....#...###.....",
+      "...###.###......",
+      "....#####.......",
+      ".....###........",
+      "......#.........",
+      "................",
+      "................",
+      "................"
+    ],
+    "vertex_pixel": [6, 12],
+    "left_arm": {"pixels": 7, "columns": [3, 5], "rows": [8, 11], "direction": "descends right at 45 degrees from (4,8) to the vertex", "axis_length_steps": 4},
+    "right_arm": {"pixels": 19, "columns": [7, 13], "rows": [4, 11], "direction": "ascends right at 45 degrees from the vertex to (12,4)", "axis_length_steps": 8},
+    "arm_length_ratio": "about 1:2 (4 steps : 8 steps along the 45-degree axes)",
+    "stroke": "every interior row run is 3 pixels on a 45-degree diagonal, i.e. about 2.1 px perpendicular thickness; tips taper to 1 pixel (rows 4, 8 left tip, 12)",
+    "edge_rhythm": "both contours step exactly one pixel per row with no run-length detours (edge-rhythm check: regular staircase on an intended diagonal)",
+    "contrast": {"wcag_ratio_70b9ed_on_172336": 7.41, "luma_601_mark": 169.1, "luma_601_panel": 33.6},
+    "grayscale_levels_in_diagnostic_views": [34, 169]
+  },
+  "requirements_versus_observations_versus_choices": {
+    "owner_requirements": [
+      "16x16 logical cell, static (BRIEF.md line 3, line 9; queue-view line 6, 9) - observed: 16x16, one frame",
+      "transparent background (BRIEF.md line 3, line 9) - observed: 227 alpha-0 pixels, no matte, one opaque component",
+      "visible check mark with asymmetrical arms conveying successful completion (BRIEF.md line 9) - observed: check mark; asymmetry realized through length (about 1:2), both arms at 45 degrees",
+      "readable silhouettes at 1x and 3x nearest on the dark panel (BRIEF.md line 3; queue-view line 9) - observed: legible at both scales on #172336",
+      "use the existing UI cool blue accent, no fixed palette (BRIEF.md line 3) - observed: single fill equal to the Start fill #70b9ed"
+    ],
+    "observations_not_rules": [
+      "#70b9ed is the Start SVG fill (assets/start.svg line 1); equality in the fixture is a measurement, not a requirement",
+      "#172336 is display.background (queue-view line 9); used as the composite panel",
+      "binary alpha in the fixture is a measurement; the contract permits full alpha"
+    ],
+    "expert_choices": [
+      "Ready as the representative sample (proposal; BRIEF line 5 leaves the status open)",
+      "cool blue as primary fill for the sample (proposal; the owner names a relationship, not an extent)",
+      "about 2 px perpendicular stroke weight and 45-degree construction (preference for 16x16 UI glyphs; not a criterion)",
+      "flat single tone without outline or highlight for the sample (preference; matches the flat vector Start control; a second tone remains allowed)",
+      "no backing plate (preference; a deliberate plate would still satisfy the transparency requirement)"
+    ]
+  },
+  "pixel_art_reasoning": {
+    "readability_at_native_scale": "A 16x16 status glyph is read at 1x in the full cell and at 3x (48x48) in the enlarged panel. A 1-pixel stroke check tends to read as a thin tick or noise at 1x on a dark panel; the fixture's 3-pixel horizontal runs give roughly 2 px perpendicular weight, which survives 1x and becomes a chunky but clean 9-pixel run at 3x. The 7.4:1 luminance contrast against #172336 means the silhouette, not the hue, carries identity (silhouette-readability method: landmarks visible at the target size on the target background).",
+    "stroke_and_step_construction": "Both arms are exact 45-degree diagonals, so each contour steps one pixel per row with uniform run lengths (edge-rhythm method: a straight diagonal keeps a repeating step pattern; there are no detour pixels to correct). Nearest 3x enlargement reproduces every logical pixel as a uniform 3x3 block with no new colours (integer-presentation check), which I confirmed on view.2.",
+    "silhouette_and_meaning": "The check mark is the conventional completion sign. The 1:2 arm ratio makes it unmistakably a check rather than a V or a chevron, and the vertex at (6,12) places the long arm rising to the upper right, the reading direction for 'done'. The asymmetry the owner requires is realized here through arm length; the brief would also accept asymmetry through angle, thickness or position, so this construction is a choice, not the rule. The Start triangle (filled right-pointing, 10x12 in a 16 viewBox) is a different silhouette class; nothing about the check resembles pause bars, a loop or an X.",
+    "ui_icon_contrast_and_colour": "The single flat #70b9ed matches the flat vector Start control, which is the only existing UI art, so the sample proposes 'flat accent glyphs on the dark panel' as the family treatment. For a UI status icon at this size, shading adds nothing and a dark outline would eat into the 29-pixel mark; a lighter highlight tone remains an option for later members if the family needs more differentiation.",
+    "transparency": "The exterior is alpha 0 with no fringe; the mark is a single component, so there is no ambiguity about subject versus matte. The contract permits partial alpha (alpha 'full'); the fixture happens to be binary, which is an observation, not compliance with a binary rule (alpha-contract method: keep alpha policy separate from palette membership).",
+    "centring": "The 11x9 bounding box cannot be centred exactly in a 16x16 cell; its centre is (8.5, 8.5) versus (8.0, 8.0), half a pixel right and down, and the mass centroid (8.5, 8.74) is lower because the long arm's weight sits upper-right while the vertex is low. Optically the mark sits a touch low-right; for a check glyph whose visual weight is in the rising arm this is acceptable and I would not move it. Centring is not an owner criterion.",
+    "cluster_hygiene": "One 4-connected component, no isolated pixels, tips taper deliberately to single pixels (semantic-clusters method: legitimate singletons are the tapered tips, not noise)."
+  },
+  "judgment_against_current_sources": {
+    "verdict_kind": "specialist informational judgment; not a new recorded verdict",
+    "historical_six_criteria": "The delivered fixture satisfies all six historical criteria as previously recorded (verdicts ready.delivery.review.verdict.0-5).",
+    "corrected_criteria": "In my judgment the fixture would also satisfy all eight corrected criteria (six owner, two proposals): geometry, transparent-exterior-measured, transparent-background-visual, ready-meaning, readability-1x-3x, cool-blue-accent, sample-blue-primary-fill, sample-pixel-craft. No criterion was weakened to reach this; C11 and C12 widen what the owner rule admits without changing what it requires.",
+    "dropped_seventh_criterion": "Not owner-required for Ready alone; its drop was justified. As a diagnostic the fixture passes it (grayscale legible, luma delta 135).",
+    "still_open": ["family comparison with Working, Retry and Paused (none exist)", "style/baseline adoption (owner/caller decision)", "graphical renderer acceptance (no renderer supplied)"]
+  },
+  "family_recommendations_proposals": [
+    "Keep about 2 px perpendicular strokes (3-pixel runs on 45-degree diagonals, 2-pixel-wide verticals/horizontals) and a footprint near 11x9 to 12x12 inside 2-3 px margins so all four marks have similar visual weight.",
+    "Working: four frames of a rotating three- or four-segment arc; avoid any diagonal pair that could read as a check in a single frame; keep every frame's footprint inside the same box so the loop does not jitter.",
+    "Retry: a circular arrow with a clear gap and a 2-pixel arrowhead; its curve distinguishes it from the straight-armed check in grayscale.",
+    "Paused: two vertical 2-pixel bars with a 2-pixel gap, about 8-9 px tall; pure verticals separate it from the diagonal check, the curved Retry and the arc frames without colour.",
+    "Reserve a secondary tone (lighter blue or near-white) for an optional highlight only if the family needs it; keep the primary fill shared."
+  ],
+  "knowledge_methods_consulted": ["silhouette-readability", "edge-rhythm", "alpha-contract", "integer-presentation", "semantic-clusters", "state-driven-pixel-ui"],
+  "unavailable_checks": [
+    "graphical rendering of statusCell/compactStatus (no renderer or UI entry point in this consumer)",
+    "family comparison (no other status art exists)",
+    "upstream provider quality (the image is a controlled fixture)"
+  ]
+}

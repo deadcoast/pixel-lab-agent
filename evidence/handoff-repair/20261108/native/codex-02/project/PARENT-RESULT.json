@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "role": "calling agent",
+  "assignment": "OWNER.md (sha256 af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a)",
+  "status": "delivered",
+  "status_scope": "Delivered for this stage only: first accepted PixelLab request plus resumable local state, with independent caller review. The asset itself is unaccepted, no image exists, and the PX2 task remains open.",
+  "provider_simulated": true,
+  "asset_id": "queue.ready",
+  "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+  "completed_scope": [
+    "Read the selected PLAR row (pixl_plar_read asset_id=queue.ready) and the original sources BRIEF.md, OWNER.md, src/queue.ts, src/queue-view.ts, assets/start.svg, provider-schemas.json.",
+    "Delegated to the native PIXL specialist (agent type 'pixl') with an explicit assignment. It stopped before dispatch and did not write the caller review.",
+    "Specialist prepared request-review packet, exact provider arguments, candidate-plan criteria and connection.json, then ran pixl_plar_prepare (PX2 sample-phase store, task, output and durable job first_request).",
+    "Caller independently verified hashes and locators, compared every rejection criterion with source wording, and checked that family-level obligations are deferred (with stage and prerequisites), not dropped. Verdict: consistent, no discrepancies, no re-delegation needed.",
+    "Caller reread PLAR (requirements_hash unchanged), claimed dispatch with pixl_job_dispatch, and submitted the exact returned arguments once to mcp__pixellab-test__create_image_pro_flash.",
+    "Caller compared the submitted and echoed arguments (create response and list_jobs) with the reviewed provider-arguments.json: equal.",
+    "Recorded the observed 'submitted' event with remote_id controlled-create-0001 via pixl_job_observe; linked production state, evidence and next action in plar.txt via the packaged plar save (history retained)."
+  ],
+  "request_review": {
+    "packet": {"path": "work/queue.ready/request-review.json", "sha256": "c9f17ecb78e1346de3125e930467e611e31c7956e722e6b2bc3cfe45e7cf818a", "author": "PIXL specialist"},
+    "provider_arguments": {"path": "work/queue.ready/provider-arguments.json", "sha256": "48a6a03c0e1ab1294f08460cca4cc03f6f909e35a7093d1fb4f6a8bf47f70b7a"},
+    "criteria": {"path": "work/queue.ready/candidate-plan.json", "sha256": "aeb1ab7a5589c6931c9fc70c4e0e87d6b710692261558b4de7f89f64992a3dcd"},
+    "connection": {"path": "work/queue.ready/connection.json", "sha256": "071cf42d618f2359d7eb445fa602db36d1783d35c1a0090b6edda55cd72e6300"},
+    "caller_review": {"path": "work/queue.ready/caller-review.json", "sha256": "15b41fd2e544f838dcb12ca0211b9eddf80004711f104365995efa783216015a", "author": "calling agent", "verdict": "consistent"},
+    "submission_comparison": {"path": "work/queue.ready/submission-comparison.json", "sha256": "802280897255f352770ee556ecb71904448d53f0e3928ac524382b92545838cf", "submitted_equals_reviewed": true},
+    "unresolved_findings": [],
+    "noted_findings": [
+      "silhouette-without-color and sample-pixel-craft are specialist-choice rejection rules scoped to this sample. Caller tested brief-conforming alternatives and found them satisfiable now. They are kept, attributed to expert judgment, not to the owner.",
+      "Prompt-level motif and styling choices (checkmark, ~2px strokes, no plate or shadow, lighter highlight, 'no anti-aliased blur') are specialist choices permitted by OWNER.md line 4. None is a rejection rule.",
+      "Display conditions, palette relationship and non-color form cannot be expressed in the advertised schema. They are carried in prose and evaluated by criteria after retrieval."
+    ],
+    "deferred_obligations_retained": ["family-working-not-success", "family-retry-non-color", "family-paused-non-color", "style-decision", "destination-delivery (assets/ready.png)", "renderer-integration (statusCell/compactStatus)"]
+  },
+  "provider": {
+    "connection": "pixellab-test (controlled request-only fixture, no upstream service)",
+    "tool": "create_image_pro_flash",
+    "remote_id": "controlled-create-0001",
+    "observed_status": "queued",
+    "submissions": 1,
+    "response_evidence": {"path": "work/queue.ready/provider-response.json", "sha256": "da8b5e2dfc905b6023042f4f7b14db6c6e9544db52582c6bacfe500042b553f9"},
+    "note": "Simulated acceptance only. The ID belongs to pixellab-test and must not be used against a real PixelLab service."
+  },
+  "state": {
+    "store": ".pixl/assets/queue.ready",
+    "state_path": ".pixl/assets/queue.ready/state.px",
+    "revision": 3,
+    "hash": "375aa8aafca5314fffdcbfd01a8a05d6977d497b69032d94f5b85088e75ccfa2",
+    "validated": true,
+    "phase": "sample",
+    "task": {"id": "task", "state": "open"},
+    "output": {"id": "output.ready", "candidate": null},
+    "job": {"id": "first_request", "state": "submitted", "remote_id": "controlled-create-0001", "intent_sha256": "7bf8c84aefae983040f9a8cd7677a6b1d80db773898cd6c5995bb087c7990435", "request_sha256": "b546e4a7bd6b7242242c1fad2c3859425f0bce8837c797884eb6be2a1379ecc0", "events": ["dispatch (local claim)", "submitted (observed)"], "next_action": "observe"},
+    "criteria_status": "all 7 saved criteria unperformed (no candidate image)"
+  },
+  "plar": {
+    "path": "plar.txt",
+    "hash": "0abd74f7d50fc51e0ed48185a3fafa28686b1bf51758af85dd3cdea968038b33",
+    "prior_hashes": ["3901a2e7cea7eea6bc616715c64962f665e93a2b0804bcf9dfd45a51f1d0ac56 (original)", "659b24162aa1c52254bca72efcdd1b66896ab82015b77895dee2bae153a97e39 (specialist link)"],
+    "queue.ready": {"status": "in_progress", "production": {"store": ".pixl/assets/queue.ready", "task": "task", "output": "output.ready"}, "integrated": false},
+    "unchanged": "requirements, delivery checks, and all other rows (queue.working, queue.retry, queue.start, queue.paused); assets/start.svg sha256 ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"
+  },
+  "not_done": [
+    "No image was generated or retrieved: the controlled connection returns only a queued simulation.",
+    "No candidate import, inspection packet, criterion verdicts, art acceptance, style decision, task completion, delivery to assets/ready.png, or renderer integration.",
+    "No submission to any real PixelLab service."
+  ],
+  "remaining_work": [
+    "A live, separately authorized PixelLab connection must run a new job for output.ready, under the reviewed contract or a re-reviewed one. Do not retrieve or reuse controlled-create-0001 on that service.",
+    "Retrieve and import the candidate (pixl_job_import), prepare inspection at 1x/3x nearest on #172336, record verdicts for the 7 criteria, then complete the task only if all pass.",
+    "Record the Ready style decision and source-bind the approved reference in PLAR before expanding queue.working, queue.retry and queue.paused.",
+    "Run the family distinction reviews (Working not success; Retry and Paused distinguishable without color), deliver to assets/ready.png, and exercise statusCell/compactStatus in a real renderer."
+  ],
+  "helpers_and_scratch": ["work/queue.ready/plar-update.json (specialist PLAR save input)", "work/queue.ready/plar-update-caller.json (caller PLAR save input)"]
+}

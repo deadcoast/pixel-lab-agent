@@ -1,0 +1,193 @@
+{
+  "hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+  "project_root": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Allocate coherent pixel-art Working, Ready, Retry and Paused status assets for shared 16x16 queue cells while preserving the existing Start vector. Review a representative sample before family expansion; this allocation performs no asset generation."
+  },
+  "coverage": {
+    "included": [
+      "Read BRIEF.md and SOURCE-MAP.md in full; re-read the changed brief, queue-state and queue-view source for this refresh.",
+      "Resolve the local ./queue type import and trace started/ok/error/pause through stateAfter to running/succeeded/failed/paused visual descriptors.",
+      "Trace both statusCell and compactStatus to the same statusVisuals map; allocate one shared asset per status rather than duplicate assets per consumer.",
+      "Inspect the only checked-in art, assets/start.svg, at source level for shape, dimensions and accent; verify the four current PNG destinations are absent.",
+      "Reconcile the Retry destination move to assets/error-retry.png while preserving its queue.retry ID and unchanged failure/retry purpose.",
+      "Capture unchanged display.cell, scale, nearest filtering, frameMs and dark-panel color from the supplied view descriptor.",
+      "Current refresh: re-read BRIEF.md line 9 and src/queue-view.ts; retain queue.ready ID while moving its destination to assets/ready-confirmed.png and promoting the explicitly required asymmetrical-arm check mark. Other states and Start unchanged.",
+      "Render stage and renderer recheck: ran renderer/capture.mjs (historical) and the separately versioned renderer-recheck/capture.mjs (HeadlessChrome 156, DPR 1, 1280x1000 device metrics set via CDP before navigation) against the actual src/queue.ts and src/queue-view.ts for every statusVisuals state in both statusCell and compactStatus at 1x and 3x; checked identities, screenshot/canvas correspondence, alpha compositing and nearest blocks with check.py (historical 95/104 explained; recheck 104/104); inspected the retained PNGs and derived crops visually; the caller ran an independent recheck capture with byte-identical output."
+    ],
+    "excluded": [
+      "Server-registry account badges returned by accountBadge are explicitly outside this local request; do not allocate replacement badge art.",
+      "No images are allocated for stateAfter or other functions without a visual role; the queue transitions determine status meaning only.",
+      "No new Start control, panel background, font, text label, host configuration, generated art or provider operation is assigned."
+    ],
+    "unresolved": [
+      "The representative renderer (renderer/, and the separately versioned renderer-recheck/ whose capture.mjs sets device metrics before navigation) is a scoped headless-Chrome fixture importing the real view modules; it is not the production UI. The original renderer/capture.mjs measured DOM bounds at a 1262x904 viewport while Chromium screenshotted at 1280x1000, so renderer/check.py failed 9 of 104 checks (dx=+9 bookkeeping offset, no rendering defect); renderer-recheck/check.py passes 104/104 on pixel-identical canvases. Production-host display acceptance (other browsers, DPR, zoom, the real shell) remains unverified.",
+      "Style baseline: the delivered Ready fixture is a controlled pixellab-test sample (provider_simulated=true). Adopting it as the family style reference establishes edge treatment, stroke weight, fill/colour role, margin/footprint and alpha policy only; it does not establish the other members' silhouettes, motion or meaning, non-colour distinction, family continuity, nor actual PixelLab output quality.",
+      "The account badge registry is populated remotely and is not enumerable from this checkout; badges remain excluded.",
+      "Working, Retry and Paused have no artwork, no production store, no candidate and no review; the renderer shows 'Missing asset' for them. Timed loop playback at 100 ms can only be observed interactively (node renderer-recheck/server.mjs) because the capture samples frame boundaries, not real-time playback. No PX2 family plan exists yet."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\BRIEF.md"
+    },
+    {
+      "id": "source-map",
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "binding": "current",
+      "observed_sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\SOURCE-MAP.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\assets\\start.svg"
+    },
+    {
+      "id": "ready-sample",
+      "path": "assets/ready-confirmed.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "binding": "current",
+      "observed_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\assets\\ready-confirmed.png"
+    },
+    {
+      "id": "renderer-view",
+      "path": "renderer-recheck/view.mjs",
+      "sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+      "binding": "current",
+      "observed_sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\renderer-recheck\\view.mjs"
+    },
+    {
+      "id": "render-stage",
+      "path": "RENDER-STAGE.md",
+      "sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+      "binding": "current",
+      "observed_sha256": "b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\RENDER-STAGE.md"
+    },
+    {
+      "id": "render-recheck",
+      "path": "RENDER-RECHECK.md",
+      "sha256": "3b3e6ad12336d77187d764d7c318dc16ebf418236c7027fed75a3129e8f95e35",
+      "binding": "current",
+      "observed_sha256": "3b3e6ad12336d77187d764d7c318dc16ebf418236c7027fed75a3129e8f95e35",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\evidence\\style-family-rendering\\20261108\\native\\claude-render-recheck-01\\project\\RENDER-RECHECK.md"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.ready",
+      "kind": "static_status_icon",
+      "purpose": "Show successful completion as Ready in both full and compact status cells; propose this as the representative family sample.",
+      "status": "in_progress",
+      "next": "render_recheck: corrected renderer-recheck capture work/render-recheck-pixl-01 (errors [], viewport 1280x1000 set via CDP before navigation, destination.png a7f8ed81... byte-identical to the caller's work/render-recheck-caller-01, eight views pixel-identical to the historical renderer/ captures) and renderer-recheck/check.py 104/104 retained; the historical renderer/ result (95/104, dx=+9 capture-layout offset, work/render-pixl-01) stays as evidence. Style decision saved in this row (approved_style_reference). Next: keep status in_progress until production-host display is verified or the owner labels integration; do not reopen the done sample task r.22e90a2a03fe453a.task; this requirements revision flips its selection binding to 'changed' (preserve the diagnostic, do not rebind old jobs or transfer verdicts); new Ready generation only under explicit new authorization against the corrected packet (work/queue.ready-reassessment/request-review.json).",
+      "issues": [],
+      "questions": []
+    },
+    {
+      "id": "queue.working",
+      "kind": "animated_status_sprite_strip",
+      "purpose": "Communicate ongoing work in both full and compact status cells without implying success.",
+      "status": "todo",
+      "next": "After the style decision is saved: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer-recheck/capture.mjs --out work/NEW_DIR and renderer-recheck/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer-recheck/server.mjs.",
+      "issues": [
+        "missing Required consumer destination is currently missing; no animation frames were supplied.: assets/working.png"
+      ],
+      "questions": [
+        "Which activity motif and frame placement should be adopted under the Ready baseline (specialist proposal: rotating 3- or 4-segment arc, no frame containing a check-like diagonal pair, constant footprint box)?"
+      ]
+    },
+    {
+      "id": "queue.retry",
+      "kind": "static_status_icon",
+      "purpose": "Show failed work and the Retry action in both full and compact status cells with a shape that remains distinguishable without color.",
+      "status": "todo",
+      "next": "After the style decision is saved: request the static 16x16 Retry icon for assets/error-retry.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect error -> failed -> label Retry with the new asset in both consumers at 1x and 3x; compare grayscale silhouettes against Start, Ready and every Working frame; keep the superseded assets/retry.png path unused.",
+      "issues": [
+        "missing Current required failure/retry destination is missing; the previous assets/retry.png target is superseded by the updated view.: assets/error-retry.png"
+      ],
+      "questions": [
+        "Which Retry silhouette best distinguishes failure/retry from the Ready check and the planned Working arc without colour (specialist proposal: circular arrow with a clear gap and 2-pixel arrowhead)?"
+      ]
+    },
+    {
+      "id": "queue.start",
+      "kind": "existing_vector_control",
+      "purpose": "Retain the existing idle Start control shared by both status consumers.",
+      "status": "deferred",
+      "next": "Preserve the existing vector file and idle mapping; delivery check 2 observed in the representative renderer (idle resolves to the preserved Start control in both consumers; renderer-recheck 104/104). No new Start asset is allocated.",
+      "issues": [],
+      "questions": []
+    },
+    {
+      "id": "queue.paused",
+      "kind": "static_status_icon",
+      "purpose": "Show paused work in both full and compact status cells, distinguishable from activity, completion and retry without color alone.",
+      "status": "todo",
+      "next": "After the style decision is saved: request the static 16x16 Paused icon for assets/paused.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect pause -> paused -> label Paused with the new asset in both consumers at 1x and 3x; compare at both scales and in grayscale with Ready, Retry and all Working frames.",
+      "issues": [
+        "missing New required consumer destination is missing; no reusable Paused image was supplied.: assets/paused.png"
+      ],
+      "questions": [
+        "Does the proposed two-bar pause silhouette (2-pixel bars, 2-pixel gap, 8-9 px tall) remain distinct from the Ready check, Working arc and Retry arrow without colour?"
+      ]
+    }
+  ],
+  "changes": {
+    "baseline_hash": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+    "changed_sources": [
+      "ready-sample",
+      "render-recheck",
+      "render-stage",
+      "renderer-view"
+    ],
+    "direct_assets": [
+      "queue.paused",
+      "queue.ready",
+      "queue.retry",
+      "queue.working"
+    ],
+    "affected_assets": [
+      "queue.paused",
+      "queue.ready",
+      "queue.retry",
+      "queue.working"
+    ],
+    "unaffected_assets": [
+      "queue.start"
+    ],
+    "added_assets": [],
+    "removed_assets": [],
+    "coverage_changed": true,
+    "scope": "Tracked source bindings and declarations only; inspect source/coverage for newly introduced or dynamic consumers."
+  }
+}

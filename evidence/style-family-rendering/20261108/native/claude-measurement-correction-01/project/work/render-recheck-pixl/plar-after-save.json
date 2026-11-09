@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "role": "Focused PLAR state immediately after the round-2 pixl_plar_save (artifact-based restart by a second PIXL instance; round-1 instance a49b4d400a055050a could not be resumed). Read-only observations; no PX2 change.",
+  "save": {
+    "route": "kit CLI 'plar save' (same deterministic operation as pixl_plar_save) with the document file work/render-recheck-pixl/plar-update-saved.json so the saved document is exactly that file's JSON; verified plar.txt JSON == saved document JSON (True)",
+    "expect": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+    "pre_save_reread_hash": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+    "result_file": {"path": "work/render-recheck-pixl/plar-save-result.json", "sha256": "1f9566c511d87d37011a92b4bfeaa25f4e8ca51c54f4495b7a719e2285555973"},
+    "changes_reported": {
+      "baseline_hash": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+      "changed_sources": ["ready-sample", "render-recheck", "render-stage", "renderer-view"],
+      "affected_assets": ["queue.paused", "queue.ready", "queue.retry", "queue.working"],
+      "unaffected_assets": ["queue.start"],
+      "coverage_changed": true
+    }
+  },
+  "plar_txt": {
+    "old_hash": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+    "new_hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "retained_history": {"path": ".pixl/plar-history/71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de.json", "sha256": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de", "note": "byte-identical retention of the replaced plar.txt"}
+  },
+  "requirements_hash_by_asset": {
+    "queue.ready": {"old": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673", "new": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e", "matches_ledger_prediction": true},
+    "queue.working": {"old": "02a94ddf9bb0013a5b7a1610960104708b0eb1e88cee46049a5e17ff63649125", "new": "c6b5121c05396b2d21c68669dc9deffb8f71e9e44ddeb48ada7fec44d01126e5", "matches_ledger_prediction": true},
+    "queue.retry": {"old": "b864ea4e6bba517d6beae3958726085e6cebf73c98694cf47d8328f2b065a892", "new": "c0404a1486c4a700a5342e3926de3abe363d8362a2ed11ef3a9756ede308bd4a", "matches_ledger_prediction": true},
+    "queue.paused": {"old": "1a18831fb5fcfbf1bdec345e9471d171008eb72e0a2f13614a511f756a571d4b", "new": "0bb25469522009a4ad8830b5d92b9e393da336d45d69179029bb82c7e5ecd935", "matches_ledger_prediction": true},
+    "queue.start": {"old": "d25bb8982e69cb1f0a2fb448893bfa29432f21f498368312e58cbdba26250c42", "new": "d25bb8982e69cb1f0a2fb448893bfa29432f21f498368312e58cbdba26250c42", "unchanged": true, "note": "U18 dropped as the caller chose; existing[0].role text restored to the live text; U19 next text and the renderer evidence link are present"}
+  },
+  "queue_ready_production_view": {
+    "store": ".pixl/assets/queue.ready",
+    "link_status": "linked",
+    "status": "available",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "task": "r.22e90a2a03fe453a.task",
+    "task_state": "done",
+    "output": "r.22e90a2a03fe453a.output.ready",
+    "candidate": "ready.retained (nominated; six criteria pass against the historical contract)",
+    "selection_bindings": [
+      {
+        "input": "r.22e90a2a03fe453a.selection",
+        "snapshot": ".pixl/assets/queue.ready/plans/22e90a2a03fe453ac366e736fdc18f134ac8bfc4083656df4505326f11a528a7.json",
+        "bound_requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+        "current_requirements_hash": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+        "selected_for_asset": true,
+        "status": "changed"
+      }
+    ],
+    "selection_current": false,
+    "next_action": "review_contract",
+    "new_request_allowed": false,
+    "link_action": null,
+    "pending_jobs": [],
+    "jobs": [
+      {"id": "first_request", "state": "failed", "remote_id": "controlled-create-0001", "provider": "pixellab-test", "provider_simulated": true},
+      {"id": "r.22e90a2a03fe453a.request", "state": "succeeded", "remote_id": "controlled-create-0002", "provider": "pixellab-test", "provider_simulated": true, "candidate": "ready.retained"}
+    ],
+    "production_selection_diagnostic": "PRESERVED, not repaired: the done task r.22e90a2a03fe453a.task stays bound to requirements_hash 806a1f2d...; the deliberate requirements revision (U04-U07, A01) flips its selection binding to 'changed' and the derived next action to review_contract. No old job is rebound, the done task is not reopened and the six historical verdicts are not transferred to the new contract. Any new Ready generation requires a fresh caller-compared packet and explicit new authorization."
+  },
+  "dependent_rows_production_view": {
+    "queue.working": {"link_status": "unlinked", "status": "not_started", "next_action": "prepare", "pending_jobs": null, "dependency_issues": {}},
+    "queue.retry": {"link_status": "unlinked", "status": "not_started", "next_action": "prepare", "pending_jobs": null, "dependency_issues": {}},
+    "queue.paused": {"link_status": "unlinked", "status": "not_started", "next_action": "prepare", "pending_jobs": null, "dependency_issues": {}},
+    "queue.start": {"link_status": "unlinked", "status": "not_started", "next_action": "prepare", "note": "deferred existing vector; no production is allocated"}
+  },
+  "focused_reads_retained": {
+    "queue.ready": "pixl_plar_read (MCP) after save; summarised above",
+    "queue.start": "pixl_plar_read (MCP) after save; summarised above",
+    "queue.working": "work/render-recheck-pixl/focused-read-after-save-queue.working.json",
+    "queue.retry": "work/render-recheck-pixl/focused-read-after-save-queue.retry.json",
+    "queue.paused": "work/render-recheck-pixl/focused-read-after-save-queue.paused.json"
+  },
+  "px2_state_unchanged": {
+    "store": ".pixl/assets/queue.ready/state.px",
+    "pixl_validate_after_save": {"valid": true, "format": 2, "revision": 14, "hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81", "records": 87, "files_verified": true},
+    "file_sha256_after_save": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "families": "none (pixl_family: families [] per round 1; no family plan manufactured in round 2)"
+  },
+  "not_done": ["no provider call", "no renderer or renderer-recheck edit", "no new artwork", "no PX2 commit", "no rebinding, reopening or verdict transfer", "FAMILY-RESULT.json / RENDER-RECHECK-RESULT.json are caller files and were not written"]
+}

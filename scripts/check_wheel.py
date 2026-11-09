@@ -15,8 +15,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if not __package__:
     sys.path.insert(0, str(ROOT))
 
+from scripts.candidate_review_probe import run_candidate_review_probe
 from scripts.family_probe import run_family_probe
 from scripts.plar_probe import run_plar_probe
+from scripts.production_plan_probe import run_production_plan_probe
 from scripts.provider_probe import run_provider_probe
 from scripts.retention_probe import run_retention_probe
 
@@ -331,6 +333,15 @@ def run(log_dir=None):
         checks.extend(provider["checks"])
         family = run_family_probe(cli, cwd)
         checks.extend(family["checks"])
+        review = run_candidate_review_probe(cli, cwd / "candidate-review-wheel")
+        copied_review = run_candidate_review_probe(plugin_cli, cwd / "candidate-review-plugin")
+        checks.append({"command": "installed candidate/family review", **review})
+        checks.append({"command": "copied-plugin candidate/family review", **copied_review})
+        shutil.copytree(cwd / "family-fixture", cwd / "plugin-family-authoring")
+        authoring = run_production_plan_probe(cli, cwd / "family-fixture")
+        copied_authoring = run_production_plan_probe(plugin_cli, cwd / "plugin-family-authoring")
+        checks.append({"command": "installed production-plan and stage-prepare", **authoring})
+        checks.append({"command": "copied-plugin production-plan and stage-prepare", **copied_authoring})
         return {
             "status": "pass",
             "wheel": wheel.name,
@@ -344,6 +355,7 @@ def run(log_dir=None):
             "checks": checks,
             "provider_probe": provider,
             "family_probe": family,
+            "production_authoring": {"wheel": authoring, "copied_plugin": copied_authoring},
             "scope": "uv default sdist-to-wheel build; fresh wheel installation with resolved production dependencies; copied-plugin execution; no global installation or source import; no whole-module coverage claim",
         }
 

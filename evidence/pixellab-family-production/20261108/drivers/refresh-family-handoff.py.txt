@@ -1,0 +1,22 @@
+import importlib.util
+import json
+from pathlib import Path
+
+spec=importlib.util.spec_from_file_location('run',Path(__file__).with_name('continue-family-production.py'))
+run=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(run)
+from pixl import handoff, plar
+
+old=json.loads((run.WORK/'HANDOFF.json').read_text(encoding='utf-8'))
+retained=json.loads((run.ROOT/old['path']).read_text(encoding='utf-8'))
+before=run.sha(run.STORE/'state.px')
+selected=plar.read(run.ROOT,asset_id='queue.working')
+assert selected['production']['next_action']=='delivered'
+assert selected['production']['delivery']['complete']
+assert selected['production']['pending_jobs']==[]
+run.write(run.WORK/'current-selection.json',selected)
+result=handoff.save(run.ROOT,'queue.working',selected['requirements_hash'],selected['production']['hash'],retained['details'])
+run.write(run.WORK/'HANDOFF-current.json',result)
+assert run.sha(run.STORE/'state.px')==before
+run.write(run.WORK/'handoff-repair-checks.json',{'original_handoff':old,'current_handoff':result,'state_unchanged':True,'requirements_hash_unchanged':old['requirements_hash']==result['requirements_hash'],'old_next':'review_delivery','current_next':'delivered','delivery':selected['production']['delivery']})
+print(json.dumps(result))

@@ -1,0 +1,20 @@
+from adopt import *
+j=json.loads(Path('authoring-plar.txt').read_text(encoding='utf-8'))
+for a in j['assets']:
+ if a['id']=='queue.working':
+  a['status']='review';a['next']='View exact Working candidate live at nominal100ms,1x/3x with fourth-to-first wrap and judge visual pacing/continuity. Supersede successor02.working.motion.unavailable with justified fresh visual review, then complete Working; snapshot exact family, review collective continuity/distinction/destination and complete only after all passes.'
+ elif a['id'] in ['queue.retry','queue.paused']:
+  a['status']='integrated';a['next']='Successor02 member mechanical/visual/engine criteria passed and task completed. Preserve exact bytes; family snapshot/collective acceptance awaits Working temporal review, then review all copied family members.'
+ elif a['id']=='queue.ready':a['next']='Exact adopted Ready baseline remains eligible; preserved bytes render in both successor consumers. Family collective acceptance awaits Working temporal review; no new Ready acceptance transfer or generation claimed.'
+ elif a['id']=='queue.start':a['next']='Preserved original Start SVG and exact copied bytes verified through idle mapping in both successor consumers; no new Start art allocated. Account badges remain server-registry driven outside scope.'
+ a['evidence'].append({'path':'work/successor-adoption/family-after-member-review.json','note':'Fresh successor02 family status; Retry/Paused done, Working motion visual unavailable, no family snapshot or collective acceptance.'})
+cli('plar-save-final','plar','save',save('plar-final-document.json',j),'--expect',sha('authoring-plar.txt'),'--path','authoring-plar.txt','--root',ROOT)
+reads={}
+for key in ['working','retry','paused']:
+ rd=cli('plar-'+key+'-final','plar','read','--asset','queue.'+key,'--path','authoring-plar.txt','--root',ROOT);reads[key]=rd
+ old=json.loads((W/('plar-'+key+'-02.json')).read_text(encoding='utf-8')); assert rd['requirements_hash']==old['requirements_hash']
+ details={'status':'partial','specialist':'PIXL native foreground','state':STATE,'state_sha256':sha(STATE),'plan':'successor-adoption-02.plan','family_output':'successor-adoption-02.delivery.output','family_candidate':None,'member_candidate':'successor-adoption-02.'+key+'.candidate','candidate_provenance':'Exact original PixelLab-produced bytes reused; no provider request under new contract.','acceptance':{'retry':'complete','paused':'complete','working':'motion-continuity unavailable; other7 checks pass'},'unavailable_verdict':'successor02.working.motion.unavailable','evidence_paths':['work/successor-adoption/request-review-02.json','work/successor-adoption/caller-comparison.json','work/successor-adoption/engine-observation.json','work/successor-adoption/family-after-member-review.json'],'caller_actions':['Use direct actual playback at1x/3x on#172336 at100ms with wrap to appraise scoped Working pacing/continuity.','Retain superseding fresh visual review for unavailable Working criterion; complete only after all criteria pass.','Snapshot family after Working complete; inspect exact copied package and fresh renderer pixels, retain collective continuity/distinction/engine verdicts and complete delivery.'],'future_work':['Overall quality, general host reliability and wider product remain in development.'],'remote_operation_needed':False,'jobs':'No new job; old immutable intent and evidenced local-abandonment lifecycle preserved.'}
+ save(key+'-handoff-details.json',details)
+ cli(key+'-handoff','plar','handoff',W/(key+'-handoff-details.json'),'--asset','queue.'+key,'--requirements',rd['requirements_hash'],'--expect',rd['hash'],'--path','authoring-plar.txt','--root',ROOT)
+cli('jobs-final','jobs',STATE,'--root',ROOT); cli('workflow-final','workflow',STATE,'--root',ROOT);cli('family-final','family',STATE,'successor-adoption-02.delivery.output','--root',ROOT);cli('validation-final','validate',STATE,'--root',ROOT)
+print('Final reports/handoffs retained, selection requirements remain exact.')

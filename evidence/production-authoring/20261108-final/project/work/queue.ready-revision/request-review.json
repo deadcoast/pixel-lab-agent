@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "plar": {
+    "path": "plar.txt",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673"
+  },
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "role": "owner asset brief",
+      "locators": [
+        "line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color",
+        "line 5: destination paths from view, badges excluded, no approved style, representative sample first",
+        "line 7: paused distinguishable from activity/completion/retry without color",
+        "line 9: required check mark with asymmetrical arms; current destination follows view"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "role": "consumer state transitions",
+      "locators": [
+        "line 3: ok -> succeeded"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "role": "consumer visual mapping and display descriptor",
+      "locators": [
+        "line 3: idle -> Start assets/start.svg",
+        "line 6: succeeded -> Ready assets/ready-confirmed.png frames 1",
+        "line 9: display cell [16,16], scale 3, nearest, frameMs 100, background #172336",
+        "lines 10-11: statusCell and compactStatus share statusVisuals"
+      ]
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "role": "preserved existing Start vector; accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference",
+      "locators": [
+        "line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z"
+      ]
+    },
+    {
+      "path": "provider-schemas.json",
+      "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "role": "advertised pixellab-test schema (cross-check of host declaration)",
+      "locators": [
+        "create_image_pro_flash"
+      ]
+    },
+    {
+      "path": "provider-contract-origin.json",
+      "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "role": "controlled connection origin/scope note",
+      "locators": [
+        "scope"
+      ]
+    },
+    {
+      "path": "OWNER.md",
+      "sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+      "role": "current request-stage authorization and limits",
+      "locators": [
+        "lines 2-12: revised request, retain original, inspect status, one further controlled request, no image or renderer"
+      ]
+    },
+    {
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "role": "current source overview",
+      "locators": [
+        "line 3: state, visual mapping, consumers and scope"
+      ]
+    }
+  ],
+  "request": {
+    "path": "work/queue.ready-revision/provider-arguments.json",
+    "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3",
+    "kind": "provider_arguments",
+    "tool": "create_image_pro_flash"
+  },
+  "criteria": {
+    "path": "work/queue.ready-revision/candidate-plan.json",
+    "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"
+  },
+  "choices": [
+    {
+      "choice": "Ready is representative sample",
+      "basis": "Specialist proposal under BRIEF.md line 5; no approved style exists.",
+      "appears_in": "request description; plan scope"
+    },
+    {
+      "choice": "No narrower construction recipe",
+      "basis": "The owner now requires asymmetrical-arm check mark. Stroke width, arm ratio, highlights, exact hex and plate geometry stay open.",
+      "appears_in": "request description; ready-meaning criterion"
+    }
+  ],
+  "deferred_obligations": [
+    {
+      "id": "family-working-not-success",
+      "obligation": "Working 4-frame loop communicates activity without looking like Ready/success.",
+      "source": "BRIEF.md line 3",
+      "stage": "family expansion after Ready sample approval",
+      "prerequisites": [
+        "approved Ready sample",
+        "Working candidate (queue.working)"
+      ]
+    },
+    {
+      "id": "family-retry-non-color",
+      "obligation": "Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.",
+      "source": "BRIEF.md lines 3, 7",
+      "stage": "family expansion/collective review",
+      "prerequisites": [
+        "approved Ready sample",
+        "Retry candidate"
+      ]
+    },
+    {
+      "id": "family-paused-non-color",
+      "obligation": "Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.",
+      "source": "BRIEF.md line 7; PLAR queue.ready delivery checks",
+      "stage": "family collective review",
+      "prerequisites": [
+        "approved Ready sample",
+        "Working, Retry and Paused candidates"
+      ]
+    },
+    {
+      "id": "style-decision",
+      "obligation": "Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.",
+      "source": "BRIEF.md line 5; PLAR queue.ready next/questions",
+      "stage": "after retrieval and inspection of a real Ready candidate",
+      "prerequisites": [
+        "retrieved candidate image (the simulated pixellab-test job returns none)"
+      ]
+    },
+    {
+      "id": "destination-delivery",
+      "obligation": "Place accepted Ready image at assets/ready-confirmed.png; decode and confirm dimensions/frames/transparency there.",
+      "source": "BRIEF.md line 5; src/queue-view.ts line 6",
+      "stage": "delivery after art acceptance",
+      "prerequisites": [
+        "accepted candidate"
+      ]
+    },
+    {
+      "id": "renderer-integration",
+      "obligation": "Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.",
+      "source": "src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks",
+      "stage": "integration/live acceptance",
+      "prerequisites": [
+        "delivered asset",
+        "a renderer or UI entry point (none supplied)"
+      ]
+    }
+  ],
+  "preserved": {
+    "start_vector": {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "note": "Unmodified; no Start production in scope."
+    },
+    "plar_ids": "No PLAR allocation IDs added, removed or renamed."
+  },
+  "review_status": {
+    "specialist_self_review": "Revised against actual current brief/view and connected subset schema; no image or artistic acceptance.",
+    "independent_caller_review": "Unperformed; reserved to calling agent."
+  },
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state": ".pixl/assets/queue.ready/state.px",
+    "state_hash": "de96861f2c009997f765a776aa3c9f05d642ec8df1fb315e04f9e07df255dee2",
+    "task": "task",
+    "output": "output.ready",
+    "job": "first_request",
+    "remote_id": "controlled-create-0001",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "original_job_state": "failed",
+    "next": "Independent caller comparison, then explicit revised preparation; no dispatch yet."
+  }
+}

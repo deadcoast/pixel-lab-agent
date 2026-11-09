@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "caller_finding": "Obsolete current questions in Working/Paused and renderer_frame_extraction unknown despite supplied executable renderer.",
+  "resolution": [
+    {
+      "asset": "queue.working",
+      "old_questions": [
+        "Where is the executable renderer that crops and advances the four-frame strip?"
+      ],
+      "new_questions": []
+    },
+    {
+      "asset": "queue.working",
+      "property": "renderer_frame_extraction",
+      "old": {
+        "property": "renderer_frame_extraction",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "queue-view",
+          "source-map"
+        ],
+        "reason": "The supplied view returns descriptors; no frame crop implementation, anchor policy or executable renderer was supplied."
+      },
+      "new": {
+        "property": "renderer_frame_extraction",
+        "value": {
+          "implementation": "renderer/view.mjs paint()",
+          "frame_index": "floor(max(elapsed,0)/display.frameMs) modulo frames",
+          "source_rectangle": "frame*16,0,16,16",
+          "destination_rectangle": "0,0,16*scale,16*scale",
+          "smoothing": "false when display.filter is nearest",
+          "working_result": "unperformed: assets/working.png absent"
+        },
+        "authority": "observation",
+        "sources": [
+          "queue-view",
+          "renderer-view-mjs",
+          "renderer-check-py"
+        ],
+        "reason": "Current supplied executable renderer implements horizontal cropping and100ms timing; actual Working sheet/playback,anchor continuity and boundary quality remain unverified because artwork is absent. Exact screenshot recorded-bound placement also remains unresolved; renderer existence is resolved."
+      }
+    },
+    {
+      "asset": "queue.paused",
+      "old_questions": [
+        "Where is the executable renderer for the actual pause transition and display checks?"
+      ],
+      "new_questions": []
+    }
+  ],
+  "preserved": "All earlier PLAR history/results/handoffs; Start row unchanged; source constraints unchanged. Delivery review statements scoped to absent members. No state mutation."
+}

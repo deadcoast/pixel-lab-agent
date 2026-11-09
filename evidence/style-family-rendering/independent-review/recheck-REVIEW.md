@@ -1,0 +1,20 @@
+# Independent guided renderer/recovery review
+
+Both guided continuations have been reviewed. Codex passes the scoped available-member destination recheck. Claude completes its interrupted delivery and renderer recheck, but remains partial on the required factual comparison: its new review still endorses the earlier Ready arm-axis explanation without reconciling the quoted endpoints. Neither result establishes complete-family acceptance or upstream PixelLab quality.
+
+| Completed case | Independent outcome | Actual retained evidence |
+| --- | --- | --- |
+| `codex-render-recheck-01` | Pass for guided available-member destination recheck | 233 recorded hashes, 45 final-result references, 104 pixel checks, 44 source/CDP checks; exact handoff; all 121 old state records unchanged, four scoped additions |
+| `claude-render-recheck-01` | Partial: required measurement explanation remains unreconciled | Both required results; 583 recorded hashes, 62 references across both results, 104 pixel checks for each of two captures, 44 source/CDP checks; exact handoff; all 87 state records unchanged |
+
+Detailed category grades and exact evidence paths are in each case's `REVIEW.json`. Actual saved destination pixels were inspected and independently rechecked. Captures agree at 1280x1000 with all eight available Start/Ready views at their recorded positions. Missing Working, Retry and Paused remain visible and unaccepted. The corrected capture helper is the separately versioned CDP implementation; original helpers and failed captures remain unchanged.
+
+Claude correctly fixes the Start edge count to **28 at 1x and 84 at 3x**. The remaining issue concerns Ready: old points `(4,8) → (6,12) → (12,4)` yield vectors `(2,4)` and `(6,-8)`, not the asserted 45-degree axes. Four/eight vertical extents and a 7/3/19 column partition do not verify those axes or their stated length ratio. Its new specialist review calls the old geometry confirmed, and the caller accepts that conclusion. This is a descriptive review failure, not a reason to reject the art or the working renderer. The retained images suffice for a focused correction; no new generation or capture is needed for that issue alone.
+
+Claude's stronger style choices are explicitly authorized caller/expert adoption tied to exact Ready bytes. Binary edge treatment, approximately two-pixel strokes, flat primary fill and a proposed footprint need not match Codex's broader adoption. They remain scoped to this family, with motifs and unseen motion unaccepted. PLAR records those choices and their source authority; historical verdicts are not transplanted. Its empty PX2 family inventory is honestly reported, while PLAR retains actionable member allocation and dependencies. The phrase “member production comes first” is an advisory sequencing problem: the existing family workflow saves the applicable plan before member production. This review does not require a fixed record count or manufacture a collective verdict.
+
+Both callers independently inspect returned evidence and save exact current handoffs with selection drift visible. Claude's two foreground specialists return before its final comparison; failed native resumption is honestly described as an artifact-based restart. Production-host behavior beyond this representative browser remains unverified; that limit does not negate the actual available-member fixture pass.
+
+Shared delegation/recovery source review and the A–E documentation audit found no additional consequential implementation or claim defect. Source hashes are pinned in `source-hashes.json` and `documentation-review.json`. These source checks do not substitute for the native outcomes above.
+
+The original review root, `build/style-family-review-independent-20261108`, remains frozen. Its original Codex01 bounded pass with harness limits and Claude01 incomplete-delivery grade are unchanged. `original-review-preservation.json` verifies every original manifest entry. This follow-up's `final-review-manifest.json` indexes all saved reviewer artifacts. Any later numerical correction must receive separate evidence and a separate grade.

@@ -1,0 +1,24 @@
+import hashlib
+import json
+from pathlib import Path
+from PIL import Image
+
+WORK=Path(__file__).resolve().parents[1]/'evidence/pixellab-family-production/20261108/project/work/live-family'
+seed=Image.open(WORK/'working-seed-download.png').convert('RGBA')
+previous=Image.open(WORK/'working-animation-repair-01.png').convert('RGBA')
+target=Image.new('RGBA',(64,16))
+for i in range(4):
+    frame=seed.rotate(-90*i,expand=False,resample=Image.Resampling.NEAREST)
+    target.paste(frame,(16*i,0))
+def color(c): return '#'+''.join(f'{x:02x}' for x in c)
+patches=[]
+for y in range(16):
+    for x in range(64):
+        a,b=previous.getpixel((x,y)),target.getpixel((x,y))
+        if a!=b and (a[3] or b[3]): patches.append([x,y,color(a),color(b)])
+name='working-animation-motion-01'
+changes=[{'operation':'patch_pixels','layer':'image','frames':[1],'pixels':patches,'reason':'Reviewed generated animation morphs/holds. Replace motion with exact0/90/180/270degree clockwise orientations of the accepted generated seed about canvascenter(7.5,7.5); preserve seed palette, cluster pixel counts and transparent exterior.'}]
+requests=json.loads((WORK/'requests.json').read_text(encoding='utf-8'))
+requests[name]={'argv':['edit','234cbedb-f890-4abb-af76-0032f18b46b5','--changes',json.dumps(changes,separators=(',',':'))],'mode':'low','notes':'Authorized Working motion repair. New final motion is specialist-constructed using exact rotations of the PixelLab-generated seed; not claimed to be the AI animation model output. Prior failed generated animation and background repair remain retained.'}
+(WORK/'requests.json').write_text(json.dumps(requests,indent=2)+'\n',encoding='utf-8')
+(WORK/(name+'-construction.json')).write_text(json.dumps({'seed':'working-seed-download.png','seed_sha256':hashlib.sha256((WORK/'working-seed-download.png').read_bytes()).hexdigest(),'clockwise_degrees':[0,90,180,270],'frame_ms':100,'center':[7.5,7.5],'operation':'lossless quarter-turn pixel permutation of generated seed, applied by official PixelLab guarded edits','patch_count':len(patches),'required_review':'native/3x individual frames, actual live playback including wrap, stable clusters and family distinction','changes':changes},indent=2)+'\n',encoding='utf-8')

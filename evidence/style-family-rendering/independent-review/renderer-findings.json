@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "reviewer": "independent development evaluator",
+  "native_reviews": "pending completion notice",
+  "findings": [
+    {
+      "id": "renderer-viewport-race",
+      "priority": 1,
+      "status": "confirmed_reproduced_twice",
+      "title": "Capture report and screenshot can describe different layouts",
+      "source_locations": [
+        "examples/plar-project/renderer/capture.mjs:26",
+        "examples/plar-project/renderer/view.mjs:127"
+      ],
+      "observed": "Unmodified renderer records 1262x904 DOM viewport and first canvas x=238, then saves 1280x1000 screenshot with first glyph at x=247. Checker fails viewport and all eight available screenshot/canvas correspondences in two fresh isolated captures.",
+      "cause": "Inferred report/screenshot timing race: the module posts capture immediately while CLI screenshot occurs later, without a common established viewport/layout boundary.",
+      "impact": "Fresh native destination evidence can fail nondeterministically even when artwork and consumer modules are unchanged.",
+      "recommendation": "Establish the browser viewport and stable layout explicitly before collecting report and screenshot; retain failed runs and verify new captures."
+    }
+  ],
+  "captures": [
+    {
+      "path": "build/style-family-review-independent-20261108/capture-independent",
+      "status": "browser_launch_failed",
+      "scope": "Restricted sandbox crashpad failure; not render evidence."
+    },
+    {
+      "path": "build/style-family-review-independent-20261108/capture-independent-host",
+      "status": "fail",
+      "viewport": {
+        "width": 1262,
+        "height": 904,
+        "clientWidth": 1262
+      },
+      "screenshot_size": [
+        1280,
+        1000
+      ],
+      "first_canvas_bounds": {
+        "x": 238,
+        "y": 431,
+        "width": 16,
+        "height": 16
+      },
+      "failures": [
+        "screenshot and observed viewport dimensions",
+        "statusCell idle 1x screenshot matches canvas pixels",
+        "statusCell idle 3x screenshot matches canvas pixels",
+        "compactStatus idle 1x screenshot matches canvas pixels",
+        "compactStatus idle 3x screenshot matches canvas pixels",
+        "statusCell succeeded 1x screenshot matches canvas pixels",
+        "statusCell succeeded 3x screenshot matches canvas pixels",
+        "compactStatus succeeded 1x screenshot matches canvas pixels",
+        "compactStatus succeeded 3x screenshot matches canvas pixels"
+      ],
+      "renderer_files": {
+        "server.mjs": "0a7fbb72605cf0aefe0481cbb119d2cd6f13e4213e69917f3692e2cf4f852ab6",
+        "capture.mjs": "f0e3df482fc9ca2fc8a25d3f00e143a6c55a8119bd43486899805ff1b441e535",
+        "index.html": "05fbe0a3baa0bb61a2ab03edc74801167dc3bb5d17fed80b9f5da7e7361ed4d2",
+        "view.mjs": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+        "check.py": "01f482c9e5bfc1d6d2c380f0953e5161e0cf321ade0cfb57783d13bd04d9f16b"
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    {
+      "path": "build/style-family-review-independent-20261108/capture-independent-host-repeat",
+      "status": "fail",
+      "viewport": {
+        "width": 1262,
+        "height": 904,
+        "clientWidth": 1262
+      },
+      "screenshot_size": [
+        1280,
+        1000
+      ],
+      "first_canvas_bounds": {
+        "x": 238,
+        "y": 431,
+        "width": 16,
+        "height": 16
+      },
+      "failures": [
+        "screenshot and observed viewport dimensions",
+        "statusCell idle 1x screenshot matches canvas pixels",
+        "statusCell idle 3x screenshot matches canvas pixels",
+        "compactStatus idle 1x screenshot matches canvas pixels",
+        "compactStatus idle 3x screenshot matches canvas pixels",
+        "statusCell succeeded 1x screenshot matches canvas pixels",
+        "statusCell succeeded 3x screenshot matches canvas pixels",
+        "compactStatus succeeded 1x screenshot matches canvas pixels",
+        "compactStatus succeeded 3x screenshot matches canvas pixels"
+      ],
+      "renderer_files": {
+        "server.mjs": "0a7fbb72605cf0aefe0481cbb119d2cd6f13e4213e69917f3692e2cf4f852ab6",
+        "capture.mjs": "f0e3df482fc9ca2fc8a25d3f00e143a6c55a8119bd43486899805ff1b441e535",
+        "index.html": "05fbe0a3baa0bb61a2ab03edc74801167dc3bb5d17fed80b9f5da7e7361ed4d2",
+        "view.mjs": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04",
+        "check.py": "01f482c9e5bfc1d6d2c380f0953e5161e0cf321ade0cfb57783d13bd04d9f16b"
+      },
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    }
+  ],
+  "limits": [
+    "No active native producer outputs or logs inspected.",
+    "No source or original evidence modified.",
+    "Current findings do not supply a family artwork or upstream PixelLab quality verdict."
+  ]
+}

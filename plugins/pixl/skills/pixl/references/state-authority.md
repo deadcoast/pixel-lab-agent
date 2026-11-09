@@ -4,6 +4,12 @@ Load this reference when authoring or resuming PIXL production state. It preserv
 
 ## Production authority
 
+Use observed provenance dates. For source `S.at`, record the actual observation
+date, or read the clock when recording a precise time. Do not fill a required
+string with an invented hour or a copied placeholder. Correct an inaccurate
+observation explicitly while preserving the original records and proof scope;
+unchanged source bytes do not make an unsupported timestamp accurate.
+
 The custom PIXL UDL is the agent's structured production state. Read its actual versioned specification and registry before authoring it. Use the runtime to validate, select context, inspect dependencies, and commit a candidate with the expected current canonical hash. The commit operation accepts inline JSON as well as an existing wire file; prefer the direct form when it avoids temporary files. Preserve stable IDs and explicit dependency/evidence relationships. A recorded decision requires WHO, WHAT, WHERE, WHY, research references, and executed proof receipts. Researched knowledge may remain unproven, but execute an applicable proof before adopting it in a decision. A failed proof can support rejecting a method. Never invent fields, translate unknown syntax by intuition, or silently erase information to pass a validator.
 
 For new intake and representative-sample work, use the declared PX2 lifecycle: preserve unknown, observed, proposed, confirmed and conflicting choices; plan outputs before files exist; save task-specific acceptance criteria before evaluation; and keep candidate verdicts separate from measurements. Research/sample tasks can investigate a proposal without an adopted decision. Existing PX1 state retains its original contract and cannot be upgraded by simply changing its header. Resume through the workflow report and actual retained evidence; a missing visual or engine check remains unfinished even when mechanical checks pass.

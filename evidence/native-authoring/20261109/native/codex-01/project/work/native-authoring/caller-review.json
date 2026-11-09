@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent independent review; parent /root, separate from native PIXL specialist",
+  "status": "changes_requested",
+  "scope": "Assigned authoring/recovery comparison complete. Historical request is source-consistent with explicit authority correction; current reduced-motion contract is incomplete and not adopted for dispatch.",
+  "reviewed_packet": {
+    "path": "work/native-authoring/request-review.json",
+    "sha256": "3dd679b05626c568fb27ad51c349e725d53f7dce6a98063bf2f1beab7d591699"
+  },
+  "reviewed_stage_packet": {
+    "path": "work/native-authoring/working-stage-packet.json",
+    "sha256": "1a961c6548a762ce2bc3d6dfdcc003014da406998b6bf328da6f96e930d241be"
+  },
+  "sources": [
+    {
+      "path": "AUTHORING-STAGE.md",
+      "sha256": "29e73af9a110353dd1453b1bbbb73d7166cf42a0b8eb97f71b53e73701b600aa"
+    },
+    {
+      "path": "AUTHORING-UPDATE.md",
+      "sha256": "495c8450391dcb26191ec2c0ad02dc8542a58b712e4009f813c51c2169e74b58"
+    },
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab"
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08"
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49"
+    },
+    {
+      "path": "renderer/view.mjs",
+      "sha256": "5f64fc51cc5839ecb9a668c5e0f0710887f5bb64ef3fc38a23adf853dcf26b04"
+    },
+    {
+      "path": "work/family-render-review/caller-comparison-final.json",
+      "sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2"
+    },
+    {
+      "path": "work/live-family/working-animation-01-review-input.json",
+      "sha256": "d05984e2dc4875870c8d834d8c4bedca776b633e0f9e0697d02635fc6e818bbf"
+    },
+    {
+      "path": "work/live-family/working-animation-repair-01-review-input.json",
+      "sha256": "1584ccd3fab87467c986e76c6a7db884cd409624a905520afe2b7a256e6031f8"
+    },
+    {
+      "path": "work/live-family/working-animation-motion-01-review-input.json",
+      "sha256": "f39ba1672c22d49e11e691775be4b4ac4d65836a1f8c82581593a0f5b846e80f"
+    },
+    {
+      "path": "work/live-family/collective-review.json",
+      "sha256": "121b3b9b295498e72d444777d16414726e4e949def522ee5a4aa1ed78a148b8c"
+    },
+    {
+      "path": "official-discovery.json",
+      "sha256": "671cf0859791c54c2a6efc22d4db96d4aef3fa700474c47bff6a4e0fe1e14bea"
+    },
+    {
+      "path": "work/native-authoring/specialist-plan.json",
+      "sha256": "6e493c8aea4e69fb183eb2e1ae7bc7039466b81f080713453a1abe2750259f2f"
+    },
+    {
+      "path": "work/native-authoring/working-stage-packet.json",
+      "sha256": "1a961c6548a762ce2bc3d6dfdcc003014da406998b6bf328da6f96e930d241be"
+    },
+    {
+      "path": "work/native-authoring/specialist-findings.json",
+      "sha256": "f4b0c653d249a7c350e214e715d9d80622896c87b87972a130f1c8d1559a0fed"
+    }
+  ],
+  "source_excerpts": [
+    {
+      "path": "BRIEF.md",
+      "lines": [
+        3,
+        9
+      ],
+      "quote": "Create coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\n\nAssets belong at the paths already used by the view. Account badges are provided by a server registry and are outside this local asset request. No approved style reference exists yet: propose a representative status sample before expanding the family.\n\nUpdate: the queue now supports a paused state. Its status image must be distinguishable from activity, completion and retry without relying on color alone. Keep the existing style and display requirements. The failure visual moved to the path in the updated view; its purpose is unchanged.\n\nCurrent update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions."
+    },
+    {
+      "path": "src/queue.ts",
+      "lines": [
+        1,
+        4
+      ],
+      "quote": "export type QueueState = \"idle\" | \"running\" | \"succeeded\" | \"failed\" | \"paused\";\nexport function stateAfter(result: \"started\" | \"ok\" | \"error\" | \"pause\"): QueueState {\n  return { started: \"running\", ok: \"succeeded\", error: \"failed\", pause: \"paused\" }[result] as QueueState;\n}"
+    },
+    {
+      "path": "src/queue-view.ts",
+      "lines": [
+        2,
+        11
+      ],
+      "quote": "export const statusVisuals = {\n  idle: { label: \"Start\", path: \"assets/start.svg\", frames: 1 },\n  running: { label: \"Working\", path: \"assets/working.png\", frames: 4 },\n  paused: { label: \"Paused\", path: \"assets/paused.png\", frames: 1 },\n  succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 },\n  failed: { label: \"Retry\", path: \"assets/error-retry.png\", frames: 1 },\n};\nexport const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };\nexport function statusCell(state: QueueState) { return statusVisuals[state]; }\nexport function compactStatus(state: QueueState) { return statusVisuals[state]; }"
+    },
+    {
+      "path": "renderer/view.mjs",
+      "lines": [
+        30,
+        40
+      ],
+      "quote": "function paint(canvas, asset, frames, scale, elapsed) {\n  const [width, height] = display.cell;\n  const frame = Math.floor(Math.max(elapsed, 0) / display.frameMs) % frames;\n  const context = canvas.getContext('2d', { willReadFrequently: true });\n  context.imageSmoothingEnabled = display.filter !== 'nearest';\n  context.fillStyle = panel;\n  context.fillRect(0, 0, canvas.width, canvas.height);\n  if (asset.available && asset.width === width * frames && asset.height === height) {\n    context.drawImage(asset.image, frame * width, 0, width, height, 0, 0, width * scale, height * scale);\n  }\n  return frame;"
+    },
+    {
+      "path": "work/family-render-review/caller-comparison-final.json",
+      "lines": [
+        113,
+        125
+      ],
+      "quote": "    \"scope\": \"Representative style for this consumer queue status family only; controlled fixture, no PixelLab-generated quality claim\",\n    \"carry_forward\": [\n      \"Readable compact silhouettes at 1x and 3x nearest on #172336\",\n      \"Coherent deliberate pixel clusters and stepped edge treatment\",\n      \"Perceptible cool-blue accent relating to preserved Start\",\n      \"Transparent background\"\n    ],\n    \"not_prescribed\": [\n      \"Exact hex or palette count\",\n      \"Binary alpha\",\n      \"Exact stroke weight, margin or footprint\",\n      \"Ready check silhouette for other meanings\"\n    ],"
+    },
+    {
+      "path": "AUTHORING-UPDATE.md",
+      "lines": [
+        1,
+        10
+      ],
+      "quote": "# Scoped caller update after preparation\nThe authoring branch now requires reduced-motion support: a stationary Working\nsymbol distinct from Ready and Paused. Its consumer mapping needs comparison with\nthe existing source before a revised request. The older animation-only plan/request\nremains retained, but cannot be treated as current without that comparison.\nThis is an explicit evaluation caller change, not a new requirement on the already\naccepted original production. Do not remove or rewrite the prepared request or\nclaim revised acceptance. Report the changed requirement identity, observed local\nblockers and the next concrete consumer/contract review. This assignment stops at\nthat truthful recovery; no additional generation is requested."
+    }
+  ],
+  "criterion_comparisons": [
+    {
+      "id": "authoring.queue.family.01.working.q.geometry",
+      "literal_check": "Decoded PNG is 64x16 containing exactly four horizontal 16x16 frames, without gaps or resizing.",
+      "route": {
+        "domain": "mechanical",
+        "mode": "local"
+      },
+      "source_obligation": "BRIEF.md:3 fixes four horizontal frames in16x16 cells; renderer/view.mjs:30-38 requires64x16. Source leaves construction method open.",
+      "literal_delta": "64x16/four16x16/no gaps preserve consumer geometry. 'without resizing' additionally binds the specialist's lossless assembly route, not universal owner art policy.",
+      "discriminating_alternative": "A coherent native16x16 set assembled without resampling passes. A visually readable image downsampled from32x32 could meet visual meaning but fails this deliberately lossless chosen route; do not promote this to owner rule.",
+      "disposition": "Keep as scoped preparation/assembly process choice; mechanical geometry review only."
+    },
+    {
+      "id": "authoring.queue.family.01.working.q.appearance",
+      "literal_check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable activity silhouette that never reads as successful completion, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+      "route": {
+        "domain": "visual",
+        "mode": "visual"
+      },
+      "source_obligation": "BRIEF.md:3 requires readable activity rather than success, transparency,cool blue,1x/3x. Scoped style decision:113-124 adds deliberate clusters/stepped treatment and expressly leaves palette/alpha/stroke/margins open.",
+      "literal_delta": "All clauses preserve source outcomes. 'never reads as successful completion' implements activity-not-success rather than banning any incidental diagonal. Cluster treatment comes from adopted style, not measured cluster count.",
+      "discriminating_alternative": "A readable pale-blue loop with partial alpha, different margins and more/fewer than3segments remains allowed. A success check that animates still violates activity-not-success. A different cluster count is not rejected.",
+      "disposition": "Keep exact visual route and qualitative criterion; no new visual verdict."
+    },
+    {
+      "id": "authoring.queue.family.01.working.q.motion",
+      "literal_check": "Play all four frames at 100 ms each, including fourth-to-first wrap; inspect meaningful ongoing activity, stable placement and coherent shape/volume without unintended holds or morphing. Any provider sequence selection or assembly must be recorded exactly; all original frames remain retained.",
+      "route": {
+        "domain": "continuity",
+        "mode": "visual"
+      },
+      "source_obligation": "BRIEF.md:3 requires four100ms looping activity frames. AUTHORING-STAGE requires exact assembly policy; prior repaired animation review reports actual morph/holds and jump.",
+      "literal_delta": "Stable placement/coherent shape/volume and no unintended holds/morphing are expert quality checks motivated by observed failure. 'unintended' does not ban designed pulsation or intentional deformation. Exact quarter-turns are absent from this rejection rule.",
+      "discriminating_alternative": "A coherent pulse with intentionally varying volume could pass the literal condition; the provider's quarter-turn recipe is a proposal. An accidental long hold with popping segment loss fails expert continuity quality even if timing metadata is100ms.",
+      "disposition": "Keep scoped expert motion quality; assess actual playback separately. Superseded as complete current contract by reduced-motion update."
+    },
+    {
+      "id": "authoring.queue.family.01.working.q.destination",
+      "literal_check": "Exercise started -> running through both actual statusCell and compactStatus using assets/working.png; verify horizontal frame*16,0,16,16 slicing, 100ms clock and wrap, nearest sampling at 1x/3x, alpha compositing on #172336, label and stable recorded screenshot placement.",
+      "route": {
+        "domain": "engine",
+        "mode": "live"
+      },
+      "source_obligation": "src/queue.ts:1-4 started->running; queue-view.ts:4,9-11 maps Working path,four frames,100ms,both consumers. renderer/view.mjs:30-38 supplies cropping.",
+      "literal_delta": "All controls/paths match consumer. Stable recorded placement is destination verification supported by prior mismatch recovery, not a mandate on glyph margins.",
+      "discriminating_alternative": "A correct PNG with wrong runtime source rectangle or a screenshot taken after layout drift fails destination review despite standalone readability. A changed pivot/margin with correct consumer placement is not prohibited.",
+      "disposition": "Keep live route and both-consumer checks; add future reduced-motion branch coverage before new request."
+    },
+    {
+      "id": "authoring.queue.family.01.retry.q.geometry",
+      "literal_check": "Decoded PNG is one static 16x16 frame.",
+      "route": {
+        "domain": "mechanical",
+        "mode": "local"
+      },
+      "source_obligation": "BRIEF.md:3 specifies static Retry,16x16cells; queue-view.ts:7 maps1frame.",
+      "literal_delta": "Literal one static16x16 frame adds no construction/motif restriction.",
+      "discriminating_alternative": "A16x16 circular arrow or other readable retry symbol passes geometry; a64x16sheet or animated Retry fails source static contract.",
+      "disposition": "Keep local measurement."
+    },
+    {
+      "id": "authoring.queue.family.01.retry.q.appearance",
+      "literal_check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable failure/retry silhouette distinct without color alone, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+      "route": {
+        "domain": "visual",
+        "mode": "visual"
+      },
+      "source_obligation": "BRIEF.md:3 requires non-color retry distinction/readability/transparency/cool blue. Scoped style:113-124 applies.",
+      "literal_delta": "Failure/retry meaning, distinction, transparent exterior and adopted pixel treatment match; no arrowhead, palette count,binary alpha or observed cluster count imposed.",
+      "discriminating_alternative": "A readable alternate failure/retry silhouette with partial alpha can pass. Merely recoloring the Ready check fails non-color distinction.",
+      "disposition": "Keep visual route. Compare against retained available family as member context; new collective check remains separately scheduled."
+    },
+    {
+      "id": "authoring.queue.family.01.retry.q.destination",
+      "literal_check": "Exercise error -> failed through both actual statusCell and compactStatus using assets/error-retry.png; verify static behavior, Retry label, nearest 1x/3x sampling, alpha compositing on #172336 and stable recorded screenshot placement.",
+      "route": {
+        "domain": "engine",
+        "mode": "live"
+      },
+      "source_obligation": "queue.ts:2-3 error->failed; queue-view.ts:7,9-11 Retry/error-retry.png,one frame,both consumers; renderer:30-38.",
+      "literal_delta": "Static behavior,label,path,sampling/compositing and recorded placement match sources and destination obligation.",
+      "discriminating_alternative": "An excellent retry image loaded from stale assets/retry.png fails actual current consumer path. Different shape allowed if meaning/style satisfied.",
+      "disposition": "Keep live consumer verification."
+    },
+    {
+      "id": "authoring.queue.family.01.paused.q.geometry",
+      "literal_check": "Decoded PNG is one static 16x16 frame.",
+      "route": {
+        "domain": "mechanical",
+        "mode": "local"
+      },
+      "source_obligation": "BRIEF.md:7 introduces paused within existing cell/display contract; queue-view.ts:5 oneframe.",
+      "literal_delta": "One static16x16 frame matches source descriptor; no pause-bar recipe added.",
+      "discriminating_alternative": "A distinct static pause motif other than two bars passes geometry. A multi-frame pause sheet fails current descriptor.",
+      "disposition": "Keep local measurement."
+    },
+    {
+      "id": "authoring.queue.family.01.paused.q.appearance",
+      "literal_check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable paused silhouette distinguishable from activity, completion and retry without relying on color alone, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+      "route": {
+        "domain": "visual",
+        "mode": "visual"
+      },
+      "source_obligation": "BRIEF.md:7: 'distinguishable from activity, completion and retry without relying on color alone'; scoped style:113-124.",
+      "literal_delta": "Literal check preserves all three comparisons and style. No exact two bars, palette,binary alpha or footprint mandate.",
+      "discriminating_alternative": "A readable stationary pause sign distinct in silhouette can pass even if not conventional bars. A differently colored Working motif would fail non-color distinction.",
+      "disposition": "Keep visual route; retained existing members provide available context, new family comparison remains delivery obligation. Stationary Working update requires renewed comparison later."
+    },
+    {
+      "id": "authoring.queue.family.01.paused.q.destination",
+      "literal_check": "Exercise pause -> paused through both actual statusCell and compactStatus using assets/paused.png; verify static behavior, Paused label, nearest 1x/3x sampling, alpha compositing on #172336 and stable recorded screenshot placement.",
+      "route": {
+        "domain": "engine",
+        "mode": "live"
+      },
+      "source_obligation": "queue.ts:2-3 pause->paused; queue-view.ts:5,9-11 Paused/assets/paused.png/static,both consumers; renderer:30-38.",
+      "literal_delta": "Paths,label,static behavior and display conditions match, no additional motif rule.",
+      "discriminating_alternative": "A correct image reached only in full but not compact consumer fails both-consumer source obligation.",
+      "disposition": "Keep live route."
+    },
+    {
+      "id": "authoring.queue.family.01.delivery.q.continuity",
+      "literal_check": "Compare exact Ready, Working, Retry and Paused together at 1x/3x nearest on #172336 for coherent deliberate pixel treatment, readable weight, cool-blue accent and transparency; play Working at100ms including wrap. Ready is scoped style only, not a mandated silhouette, palette count, alpha subset, stroke width, margin or cluster count.",
+      "route": {
+        "domain": "continuity",
+        "mode": "visual"
+      },
+      "source_obligation": "AUTHORING-STAGE:connected Working/Retry/Paused plus Ready collective delivery; BRIEF.md:3,7; scoped style decision:113-124.",
+      "literal_delta": "Compares ordered exact members and Working playback while excluding unsupported numerical/color/alpha constraints. 'readable weight' is coherent readability, no equal area or stroke count.",
+      "discriminating_alternative": "Paused bars may be visibly heavier than Ready and still pass qualitative consistency. Exact palette mismatch alone cannot reject. A matte tile or incompatible treatment fails qualitative style.",
+      "disposition": "Keep visual continuity separate from member checks; all prospective producers remain required."
+    },
+    {
+      "id": "authoring.queue.family.01.delivery.q.distinction",
+      "literal_check": "Inspect all four members including all Working frames and playback, in color and grayscale/non-color comparison: Working communicates activity rather than success; Retry and Paused distinguishable without color alone. Keep existing Start unchanged.",
+      "route": {
+        "domain": "continuity",
+        "mode": "visual"
+      },
+      "source_obligation": "BRIEF.md:3 activity not success and error/retry non-color; :7 Paused distinct from all three; :3 preserve Start.",
+      "literal_delta": "Color/grayscale comparison is expert verification route for non-color requirement, not requirement to deliver grayscale art; keeps all states and Start.",
+      "discriminating_alternative": "A family distinguishable by silhouette with shared identical colors passes; recolored copies of one silhouette fail. Start unchanged bytes remain separate preservation evidence.",
+      "disposition": "Keep collective visual route. Current update adds stationary Working comparison, absent from old plan, so no adoption as current."
+    },
+    {
+      "id": "authoring.queue.family.01.delivery.q.destination",
+      "literal_check": "Exercise idle, started, ok, error and pause transitions through both actual consumers with exact retained delivery files; verify labels, intended paths, static and four-frame slicing/timing, nearest sampling, transparent compositing and stable recorded screenshot placement. Existing Start remains unchanged.",
+      "route": {
+        "domain": "engine",
+        "mode": "live"
+      },
+      "source_obligation": "AUTHORING-STAGE preserves actual slicing/timing,both responsibilities,Start; queue.ts:1-4 and queue-view.ts:2-11 enumerate exact states/paths.",
+      "literal_delta": "All five transitions,static/animation mapping and display behavior match. Includes exact retained delivery files and prior recorded placement obligation.",
+      "discriminating_alternative": "Files copied correctly but not exercised in compact consumer fail. A valid new file silently replacing original accepted package is outside assigned prospective scope.",
+      "disposition": "Keep live collective review; current reduced-motion mapping unresolved and no delivery acceptance assigned."
+    }
+  ],
+  "authority_correction": {
+    "path": "work/native-authoring/authority-correction.json",
+    "sha256": "de9a3caed431bde3f86268cf16c81a4415541f3f0a864d253e6ce9a0db00ba60",
+    "finding": "Exact export labels working.geometry as requirement including no-resizing; sources fix final geometry, not all valid construction methods.",
+    "caller_disposition": "Read returned addendum: agree no-resizing is a scoped lossless assembly choice. Retain historical sentence/export unchanged and do not adopt its mixed authority label as universal owner policy. Motion stability/readable weight are expert assessments of required outcomes, not exact numerical recipes. Any future revised contract must make these authorities explicit."
+  },
+  "family_comparison": {
+    "plan": "authoring.queue.family.01.plan",
+    "baseline": "ready.retained",
+    "baseline_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "upstream": "live.seed.output",
+    "candidate": "live.working-seed.candidate",
+    "proof": "Fresh workflow shows live.seed.task done, candidate nominated, geometry and visual criteria pass; seed byte comparison independent of specialist.",
+    "members": [
+      "r.22e90a2a03fe453a.output.ready",
+      "authoring.queue.family.01.working.output",
+      "authoring.queue.family.01.retry.output",
+      "authoring.queue.family.01.paused.output"
+    ],
+    "destination_choice": "render.choice.destination",
+    "adoption": "render.decision.style",
+    "contracts": "Read actual Working/Retry/Paused C records: full alpha, empty fixed palette, correct native geometry, qualitative adopted style. No new measured color/cluster constraints.",
+    "dependencies": "Working needs existing accepted seed output; static stages use adopted Ready baseline; delivery depends on each prospective producer plus Ready. No invented candidate and no prerequisite requires completed collective delivery before member acceptance.",
+    "selection": "Each final stage bound once to its authoring-plar asset; original plar remains unchanged."
+  },
+  "provider_comparison": {
+    "provider": "pixellab-official-mcp",
+    "tool": "animate_image",
+    "official_declaration": "mcp__pixellab__animate_image in official-discovery.json",
+    "arguments_exactly_match_durable_job": true,
+    "input_field": "first_frame_base64",
+    "input_sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629",
+    "input_bytes_equal_original_seed": true,
+    "input_size": [
+      16,
+      16
+    ],
+    "base64_strictly_decoded": true,
+    "schema_validated": true,
+    "controls": {
+      "frame_count": 4,
+      "no_background": true,
+      "seed": 110901
+    },
+    "declaration_semantics": "Even frame count4 is supported;16x16 is below256x256 and total16*16*4=1024 below524288. No invented style_image or timing parameter. Ready guides prior accepted seed and later review; Ready itself is not a transmitted second image.",
+    "frame_policy": "Retain input0 plus generated1..4; assemble1..4 at x0,16,32,48,y0 into64x16 with100ms consumer playback. No unreviewed substitution/drop/duplication/resizing. Separate per-frame, visual, playback and both-consumer review remain unperformed.",
+    "method_assessment": "Supported bounded motion experiment, low confidence: prior AI animation failed matte then morph/holds; deterministic seed quarter-turn construction succeeded. Prompt quarter-turn/center preservation are expert choices only and no improved quality is claimed. Future deterministic route needs discovered supported scene contract. No new generation authorized."
+  },
+  "update_comparison": {
+    "original_requirements_hash": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027",
+    "observed_requirements_hash": "2901c7107d4f162e98653140ea8061dfe213821b22a5e1338d9d2d6de5b4ad0c",
+    "reconciled_requirements_hash": "94a9a17ab199cd2be73272b2932b6b6a4be96feefdd642f3fb54ea72bd672361",
+    "source": "AUTHORING-UPDATE.md:2-10",
+    "finding": "New stationary reduced-motion Working symbol must be distinct from Ready and Paused. Existing source descriptor maps running only to assets/working.png frames4; both consumers accept state only. paint uses timed modulo; live renderer continuously advances without a motion-preference route.",
+    "minimum_next_review": "Define motion-preference input, fixed-frame versus separate static destination/descriptor, mapping in BOTH consumers, preference-aware live renderer and tests for stationary activity distinct from Ready/Paused. A standalone16x16 file at current64x16-required path would fail geometry guard. Preserve normal-mode100ms loop unless later source review changes it.",
+    "adoption": "Old plan/request retained as history, not current reduced-motion contract. Old seed pose acceptance does not accept stationary use.",
+    "current_blockers": [
+      "production_plan: authoring.queue.family.01.working.task: production_plan: PLAR requirements changed; compare before authoring",
+      "plar_selection: queue.working is changed (selected=True); compare current requirements with the retained plan"
+    ]
+  },
+  "request_review_tool": {
+    "diagnostics": [
+      {
+        "status": "changed_selection",
+        "packet": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027",
+        "current": "94a9a17ab199cd2be73272b2932b6b6a4be96feefdd642f3fb54ea72bd672361"
+      }
+    ],
+    "locator_errors": [],
+    "meaning": "Caller independently interpreted sources; tool's resolved locators and hash validity are not semantic/visual acceptance."
+  },
+  "preservation": {
+    "checked": 383,
+    "changed": [],
+    "original_state_records": 376,
+    "original_state_records_changed": 0,
+    "original_state_records_removed": 0,
+    "current_state_records": 405,
+    "original_plar_sha256": "a462ecf3b6b45c0382d3483b0f4f6912a9d0bd1d68e75253143faa1423837344"
+  },
+  "next": "Keep prepared intent blocked. Resolve stationary consumer/contract mapping and retained prepared intent before any separately assigned revised plan/request; no remote action or asset acceptance."
+}

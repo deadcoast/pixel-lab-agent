@@ -7,6 +7,17 @@ They do not write a caller review, classify semantic consistency, or authorize a
 provider call. The [skill procedure](../plugins/pixl/skills/pixl/references/request-review.md)
 assigns the actual comparison to the calling agent.
 
+Connected authoring additionally returns ready arguments for this same operation:
+`pixl_request_review({packet: STATE_PATH, plan: PLAN_ID, job?: JOB_ID,
+comparison?: CALLER_JSON})`. The CLI equivalents are `--plan`, `--job` and
+`--comparison`. This route reads all member and collective criteria from the bound
+plan, resolves their sources and includes the optional job's actual request and
+current blockers. It leaves authority unclassified for the caller to determine.
+The optional comparison checks exact identity and coverage, not semantic agreement.
+See [connected-plan review](production-plan.md#exact-criteria-handoff) for its scope
+fingerprint, drift handling and comparison fields. Existing candidate packets keep
+their previous semantics.
+
 The report verifies request/criteria byte hashes and returns their exact arguments,
 criterion checks, stated bases/authority/scopes, candidate controls and packet choices.
 All packet source identities are checked, including references not cited by criteria.

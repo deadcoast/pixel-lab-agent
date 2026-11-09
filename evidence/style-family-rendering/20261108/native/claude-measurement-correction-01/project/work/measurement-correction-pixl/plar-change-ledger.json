@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "role": "specialist PLAR change ledger (proposal only; the caller performs pixl_plar_save)",
+  "recorded_at": "2026-11-08T11:17:18+00:00",
+  "base": {
+    "path": "plar.txt",
+    "sha256": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "queue_ready_requirements_hash": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e"
+  },
+  "proposal": {
+    "path": "work/measurement-correction-pixl/plar-update-proposal.json",
+    "sha256": "2bb4a4834ff24c79d2945ac92cb904f68ac5cf09cb05ae536e53ef7b25ee4273"
+  },
+  "measurement_correction": {
+    "path": "work/measurement-correction-pixl/measurement-correction.json",
+    "sha256": "e953e7f00000e8bb187e7ca6bb3a95ebd98044f98879037d9e223a86d6092511"
+  },
+  "changes": [
+    {
+      "id": "E01",
+      "asset_id": "queue.ready",
+      "path": "assets[id=queue.ready].evidence[33]",
+      "operation": "append",
+      "old": null,
+      "new": {
+        "path": "work/measurement-correction-pixl/measurement-correction.json",
+        "note": "Specialist measurement correction (sha256 e953e7f00000e8bb187e7ca6bb3a95ebd98044f98879037d9e223a86d6092511; image-free; script work/measurement-correction-pixl/measure-endpoints.py) of the Ready arm-axis explanation: the quoted tip-to-tip polyline (4,8)->(6,12)->(12,4) has deltas (2,4) and (6,-8), lengths sqrt(20)=4.47 and 10 (ratio sqrt(5)=2.24) and angles 63.4 deg (descending right) and 53.1 deg (ascending right) from the horizontal, so it is not two exact 45-degree axes of 4 and 8 steps; the old 4/8 figures are vertical row extents (rows 8..12 and 4..12) and the 7/3/19 counts are a column partition. Corrects work/queue.ready-reassessment/art-assessment.json lines 52-54 and 83 (axis wording), work/render-stage-pixl/render-review.json line 41 (arm_axis_steps) and line 47 (the 'arm ratio about 1:2' confirmation), and work/render-recheck-review/caller-style-decision.json line 51 ('arm geometry' confirmed). Supported and unchanged: 29/227 px, bbox [3,4,14,13] 11x9, one component, 7/3/19 partition, 3-pixel runs stepping one column per row on 45-degree staircases between the caps, about 2.1 px stroke, vertex pixel (6,12), legible asymmetric check. Not an asset rejection: the art (fc5e43ae...), historical verdicts, PX2 state and the scoped style decision are unchanged; this is a corrected observation, not a new criterion."
+      },
+      "hash_covered": false,
+      "reason": "MEASUREMENT-REVIEW-FEEDBACK.json finding CLAUDE-RECHECK-NUMERIC-01 correction_scope: add an explicitly scoped correction without changing art, verdicts or style decision."
+    },
+    {
+      "id": "N01",
+      "asset_id": "queue.ready",
+      "path": "assets[id=queue.ready].next",
+      "operation": "replace",
+      "old": "render_recheck: corrected renderer-recheck capture work/render-recheck-pixl-01 (errors [], viewport 1280x1000 set via CDP before navigation, destination.png a7f8ed81... byte-identical to the caller's work/render-recheck-caller-01, eight views pixel-identical to the historical renderer/ captures) and renderer-recheck/check.py 104/104 retained; the historical renderer/ result (95/104, dx=+9 capture-layout offset, work/render-pixl-01) stays as evidence. Style decision saved in this row (approved_style_reference). Next: keep status in_progress until production-host display is verified or the owner labels integration; do not reopen the done sample task r.22e90a2a03fe453a.task; this requirements revision flips its selection binding to 'changed' (preserve the diagnostic, do not rebind old jobs or transfer verdicts); new Ready generation only under explicit new authorization against the corrected packet (work/queue.ready-reassessment/request-review.json).",
+      "new": "render_recheck: corrected renderer-recheck capture work/render-recheck-pixl-01 (errors [], viewport 1280x1000 set via CDP before navigation, destination.png a7f8ed81... byte-identical to the caller's work/render-recheck-caller-01, eight views pixel-identical to the historical renderer/ captures) and renderer-recheck/check.py 104/104 retained; the historical renderer/ result (95/104, dx=+9 capture-layout offset, work/render-pixl-01) stays as evidence. Style decision saved in this row (approved_style_reference). measurement_correction: the Ready arm-axis numerical explanation is corrected in work/measurement-correction-pixl/measurement-correction.json (the quoted tip-to-tip segments are 63.4/53.1 degrees with length ratio sqrt(5), not 45-degree axes of 4:8 steps; the old 4/8 are row extents); the art, the historical verdicts and the scoped style baseline are unchanged and nothing is rejected. Next, in this order: (1) review the current member requirements of queue.working, queue.retry and queue.paused against their sources and this row's approved_style_reference, and save the applicable member/collective plans (baseline, members, destinations, collective criteria) through the existing family-delivery operation BEFORE any member production; (2) only after those plans are saved, and under explicit new authorization, produce members. Working, Retry and Paused remain missing, not rejected; no family production and no collective acceptance is assigned now. Keep status in_progress until production-host display is verified or the owner labels integration; do not reopen the done sample task r.22e90a2a03fe453a.task; the current requirements revision (29a330a3...) flips its selection binding to 'changed' (preserve the diagnostic, do not rebind old jobs or transfer verdicts); new Ready generation only under explicit new authorization against the corrected packet (work/queue.ready-reassessment/request-review.json).",
+      "hash_covered": false,
+      "reason": "Record the correction and make the actionable order explicit (member requirement review and family-delivery plans before any member production; missing members stay missing; no production or collective acceptance assigned). Retains the in_progress, done-task, 'changed' selection diagnostic and explicit-authorization statements. Addresses advisory CLAUDE-RECHECK-CONTINUATION-01 (render-review.json line 106 wording must not become the dispatch order)."
+    },
+    {
+      "id": "N02",
+      "asset_id": "queue.working",
+      "path": "assets[id=queue.working].next",
+      "operation": "replace",
+      "old": "After the style decision is saved: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer-recheck/capture.mjs --out work/NEW_DIR and renderer-recheck/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer-recheck/server.mjs.",
+      "new": "Before any production: review this row's current requirements against its sources and the approved_style_reference, and save the applicable member/collective plan through the existing family-delivery operation (no PX2 family plan exists yet); this member remains missing, not rejected, and no production or collective acceptance is assigned now. Then, after that plan is saved and under explicit new authorization: author/request the 64x16 four-frame strip for assets/working.png under the Ready baseline (pixl_plar_prepare against a fresh caller-compared request/criteria packet; explicit new provider authorization required), then run node renderer-recheck/capture.mjs --out work/NEW_DIR and renderer-recheck/check.py: expect nine timeline samples with frames 0,0,1,1,2,2,3,3,0, 'nearest pixel blocks' and compositing passes, no 'Wrong sheet size'; view every frame at 1x and 3x beside Ready and Start; inspect the 300->400 ms wrap interactively via node renderer-recheck/server.mjs.",
+      "hash_covered": false,
+      "reason": "The style decision is now saved, so the old 'After the style decision is saved' trigger is stale; state the family-delivery plan-before-production order explicitly for this member. Requirements, references, delivery checks and dependencies untouched."
+    },
+    {
+      "id": "N03",
+      "asset_id": "queue.retry",
+      "path": "assets[id=queue.retry].next",
+      "operation": "replace",
+      "old": "After the style decision is saved: request the static 16x16 Retry icon for assets/error-retry.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect error -> failed -> label Retry with the new asset in both consumers at 1x and 3x; compare grayscale silhouettes against Start, Ready and every Working frame; keep the superseded assets/retry.png path unused.",
+      "new": "Before any production: review this row's current requirements against its sources and the approved_style_reference, and save the applicable member/collective plan through the existing family-delivery operation (no PX2 family plan exists yet); this member remains missing, not rejected, and no production or collective acceptance is assigned now. Then, after that plan is saved and under explicit new authorization: request the static 16x16 Retry icon for assets/error-retry.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect error -> failed -> label Retry with the new asset in both consumers at 1x and 3x; compare grayscale silhouettes against Start, Ready and every Working frame; keep the superseded assets/retry.png path unused.",
+      "hash_covered": false,
+      "reason": "The style decision is now saved, so the old 'After the style decision is saved' trigger is stale; state the family-delivery plan-before-production order explicitly for this member. Requirements, references, delivery checks and dependencies untouched."
+    },
+    {
+      "id": "N04",
+      "asset_id": "queue.paused",
+      "path": "assets[id=queue.paused].next",
+      "operation": "replace",
+      "old": "After the style decision is saved: request the static 16x16 Paused icon for assets/paused.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect pause -> paused -> label Paused with the new asset in both consumers at 1x and 3x; compare at both scales and in grayscale with Ready, Retry and all Working frames.",
+      "new": "Before any production: review this row's current requirements against its sources and the approved_style_reference, and save the applicable member/collective plan through the existing family-delivery operation (no PX2 family plan exists yet); this member remains missing, not rejected, and no production or collective acceptance is assigned now. Then, after that plan is saved and under explicit new authorization: request the static 16x16 Paused icon for assets/paused.png under the Ready baseline (fresh packet, caller comparison, explicit authorization), then capture with renderer-recheck/: expect pause -> paused -> label Paused with the new asset in both consumers at 1x and 3x; compare at both scales and in grayscale with Ready, Retry and all Working frames.",
+      "hash_covered": false,
+      "reason": "The style decision is now saved, so the old 'After the style decision is saved' trigger is stale; state the family-delivery plan-before-production order explicitly for this member. Requirements, references, delivery checks and dependencies untouched."
+    }
+  ],
+  "hash_covered_changes": [],
+  "requirements_hash_expected_unchanged": true,
+  "considered_and_left_unchanged": [
+    {
+      "path": "assets[id=queue.ready].requirements[property=approved_style_reference].value.scope",
+      "text": "... about 2 px perpendicular stroke (3-pixel runs on 45-degree diagonals; 2-pixel orthogonal strokes) ...",
+      "decision": "KEEP. This describes stroke construction, which the correction re-measures as true: the 3-pixel runs step one column per row on 45-degree staircases between the caps and the merge (perpendicular thickness 3/sqrt(2) = 2.12 px). It does not assert that the arm axes through the tapered tips are 45 degrees. Changing it would alter a requirements_hash-covered field without a factual defect."
+    },
+    {
+      "path": "assets[id=queue.working|queue.retry|queue.paused].references[source=ready-sample].instructions",
+      "text": "... about 2 px perpendicular strokes (3-pixel runs on 45-degree diagonals, 2-pixel orthogonals) ...",
+      "decision": "KEEP for the same reason; hash-covered reference text describing stroke construction."
+    },
+    {
+      "path": "assets[id=queue.ready].requirements[*]",
+      "decision": "KEEP. No requirement text states the 45-degree axis or 4:8 axis-step claim; the defective explanation lives only in work/ review artifacts and is corrected by the new evidence link."
+    },
+    {
+      "path": "assets[id=queue.ready].status",
+      "decision": "KEEP in_progress (unchanged)."
+    },
+    {
+      "path": "coverage, sources, delivery.checks, depends_on, questions, production",
+      "decision": "KEEP (unchanged)."
+    }
+  ],
+  "history_preserved": [
+    "work/queue.ready-reassessment/art-assessment.json",
+    "work/render-stage-pixl/render-review.json",
+    "work/render-recheck-review/caller-style-decision.json",
+    "FAMILY-RESULT.json",
+    "RENDER-RECHECK-RESULT.json",
+    ".pixl/ (state revision 14, hash 7a97831f...)",
+    "plar.txt (bb997899...; the runtime retains the previous bytes on save)"
+  ]
+}

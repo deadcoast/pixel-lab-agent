@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent, independent of the delegated native PIXL specialist (agent type pixl, skill pixl:pixl)",
+  "stage": "PHASE.md contract reassessment and handoff",
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "provider_simulated": true,
+  "reviewed": {
+    "corrected_packet": {"path": "work/queue.ready-handoff/request-review.json", "sha256": "9c5accb202ffd8df060a1b0db5f8737458efe28675ddb592312a6f343de565af"},
+    "corrected_criteria": {"path": "work/queue.ready-handoff/candidate-plan.json", "sha256": "bc903d5bc3f6a7d6c72bc61db45c74baa17e82acf799b97deda2455dd93171b8"},
+    "assessment": {"path": "work/queue.ready-handoff/assessment.json", "sha256": "27af95c34e723eb45167b533dc2e1ee2b527403191b5b24906130bde5a89957a"},
+    "specialist_self_review": {"path": "work/queue.ready-handoff/specialist-review.json", "sha256": "a9cb4897a3cd290f71e748eb587888bcb9a0e351b3f4a4251ac57d2129517085"},
+    "handoff": {"path": ".pixl/handoffs/f43d9432253df8e35847500eac022351e0191386b96003f8d4805d145b08fceb.json", "sha256": "f43d9432253df8e35847500eac022351e0191386b96003f8d4805d145b08fceb"},
+    "historical_contract": {
+      "packet": {"path": "work/queue.ready-revision/request-review.json", "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"},
+      "criteria": {"path": "work/queue.ready-revision/candidate-plan.json", "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"},
+      "arguments": {"path": "work/queue.ready-revision/provider-arguments.json", "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3"},
+      "connection": {"path": "work/queue.ready-revision/connection.json", "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"}
+    }
+  },
+  "verdict": "consistent",
+  "verdict_meaning": "The corrected packet and criteria describe the same contract that was dispatched and delivered, with citation and binding defects repaired. This is contract documentation consistency; it is not a new provider execution, not style/family approval and not renderer acceptance. The historical contract f7e968bd... remains the contract used for delivery.",
+  "method": [
+    "Read PHASE.md, BRIEF.md, SOURCE-MAP.md, OWNER.md, STAGE.md, src/queue.ts, src/queue-view.ts, assets/start.svg, provider-schemas.json, retrieval-provider-schemas.json, provider-contract-origin.json in full with line numbers before delegating; read PARENT/COLD/DELIVERY results, work/PIXL-DELIVERY.json and the historical packet, plan, arguments, connection and both prior caller reviews.",
+    "Ran pixl_request_review on the historical packet before delegating: 3 diagnostics (OWNER.md lines 2-12 invalid for an 11-line file; provider-schemas.json and provider-contract-origin.json locators without bounds) plus over-broad criterion bounds [3,9], [3,11], [1,4] that the tool resolves but that do not equal the cited text.",
+    "After the specialist returned: re-hashed all 8 new artifacts and 19 historical/source files (all match; no historical byte changed); re-ran pixl_validate (revision 14, hash 7a97831f..., 87 records, files verified) and pixl_plar_read (plar hash 1794e17c..., requirements_hash 806a1f2d..., selection current, next_action review_delivery, pending_jobs []).",
+    "Ran pixl_request_review on the corrected packet myself: 0 diagnostics, 37 source-evidence entries all resolved, request.provider pixellab-test, connection bound to e137fb43...; my report equals the specialist-retained report section by section (packet, request, criteria, sources, choices, source_evidence, diagnostics).",
+    "Programmatically compared the six criteria between historical and corrected plans: id order, check, domain, mode, authority, scope and basis identical; plan scope and output contract identical; only sources[].lines and sources[].locator changed.",
+    "Opened every corrected pointer's cited line(s) in the actual files and confirmed the text matches the locator label (BRIEF 3/5/9, queue.ts 3, queue-view 3/6/9, start.svg 1; packet-level OWNER 2-11, STAGE 2-6 and 10-11, PHASE 2-11, provider-schemas 2-33, retrieval schema 43-60, contract-origin 4).",
+    "Reproduced the measurements from the PNG with Pillow: per-row opaque runs equal assessment.json; single colour (112,185,237,255); alpha values only 0 and 255; bbox [3,4,14,13] zero-based exclusive; contrast 7.41:1 (diagnostic only). Viewed the PNG and the retained 3x panel view.",
+    "Compared the handoff file's resume object with the fresh production continuation from pixl_plar_read: equal. Its next is review_delivery, selection.hash equals current plar.txt, selection.current true, requirements_hash and state_hash match.",
+    "Re-ran node verify-integration.mjs assets/ready-confirmed.png myself: exit 0, output identical to the specialist's retained stdout (same PNG and source hashes). Module execution only; not renderer acceptance."
+  ],
+  "criterion_comparisons": [
+    {
+      "id": "geometry",
+      "source_obligation": "BRIEF.md line 3: 'Status cells are 16 by 16 logical pixels' and 'Ready and Retry are static images'; reaffirmed at line 9 'Keep the existing 16x16 canvas, static behavior'. src/queue-view.ts line 6 frames 1, line 9 cell [16,16]. Left open: nothing about canvas; construction inside the cell is open.",
+      "literal_check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+      "additions": "none; 'no horizontal strip, no extra canvas' restates 16x16 single frame.",
+      "discriminating_alternative": "A 64x16 strip or a 32x32 padded canvas would be rejected, and the source itself excludes both (line 3 and line 9).",
+      "citation_check": "Corrected pointers BRIEF [3,3], queue-view [6,6], [9,9] verified. Observation: line 9 of BRIEF also supports this check and is not cited; line 3 is sufficient, so no change requested.",
+      "disposition": "consistent; owner requirement; verdict.0 remains bound to the historical plan"
+    },
+    {
+      "id": "transparent-background",
+      "source_obligation": "BRIEF.md line 3 'Use transparent backgrounds' (reaffirmed line 9). Left open: alpha depth; partial alpha not restricted.",
+      "literal_check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+      "additions": "'no opaque matte, box or fringe' operationalizes transparency; explicitly permits partial alpha.",
+      "discriminating_alternative": "A check with soft partially transparent edge pixels passes; a check on an opaque rounded plate fails and the source excludes it (the plate would be a background).",
+      "citation_check": "Corrected pointer BRIEF [3,3] verified (historical [3,9] replaced).",
+      "disposition": "consistent; owner requirement; verdict.1 unchanged"
+    },
+    {
+      "id": "ready-meaning",
+      "source_obligation": "BRIEF.md line 9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion'; line 3: working must not look like success. src/queue.ts line 3 ok -> succeeded; src/queue-view.ts line 3 idle Start and line 6 succeeded Ready; assets/start.svg line 1 triangle. Left open: arm ratio, stroke, angle, colour count, plate.",
+      "literal_check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+      "additions": "'rather than activity, failure, pause, or the idle Start control' lists the other states from queue-view lines 3-7 and BRIEF lines 3 and 7; no ratio or stroke restriction.",
+      "discriminating_alternative": "A thin 1-px check with a 2:3 arm ratio passes; a symmetric V is rejected by the owner's own word 'asymmetrical', not by the specialist.",
+      "citation_check": "Six corrected pointers verified: queue.ts [3,3], queue-view [3,3] and [6,6], BRIEF [3,3] and [9,9], start.svg [1,1]. Historical [1,4] and [3,11] replaced.",
+      "disposition": "consistent; owner requirement; verdict.2 unchanged"
+    },
+    {
+      "id": "readability-1x-3x",
+      "source_obligation": "BRIEF.md line 3 'readable silhouettes' and 'Inspect at 1x and 3x nearest display scale on the actual dark panel'; src/queue-view.ts line 9 scale 3, nearest, background #172336. Left open: any numeric contrast or stroke threshold.",
+      "literal_check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+      "additions": "'no essential detail lost into the panel colour' is the readability outcome restated; #172336 is the consumer observation, correctly labelled.",
+      "discriminating_alternative": "A darker navy-blue check that vanishes at 1x fails; a mid-blue readable mark passes. The specialist's 7.41:1 contrast figure is retained as a diagnostic, not a threshold.",
+      "citation_check": "Corrected pointers BRIEF [3,3], queue-view [9,9] verified.",
+      "disposition": "consistent; owner requirement with consumer observation; verdict.3 unchanged"
+    },
+    {
+      "id": "cool-blue-accent",
+      "source_obligation": "BRIEF.md line 3: 'the existing UI's cool blue accent; a fixed palette is not required'; assets/start.svg line 1 fill #70b9ed is the only concrete cue. Left open: exact hex, tone count.",
+      "literal_check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+      "additions": "none beyond naming the cue; the check disclaims exact-hex and palette-count rules.",
+      "discriminating_alternative": "A two-tone cool blue (#5aa9e6 with a lighter highlight) passes; a green check with one blue pixel fails under a reasonable reading of the brief itself.",
+      "citation_check": "Corrected pointers BRIEF [3,3], start.svg [1,1] verified. The delivered fill equals #70b9ed; the assessment correctly records exact equality as a fixture property, not a rule.",
+      "disposition": "consistent; owner requirement plus observation; verdict.4 unchanged"
+    },
+    {
+      "id": "sample-pixel-craft",
+      "source_obligation": "BRIEF.md line 3 'Create coherent pixel-art status assets' and line 5 'propose a representative status sample before expanding the family'. The owner does not define pixel-craft quality; this is expert judgment.",
+      "literal_check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+      "additions": "clean clusters/edges, no strays/blur/downscale artifacts, extensibility: all expert quality criteria.",
+      "discriminating_alternative": "A brief-conforming but blurry downscaled check would fail this rule only. It is labelled authority proposal, scoped to this sample, and does not create family palette/alpha/construction rules; the assessment keeps the construction properties as accepted fixture properties, not requirements.",
+      "citation_check": "Corrected pointers BRIEF [3,3] and [5,5] verified (historical single [3,9] replaced by two exact pointers).",
+      "disposition": "consistent scoped expert choice; verdict.5 unchanged"
+    }
+  ],
+  "packet_level_findings": [
+    {"topic": "request binding", "finding": "request now binds provider pixellab-test and connection.json e137fb43...; arguments hash fd0fa324... equals the arguments recorded in the durable job r.22e90a2a03fe453a.request and in provider-state echo. request.historical states dispatched once as controlled-create-0002, completed, served via get_image, imported as ready.retained, must_not_dispatch_again true. Verified against pixl_jobs events (dispatch, submitted, succeeded via get_image, imported).", "disposition": "consistent"},
+    {"topic": "authorization locators", "finding": "OWNER.md corrected to lines 2-11 (file has 11 lines). STAGE.md lines 2-6 and 10-11 and PHASE.md lines 2-11 verified. The bound historical connection.json still carries [2,12]; it is the artifact actually used and is left untouched, and the packet records the defect in request.historical.connection_note.", "disposition": "consistent; future revision needs a fresh connection artifact"},
+    {"topic": "provenance", "finding": "Historical job discovery note says the connection returns no image; the job later served a PNG through get_image (retrieval-provider-schemas.json lines 43-60, STAGE.md lines 10-11, job event 3 tool get_image). Durable record untouched; corrected packet documents both facts.", "disposition": "consistent"},
+    {"topic": "deferred obligations", "finding": "All six family/style/destination/renderer obligations from the historical packet survive with sources, stage and status; destination-delivery marked done (matches state and integration evidence); style-decision marked unblocked (an image exists); renderer-integration open (no renderer).", "disposition": "consistent; nothing dropped"},
+    {"topic": "choices", "finding": "Four choices labelled: Ready as sample (proposal), no narrower recipe (proposal), sample-pixel-craft (proposal), delivered construction properties accepted as fixture properties (observation). None is promoted to an owner requirement or rejection rule.", "disposition": "consistent"},
+    {"topic": "expert reasoning", "finding": "assessment.json cites seven pixl_knowledge methods and gives per-property authority (owner requirement / consumer observation / fixture property / expert acceptance) with plain reasoning: 2-px effective stroke as the minimum that survives 1x on navy and scales to a clean 6-device-pixel stroke at 3x; 45-degree strokes need no anti-aliasing so alpha stays binary; no interior row for a second tone at this stroke; outline or plate would spend pixel budget and conflict with the plate-less Start triangle. Family guidance (Working rotating ring or dots, Retry circular arrow, Paused two bars) and baseline suitability are labelled proposals.", "disposition": "accepted as expert judgment; no owner authority claimed"},
+    {"topic": "verdicts", "finding": "The six historical verdicts ready.delivery.review.verdict.0-5 are not re-scored or transplanted; the specialist records agreement from its own current viewing. My own viewing of the PNG and the 3x panel view also agrees.", "disposition": "historical acceptance preserved"},
+    {"topic": "PLAR", "finding": "plar.txt was deliberately not saved: existing[].role, delivery.checks, coverage and questions feed requirements_hash (plar.py _requirements excludes only status/next/evidence/production), so correcting the stale 'destination is missing' / 'no delivered art has yet been reviewed' text would mark the completed production's selection binding changed. The proposed field changes are retained in handoff details.future_work. I also did not add evidence links to plar.txt, so the handoff's selection.hash 1794e17c... stays exact.", "disposition": "caller decision; deferred to the next stage"},
+    {"topic": "workspace paths", "finding": "DELIVERY-RESULT.json and work/PIXL-DELIVERY.json cite state paths under the predecessor workspace codex-delivery-01; the state bytes here hash identically (7a97831f...). Historical; no action.", "disposition": "observation"}
+  ],
+  "handoff_identity": {
+    "resume_equals_fresh_continuation": true,
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+    "plar_hash": "1794e17cdc7b3c0dac61f4c6aa1c711091a4f66468d4dff39b6795b4a5542606",
+    "selection_current": true,
+    "next": "review_delivery",
+    "note": "review_delivery is the runtime-derived action for a completed task with a nominated candidate; the caller's delivery review (work/queue.ready-delivery/caller-review.json) and this comparison satisfy it for the bounded scope. It grants no new request."
+  },
+  "independent_measurement": {
+    "image_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "coordinate_convention": "zero-based; boxes [left, top, right, bottom] exclusive right/bottom; rows and columns inclusive",
+    "size": [16, 16],
+    "frames": 1,
+    "visible_pixels": 29,
+    "alpha_values": [0, 255],
+    "colors": [[112, 185, 237, 255]],
+    "visible_bbox": [3, 4, 14, 13],
+    "opaque_runs_per_row_equal_assessment": true,
+    "contrast_ratio_diagnostic": "7.41:1",
+    "pixel_map": [
+      "................",
+      "................",
+      "................",
+      "................",
+      "............#...",
+      "...........###..",
+      "..........###...",
+      ".........###....",
+      "....#...###.....",
+      "...###.###......",
+      "....#####.......",
+      ".....###........",
+      "......#.........",
+      "................",
+      "................",
+      "................"
+    ]
+  },
+  "integration_recheck": {
+    "command": "node verify-integration.mjs assets/ready-confirmed.png",
+    "exit_code": 0,
+    "equals_specialist_stdout": true,
+    "scope": "source-module execution of stateAfter, statusCell and compactStatus plus PNG header check; not a graphical renderer"
+  },
+  "changes_requested": [],
+  "re_delegation_needed": false,
+  "next": "Record HANDOFF-RESULT.json linking the handoff f43d9432... and this comparison. Remaining obligations: style/baseline adoption decision and source binding; PLAR refresh of stale queue.ready fields with a fresh selection; graphical renderer acceptance; family production (Working, Retry, Paused) under future authorization with a freshly discovered connection; no new generation in this stage."
+}

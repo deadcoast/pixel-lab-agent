@@ -1,0 +1,32 @@
+import hashlib
+import json
+import shutil
+from pathlib import Path
+from PIL import Image
+
+REPO=Path(__file__).resolve().parents[1]
+ROOT=REPO/'evidence/pixellab-family-production/20261108/project'
+WORK=ROOT/'work/live-family'
+checks=[]
+for name, source in [('working-animation-repair-01','working-animation-01-raw.png'),('paused-cutout-01','paused-02-opaque.png')]:
+    original=Image.open(WORK/source).convert('RGBA')
+    actual=Image.open(WORK/(name+'.png')).convert('RGBA')
+    patches=json.loads((WORK/(name+'-patches.json')).read_text(encoding='utf-8'))['changes'][0]['pixels']
+    expected=original.copy()
+    for x,y,before,after in patches:
+        assert original.getpixel((x,y))==tuple(bytes.fromhex(before[1:]))
+        expected.putpixel((x,y),tuple(bytes.fromhex(after[1:])))
+    # Transparent RGB may be normalized by the PNG worker; all visible bytes and alpha must agree.
+    assert actual.size==expected.size
+    for p,q in zip(actual.get_flattened_data(),expected.get_flattened_data()):
+        assert p[3]==q[3] and (p[3]==0 or p==q)
+    checks.append({'operation':name,'background_pixels_changed':len(patches),'generated_visible_pixels_unchanged':True,'alpha_exact':True,'transparent_rgb':'not visually meaningful; may be normalized by provider'})
+destinations={'working-animation-repair-01.png':'working.png','retry-download.png':'error-retry.png','paused-cutout-01.png':'paused.png'}
+for source,destination in destinations.items():
+    target=ROOT/'assets'/destination
+    assert not target.exists(), 'Do not overwrite a retained integration'
+    shutil.copyfile(WORK/source,target)
+    checks.append({'destination':'assets/'+destination,'source':'work/live-family/'+source,'sha256':hashlib.sha256(target.read_bytes()).hexdigest()})
+shutil.copytree(REPO/'examples/plar-project/renderer',ROOT/'renderer-live',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+(WORK/'integration.json').write_text(json.dumps({'status':'integrated for review, not accepted','checks':checks},indent=2)+'\n',encoding='utf-8')
+print(json.dumps(checks))

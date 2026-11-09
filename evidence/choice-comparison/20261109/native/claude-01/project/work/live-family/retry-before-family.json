@@ -1,0 +1,540 @@
+{
+  "format": 2,
+  "revision": 20,
+  "hash": "c2aba8a599ea52970015cd939855c16c279a929e547258c36782e719a776f64d",
+  "files_verified": true,
+  "families": [
+    {
+      "output": "family.delivery.output",
+      "task": "family.delivery.task",
+      "state": "open",
+      "baseline": {
+        "candidate": "ready.retained",
+        "output": "r.22e90a2a03fe453a.output.ready",
+        "task": "r.22e90a2a03fe453a.task",
+        "eligible": true,
+        "reasons": [],
+        "requirements": [
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+            "name": "geometry",
+            "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.0",
+            "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.0"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+            "name": "transparent-background",
+            "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.1",
+            "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.1"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+            "name": "ready-meaning",
+            "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.2",
+            "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.2"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+            "name": "readability-1x-3x",
+            "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.3",
+            "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.3"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+            "name": "cool-blue-accent",
+            "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.4",
+            "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.4"
+            ]
+          },
+          {
+            "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+            "name": "sample-pixel-craft",
+            "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "ready.delivery.review.verdict.5",
+            "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+            "reviewer": "actor",
+            "evidence": [
+              "ready.delivery.review.evidence.5"
+            ]
+          }
+        ]
+      },
+      "destinations": [
+        {
+          "id": "render.choice.destination",
+          "project": "project",
+          "key": "family.destination.render_stage",
+          "status": "confirmed",
+          "value": {
+            "alpha": "full",
+            "cell": [
+              16,
+              16
+            ],
+            "consumers": [
+              "statusCell",
+              "compactStatus"
+            ],
+            "engine": "Supplied browser fixture executing actual queue modules",
+            "frame_ms": 100,
+            "panel": "#172336",
+            "paths": {
+              "paused": "assets/paused.png",
+              "ready": "assets/ready-confirmed.png",
+              "retry": "assets/error-retry.png",
+              "working": "assets/working.png"
+            },
+            "placement_acceptance": "unresolved recorded-coordinate mismatch; no overall render-check pass",
+            "sampling": "nearest",
+            "scale": [
+              1,
+              3
+            ],
+            "working_horizontal_frames": 4
+          },
+          "sources": [
+            "render.source.view",
+            "render.source.assignment",
+            "render.source.caller"
+          ],
+          "rationale": "Confirmed intended choices do not claim their acceptance."
+        }
+      ],
+      "members": [
+        {
+          "output": "r.22e90a2a03fe453a.output.ready",
+          "task": "r.22e90a2a03fe453a.task",
+          "state": "done",
+          "candidate": "ready.retained",
+          "accepted": true,
+          "reasons": [],
+          "requirements": [
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+              "name": "geometry",
+              "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.0",
+              "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.0"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+              "name": "transparent-background",
+              "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.1",
+              "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.1"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+              "name": "ready-meaning",
+              "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.2",
+              "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.2"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+              "name": "readability-1x-3x",
+              "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.3",
+              "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.3"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+              "name": "cool-blue-accent",
+              "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.4",
+              "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.4"
+              ]
+            },
+            {
+              "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+              "name": "sample-pixel-craft",
+              "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "ready.delivery.review.verdict.5",
+              "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+              "reviewer": "actor",
+              "evidence": [
+                "ready.delivery.review.evidence.5"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "ready.retained",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.geometry",
+                  "name": "geometry",
+                  "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.0",
+                  "reason": "Decoded PNG is 16x16 with one static frame; no strip or extra canvas.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.0"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.transparent-background",
+                  "name": "transparent-background",
+                  "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.1",
+                  "reason": "227 pixels are RGBA 0,0,0,0; 29 subject pixels are opaque blue. Transparent exterior and open corners have no matte or fringe; no binary-alpha rule imposed.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.1"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.ready-meaning",
+                  "name": "ready-meaning",
+                  "check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.2",
+                  "reason": "Viewed native and 3x: a short descending left arm joins a distinctly longer ascending right arm into a clear check mark. It reads as successful completion rather than triangle, pause bars, loop or failure.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.2"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.readability-1x-3x",
+                  "name": "readability-1x-3x",
+                  "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.3",
+                  "reason": "Native 16x16 panel composite shows a recognizable light-blue check; 48x48 nearest composite preserves clear steps and essential asymmetrical arms against #172336.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.3"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.cool-blue-accent",
+                  "name": "cool-blue-accent",
+                  "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.4",
+                  "reason": "Visible sky-blue treatment relates directly to the preserved Start SVG's cool-blue cue; measured color happens to equal #70b9ed, but exact equality was not a rejection rule.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.4"
+                  ]
+                },
+                {
+                  "id": "r.22e90a2a03fe453a.criterion.ready.sample-pixel-craft",
+                  "name": "sample-pixel-craft",
+                  "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "ready.delivery.review.verdict.5",
+                  "reason": "Viewed all native and enlarged views: compact connected stepped clusters form a crisp check without blur, isolated noise or downscaled illustration artifacts. A plausible sample for future family extension; family adoption and comparisons remain separate.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "ready.delivery.review.evidence.5"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "output": "family.working.output",
+          "task": "family.working.task",
+          "state": "open",
+          "candidate": null,
+          "accepted": false,
+          "reasons": [
+            "family_member: family.working.output has no nominated candidate",
+            "family_member: family.working.output task family.working.task is open; it must be done"
+          ],
+          "requirements": [
+            {
+              "id": "family.working.q.geometry",
+              "name": "geometry",
+              "check": "Decode PNG at64x16; four horizontal16x16 frames with100ms duration.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.working.q.visual",
+              "name": "meaning,alpha,readability,style",
+              "check": "View actual Working at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Four horizontal16x16 frames at100ms/frame; activity must not look like success. Review every frame and actual loop,loop boundary,anchor and volume stability.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.working.q.engine",
+              "name": "actual consumer integration",
+              "check": "Exercise backend transition and both actual consumers using assets/working.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Review actual100ms loop and frame boundaries.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        },
+        {
+          "output": "family.retry.output",
+          "task": "family.retry.task",
+          "state": "open",
+          "candidate": null,
+          "accepted": false,
+          "reasons": [
+            "family_member: family.retry.output has no nominated candidate",
+            "family_member: family.retry.output task family.retry.task is open; it must be done"
+          ],
+          "requirements": [
+            {
+              "id": "family.retry.q.geometry",
+              "name": "geometry",
+              "check": "Decode PNG at16x16; one static16x16 frame.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.retry.q.visual",
+              "name": "meaning,alpha,readability,style",
+              "check": "View actual Retry at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Static16x16 error/retry meaning; distinguish without color alone.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.retry.q.engine",
+              "name": "actual consumer integration",
+              "check": "Exercise backend transition and both actual consumers using assets/error-retry.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Confirm static behavior.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        },
+        {
+          "output": "family.paused.output",
+          "task": "family.paused.task",
+          "state": "open",
+          "candidate": null,
+          "accepted": false,
+          "reasons": [
+            "family_member: family.paused.output has no nominated candidate",
+            "family_member: family.paused.output task family.paused.task is open; it must be done"
+          ],
+          "requirements": [
+            {
+              "id": "family.paused.q.geometry",
+              "name": "geometry",
+              "check": "Decode PNG at16x16; one static16x16 frame.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.paused.q.visual",
+              "name": "meaning,alpha,readability,style",
+              "check": "View actual Paused at1x/3x nearest on#172336 against exact Ready baseline: readable meaningful silhouette,transparent exterior without unintended matte/fringe,perceptible cool-blue accent and coherent deliberate pixel clusters. Static16x16 pause meaning; distinguish from activity,completion and retry without color alone.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family.paused.q.engine",
+              "name": "actual consumer integration",
+              "check": "Exercise backend transition and both actual consumers using assets/paused.png; verify label,path,slicing,nearest scaling,alpha compositing and stable recorded-bound screenshot placement. Confirm static behavior.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "candidate": null,
+      "requirements": [
+        {
+          "id": "family.q.continuity",
+          "name": "family visual continuity",
+          "check": "Compare all4actual members at1x/3x nearest on#172336 against exact Ready baseline: coherent deliberate pixel treatment,readable visual weight,perceptible cool-blue accent and transparency. Inspect Working100ms playback including loop boundary. No exact palette,alpha,stroke,margins or copied completion motif.",
+          "domain": "continuity",
+          "mode": "visual",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "family.q.distinction",
+          "name": "state distinction without color",
+          "check": "View actual Ready,Working(all4frames/playback),Retry,Paused together at1x/3x including grayscale/non-color comparison: Working activity never success; Retry and Paused distinct by shape/structure without color alone. Preserve existing Start separately.",
+          "domain": "continuity",
+          "mode": "visual",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "family.q.engine",
+          "name": "collective destination",
+          "check": "Exercise all backend transitions through both actual consumers using exact retained family files; verify labels,sheet slicing,timing,nearest,alpha and recorded integer placement against screenshot. Resolve current viewport/screenshot-coordinate failure before overall destination acceptance.",
+          "domain": "engine",
+          "mode": "live",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        }
+      ],
+      "candidates": [],
+      "blockers": [
+        "task_prerequisite: family.working.task is open; it must be done",
+        "task_prerequisite: family.retry.task is open; it must be done",
+        "task_prerequisite: family.paused.task is open; it must be done"
+      ],
+      "snapshot_blockers": [
+        "family_member: family.working.output has no nominated candidate",
+        "family_member: family.working.output task family.working.task is open; it must be done",
+        "family_member: family.retry.output has no nominated candidate",
+        "family_member: family.retry.output task family.retry.task is open; it must be done",
+        "family_member: family.paused.output has no nominated candidate",
+        "family_member: family.paused.output task family.paused.task is open; it must be done"
+      ],
+      "pending_jobs": [],
+      "snapshots": []
+    }
+  ]
+}

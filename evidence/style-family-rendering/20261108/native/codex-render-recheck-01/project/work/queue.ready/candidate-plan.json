@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "scope": "First representative Ready status sample (queue.ready) for style review before family expansion. Only this candidate's own mechanical, meaning, readability and accent-relationship checks are required at this stage. Family distinction (Working/Retry/Paused vs Ready), renderer integration of statusCell/compactStatus, the style-approval decision and placement at assets/ready.png are deferred later-stage obligations recorded in request-review.json and PLAR, not rejection rules for this sample.",
+  "outputs": [
+    {
+      "id": "ready",
+      "name": "Ready status icon sample",
+      "kind": "sprite",
+      "contract": {
+        "size": [16, 16],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "One static 16x16 Ready status image for later destination assets/ready.png (consumer path). Transparent background, no fixed palette, partial alpha permitted (brief: transparent backgrounds, fixed palette not required). Checkmark motif, chunky strokes, cool blue near #70b9ed with a lighter highlight and no backing plate are specialist sample choices, revisable at style review."
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Decoded image is exactly 16x16 pixels with a single static frame (no horizontal strip, no extra canvas).",
+          "basis": "Owner brief: 16x16 logical status cells and Ready is static. Consumer: succeeded maps to frames 1 and display.cell is [16,16].",
+          "scope": "This Ready candidate file.",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'Status cells are 16 by 16 logical pixels' / 'Ready and Retry are static images'"},
+            {"path": "src/queue-view.ts", "locator": "line 6 (succeeded: frames 1) and line 9 (display.cell [16, 16])"}
+          ]
+        },
+        {
+          "id": "transparent-background",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+          "basis": "Owner brief requires transparent backgrounds; it does not restrict alpha to binary values.",
+          "scope": "This Ready candidate file.",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'Use transparent backgrounds'"}
+          ]
+        },
+        {
+          "id": "ready-meaning",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Viewed alone, the image reads as successful completion (Ready) rather than activity, failure, pause, or the idle Start control.",
+          "basis": "Consumer state mapping ok -> succeeded -> label Ready, while idle uses the Start vector. Brief: the working loop must not look like success, so Ready itself must convey success. Judging Ready against the actual future Working/Retry/Paused images is deferred.",
+          "scope": "This Ready candidate on its own, plus the already-existing Start vector.",
+          "sources": [
+            {"path": "src/queue.ts", "locator": "line 3: ok -> succeeded"},
+            {"path": "src/queue-view.ts", "locator": "line 3 (idle: Start, assets/start.svg) and line 6 (succeeded: label Ready)"},
+            {"path": "BRIEF.md", "locator": "line 3: 'The working loop must communicate activity without looking like success'"},
+            {"path": "assets/start.svg", "locator": "line 1: play-triangle path M4 2L14 8L4 14Z"}
+          ]
+        },
+        {
+          "id": "readability-1x-3x",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+          "basis": "Owner brief requires readable silhouettes inspected at 1x and 3x nearest on the actual dark panel; #172336 is the consumer-observed panel colour (display.background).",
+          "scope": "This Ready candidate at the declared display conditions.",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'readable silhouettes' / 'Inspect at 1x and 3x nearest display scale on the actual dark panel'"},
+            {"path": "src/queue-view.ts", "locator": "line 9: scale 3, filter nearest, background #172336"}
+          ]
+        },
+        {
+          "id": "cool-blue-accent",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+          "basis": "Owner brief: use the existing UI's cool blue accent, no fixed palette required. #70b9ed is a consumer observation from the Start SVG fill, not an approved palette.",
+          "scope": "This Ready candidate compared with the existing Start vector.",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'the existing UI's cool blue accent; a fixed palette is not required'"},
+            {"path": "assets/start.svg", "locator": "line 1: fill #70b9ed"}
+          ]
+        },
+        {
+          "id": "silhouette-without-color",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "In a grayscale/desaturated view at 1x and 3x, the Ready mark still has a distinct identifiable shape (its meaning is carried by form, not only hue).",
+          "basis": "Specialist choice derived from the brief's non-colour distinction requirements for Retry and Paused: a sample whose identity is shape-carried keeps those later distinctions achievable. Checks only the Ready sample's own form; the pairwise family comparison is deferred.",
+          "scope": "This Ready sample only (specialist sample criterion).",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'Error/retry must be distinguishable without color alone' and line 7: paused 'without relying on color alone'"}
+          ]
+        },
+        {
+          "id": "sample-pixel-craft",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+          "basis": "Specialist expert judgment applying the brief's 'coherent pixel-art status assets' and representative-sample instruction.",
+          "scope": "This Ready sample, assessed for style review; passing does not approve the family style.",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "line 3: 'Create coherent pixel-art status assets' and line 5: 'propose a representative status sample before expanding the family'"}
+          ]
+        }
+      ]
+    }
+  ]
+}

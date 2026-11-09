@@ -62,6 +62,16 @@ relabel an expert candidate interpretation as owner-approved production.
 
 ## Operational boundaries
 
+The optional [candidate/family review adapter](candidate-review.md) retains explicit
+observations through existing X/E/V, derives exact evidence scope and connects
+nomination/completion with recoverable publication. It adds no registry fields;
+prepared inspection packets retain their existing coverage contract.
+
+The optional [connected production-plan adapter](production-plan.md) authors
+family/stage wiring from reviewed JSON and binds exact accepted upstream inputs
+before preparing a staged request. It uses existing T/F/Q/X and PLAR metadata;
+contracts, adoption, provider execution and acceptance keep their existing meaning.
+
 Use `intake`, `decode`, `encode`, `validate`, `commit`, `workflow`, `ready`, `context` and `impact` through the selected runner; MCP adds `pixl_intake` and `pixl_workflow`. `context` retains PX2 format and complete references. Mutable state and evidence live in the art project, outside installed resources. Generic encode/commit can author the declared records; they do not perform inspection or grant approval.
 
 This version supplies the local intake/sample lifecycle. The original platform prepare/job tools remain stateless local operations. Real PixelLab execution, actual visual judgments, destination-engine verification and model performance require their own observed evidence.

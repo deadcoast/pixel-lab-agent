@@ -1,10 +1,249 @@
 # Verification and limits
 
+## Everyday production, identities and locators, 2026-11-09
+
+The [implementation and native report](../evidence/everyday-guide/README.md)
+covers presentation-only CLI/MCP hash labels, actionable hash/root diagnostics,
+root/locator examples and the shipped everyday production guide. Five new
+regressions exercise identity separation, exact exports, relocation and rejected
+call preservation. The [final full verifier](../evidence/verification-runs/20261109T191851.620905Z/result.json)
+passes 595 tests plus one Windows symlink-privilege skip, 39 reference checks and
+fresh installed-wheel/copied-plugin probes. All 172 bundle entries match and the
+native frozen packages match the tested bundle. Earlier temporary-directory,
+newline-fixture and lint failures are documented with their corrections.
+
+Both cold native callers complete the retained successor consumption/recovery
+assignment, with 12 independent identity/preservation checks per host. Claude
+uses this harness's registered `pixl` agent; its caller corrects four field-layout
+and newline assumptions before passing 26 checks. Codex uses a generic native
+child and passes 16 caller checks, retaining its shell/path/output corrections.
+The caller assertions and maintainer checks overlap; these counts do not represent
+separate production outcomes. Prior accepted state is unchanged; review replay
+publishes nothing. This establishes bounded guide use and correct returned
+identities, not new generated-art or renderer acceptance, same-child continuation,
+named Codex selection or general reliability. M1 remains open.
+
+## Focused choices and successor comparison, 2026-11-09
+
+The [implementation and native evidence](../evidence/choice-comparison/README.md)
+cover semantic-link choice selection, discoverable other intake, structural plan
+comparison and exact full-report retrieval. The [full verifier](../evidence/verification-runs/20261109T173837.626745Z/result.json)
+passes 590 tests plus one Windows privilege skip, 39 reference checks, and fresh
+wheel/plugin probes. Nine regressions are new; the earlier distribution-probe path
+failure remains retained. Claude completes registered-agent semantic comparison,
+passing 12 retention/export and six literal mapping/invocation checks. Codex's
+initial unnecessary named-role blocker is preserved as partial behavior; a guided
+generic-child continuation completes the comparison and passes 12 independent
+checks. Both cover 20 original/23 successor criteria with retained corrections.
+Accepted consumer state is unchanged. These outcomes do not qualify new artistic
+acceptance, named Codex role selection or general unassisted reliability.
+
+## Ordinary candidate/family review, 2026-11-09
+
+The [review implementation and native outcomes](../evidence/candidate-review/README.md)
+cover explicit observation retention, exact criterion bindings, nomination,
+supersession and recoverable task completion. The [full verifier](../evidence/verification-runs/20261109T164301.724380Z/result.json)
+passes 581 tests and one Windows privilege skip, 39 reference checks, and fresh
+wheel/copied-plugin review/export probes. Eleven review and five export regressions
+are new. The initial probe import failure and the later two stale MCP annotation
+assertions are preserved with their corrections in the result report.
+Native evidence is graded separately against the copied successor and actual
+renderer outputs; it does not qualify all host routes or new generation quality.
+Both native review trials pass 15 independent state/retention checks and 233
+destination assertions each. Final-kit export follow-ups pass 13 independent
+checks per host, preserving accepted state and prior evidence. Initial failures,
+caller corrections and frozen-package identities remain in the linked report.
+
+## Successor motion, family and destination acceptance, 2026-11-09
+
+The [scoped maintainer review](../evidence/successor-acceptance/README.md) completes Working and the exact successor family. Isolated headless execution records 97 playback observations and four wraps; all 1,160 package/motion assertions and 233 destination assertions pass. Explicit visual judgments cover motion continuity, family treatment and shape distinction at native/3x and in grayscale. The package is exercised through both real consumers, including reduced motion and live preference switches. Prior failed browser observations and unavailable verdicts remain preserved. The [delivery](../evidence/successor-acceptance/20261109/maintainer-01/DELIVERY.json) reports current state and exact continuation.
+
+These are fresh production-observation and state checks, not a newly run full unit suite, new provider generation or a fresh native two-host conformance result. Workflow guidance now prefers an existing isolated renderer and recorded playback; desktop control is optional.
+
+## Focused authoring and reviewed successor, 2026-11-09
+
+The [implementation and A–E review](../evidence/focused-authoring/README.md)
+cover focused context/shared source retrieval and explicit linked successor
+authoring. The [final verifier](../evidence/verification-runs/20261109T114309.309864Z/result.json) reports **565 passes plus one Windows
+symlink-privilege skip**, including eight new regressions and clean installed
+wheel/copied-plugin probes. Local mechanics and distribution checks do not
+establish model behavior or art quality.
+
+Both native hosts consume the focused view. Codex compares all 20 old criteria,
+adopts 23 successor checks, closes the obsolete undispatched intent through its
+normal lifecycle and renders both existing consumers with normal, reduced and
+restored motion. Independent checks match all 240 sampled canvases to the exact
+retained art and confirm labels, dimensions, nearest sampling and mode selection.
+This is actual destination rendering, not a new provider generation or an exact
+wall-clock cadence measurement. Retry and Paused complete; Working's temporal
+visual judgment is unavailable and collective family acceptance remains open.
+
+The first adoption's invented source times are a retained failure. A separate
+native correction appends actual observed bindings without altering old records,
+art or literal checks. Its Working nominee was omitted; the separate maintainer
+[current continuation](../evidence/focused-authoring/20261109/current/CURRENT-HANDOFF.json)
+changes only that selection, leaving seven passes, one unavailable and the task
+open. The first maintainer handoff save used the wrong kind of hash and was
+rejected; public help now identifies the required production state hash exactly.
+These repairs do not qualify unassisted host reliability.
+
+Claude 2.1.318 invokes its registered foreground specialist and retains partial
+proposal/renderer files, then exhausts usage credits. There is no final caller
+comparison or completed capture. Codex 0.167.0 uses a generic named child, not a
+verified custom agent role. All four native attempts have independently reread
+archives/manifests. Broader generated quality, named-role reliability, Claude
+same-child continuation and the current successor's remaining acceptance stay
+open. No human-only approval requirement follows from one reviewer's temporal
+viewing limitation.
+
+## Exact criteria handoff and Claude comparison repair, 2026-11-09
+
+The [repair and A–E review](../evidence/criteria-handoff/README.md) connect authoring
+and stage preparation to the existing request-review tool. Exact member/collective
+criteria, sources, controls and request context reach the independent caller.
+Coverage checks identities and completeness; it does not grant semantic agreement.
+Ordinary job progress preserves an unchanged comparison fingerprint.
+
+Claude's targeted native caller compared all 20 criteria, caught four discrepancies
+in the specialist's proposal and verified a separate revision. It returned a
+complete review with three criteria kept, 14 clarified and three review-route
+corrections. The historical contract remains `changes_requested`; the revised
+proposal is for future adoption. Nineteen independent checks pass, preserving all
+881 pre-run consumer files and the frozen kit. A separate final-kit caller
+continuation preserves the comparison rows verbatim and passes 16 checks for exact
+report export, current identities and unchanged history.
+
+Same-child `SendMessage` failed with “No transcript found”; an explicit artifact-based
+restart completed the revision. This is a bounded repair pass with recovery, not a
+clean first interpretation, general host reliability or new generated/rendered
+acceptance. Codex was not rerun. The maintainer's initial encoding diagnostic was
+wrong; both native report files were already valid UTF-8. The failed diagnostic,
+correction and follow-up caller's independent contrary finding are retained.
+
+The [final verifier](../evidence/verification-runs/20261109T100432.749313Z/result.json)
+passes **557 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin probes. Ten new handoff regressions include lifecycle
+progress without invalidating an unchanged comparison. Ruff passes; Mypy reports
+no issues across 67 maintained files under its configured scope (untyped bodies
+are not fully checked). Both native archives have verified per-file manifests.
+
+## Native connected authoring, 2026-11-09
+
+[Both native callers](../evidence/native-authoring/README.md) used the new authoring
+interface in copies of the existing consumer, recovered an interrupted allocation
+write without a second graph, prepared exact seed inputs and retained a blocked
+request after a declared requirement change. Each passes 21 independent artifact
+checks; all 376 original state records and original assets/sources/allocation remain
+unchanged. This is an announced recovery evaluation using the actual copied runtime.
+
+Behavioral grading is **partial overall**. Codex's caller compares all 13 criteria,
+catches a mixed authority label and obtains a separate correction. Claude performs
+substantial independent artifact and recipe checking, but its grouped comparison
+of 20 criteria does not establish method-versus-outcome authority for stricter
+clauses. The original partial grade remains preserved; the targeted repair is
+recorded above. Claude uses its registered PIXL
+agent; Codex uses a generic native child assigned PIXL work, leaving named role
+selection unverified. No new generation, rendered acceptance or broad reliability
+claim follows.
+
+The [full verifier](../evidence/verification-runs/20261109T082315.017109Z/result.json)
+passes **547 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin checks. Ruff passes; Mypy reports no issues across
+65 maintained files under its configured scope (untyped bodies are not fully
+checked). The additional regression verifies actual dispatch refusal after the
+requirement change and preservation of the original allocation/prepared intent.
+Both native archives include file manifests verified against their complete bytes.
+
+## Cold consumption and connected authoring, 2026-11-08
+
+Both fresh native callers consumed the frozen completed real-provider family:
+[Claude and Codex results](../evidence/package-consumption/README.md). Each delegated
+to PIXL, waited for its return, independently compared actual files and current
+continuation, and retained a usable result. Three new captures across these runs
+pass 404 checks each; original state, PLAR, assets and kit bytes are unchanged.
+This is one bounded consumption run per installed host; same-child resumption,
+new native generation and broader quality/reliability remain open.
+
+The [connected authoring adapter](../spec/production-plan.md) is verified separately
+through ten new regressions, a copied real-consumer preparation rehearsal and both
+clean wheel/copied-plugin public CLI probes. The [final verifier](../evidence/verification-runs/20261108T143610.530795Z/result.json)
+passes **546 tests plus one Windows symlink-privilege skip** and 39 reference checks.
+Ruff passes; Mypy reports no issues across 63 maintained files under its configured
+scope (untyped bodies are not fully checked). The PIXL skill format validator passes.
+The preceding 545-pass receipt predates the downstream-selection guard and remains
+historical. [Authoring results and A–E](../evidence/production-authoring/README.md)
+separate implementation from native use, which was next at that checkpoint and is
+now graded separately in the 2026-11-09 section above.
+
+## Official PixelLab family production, 2026-11-08
+
+[Real production evidence](../evidence/pixellab-family-production/README.md) records
+Working, Retry and Paused generated through official MCP, actual provider failures,
+guarded background corrections and stable motion constructed from the generated
+seed. The original AI animation fails visual review and remains retained. Sixteen
+generations were charged; deterministic workbench corrections were free.
+
+The exact retained four-member package passes scoped color/grayscale review and
+404 mechanical checks per final browser capture. Twenty actual consumer views,
+five state transitions and thirteen live frame transitions verify both views,
+100 ms phases and wrap. The helper now records actual animation callbacks rather
+than relying solely on calculated boundary crops. A discovered completed-delivery
+handoff mismatch is repaired: matching destination bytes and accepted containing
+families yield `delivered`; missing/changed files and unfinished reviews remain open.
+The targeted PLAR/render regression run passes 35 tests. The [full verifier](../evidence/verification-runs/20261108T131152.221959Z/result.json)
+passes **536 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin installations. Ruff passes across source, generated
+runtime, tests, evaluations and scripts; Mypy with explicit package bases passes
+61 maintained source files. Node syntax checks pass for all three renderer modules.
+
+This is a maintainer-operated continuation in the current host. Existing native
+host grades remain unchanged; no new unaided Claude/Codex behavioral pass or broad
+art-quality reliability follows. Ready and Start retain their distinct provenance.
+
+## Existing-consumer style, family and rendering, 2026-11-08
+
+The [final verifier](../evidence/verification-runs/20261108T113550.638557Z/result.json)
+passes **530 tests, one Windows symlink-privilege skip and 39 reference checks**,
+with clean wheel/copied-plugin installation. Six new regressions exercise actual
+source serving, pixel corruption and fractional placement detection, and preservation
+of completed/interrupted consumer stages. Ruff, Mypy across 62 files, Node syntax
+checks and both skill format validators pass. The receipt binds 128 checked inputs;
+the final bundle contains 159 manifest entries.
+
+The [style/family/render evidence](../evidence/style-family-rendering/README.md)
+retains actual graphical execution of both supplied consumers. Independent checking
+found fractional layout and intermittent Chromium screenshot-viewport mismatch;
+the corrected capture sets metrics before navigation and retains report/layout/image
+from the same CDP page. Two independent corrected captures pass 104 pixel/identity
+checks each. An independent source/transition check passes 44 checks. The synthetic
+four-frame/partial-alpha probe passes 155 checks; those pixels are renderer test
+data, not produced family artwork.
+
+Original native01 outcomes remain explicit: Codex completes scoped style/family
+review while correctly withholding failed destination placement; Claude ends while
+its background specialist is still running and never returns the required result.
+The latter also leaves a caller edge-count discrepancy for correction. Both preserve
+the old capture helper and its failures. The shared workflow now keeps required
+delegation and caller completion on the critical path. Codex's guided recovery passes.
+Claude's recovery delivers scoped style/rendering/PLAR/handoff but remains partial for
+the old arm-axis description; a separate guided correction passes independent arithmetic,
+caller comparison, requirement/history preservation and exact-handoff checks. This does
+not replace original grades or establish broad model reliability. Claude uses a labelled
+saved-artifact restart after native child resumption fails; same-child resumption stays
+unqualified. Working, Retry, Paused and upstream PixelLab quality remain outside the
+available-member acceptance.
+
+Claude also updates project auto-memory outside the fixture in the final correction.
+That observed host side effect is retained; these runs do not establish memory isolation.
+The evaluation runner now disables auto-memory only in future child processes and records
+the override. A controlled environment-propagation probe passes; no new native-model trial
+is claimed for that final harness change. Production settings and profile stay unchanged.
+
 ## Exact handoff and authority repair, 2026-11-08
 
-The [post-knowledge-clarification verifier](../evidence/verification-runs/20261108T064547.892746Z/result.json) passes **524 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel/copied-plugin installation. Six new regressions check complete handoff preservation, idempotence/corruption, stale state/requirements, missing production, authored/derived separation and CLI/MCP parity. Each installed PLAR probe has fourteen checks. Ruff, Mypy and both skill validators pass.
+The [final routing/harness-revision verifier](../evidence/verification-runs/20261108T083512.248519Z/result.json) passes **524 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel/copied-plugin installation. Six new regressions check complete handoff preservation, idempotence/corruption, stale state/requirements, missing production, authored/derived separation and CLI/MCP parity. Each installed PLAR probe has fourteen checks. Ruff, Mypy and both skill validators pass.
 
-[Current evidence](../evidence/handoff-repair/README.md) distinguishes native contract/handoff repair, independent forward review, explicit expert-knowledge applicability and actual generated-art quality. Native kits predate a later clarification of the silhouette method's source support; the initial full receipt remains preserved. [Checks and identities](../evidence/handoff-repair/checks.json) identifies each tested version. No source-range or fixture pass establishes general artistic expertise or graphical renderer acceptance.
+[Current evidence](../evidence/handoff-repair/README.md) distinguishes native contract/handoff repair, independent forward review, explicit expert-knowledge applicability and actual generated-art quality. Native01 kits predate the later silhouette-source clarification; native02 kits include it and the subsequent source-first comparison revision. Native03 adds the historical/new-proposal delegation boundary and visual-role guidance. This instruction-only revision has a separate [passing clean distribution receipt](../evidence/handoff-repair/20261108/delegation-revision/distribution.json); its runtime inputs were unchanged at that stage. Native04 adds review-routing, geometry and measurement corrections and restores the documented SendMessage tool omitted by the isolated Claude harness. The latest complete verifier includes those evaluation-code changes; final Ruff, Mypy across 59 maintained Python files and both skill format checks pass. Initial and intermediate verifier receipts remain preserved. [Checks and identities](../evidence/handoff-repair/checks.json) identifies each tested version. Final04 contracts correct the retained authority/routing findings and source locators in both hosts; exact resume/next checks pass. Claude04 retains a minor descriptive endpoint/axis inconsistency. Codex04 initially lacks its claimed alternatives record; a separately graded same-parent guided correction supplies it without changing prior files. Earlier failures and the original partial grade remain. Native child resumption is not established merely by restoring SendMessage. No source-range or fixture pass establishes general artistic expertise or graphical renderer acceptance.
 
 ## Exact handoff evidence and selected-generation delivery, 2026-11-08
 

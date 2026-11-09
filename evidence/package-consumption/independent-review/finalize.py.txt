@@ -1,0 +1,55 @@
+import json
+import re
+import shutil
+import zipfile
+from hashlib import sha256
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[1]
+base = repo / 'evidence/package-consumption'
+out = base / 'independent-review'
+review = {'scope': 'Cold native consumption of the preceding frozen actual-provider package; no new native generation or new-adapter behavioral qualification.',
+          'hosts': {}, 'limits': ['One consumption assignment per installed host.',
+          'No same-child resumption was needed; prior failures remain separate.',
+          'Captured live frames and screenshots were inspected; no continuous-video or human acceptance claim.',
+          'Some Codex private journal payloads are host-encrypted; public commands, delegation metadata and retained artifacts are the observable boundary.']}
+archives = base / '20261108/archives'
+archives.mkdir(exist_ok=True)
+for host in ['claude', 'codex']:
+    attempt = base / '20261108/native' / (host + '-01')
+    record = json.loads((attempt / 'record.json').read_text(encoding='utf-8'))
+    checks = json.loads((out / (host + '-checks.json')).read_text(encoding='utf-8'))
+    review['hosts'][host] = {'verdict': 'pass for the assigned consumption scope',
+        'elapsed_seconds': record['elapsed_seconds'], 'artifact_checks': checks['status'],
+        'observed': ['Native PIXL delegation and completed caller return.',
+            'Caller independently compared actual bytes, selected family and current handoff.',
+            'Fresh renderer evidence exercises both actual consumer views and live phase progression.',
+            'Current delivery distinguished from historical unaccepted snapshot flags and Ready drift.',
+            'Generated seed/Retry/Paused, constructed Working motion, controlled Ready and existing Start retain distinct provenance.',
+            'All seeded inputs and frozen package unchanged; usable delivered paths and hashes returned.'],
+        'caller_result_sha256': checks['caller_result_sha256']}
+    archive = archives / (host + '-01.zip')
+    if archive.exists():
+        raise RuntimeError('Archive exists; do not overwrite evidence')
+    files = {}
+    with zipfile.ZipFile(archive, 'x', zipfile.ZIP_DEFLATED) as z:
+        for path in sorted(attempt.rglob('*')):
+            if not path.is_file() or '__pycache__' in path.parts:
+                continue
+            data = path.read_bytes()
+            if re.search(rb'pixl_[a-f0-9]{32}', data):
+                raise RuntimeError('Credential-pattern match; inspect without displaying it')
+            relative = path.relative_to(attempt).as_posix()
+            files[relative] = {'sha256': sha256(data).hexdigest(), 'bytes': len(data)}
+            z.writestr(relative, data)
+    with zipfile.ZipFile(archive) as z:
+        assert set(z.namelist()) == set(files)
+        assert all(sha256(z.read(name)).hexdigest() == row['sha256'] for name, row in files.items())
+    manifest = {'archive': archive.name, 'sha256': sha256(archive.read_bytes()).hexdigest(),
+                'files': files, 'verification': 'Every archived entry hash reread and checked',
+                'credential_scan': 'Limited pixl-token literal pattern only; not a general secret audit'}
+    (archives / (host + '-01.manifest.json')).write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps({'host': host, 'archive': str(archive.relative_to(repo)), 'files': len(files), 'sha256': manifest['sha256']}))
+(out / 'review.json').write_text(json.dumps(review, indent=2) + '\n', encoding='utf-8')
+shutil.copyfile(repo / 'build/check-package-consumption.py', out / 'check.py.txt')
+shutil.copyfile(__file__, out / 'finalize.py.txt')

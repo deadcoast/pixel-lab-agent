@@ -6,6 +6,12 @@ Prefer the connected official PixelLab MCP tools for agent production. Use the e
 
 ## Choose by the deliverable
 
+For dependent operations, such as an accepted seed followed by animation or an
+edit, use [connected stage authoring](../../../resources/spec/production-plan.md)
+to retain the prerequisite output and bind its exact selected candidate before
+preparing the next request. This local adapter preserves the reviewed inputs;
+the host still supplies actual image handles and executes the official tool.
+
 The names below are discovery starting points, not a frozen callable catalog.
 
 | Need | Discover and evaluate |
@@ -55,5 +61,20 @@ The [style-reference workflow](https://www.pixellab.ai/docs/tools/consistent-sty
 Use [provider recovery](provider-recovery.md) for saved intent and actual calls. Capture returned IDs, use the matching retrieval tool, and use bounded `wait_for_jobs` when appropriate instead of blind repeated polling. Retrieve actual output files before inspection.
 
 Review the asset's intended function at its display size: state readability for UI, identity and volume across directions, timing and contact in playback, adjacency in terrain, and alpha/material behavior in the target renderer. Keep source art and failed candidates. Prefer a targeted edit of a nearly correct result when it preserves the required identity; do not erase the original.
+
+For animation, distinguish requested generated frames from the tool's returned
+sequence: some operations include the supplied input frame in addition to generated
+frames. Retain every returned frame, declare any selection/assembly explicitly,
+and check the consumer's exact frame count and last-to-first transition. A provider
+claim of transparency is not a per-frame alpha check. Inspect each actual frame for
+matte leaks, shape drift and unintended holds before acceptance.
+
+Use the host's pixel-art judgment and the official platform's deterministic editing
+tools when they better preserve a useful generated result. Retain the source,
+guard edits against observed pixels and verify what changed. Distinguish a generated
+pose with specialist-constructed motion from motion produced by an animation model;
+both can serve the asset, but their provenance and quality evidence differ. A failed
+background-removal attempt can leave a useful opaque retry requiring an explicitly
+reviewed cutout. Preserve the failed attempt and review the corrected candidate anew.
 
 Return the [caller result](delegation.md) with files, checks, remaining questions and real provider/state identifiers. The platform creates candidates; the specialist supplies design judgment and evidence of fit.

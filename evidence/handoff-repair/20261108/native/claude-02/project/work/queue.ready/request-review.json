@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8",
+  "plar": {"path": "plar.txt", "asset_id": "queue.ready", "requirements_hash": "79b08da5e8de765a407696cc8bb0da0414d538b953d82ae29e1c4117ffbe93f8"},
+  "sources": [
+    {"path": "BRIEF.md", "sha256": "5955da4dd9079d0d13dc1b01feff4ed82f86628a42b0f79305f6bc68bbc6c7df", "role": "owner asset brief", "locators": ["line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color", "line 5: destination paths from view, badges excluded, no approved style, representative sample first", "line 7: paused distinguishable from activity/completion/retry without color"]},
+    {"path": "OWNER.md", "sha256": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a", "role": "owner stage assignment and authorization", "locators": ["lines 3-5: representative Ready candidate, motif is expert judgment, keep Start and allocation IDs", "line 8: one submission to pixellab-test authorized", "lines 10-12: simulated queued response ends stage; do not mark integrated"]},
+    {"path": "src/queue.ts", "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08", "role": "consumer state transitions", "locators": ["line 3: ok -> succeeded"]},
+    {"path": "src/queue-view.ts", "sha256": "01ee53761bce9cb9dbf41c7df3cb709397bebfb27f96cd738d84971aa6b190fa", "role": "consumer visual mapping and display descriptor", "locators": ["line 3: idle -> Start assets/start.svg", "line 6: succeeded -> Ready assets/ready.png frames 1", "line 9: display cell [16,16], scale 3, nearest, frameMs 100, background #172336", "lines 10-11: statusCell and compactStatus share statusVisuals"]},
+    {"path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3", "role": "preserved existing Start vector; accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference", "locators": ["line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z"]},
+    {"path": "provider-schemas.json", "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c", "role": "advertised pixellab-test schema (cross-check of host declaration)", "locators": ["create_image_pro_flash"]},
+    {"path": "provider-contract-origin.json", "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09", "role": "controlled connection origin/scope note", "locators": ["scope"]}
+  ],
+  "request": {
+    "path": "work/queue.ready/provider-arguments.json",
+    "sha256": "48a6a03c0e1ab1294f08460cca4cc03f6f909e35a7093d1fb4f6a8bf47f70b7a",
+    "kind": "provider_arguments",
+    "provider": "pixellab-test",
+    "tool": "create_image_pro_flash",
+    "connection": {"path": "work/queue.ready/connection.json", "sha256": "071cf42d618f2359d7eb445fa602db36d1783d35c1a0090b6edda55cd72e6300"},
+    "provider_simulated": true,
+    "not_expressible_by_schema": "Readability on #172336, 1x/3x nearest inspection, cool-blue relationship and non-colour silhouette are stated in description prose only; the schema has no palette, reference-image, alpha-mode or style controls. These are evaluated by the candidate-plan criteria after retrieval."
+  },
+  "criteria": {
+    "path": "work/queue.ready/candidate-plan.json",
+    "sha256": "aeb1ab7a5589c6931c9fc70c4e0e87d6b710692261558b4de7f89f64992a3dcd",
+    "authority_summary": {
+      "owner_or_consumer_requirement": ["geometry", "transparent-background", "ready-meaning", "readability-1x-3x", "cool-blue-accent"],
+      "specialist_sample_choice": ["silhouette-without-color", "sample-pixel-craft"],
+      "observations_used_as_reference_not_rules": ["#70b9ed (assets/start.svg fill)", "#172336 (src/queue-view.ts display.background, used as composite panel)"]
+    }
+  },
+  "choices": [
+    {"id": "sample-asset", "choice": "Ready is the representative family sample.", "authority": "assignment (OWNER.md lines 3-5) and PLAR proposal", "where": "candidate-plan scope", "reason": "Static, single frame, no dependency on other statuses; cheapest representative proof of the treatment."},
+    {"id": "motif", "choice": "Single centered checkmark, chunky ~2px strokes, no backing circle/badge plate, no drop shadow.", "authority": "specialist choice", "where": "provider-arguments description; contract intent", "reason": "Checkmark is the conventional completion sign and is a different silhouette from the Start play-triangle; chunky strokes survive 1x at 16x16; omitting a plate leaves room for future family marks and keeps transparency simple. Revisable at style review."},
+    {"id": "colour-treatment", "choice": "Cool sky blue close to #70b9ed plus one lighter highlight tone; no fixed palette.", "authority": "specialist choice implementing owner 'cool blue accent' direction", "where": "provider-arguments description", "reason": "Relates to the observed Start fill without making the hex a rejection rule; a lighter tone (not a dark outline) keeps contrast against the dark #172336 panel."},
+    {"id": "operation", "choice": "create_image_pro_flash, width 16, height 16, no_background true, seed omitted.", "authority": "specialist choice within the discovered schema", "where": "provider-arguments", "reason": "Only advertised generation tool; native 16x16 avoids downscaling (fixture default is 64x64, so width/height are explicit); no_background matches the transparent requirement; no seed was specified or needed for a first sample."},
+    {"id": "alpha", "choice": "Contract alpha 'full' and empty palette.", "authority": "derived from brief (transparent, no fixed palette)", "where": "candidate-plan contract", "reason": "Avoids manufacturing a binary-alpha or fixed-palette rule."},
+    {"id": "extra-criteria", "choice": "silhouette-without-color and sample-pixel-craft are specialist sample criteria.", "authority": "specialist choice", "where": "candidate-plan criteria", "reason": "Support the later owner non-colour and coherence obligations while judging only this sample; caller may demote or drop them."}
+  ],
+  "deferred_obligations": [
+    {"id": "family-working-not-success", "obligation": "Working 4-frame loop communicates activity without looking like Ready/success.", "source": "BRIEF.md line 3", "stage": "family expansion after Ready sample approval", "prerequisites": ["approved Ready sample", "Working candidate (queue.working)"]},
+    {"id": "family-retry-non-color", "obligation": "Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.", "source": "BRIEF.md lines 3, 7", "stage": "family expansion/collective review", "prerequisites": ["approved Ready sample", "Retry candidate"]},
+    {"id": "family-paused-non-color", "obligation": "Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.", "source": "BRIEF.md line 7; PLAR queue.ready delivery checks", "stage": "family collective review", "prerequisites": ["approved Ready sample", "Working, Retry and Paused candidates"]},
+    {"id": "style-decision", "obligation": "Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.", "source": "BRIEF.md line 5; PLAR queue.ready next/questions", "stage": "after retrieval and inspection of a real Ready candidate", "prerequisites": ["retrieved candidate image (the simulated pixellab-test job returns none)"]},
+    {"id": "destination-delivery", "obligation": "Place accepted Ready image at assets/ready.png; decode and confirm dimensions/frames/transparency there.", "source": "BRIEF.md line 5; src/queue-view.ts line 6", "stage": "delivery after art acceptance", "prerequisites": ["accepted candidate"]},
+    {"id": "renderer-integration", "obligation": "Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.", "source": "src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks", "stage": "integration/live acceptance", "prerequisites": ["delivered asset", "a renderer or UI entry point (none supplied)"]}
+  ],
+  "preserved": {
+    "start_vector": {"path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3", "note": "Unmodified; no Start production in scope."},
+    "plar_ids": "No PLAR allocation IDs added, removed or renamed."
+  },
+  "review_status": {"specialist_self_review": "Specialist checked arguments against the discovered schema and cited locators; this is self-review only.", "independent_caller_review": "not yet performed (caller owns it)"}
+}

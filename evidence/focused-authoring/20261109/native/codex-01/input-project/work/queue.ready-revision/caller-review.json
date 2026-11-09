@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "reviewer_role": "calling agent, independent of delegated PIXL specialist",
+  "provider_simulated": true,
+  "packet": {
+    "path": "work/queue.ready-revision/request-review.json",
+    "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+  },
+  "verdict": "consistent",
+  "comparisons": [
+    {
+      "id": "geometry",
+      "source": "BRIEF.md:3,9: 'Status cells are 16 by 16 logical pixels'; 'Ready and Retry are static images'. src/queue-view.ts:6,9 frames:1, cell:[16,16].",
+      "delta": "Exactly 16x16, one frame preserves both requirements; no horizontal strip or extra canvas follows from these.",
+      "alternative_disposition": "An animated or larger canvas is not source conforming. No added restriction.",
+      "finding": "consistent"
+    },
+    {
+      "id": "transparent-background",
+      "source": "BRIEF.md:3,9: 'Use transparent backgrounds'.",
+      "delta": "No opaque matte outside subject operationalizes transparency; partial alpha explicitly permitted.",
+      "alternative_disposition": "A transparent candidate with partially transparent edge pixels remains allowed; no binary alpha rule.",
+      "finding": "consistent"
+    },
+    {
+      "id": "ready-meaning",
+      "source": "BRIEF.md:9: 'Ready must visibly use a check mark with asymmetrical arms to convey successful completion.' src/queue.ts:3 ok:succeeded; src/queue-view.ts:3,6 idle Start, succeeded Ready.",
+      "delta": "Literal required check and asymmetry retained, with qualitative success outcome. No arm ratio, stroke width, backing-shape or highlight restriction.",
+      "alternative_disposition": "A thin asymmetrical check, a check with different arm ratios, or a check on a transparent-background decorative shape may pass if it communicates completion. A symmetric check is excluded by the owner, not a specialist invention.",
+      "finding": "consistent"
+    },
+    {
+      "id": "readability-1x-3x",
+      "source": "BRIEF.md:3: 'readable silhouettes'; 'Inspect at 1x and 3x nearest display scale on the actual dark panel'. src/queue-view.ts:9 background:'#172336', scale:3, filter:'nearest'.",
+      "delta": "Uses actual display conditions and asks essential detail to remain readable, without pixel geometry thresholds.",
+      "alternative_disposition": "Different readable silhouettes remain allowed. No unsupported quantitative proxy.",
+      "finding": "consistent"
+    },
+    {
+      "id": "cool-blue-accent",
+      "source": "BRIEF.md:3: 'the existing UI’s cool blue accent; a fixed palette is not required' (apostrophe normalized); assets/start.svg:1 fill='#70b9ed'.",
+      "delta": "Dominant cool-blue visual relationship is the interpretation of using existing accent. No exact hex or color-count rule; Start is a color cue, not approved pixel-art style.",
+      "alternative_disposition": "Other cool blues and multiple tones remain admissible. A mostly unrelated-colored icon with a token blue pixel may fail this reasonable interpretation.",
+      "finding": "consistent"
+    },
+    {
+      "id": "sample-pixel-craft",
+      "source": "BRIEF.md:3 'Create coherent pixel-art status assets'; :5 'propose a representative status sample before expanding the family'. Expert basis expressly retained, authority proposal.",
+      "delta": "Clean clusters/edges, no noisy stray pixels/blur/downscaled artifacts and plausible extensibility add expert sample quality requirements.",
+      "alternative_disposition": "An intentionally noisy or blurred but otherwise brief-conforming check could fail. Adopt this narrower expert quality criterion only for this representative candidate; it does not create universal palette, edge-alpha, or construction rules and does not approve style.",
+      "finding": "consistent scoped expert choice"
+    }
+  ],
+  "request_comparison": {
+    "description": "Contains required asymmetrical-arm check and successful completion, 16x16 static, transparency, cool-blue relationship, 1x/3x nearest on #172336. No fixed palette/binary-alpha restriction; no approved style claimed.",
+    "controls": "width=16,height=16,no_background=true. Only description,width,height,no_background supplied; all supported by actual tool declaration and provider-schemas.json. No unadvertised fields or fabricated reference input.",
+    "reference": "Start SVG inspected as text for color/control identity; not a style-approved image reference. Connection supports no reference field; prompt uses observed color cue.",
+    "destination": "plan scope/intent and deferred delivery target assets/ready-confirmed.png match src/queue-view.ts:6. Both consumers remain mapped through statusVisuals.",
+    "scope": "OWNER.md:2-12 authorizes one further controlled request, requires original history/status preservation and ends at accepted request. No image, style approval, integration or live service identity claimed."
+  },
+  "deferred_obligations": [
+    "Working four-frame 100ms activity distinct from success",
+    "Retry and Paused non-color distinctions",
+    "Record sample style decision and bind approved reference before expansion",
+    "Deliver accepted Ready at assets/ready-confirmed.png",
+    "Exercise statusCell and compactStatus in actual renderer"
+  ],
+  "removed_prior_rule": "Standalone grayscale Ready rejection is not owner-required and has been removed; family non-color obligations remain deferred with prerequisites.",
+  "checks": {
+    "all_packet_source_hashes": "verified by request-review report and independent source reads",
+    "locators": "resolved with no diagnostics; semantic comparisons above are caller judgments",
+    "all_rejection_rules_covered": true,
+    "art_acceptance": "unperformed; no image"
+  },
+  "next": "Reread focused PLAR, explicit revise preparation in original store, compare saved dispatch arguments to reviewed arguments, submit once on pixellab-test and record response."
+}

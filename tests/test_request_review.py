@@ -255,7 +255,8 @@ class RequestReviewTests(unittest.TestCase):
         declaration = next(
             t for t in listing["result"]["tools"] if t["name"] == "pixl_request_review"
         )
-        self.assertTrue(declaration["annotations"]["readOnlyHint"])
+        # Optional result_path makes this tool capable of a local file write.
+        self.assertFalse(declaration["annotations"]["readOnlyHint"])
 
     def test_pending_handoff_and_success_follow_same_provider_generation(self):
         first = service.call("pixl_plar_prepare", self.args, self.root)

@@ -50,6 +50,20 @@ native-scale viewing. Read animation or tile contexts where the saved criteria r
 them. A frame strip retains poses and declared timing; it does not establish playback
 or target-engine behavior.
 
+For a repository consumer, start with its existing isolated renderer or integration
+runner. Retain actual rendered frames, timing and state transitions, then inspect
+the saved native/enlarged pixels. A headless run can supply actual execution and
+playback observations without taking control of the user's desktop. Use interactive
+computer control only when it adds an observation the project runner cannot provide.
+
+If one viewer or browser fails, use another suitable observation route before
+declaring the check unavailable. Review recorded playback as a sequence, including
+every required phase and the wrap; distinguish it from a synthetic frame strip.
+Check for throttling or skipped phases in the recording. Judge the specific motion
+condition from adequate visual and temporal evidence; do not invent a human-only
+real-time viewing requirement. Measurements support the specialist's visual
+judgment and do not create it automatically.
+
 Record the view IDs actually seen, what each showed and the dimensions delivered by
 the host when known. Use `delivered_size: null` when delivery dimensions are unknown;
 file dimensions alone do not establish the viewer's delivered dimensions. Report any
@@ -67,6 +81,26 @@ engine/live criteria only as unavailable; actual external acceptance uses its ow
 execution evidence.
 
 ## Retain and continue
+
+For actual external observations (recorded motion, collective family views or
+destination execution), use the [candidate/family review operation](../../../resources/spec/candidate-review.md).
+Read `review-context STATE CANDIDATE --root ROOT` / `pixl_review_context` first.
+It supplies exact literal criteria, current verdict IDs, semantic `binding_hash`
+and canonical `state_hash`. Save explicit observation JSON, then call
+`candidate-review STORE CANDIDATE REVIEW_ID REVIEW_JSON --expect STATE_HASH --root ROOT`
+or `pixl_candidate_review`. It handles a raster or family manifest and derives
+evidence records while retaining exact observation files. Use an existing reviewer
+actor, actual observation time, explicit reasons and observations of the required
+mode. Do not reuse prior review prose as a claim of new viewing.
+
+Choose `action: "record"`, `"nominate"` or `"complete"` deliberately. Partial,
+failed and unavailable checks remain useful records. Completion preserves all
+prerequisite, selection, pending-job and acceptance checks. After interruption,
+reload state and repeat the identical review ID/JSON; the retained review is reused
+and outstanding publication finishes without duplicate verdicts. Do not construct
+E/V records by hand for this ordinary operation. Prepared inspection-packet review
+below retains its existing coverage rules; this external-observation route does
+not certify that a packet was viewed completely.
 
 Write the closed review object described in the contract: saved reviewer A,
 timezone-aware `observed_at`, actual view observations, explicit per-criterion
@@ -89,3 +123,10 @@ criterion text, declared viewing limits and next action. Continue through
 [sample acceptance](intake-sample.md) or [family production](family-delivery.md) as
 appropriate. Successful publication verifies retention, not whether a host truly
 looked or an engine accepted the asset.
+
+## Saving exact review results
+
+For large context/review results, set MCP `result_path` or CLI `--result-path` to
+a fresh consumer-relative file. The tool writes complete JSON and returns its
+path/hash; read that file rather than reconstructing its contents. If export
+fails, inspect `operation_result` and current state before repeating a mutation.

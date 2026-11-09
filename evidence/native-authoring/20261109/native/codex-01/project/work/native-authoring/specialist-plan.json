@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "id": "authoring.queue.family.01",
+  "project": "project",
+  "actor": "actor",
+  "baseline": "ready.retained",
+  "decisions": [
+    "render.decision.style"
+  ],
+  "knowledge": [],
+  "stages": [
+    {
+      "id": "working",
+      "name": "Prospective Working four-frame loop",
+      "phase": "production",
+      "kind": "animation",
+      "contract": "family.working.contract",
+      "needs": [
+        "live.seed.output"
+      ],
+      "selection": {
+        "path": "authoring-plar.txt",
+        "asset": "queue.working",
+        "requirements_hash": "e0614bd962a53a19003707f3d73326be436891e198eb1e4a262f12412fbfb027"
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "check": "Decoded PNG is 64x16 containing exactly four horizontal 16x16 frames, without gaps or resizing.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "appearance",
+          "check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable activity silhouette that never reads as successful completion, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "motion",
+          "check": "Play all four frames at 100 ms each, including fourth-to-first wrap; inspect meaningful ongoing activity, stable placement and coherent shape/volume without unintended holds or morphing. Any provider sequence selection or assembly must be recorded exactly; all original frames remain retained.",
+          "domain": "continuity",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "destination",
+          "check": "Exercise started -> running through both actual statusCell and compactStatus using assets/working.png; verify horizontal frame*16,0,16,16 slicing, 100ms clock and wrap, nearest sampling at 1x/3x, alpha compositing on #172336, label and stable recorded screenshot placement.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "retry",
+      "name": "Prospective Retry static icon",
+      "phase": "production",
+      "kind": "sprite",
+      "contract": "family.retry.contract",
+      "needs": [],
+      "selection": {
+        "path": "authoring-plar.txt",
+        "asset": "queue.retry",
+        "requirements_hash": "5aad84985537c469a60845815d4d6a8caf11295bf034e9e6bc044dc5081f5fbd"
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "check": "Decoded PNG is one static 16x16 frame.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "appearance",
+          "check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable failure/retry silhouette distinct without color alone, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "destination",
+          "check": "Exercise error -> failed through both actual statusCell and compactStatus using assets/error-retry.png; verify static behavior, Retry label, nearest 1x/3x sampling, alpha compositing on #172336 and stable recorded screenshot placement.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "paused",
+      "name": "Prospective Paused static icon",
+      "phase": "production",
+      "kind": "sprite",
+      "contract": "family.paused.contract",
+      "needs": [],
+      "selection": {
+        "path": "authoring-plar.txt",
+        "asset": "queue.paused",
+        "requirements_hash": "222d80d572d65eec7a54918ba857e0c40e5e1b90289c4c01b646e4f27c0c9b1f"
+      },
+      "criteria": [
+        {
+          "id": "geometry",
+          "check": "Decoded PNG is one static 16x16 frame.",
+          "domain": "mechanical",
+          "mode": "local",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "appearance",
+          "check": "Inspect each actual frame at 1x and 3x nearest on #172336 against exact ready.retained baseline: readable paused silhouette distinguishable from activity, completion and retry without relying on color alone, transparent exterior without unintended matte/fringe, perceptible cool-blue accent, deliberate coherent clusters and stepped edges. No fixed palette, binary alpha, exact stroke, margins or reference cluster count is required.",
+          "domain": "visual",
+          "mode": "visual",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        },
+        {
+          "id": "destination",
+          "check": "Exercise pause -> paused through both actual statusCell and compactStatus using assets/paused.png; verify static behavior, Paused label, nearest 1x/3x sampling, alpha compositing on #172336 and stable recorded screenshot placement.",
+          "domain": "engine",
+          "mode": "live",
+          "sources": [
+            "render.source.brief",
+            "render.source.view",
+            "render.source.caller"
+          ]
+        }
+      ]
+    }
+  ],
+  "delivery": {
+    "name": "Prospective complete queue-family delivery",
+    "members": [
+      "r.22e90a2a03fe453a.output.ready",
+      "working",
+      "retry",
+      "paused"
+    ],
+    "destinations": [
+      "render.choice.destination"
+    ],
+    "criteria": [
+      {
+        "id": "continuity",
+        "check": "Compare exact Ready, Working, Retry and Paused together at 1x/3x nearest on #172336 for coherent deliberate pixel treatment, readable weight, cool-blue accent and transparency; play Working at100ms including wrap. Ready is scoped style only, not a mandated silhouette, palette count, alpha subset, stroke width, margin or cluster count.",
+        "domain": "continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.caller"
+        ]
+      },
+      {
+        "id": "distinction",
+        "check": "Inspect all four members including all Working frames and playback, in color and grayscale/non-color comparison: Working communicates activity rather than success; Retry and Paused distinguishable without color alone. Keep existing Start unchanged.",
+        "domain": "continuity",
+        "mode": "visual",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.caller"
+        ]
+      },
+      {
+        "id": "destination",
+        "check": "Exercise idle, started, ok, error and pause transitions through both actual consumers with exact retained delivery files; verify labels, intended paths, static and four-frame slicing/timing, nearest sampling, transparent compositing and stable recorded screenshot placement. Existing Start remains unchanged.",
+        "domain": "engine",
+        "mode": "live",
+        "sources": [
+          "render.source.brief",
+          "render.source.view",
+          "render.source.caller"
+        ]
+      }
+    ]
+  }
+}

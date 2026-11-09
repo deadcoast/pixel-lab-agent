@@ -1,0 +1,7 @@
+# Compatibility option for a host requiring a stdio bridge.
+# Export AUTH_HEADER in the launching environment as "Bearer " plus the token.
+# env_vars forwards it without storing its value in this file.
+[mcp_servers.pixellab]
+command = "npx"
+args = ["mcp-remote@latest", "https://api.pixellab.ai/mcp", "--transport", "http-only", "--header", "Authorization:${AUTH_HEADER}"]
+env_vars = ["AUTH_HEADER"]

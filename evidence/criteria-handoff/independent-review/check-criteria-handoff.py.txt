@@ -1,0 +1,106 @@
+"""Independent byte/coverage checks; semantic review is recorded separately."""
+import json
+import sys
+from hashlib import sha256
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[1]
+attempt = repo / sys.argv[1]
+project = attempt / 'project'
+identity = json.loads((attempt / 'identity.json').read_text(encoding='utf-8'))
+record = json.loads((attempt / 'record.json').read_text(encoding='utf-8'))
+digest = lambda p: sha256(p.read_bytes()).hexdigest()
+kit = project / '.agents/skills/pixl-kit'
+sys.path.insert(0, str(kit / 'runtime'))
+from pixl import production_review
+
+checks = []
+def check(name, passed, detail=None):
+    checks.append({'check': name, 'pass': bool(passed), 'detail': detail})
+
+changed_inputs = [p for p,h in identity['inputs'].items()
+                  if not (project/p).is_file() or digest(project/p) != h]
+changed_kit = [p for p,h in identity['package_files'].items()
+               if not (kit/p).is_file() or digest(kit/p) != h]
+check('All pre-run consumer files preserved byte for byte', not changed_inputs, changed_inputs)
+check('Frozen kit preserved byte for byte', not changed_kit, changed_kit)
+predecessor = Path(identity['predecessor'])
+prior = json.loads((predecessor/'record.json').read_text(encoding='utf-8'))
+changed_prior = [p for p,h in prior['artifacts'].items()
+                 if not (predecessor/'project'/p).is_file() or digest(predecessor/'project'/p) != h]
+check('Original partial attempt preserved byte for byte', not changed_prior, changed_prior)
+check('Native process completed', record['returncode'] == 0, record['execution_status'])
+report = production_review.report(project, '.pixl/assets/queue.ready/state.px',
+                                 'authoring-01.plan', 'authoring-01.working.join-01')
+prior_report = production_review.report(predecessor/'project', '.pixl/assets/queue.ready/state.px',
+                                       'authoring-01.plan', 'authoring-01.working.join-01')
+check('Actual consumer relocation preserves the full review scope',
+      report['review_scope_sha256'] == prior_report['review_scope_sha256'])
+check('Exact 17 member and 3 collective criteria', len(report['criteria']) == 20 and
+      sum(r['stage'] == 'delivery' for r in report['criteria']) == 3)
+check('Every bound criterion remains current', all(r['record_status'] == 'current' for r in report['criteria']))
+check('All source excerpts resolve', all(r['status'] == 'resolved' for r in report['sources']))
+check('Changed Working requirements remain visible',
+      {'asset':'queue.working','status':'changed_selection'} in report['diagnostics'])
+check('Historical request remains prepared and blocked', report['request']['state'] == 'prepared'
+      and report['request']['next_action'] == 'resolve_context' and report['request']['remote_id'] is None)
+check('Evidence report does not award semantic acceptance', report['consistent'] is None)
+
+comparison = sys.argv[2] if len(sys.argv) > 2 else None
+if comparison:
+    coverage = production_review.report(project, '.pixl/assets/queue.ready/state.px',
+               'authoring-01.plan','authoring-01.working.join-01',comparison)['comparison_coverage']
+    check('Caller comparison covers exact current criterion identities', coverage['complete'], coverage)
+    check('Coverage does not claim semantic acceptance', coverage['semantic_verdict'] == 'not_assessed')
+
+if len(sys.argv) > 3:
+    proposal = json.loads((project/sys.argv[3]).read_text(encoding='utf-8'))
+    original = {r['id']:r for r in report['criteria']}
+    check('Corrected proposal covers all original criterion IDs once',
+          len(proposal['criteria']) == len(original) and {r['criterion'] for r in proposal['criteria']} == set(original))
+    check('Proposal preserves literal original checks and record identities', all(
+        r['original_check'] == original[r['criterion']]['check'] and
+        r['record_sha256'] == original[r['criterion']]['record_sha256']
+        for r in proposal['criteria']))
+    pointers = []
+    def walk(value):
+        if isinstance(value,dict):
+            if isinstance(value.get('path'),str) and isinstance(value.get('sha256'),str):
+                pointers.append(value)
+            for item in value.values():walk(item)
+        elif isinstance(value,list):
+            for item in value:walk(item)
+    walk(proposal)
+    bad_pointers = []
+    for pointer in pointers:
+        file = project/pointer['path']
+        ok = file.is_file() and digest(file) == pointer['sha256']
+        if ok and 'lines' in pointer:
+            start,end = pointer['lines']
+            ok = 1 <= start <= end <= len(file.read_text(encoding='utf-8').splitlines())
+        if not ok:bad_pointers.append(pointer)
+    check('Proposal file hashes and file-local bounds resolve', not bad_pointers,
+          {'pointers':len(pointers),'invalid':bad_pointers,'meaning':'not assessed by this check'})
+
+events = [json.loads(line) for line in (attempt/'stdout.jsonl').read_text(encoding='utf-8').splitlines() if line.strip()]
+calls = []
+for event in events:
+    for content in event.get('message',{}).get('content',[]):
+        if isinstance(content,dict) and content.get('type') == 'tool_use':
+            calls.append({'parent':event.get('parent_tool_use_id'), 'name':content['name'],
+                          'id':content['id'], 'input':content['input']})
+agents = [c for c in calls if c['name'] == 'Agent']
+check('Foreground native PIXL delegation observed', any(c['input'].get('subagent_type') == 'pixl'
+      and not c['input'].get('run_in_background',False) for c in agents), agents)
+check('Parent independently invokes review tool', any(c['parent'] is None and c['name'].endswith('__pixl_request_review') for c in calls))
+check('Caller return exists', (project/'CRITERIA-RESULT.json').is_file())
+output = {'scope':'Byte preservation, exact criterion/source/request identity, comparison coverage and native delegation. Semantic interpretation is separately reviewed.',
+          'attempt':attempt.relative_to(repo).as_posix(), 'checks':checks,
+          'passed':sum(c['pass'] for c in checks),'total':len(checks),
+          'scope_sha256':report['review_scope_sha256'],
+          'new_files':sorted(set(record['artifacts'])-set(identity['inputs']))}
+target=repo/'evidence/criteria-handoff/independent-review'
+target.mkdir(parents=True,exist_ok=True)
+(target/'claude-checks.json').write_text(json.dumps(output,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'passed':output['passed'],'total':output['total'],
+                  'failures':[c for c in checks if not c['pass']],'new_files':output['new_files']}))

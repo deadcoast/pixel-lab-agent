@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Directional robot consumer",
+    "brief": "An agent delegates a four-direction asset plan using an existing approved identity."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md",
+      "src/robot.ts",
+      "assets/robot-base.png"
+    ],
+    "excluded": [
+      "Animation and UI panels are not requested."
+    ],
+    "unresolved": [
+      "No runnable renderer or engine project is included."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "e1202361a26c377aff4ace08166854beff4f2978b08f1f961ef8b775269aa0e1"
+    },
+    {
+      "id": "consumer",
+      "path": "src/robot.ts",
+      "sha256": "d57b9a903dc4210944ad1d7ea83c83718cffd22b9b044932852ed6f1ba80c1d0"
+    },
+    {
+      "id": "robot",
+      "path": "assets/robot-base.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    }
+  ],
+  "assets": [
+    {
+      "id": "robot.base",
+      "kind": "sprite",
+      "purpose": "Approved source identity for this example",
+      "status": "integrated",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Approved identity",
+          "usage": "Identity baseline for the directional asset family"
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/robot-base.png",
+          "role": "Retained approved identity fixture"
+        }
+      ],
+      "requirements": [
+        {
+          "property": "identity",
+          "value": "Preserve the supplied subject, proportions, palette and south frame.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "robot"
+          ],
+          "reason": "The example assignment approves this source identity."
+        }
+      ],
+      "references": [
+        {
+          "source": "robot",
+          "role": "identity",
+          "instructions": "Keep this exact south-facing sprite and its subject identity when producing other directions."
+        }
+      ],
+      "delivery": {
+        "path": "assets/robot-base.png",
+        "checks": [
+          "Read the actual source at native scale before choosing a rotation operation."
+        ]
+      },
+      "depends_on": [],
+      "questions": [],
+      "next": "Reuse the approved source; do not redraw a new character from text.",
+      "evidence": []
+    },
+    {
+      "id": "robot.directions",
+      "kind": "directional-sprites",
+      "purpose": "Render the robot in the controller's four facing states",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "consumer",
+          "symbol": "spriteFor",
+          "usage": "Select one of four named directional sprite files"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "directions",
+          "value": [
+            "south",
+            "east",
+            "north",
+            "west"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "alpha",
+          "value": "transparent background",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        }
+      ],
+      "delivery": {
+        "path": "assets/robot",
+        "checks": [
+          "Check separate PNGs, dimensions, transparency and direction names.",
+          "Inspect identity, volume and alignment together.",
+          "Render all facings in the real controller when a runner is available."
+        ]
+      },
+      "depends_on": [
+        "robot.base"
+      ],
+      "questions": [],
+      "next": "Prepare a reference-conditioned PixelLab operation and input mapping for the caller.",
+      "evidence": []
+    }
+  ]
+}

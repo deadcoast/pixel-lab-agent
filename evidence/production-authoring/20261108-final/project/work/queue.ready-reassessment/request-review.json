@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "plar": {
+    "path": "plar.txt",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673"
+  },
+  "workspace": "C:\\github\\pixel-lab-agent\\evidence\\handoff-repair\\20261108\\native\\claude-04\\project",
+  "packet_role": "Corrected future contract (reassessment stage, PHASE.md). Historical evidence is unchanged: the contract used for delivery is work/queue.ready-revision/request-review.json (sha256 f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2), its criteria work/queue.ready-revision/candidate-plan.json (e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6), the delivered candidate ready.retained (fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5) and review ready.delivery.review in .pixl/assets/queue.ready/state.px revision 14. This packet does not retroactively alter that contract, its six pass verdicts or the nominated candidate, and it does not authorize a new provider request. Old-to-new changes are itemized in work/queue.ready-reassessment/contract-correction.json.",
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "role": "owner asset brief (current; 9 lines)",
+      "locators": [
+        "line 3: base brief: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, existing UI cool blue accent, no fixed palette, inspect 1x/3x nearest on the dark panel, working must not look like success, error/retry distinguishable without color alone",
+        "line 5: destinations follow the view, account badges excluded, no approved style reference, propose a representative status sample first",
+        "line 7: paused update: distinguishable from activity, completion and retry without color alone; keep style and display requirements; failure visual moved",
+        "line 9: current update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion; destination follows updated view; keep 16x16, static, transparent background and review display conditions"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "role": "consumer state transitions (4 lines)",
+      "locators": [
+        "line 1: QueueState union includes succeeded",
+        "line 3: stateAfter maps ok -> succeeded"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "role": "consumer visual mapping and display descriptor (14 lines)",
+      "locators": [
+        "line 3: idle -> label Start, assets/start.svg, frames 1",
+        "line 6: succeeded -> label Ready, assets/ready-confirmed.png, frames 1",
+        "line 9: display cell [16,16], scale 3, filter nearest, frameMs 100, background #172336",
+        "lines 10-11: statusCell and compactStatus both return statusVisuals[state]"
+      ]
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "role": "preserved existing Start vector; accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference (1 line)",
+      "locators": [
+        "line 1: 16x16 viewBox, single flat fill #70b9ed, triangle path M4 2L14 8L4 14Z, no background element"
+      ]
+    },
+    {
+      "path": "provider-schemas.json",
+      "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "role": "advertised pixellab-test schema retained at discovery (historical cross-check of the host declaration; 43 lines)",
+      "locators": [
+        "lines 2-33: create_image_pro_flash schema object: description (required), width/height 16-256 multipleOf 4, no_background, seed; additionalProperties false"
+      ]
+    },
+    {
+      "path": "provider-contract-origin.json",
+      "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "role": "controlled connection origin/scope note (5 lines)",
+      "locators": [
+        "line 4: scope: controlled connection advertises only description, width, height, no_background and seed; not a complete upstream tools/list declaration"
+      ]
+    },
+    {
+      "path": "OWNER.md",
+      "sha256": "c1999159d8e56ef670a362fd90367a64d0dd9e9b66697f18d278a6b50a6093c7",
+      "role": "retained request-stage assignment (historical; 11 lines). Cited for the identity of the one-further-controlled-request authorization that the delivered job used. It is not the current assignment: PHASE.md is current and assigns no generation.",
+      "locators": [
+        "lines 2-11: refresh PLAR, continue queue.ready through one newly reviewed request on pixellab-test, one further controlled request, preserve original attempts, deliverable ends at accepted revised request, no image/renderer, no fabrication"
+      ]
+    },
+    {
+      "path": "STAGE.md",
+      "sha256": "27645d41c854b992d502817066b48705a0026d899a78c8e80d821572c1bf75b5",
+      "role": "retained delivery-stage assignment (historical; 15 lines): same job through retrieval, review, delivery and source-consumer verification",
+      "locators": [
+        "lines 2-6: continue the same provider job and saved plan through retrieval, import, review, finalization, delivery to the PLAR destination and node verify-integration.mjs",
+        "lines 10-13: get_image exposed, retain provenance, do not create another request, inspect the downloaded artifact, retain failures rather than weakening criteria"
+      ]
+    },
+    {
+      "path": "PHASE.md",
+      "sha256": "0bcf5dbd3c97ae2ae67acf6bb3ed100332ea023cb1f6d0962e9cdfbee54f7a60",
+      "role": "current assignment (11 lines): reassess and correct the retained contract in new artifacts; preserve history; corrected contract is not retroactive; no new generation",
+      "locators": [
+        "lines 2-7: reassess retained request/criteria/result against brief and sources, correct defects in new artifacts, retain independent caller comparison, preserve old arguments/plans/candidate/verdicts/history, no retroactive replacement",
+        "lines 8-11: explain pixel-art reasoning and expert choices, return exact resumable handoff, integration may be rechecked, style/family approval and renderer acceptance separate, no new generation"
+      ]
+    },
+    {
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "role": "source overview (3 lines)",
+      "locators": [
+        "line 3: queue.ts defines transitions; queue-view.ts maps states to visuals and supplies full and compact consumers; assets/ holds checked-in resources; badges arrive at runtime"
+      ]
+    }
+  ],
+  "request": {
+    "path": "work/queue.ready-revision/provider-arguments.json",
+    "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3",
+    "kind": "provider_arguments",
+    "tool": "create_image_pro_flash",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "connection": {
+      "path": "work/queue.ready-revision/connection.json",
+      "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"
+    },
+    "dispatch_authorized": false,
+    "note": "The exact historical arguments dispatched as job r.22e90a2a03fe453a.request (remote controlled-create-0002) are referenced unchanged; the reassessment found no defect in the description that would require different arguments (it names the required asymmetrical-arm check mark, transparency, 1x/3x on #172336, the cool blue accent as a cue, and declines a fixed palette or binary alpha). The connection artifact is bound for identity only. Its authorization.evidence.lines [2,12] exceeds OWNER.md's 11 lines; the intended range is [2,11]. PHASE.md assigns no new generation, so these arguments are not authorized for dispatch by this packet.",
+    "not_expressible_by_schema": "Readability on #172336, 1x/3x nearest inspection, the cool-blue relationship and the asymmetry judgment are prose in description only; the schema has no palette, reference-image, alpha-mode or style controls. They are evaluated by the candidate-plan criteria after retrieval."
+  },
+  "criteria": {
+    "path": "work/queue.ready-reassessment/candidate-plan.json",
+    "sha256": "f5e23c7c9673a60dfda42418913cf2005a7eecc67ac39b25d1a33e81a35a33d8",
+    "authority_summary": {
+      "owner_or_consumer_requirement": ["geometry", "transparent-exterior-measured", "transparent-background-visual", "ready-meaning", "readability-1x-3x", "cool-blue-accent"],
+      "specialist_sample_choice": ["sample-blue-primary-fill", "sample-pixel-craft"],
+      "observations_used_as_reference_not_rules": ["#70b9ed (assets/start.svg line 1 fill)", "#172336 (src/queue-view.ts line 9 display.background, used as the composite panel)"]
+    }
+  },
+  "choices": [
+    {
+      "id": "sample-asset",
+      "choice": "Ready remains the representative family sample.",
+      "authority": "proposal",
+      "basis": "BRIEF.md line 5 requires a representative sample first but does not choose the status; PLAR queue.ready family_sample proposal.",
+      "appears_in": "candidate-plan scope and contract intent"
+    },
+    {
+      "id": "asymmetry-dimension",
+      "choice": "Asymmetrical arms may be realized through length, angle, thickness, curvature or position; the delivered sample realizes it through length (short descending left arm, long ascending right arm, both at 45 degrees).",
+      "authority": "proposal",
+      "basis": "BRIEF.md line 9 requires asymmetrical arms without fixing the dimension; the profile's shape-relationship guidance keeps the construction out of the owner rule.",
+      "appears_in": "ready-meaning criterion check and basis"
+    },
+    {
+      "id": "blue-primary-fill",
+      "choice": "Cool blue as the primary fill for this sample (criterion sample-blue-primary-fill).",
+      "authority": "proposal",
+      "basis": "Implements the owner accent direction; the historical check's 'dominant' wording is demoted from the owner requirement to this scoped proposal.",
+      "appears_in": "criterion sample-blue-primary-fill"
+    },
+    {
+      "id": "stroke-weight",
+      "choice": "About 2 px perpendicular stroke (3-pixel horizontal runs on 45-degree diagonals) is the specialist's preferred weight for 16x16 UI glyphs in this family.",
+      "authority": "proposal",
+      "basis": "Expert judgment from viewing the delivered sample at 1x and 3x; not a criterion and not an owner requirement.",
+      "appears_in": "art-assessment.json family recommendations only"
+    },
+    {
+      "id": "operation",
+      "choice": "create_image_pro_flash with width 16, height 16, no_background true, seed omitted (unchanged historical arguments).",
+      "authority": "proposal",
+      "basis": "Only generation tool advertised by the controlled connection; native 16x16 avoids downscaling.",
+      "appears_in": "request"
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "silhouette-without-color",
+      "kind": "non-rejecting specialist diagnostic",
+      "status_in_contract": "Not a criterion. The historical 7th criterion was dropped as a rejection rule at the revision stage; that drop is judged justified because BRIEF.md lines 3 and 7 place the non-colour distinction obligation on Retry and Paused (with Ready as a comparison target) and 'readable silhouettes' (line 3) is already bound by readability-1x-3x. The diagnostic is retained here so the information is not lost.",
+      "procedure": "Convert the retained 1x and 3x panel views (inspection packet 0126fe96..., views 0001.png and 0002.png) to 8-bit luminance (Pillow mode L, ITU-R 601-2 luma) and view them.",
+      "artifacts": [
+        {"path": "work/queue.ready-reassessment/diagnostic-grayscale-1x-panel.png", "sha256": "b7472d348b5d244d893947b40a9b195508f6b4afef41204adbb47ab013ed3e9f", "size": [16, 16]},
+        {"path": "work/queue.ready-reassessment/diagnostic-grayscale-3x-panel.png", "sha256": "c57d754b3079cd71cfe62bea2b1c767b3c619289fe5ac080d377432ca17e154c", "size": [48, 48]}
+      ],
+      "measured": {
+        "source_candidate_sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+        "mark_luma_601": 169.1,
+        "panel_luma_601": 33.6,
+        "luma_delta_601": 135.5,
+        "grayscale_levels_present": [34, 169]
+      },
+      "observed": "Viewed both grayscale views: the check mark and its arm asymmetry remain legible with hue removed; identity is carried by form and value, not hue alone."
+    }
+  ],
+  "measurements": {
+    "candidate": "assets/ready-confirmed.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "coordinates": "zero-based pixel indices [x, y]; boxes [left, top, right, bottom] with exclusive right/bottom; centres in pixel-edge coordinates",
+    "size": [16, 16],
+    "frames": 1,
+    "visible_pixels": 29,
+    "alpha_counts": {"0": 227, "255": 29},
+    "fractional_alpha_pixels": 0,
+    "visible_colors": [[112, 185, 237, 255]],
+    "opaque_components_4_connected": 1,
+    "visible_bbox": [3, 4, 14, 13],
+    "bbox_centre": [8.5, 8.5],
+    "canvas_centre": [8.0, 8.0],
+    "mass_centroid": [8.5, 8.74],
+    "vertex_pixel": [6, 12],
+    "left_arm": {"pixels": 7, "columns": [3, 5], "rows": [8, 11]},
+    "right_arm": {"pixels": 19, "columns": [7, 13], "rows": [4, 11]},
+    "row_runs": {"4": [[12, 12]], "5": [[11, 13]], "6": [[10, 12]], "7": [[9, 11]], "8": [[4, 4], [8, 10]], "9": [[3, 5], [7, 9]], "10": [[4, 8]], "11": [[5, 7]], "12": [[6, 6]]},
+    "wcag_contrast_70b9ed_on_172336": 7.41,
+    "tools": "pixl_asset_check(regions=['#70b9ed']) and selected Python Pillow decode in this session"
+  },
+  "completed_obligations": [
+    {
+      "id": "destination-delivery",
+      "obligation": "Place the accepted Ready image at assets/ready-confirmed.png; decode and confirm dimensions/frames/transparency there.",
+      "source": "BRIEF.md line 5; src/queue-view.ts line 6",
+      "evidence": "assets/ready-confirmed.png sha256 fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5 equals the download and the immutable candidate; DELIVERY-RESULT.json; work/queue.ready-reassessment/integration.json",
+      "scope": "Delivered bytes are a controlled pixellab-test fixture, not upstream art."
+    },
+    {
+      "id": "source-consumer-execution",
+      "obligation": "Execute both real source consumers for ok -> succeeded against the delivered path.",
+      "source": "STAGE.md lines 5-6; src/queue-view.ts lines 10-11",
+      "evidence": "work/queue.ready-delivery/integration.json (historical) and work/queue.ready-reassessment/integration.json (recheck, exit 0, Node v25.8.1)",
+      "scope": "Source-module execution only; not renderer acceptance."
+    }
+  ],
+  "deferred_obligations": [
+    {
+      "id": "family-working-not-success",
+      "obligation": "Working 4-frame 100 ms loop communicates activity without looking like Ready/success.",
+      "source": "BRIEF.md line 3",
+      "stage": "family expansion after the style decision",
+      "prerequisites": ["style decision on the Ready sample", "Working candidate (queue.working)"]
+    },
+    {
+      "id": "family-retry-non-color",
+      "obligation": "Retry (assets/error-retry.png) distinguishable from Ready and the other statuses without colour alone.",
+      "source": "BRIEF.md lines 3 and 7",
+      "stage": "family expansion / collective review",
+      "prerequisites": ["style decision on the Ready sample", "Retry candidate (queue.retry)"]
+    },
+    {
+      "id": "family-paused-non-color",
+      "obligation": "Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.",
+      "source": "BRIEF.md line 7; PLAR queue.ready delivery checks",
+      "stage": "family collective review",
+      "prerequisites": ["style decision on the Ready sample", "Working, Retry and Paused candidates"]
+    },
+    {
+      "id": "style-decision",
+      "obligation": "Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.",
+      "source": "BRIEF.md line 5; PLAR queue.ready next/questions",
+      "stage": "owner/caller decision on the delivered Ready fixture (image now exists: fc5e43ae...)",
+      "prerequisites": ["caller/owner review of the delivered sample and this corrected contract"]
+    },
+    {
+      "id": "renderer-integration",
+      "obligation": "Exercise statusCell and compactStatus in an actual graphical renderer and confirm the Ready label and image appear for the ok transition with nearest sampling and alpha compositing on #172336.",
+      "source": "src/queue-view.ts lines 9-11; PLAR queue.ready delivery checks",
+      "stage": "integration / live acceptance",
+      "prerequisites": ["a runnable renderer or UI entry point (none supplied in this consumer)"]
+    },
+    {
+      "id": "plar-row-text-refresh",
+      "obligation": "Refresh stale hash-covered PLAR text for queue.ready (existing[0].role says the destination is missing; delivery.checks[4] says no delivered art has been reviewed) at the next requirements revision, when flipping the retained selection binding to 'changed' is intended.",
+      "source": "plar.txt queue.ready row; format.md requirements_hash coverage",
+      "stage": "next PLAR requirements revision",
+      "prerequisites": ["caller decision to revise requirements (changes requirements_hash)"]
+    }
+  ],
+  "preserved": {
+    "start_vector": {"path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3", "note": "Unmodified; no Start production in scope."},
+    "plar_ids": "No PLAR allocation IDs added, removed or renamed.",
+    "historical_artifacts": "work/queue.ready/, work/queue.ready-revision/, work/queue.ready-delivery/, work/PIXL-DELIVERY.json, *-RESULT.json, .pixl/assets/queue.ready/* and .pixl/plar-history/* are unchanged."
+  },
+  "review_status": {
+    "specialist_self_review": "Reassessed against the current BRIEF.md, src/queue.ts, src/queue-view.ts, assets/start.svg, STAGE.md and PHASE.md; viewed the retained inspection views and the delivered PNG; no image or artistic acceptance is claimed beyond the historical review.",
+    "independent_caller_review": "Reserved to the calling agent; unperformed in this packet."
+  },
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state": ".pixl/assets/queue.ready/state.px",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "task": "r.22e90a2a03fe453a.task",
+    "task_state": "done",
+    "output": "r.22e90a2a03fe453a.output.ready",
+    "candidate": "ready.retained",
+    "job": "r.22e90a2a03fe453a.request",
+    "remote_id": "controlled-create-0002",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "pending_jobs": [],
+    "original": {"task": "task", "task_state": "open (superseded; selection binding changed)", "output": "output.ready", "job": "first_request", "remote_id": "controlled-create-0001", "state": "failed"},
+    "next": "Caller independent comparison of this corrected packet; then the owner/caller style decision. No dispatch is authorized."
+  }
+}

@@ -1,0 +1,92 @@
+import json
+import shutil
+import subprocess
+from hashlib import sha256
+from pathlib import Path
+
+from pixl import codec, store
+
+repo = Path(__file__).resolve().parents[1]
+base = repo / 'evidence/production-authoring/20261108'
+project = base / 'project'
+source = repo / 'evidence/pixellab-family-production/20261108/project'
+shutil.copytree(source, project, ignore=shutil.ignore_patterns('.agents', '.codex', '__pycache__'))
+kit = base / 'kit'
+shutil.copytree(repo / 'plugins/pixl', kit, ignore=shutil.ignore_patterns('__pycache__'))
+folder = project / '.pixl/assets/queue.ready'
+before = store.load(folder)
+records = before.records
+
+def criteria(output):
+    return [{'id': str(i), 'check': records[r.id].fields['ck'],
+             'domain': records[r.id].fields['dm'].value,
+             'mode': records[r.id].fields['md'].value,
+             'sources': [s.id for s in records[r.id].fields['so']]}
+            for i, r in enumerate(records[output].fields['rq'])]
+
+stages = []
+for name in ['working', 'retry', 'paused']:
+    output = records['family.' + name + '.output'].fields
+    rows = criteria('family.' + name + '.output')
+    for index, row in enumerate(rows):
+        row['id'] = 'criterion' + str(index)
+    stages.append({'id': name, 'name': 'Authoring rehearsal: ' + output['nm'],
+                   'phase': 'production', 'kind': output['kd'].value,
+                   'contract': output['ct'].id,
+                   'needs': ['live.seed.output'] if name == 'working' else [],
+                   'criteria': rows})
+family = records['family.delivery.output'].fields
+collective = criteria('family.delivery.output')
+for index, row in enumerate(collective):
+    row['id'] = 'criterion' + str(index)
+plan = {'version': 1, 'id': 'authoring.rehearsal', 'project': 'project', 'actor': 'actor',
+        'baseline': family['bs'].id, 'decisions': ['render.decision.style'], 'knowledge': [],
+        'stages': stages, 'delivery': {'name': 'Connected authoring rehearsal family',
+        'members': [family['mb'][0].id, 'working', 'retry', 'paused'],
+        'destinations': [i.id for i in family['ds']], 'criteria': collective}}
+request = json.loads((project / 'work/live-family/working-animation-01-request.json').read_text(encoding='utf-8'))
+request['authorization'] = {'scope': 'Local authoring rehearsal of a retained request only; no dispatch assigned.',
+                          'evidence': {'assignment': 'Native package consumption followed by simpler authoring', 'production_replay': True}}
+packet = {'version': 1, 'inputs': {'live.seed.output': {
+    'candidate': 'live.working-seed.candidate', 'sha256': records['live.working-seed.candidate'].fields['dg']}},
+    'request': request}
+work = project / 'work/authoring-rehearsal'
+work.mkdir()
+def write(name, value):
+    target = work / name
+    target.write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
+    return str(target)
+def cli(args):
+    result = subprocess.run([str(repo / '.venv/Scripts/python.exe'), '-B', str(kit / 'scripts/pixl.py'), *args],
+                             capture_output=True, text=True, encoding='utf-8', cwd=project)
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return json.loads(result.stdout)
+
+plan_path = write('plan.json', plan)
+packet_path = write('request.json', packet)
+authored = cli(['production-plan', str(folder), plan_path, '--root', str(project), '--expect', codec.digest(before)])
+write('authored.json', authored)
+args = ['stage-prepare', str(folder), 'authoring.rehearsal.plan', 'working', 'authoring.rehearsal.job', packet_path, '--root', str(project)]
+prepared = cli(args + ['--expect', authored['hash']])
+write('prepared.json', prepared)
+repeated = cli(args + ['--expect', prepared['hash']])
+write('repeated.json', repeated)
+after = store.load(folder)
+checks = {
+    'old_records_unchanged': all(after.records[k] == v for k, v in before.records.items()),
+    'same_request_reused': repeated['already_prepared'] and repeated['hash'] == prepared['hash'],
+    'prepared_not_dispatched': after.records['authoring.rehearsal.job'].fields['si'].value == 'prepared',
+    'plar_unchanged': (project / 'plar.txt').read_bytes() == (source / 'plar.txt').read_bytes(),
+    'destination_assets_unchanged': all(p.read_bytes() == (project / 'assets' / p.name).read_bytes() for p in (source / 'assets').iterdir() if p.is_file()),
+    'new_tasks_open': all(after.records['authoring.rehearsal.' + s + '.task'].fields['st'].value == 'open' for s in ['working', 'retry', 'paused', 'delivery']),
+}
+if not all(checks.values()):
+    raise RuntimeError(str(checks))
+result = {'status': 'pass', 'checks': checks, 'source_state_sha256': codec.digest(before),
+          'final_state_sha256': codec.digest(after),
+          'scope': 'Copied real-provider consumer, frozen new kit, local authoring and preparation only. Existing accepted delivery preserved. Historical request uses retained transport references; no current provider availability or new generated quality claim.',
+          'kit_files': {p.relative_to(kit).as_posix(): sha256(p.read_bytes()).hexdigest() for p in kit.rglob('*') if p.is_file() and '__pycache__' not in p.parts}}
+(base / 'checks.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+shutil.copyfile(__file__, base / 'rehearse.py.txt')
+print(json.dumps({'status': 'pass', 'checks': checks}))

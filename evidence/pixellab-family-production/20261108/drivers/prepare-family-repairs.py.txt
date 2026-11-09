@@ -1,0 +1,24 @@
+import importlib.util
+import json
+from pathlib import Path
+from PIL import Image
+
+ROOT=Path(__file__).resolve().parents[1]/'evidence/pixellab-family-production/20261108/project'
+WORK=ROOT/'work/live-family'
+requests=json.loads((WORK/'requests.json').read_text(encoding='utf-8'))
+upload=json.loads((WORK/'working-strip-upload.json').read_text(encoding='utf-8'))
+def color(value): return '#'+''.join(f'{c:02x}' for c in value)
+for name, filename, subject in [('working-animation-repair-01','working-animation-01-raw.png',upload['ref']),('paused-cutout-01','paused-02-opaque.png','job:6bf20949-23a3-46aa-9aa6-a205287e0468')]:
+    im=Image.open(WORK/filename).convert('RGBA')
+    patches=[]
+    for y in range(im.height):
+        for x in range(im.width):
+            r,g,b,a=rgba=im.getpixel((x,y))
+            selected=(rgba==(128,128,128,255)) if name.startswith('working') else (r>g+80 and b>g+80)
+            if selected: patches.append([x,y,color(rgba),color((r,g,b,0))])
+    expected=193 if name.startswith('working') else 196
+    assert len(patches)==expected, (name,len(patches))
+    changes=[{'operation':'patch_pixels','layer':'image','frames':[1],'pixels':patches,'reason':'Observed background only: preserve all generated blue glyph pixels exactly; remove the opaque grey leak' if name.startswith('working') else 'Observed flat family of magenta background colors; exact guarded alpha removal, leaving all60 generated blue bar pixels unchanged'}]
+    requests[name]={'argv':['edit',subject,'--changes',json.dumps(changes,separators=(',',':'))],'mode':'low','notes':'Authorized queue UI family continuation. Original generated candidates retained. This changes only observed background alpha; glyph RGB and alpha remain pixel-identical. New output requires visual review.'}
+    (WORK/(name+'-patches.json')).write_text(json.dumps({'source':filename,'selected_pixels':len(patches),'changes':changes},indent=2)+'\n',encoding='utf-8')
+(WORK/'requests.json').write_text(json.dumps(requests,indent=2)+'\n',encoding='utf-8')

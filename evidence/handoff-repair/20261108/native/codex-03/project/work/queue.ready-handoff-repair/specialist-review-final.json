@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "role": "PIXL specialist self-review, not independent caller",
+  "packet": {
+    "path": "work/queue.ready-handoff-repair/request-review-final.json",
+    "sha256": "049a18f650fe2aab7df7f145b38e0a9f56adad3c5c28c028eb7715bbbacc529c"
+  },
+  "changes": [
+    {
+      "id": "transparent-background",
+      "old_check": "The background is transparent: pixels outside the subject have alpha 0 and no opaque matte, box or fringe fills the cell. Partial alpha on subject pixels is permitted; binary alpha is not required.",
+      "new_check": "The image has transparent negative space outside the designed subject and no unintended opaque canvas matte. Deliberate opaque badge, plate, outline or backing shapes may be part of the subject; authored partial-alpha subject edges or effects are permitted. Judge whether the transparent-background intent is preserved visually, without a binary-alpha or outline-free-glyph rule.",
+      "reason": "Transparency concerns negative space, not a ban on deliberate subject construction or partial-alpha edges. The old box/fringe wording could reject a valid subject backing or authored edge."
+    },
+    {
+      "id": "cool-blue-accent",
+      "old_check": "The dominant colour treatment visibly relates to the existing UI's cool blue accent as seen in assets/start.svg (#70b9ed). This is a visual relationship judgement, not an exact-hex or palette-count rule.",
+      "new_check": "The image visibly uses the existing UI cool blue accent coherently and perceptibly. The Start fill #70b9ed is a color cue, not an exact palette requirement. The accent need not dominate the subject or occupy a fixed area; a neutral subject with a clear cool-blue accent remains eligible.",
+      "reason": "BRIEF requires a cool-blue accent, not dominant blue fill. Removing dominant treatment preserves the outcome and permits source-conforming alternatives."
+    },
+    {
+      "id": "readability-1x-3x",
+      "old_check": "Composited on #172336, the silhouette is readable at 1x and at 3x nearest-neighbor scale, with no essential detail lost into the panel colour.",
+      "new_check": "Composited on #172336, the successful-completion check and its asymmetrical arms remain recognizable at native 1x and 3x nearest-neighbor scale. Decorative details may be subtle or disappear if the required semantic silhouette remains readable.",
+      "reason": "Essential refers to semantic landmarks, not every decoration. #172336 is the consumer display background observation."
+    },
+    {
+      "id": "ready-meaning",
+      "old_check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms to convey successful completion; it reads as completion rather than activity, failure, pause, or the idle Start control.",
+      "new_check": "Viewed alone, Ready visibly uses a check mark with asymmetrical arms and communicates successful completion. Do not require a specific arm ratio, stroke width, fill dominance, outline or backing recipe. Cross-asset distinctions against Working, Retry and Paused are required later when those assets exist; this sample check does not require those dependent assets.",
+      "reason": "Keeps the explicit motif and success meaning while separating semantic readability from unavailable family comparison."
+    },
+    {
+      "id": "sample-pixel-craft",
+      "old_check": "As a representative family sample, the image shows deliberate pixel-art construction: clean pixel clusters and edges, no noisy stray pixels, blur or downscaled-illustration artifacts, and a treatment that could plausibly be extended to Working, Retry and Paused.",
+      "new_check": "As a representative sample, the image has deliberate pixel-art construction and a plausible reusable treatment for the status family. Assess cluster placement, edges and contrast for the intended 1x/3x display; reject accidental noise or resampling blur that harms the intended treatment. Intentional detached details, authored antialiasing, shading, glows and irregular contours are eligible. Passing this sample-quality check does not approve the family style.",
+      "reason": "Expert sample-quality criterion, not owner prescription of universally hard edges or connected clusters. It retains the coherent pixel-art outcome."
+    }
+  ],
+  "citation_repairs": "All criterion citations now use exact file-local bounded pointers; PHASE supersedes historical OWNER authorization. Historical packet still retained.",
+  "art_direction": "The retained small asymmetrical check uses compact stepped clusters and a longer rising arm for a clear success landmark. At 16 pixels, silhouette and value separation do more work than surface detail. Existing Start supplies an accent cue, not a pixel-art style approval. Neutral backing and deliberate edge treatment can serve hierarchy while leaving transparent exterior. Choosing this simple blue check as a sample is expert direction, not a universal recipe.",
+  "knowledge": {
+    "silhouette-readability": "Native identity landmarks and target background matter; flat masks/multiple backgrounds are optional diagnostics, not source requirements. Fixture proof is bounded.",
+    "alpha-contract": "Alpha policy is separate from palette; compositing acceptance requires a renderer round trip, not just opaque/transparent counts. No binary-alpha requirement here.",
+    "edge-rhythm": "Preserve intentional asymmetry and corners; do not regularize every contour."
+  },
+  "viewed": [
+    {
+      "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0001.png",
+      "file_dimensions": [
+        16,
+        16
+      ],
+      "delivered_size": null
+    },
+    {
+      "path": ".pixl/assets/queue.ready/inspections/0126fe9615c7934b3e1ff0b197f769147de025c2a7064030dc2622199b90e38a/views/0002.png",
+      "file_dimensions": [
+        48,
+        48
+      ],
+      "delivered_size": null
+    }
+  ],
+  "observations": "Viewed native and enlarged panel views: recognizable short-left/long-right blue check, crisp deliberate steps and strong panel separation. Host delivery dimensions unreported; this is qualitative reassessment, not a new saved full-coverage acceptance.",
+  "measurements": {
+    "path": "assets/ready-confirmed.png",
+    "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+    "size": [
+      16,
+      16
+    ],
+    "frames": 1,
+    "alpha_counts": {
+      "0": 227,
+      "255": 29
+    },
+    "bbox_zero_based_exclusive": [
+      3,
+      4,
+      14,
+      13
+    ]
+  },
+  "integration_rerun": {
+    "command": [
+      "node",
+      "--experimental-strip-types",
+      "--experimental-specifier-resolution=node",
+      "verify-integration.mjs",
+      "assets/ready-confirmed.png"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"state\": \"succeeded\",\n  \"consumers\": [\n    {\n      \"label\": \"Ready\",\n      \"path\": \"assets/ready-confirmed.png\",\n      \"frames\": 1\n    },\n    {\n      \"label\": \"Ready\",\n      \"path\": \"assets/ready-confirmed.png\",\n      \"frames\": 1\n    }\n  ],\n  \"display\": {\n    \"cell\": [\n      16,\n      16\n    ],\n    \"scale\": 3,\n    \"filter\": \"nearest\",\n    \"frameMs\": 100,\n    \"background\": \"#172336\"\n  },\n  \"file\": \"assets/ready-confirmed.png\",\n  \"sha256\": \"fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5\",\n  \"sources\": {\n    \"src/queue.ts\": \"de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08\",\n    \"src/queue-view.ts\": \"4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49\"\n  },\n  \"scope\": \"Executed backend-to-view mapping and actual file/header lookup; no renderer, alpha compositing or artistic acceptance.\"\n}\n",
+    "stderr": ""
+  },
+  "provenance": "Controlled retained pixellab-test fixture; no upstream art or new provider call.",
+  "historical_acceptance": "Six historical verdicts and done task remain the record of the contract actually used; corrected proposal has no transplanted verdicts.",
+  "remaining": [
+    "Explicit family/style adoption and source-bound approved baseline",
+    "Working/Retry/Paused production and collective non-color comparisons at 1x/3x, including Working 4 frames at 100ms",
+    "Graphical renderer acceptance: both consumers, alpha compositing, display scale/filtering",
+    "Independent caller comparison of this exact corrected contract and final exact handoff"
+  ],
+  "further_corrections": [
+    "Transparency condition is now visual, because semantic subject/matte interpretation cannot be proved by alpha counts alone.",
+    "Historical job ID corrected to r.22e90a2a03fe453a.request.",
+    "Initial creative-brief packet unsupported by selected-asset runtime review; preserved draft, final uses complete exact future controlled arguments.",
+    "PHASE citation corrected from invalid 1-12 to actual file-local 1-11; final runtime diagnostics empty.",
+    "Stale PLAR missing/unreviewed prose is historical description superseded by delivered bytes and later evidence, not rewritten."
+  ]
+}

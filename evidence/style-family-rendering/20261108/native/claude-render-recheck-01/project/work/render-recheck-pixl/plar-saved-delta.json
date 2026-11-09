@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "role": "Delta ledger: what work/render-recheck-pixl/plar-update-saved.json changes versus the adopt proposal work/render-recheck-pixl/plar-update-proposal.json. Written by the round-2 PIXL instance (artifact-based restart; the round-1 instance could not be resumed).",
+  "base_proposal": {
+    "path": "work/render-recheck-pixl/plar-update-proposal.json",
+    "sha256": "3865fb6e7a715bf1880346f4017945cf88a9ee3d3e7e238ade1cce523ca7c69a",
+    "variant": "adopt"
+  },
+  "saved_document": {
+    "path": "work/render-recheck-pixl/plar-update-saved.json",
+    "sha256": "9ca220194cdda47c9aa704c0640ec93c6995ac80d9034efe6f4c33c9b903c083"
+  },
+  "expect_for_save": "71f493b9203f70afe77a4f25c27f4e524a5aa748604a94577bec47b4a97d10de",
+  "caller_choices_applied": [
+    {
+      "id": "D1-drop-U18",
+      "ledger_entry": "U18",
+      "where": "queue.start",
+      "field": "existing[0].role",
+      "proposal_value": "Existing vector Start control reused unchanged (sha256 ee2ba2fe...); observed rendered by both consumers for idle in the representative renderer (work/render-recheck-pixl-01): browser-rasterised with anti-aliased edges at 1x (28 intermediate pixels) and smooth re-rasterisation at 3x (84).",
+      "saved_value": "Existing vector Start control to reuse unchanged; inspected as SVG source, not rendered UI.",
+      "why": "Caller choice: keep queue.start's requirements_hash d25bb8982e69cb1f0a2fb448893bfa29432f21f498368312e58cbdba26250c42 stable; the renderer observation for Start lives in queue.start evidence (work/render-recheck-pixl-01/render.json) and next (U19), both hash-safe.",
+      "hash_covered": true
+    },
+    {
+      "id": "D2-evidence-caller-decision",
+      "ledger_entry": "A01 at_save_time",
+      "where": "queue.ready",
+      "field": "evidence[31]",
+      "saved_value": {
+        "path": "work/render-recheck-review/caller-style-decision.json",
+        "note": "Caller scoped style decision under RENDER-STAGE.md lines 4-6: ADOPT the delivered Ready sample fc5e43ae... as the family style baseline (edge treatment, stroke weight, fill/colour role, margin/footprint, alpha policy only; does not establish other members' silhouettes, motion, meaning, non-colour distinction, family continuity, PixelLab quality or production-host display). sha256 bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30."
+      },
+      "why": "Gives the approved_style_reference 'requirement' authority an addressable owner decision artifact (hash-safe field).",
+      "hash_covered": false
+    },
+    {
+      "id": "D3-evidence-caller-capture",
+      "ledger_entry": "new (caller instruction)",
+      "where": "queue.ready",
+      "field": "evidence[32]",
+      "saved_value": {
+        "path": "work/render-recheck-caller-01/render.json",
+        "note": "Independent caller renderer-recheck capture (sha256 d47c54a20abdff5d59f122d5e97415a9bdd613f696eeb088169608177f6632d9); destination.png a7f8ed81... byte-identical to the specialist capture; renderer-recheck/check.py 104/104 (work/render-recheck-caller-01-check.json)."
+      },
+      "why": "Link the caller's independent renderer-recheck capture and 104/104 re-check (hash-safe field).",
+      "hash_covered": false
+    }
+  ],
+  "kept_as_proposed": [
+    "U11 (queue.working renderer_frame_extraction unknown -> observation; hash-covered)",
+    "U19 (queue.start next)",
+    "queue.start evidence link to work/render-recheck-pixl-01/render.json",
+    "all other U* and A* entries of the adopt variant"
+  ],
+  "structural_diff_vs_proposal": [
+    {
+      "path": "$.assets[0].evidence[31]",
+      "change": "appended"
+    },
+    {
+      "path": "$.assets[0].evidence[32]",
+      "change": "appended"
+    },
+    {
+      "path": "$.assets[3].existing[0].role",
+      "change": "modified"
+    }
+  ],
+  "expected_requirements_hash_effects": {
+    "queue.start": "unchanged d25bb898... (U18 dropped)",
+    "queue.ready": "changes (as in the proposal; evidence is excluded from the hash)",
+    "queue.working": "changes (U11 + A02/A03)",
+    "queue.retry": "changes (A02/A03)",
+    "queue.paused": "changes (A02/A03)"
+  }
+}

@@ -1,0 +1,605 @@
+{
+  "version": 1,
+  "role": "calling agent independent comparison (reviewer-guided measurement correction)",
+  "recorded_at": "2026-11-08T11:23:18+00:00",
+  "assignment": {
+    "MEASUREMENT-CORRECTION.md": {
+      "path": "MEASUREMENT-CORRECTION.md",
+      "sha256": "26c59a9f1c2fef2c0d0fbb471f0655a0ea092abbda1ad5d815f7c1aba5608976",
+      "bytes": 2339
+    },
+    "MEASUREMENT-REVIEW-FEEDBACK.json": {
+      "path": "MEASUREMENT-REVIEW-FEEDBACK.json",
+      "sha256": "7ba1f550234be234a17b5f443e7cb23e366e42dc438b4cc2bce438e08167f8f8",
+      "bytes": 8365
+    },
+    "finding": "CLAUDE-RECHECK-NUMERIC-01",
+    "advisory": "CLAUDE-RECHECK-CONTINUATION-01"
+  },
+  "delegation": {
+    "specialist": "native agent type 'pixl', Claude Code subagent a631f401ad654a1a4, single foreground round (run_in_background false); the caller waited for its report before verifying",
+    "restart_note": "artifact-based cold continuation after the completed renderer recovery; not a resumed native child conversation; no SendMessage follow-up was needed",
+    "scope_given": "image-free numerical correction and PLAR proposal only; no save, handoff, PX2, provider, art or capture change"
+  },
+  "specialist_artifacts": [
+    {
+      "path": "work/measurement-correction-pixl/measure-endpoints.py",
+      "sha256": "b5df567167742bfcfab85234f4d0574aa925f9ab6e2b38cb225ecce60eeff17e",
+      "bytes": 15927,
+      "role": "deterministic measurement script (reads only the PNG)"
+    },
+    {
+      "path": "work/measurement-correction-pixl/build-artifacts.py",
+      "sha256": "9abae0614688760e5182f28ddbedb3f0dd1fc3134b4b9987403e023f354b15a2",
+      "bytes": 28328,
+      "role": "helper that composed the three JSON files"
+    },
+    {
+      "path": "work/measurement-correction-pixl/measurement-correction.json",
+      "sha256": "e953e7f00000e8bb187e7ca6bb3a95ebd98044f98879037d9e223a86d6092511",
+      "bytes": 41157,
+      "role": "NEW specialist measurement correction"
+    },
+    {
+      "path": "work/measurement-correction-pixl/plar-update-proposal.json",
+      "sha256": "2bb4a4834ff24c79d2945ac92cb904f68ac5cf09cb05ae536e53ef7b25ee4273",
+      "bytes": 66262,
+      "role": "full proposed PLAR document (saved unchanged by the caller)"
+    },
+    {
+      "path": "work/measurement-correction-pixl/plar-change-ledger.json",
+      "sha256": "ec90f8c00d0a8c1bc10fedde837905a46c49ed858e6b8cd645e74527d42c5e43",
+      "bytes": 13616,
+      "role": "old-to-new ledger E01, N01-N04"
+    }
+  ],
+  "caller_recomputation": {
+    "script": {
+      "path": "work/measurement-correction-caller/caller-endpoints.py",
+      "sha256": "0b6fe23066d47b1a3e55392fe9e2944cfed3f0505dbf5ddcd7b6edb7405ecfa7",
+      "bytes": 5679,
+      "role": "caller-written script, independent of the specialist's"
+    },
+    "output": {
+      "path": "work/measurement-correction-caller/caller-endpoints-output.json",
+      "sha256": "0cbcb71ad503a12d4ef246f46ebeada0d1f6bc11e5f1e15e0fd06a78265c1bb8",
+      "bytes": 5434
+    },
+    "specialist_script_rerun": {
+      "path": "work/measurement-correction-caller/pixl-script-rerun.json",
+      "sha256": "0b83abd11f046fb9c3ab470b8cea8de6c9855779757e8953eb304f963fca4c90",
+      "bytes": 12527,
+      "role": "python -I rerun of the specialist script"
+    },
+    "specialist_script_rerun_equals_embedded_measurements_raw": true,
+    "coordinate_convention": "zero-based pixel indices; x increases rightward, y increases downward (screen)",
+    "png_viewed_by_caller": "host Read image viewer on assets/ready-confirmed.png: a single light-blue check mark, short descending left arm, long ascending right arm; and the decoded 16x16 pixel map below",
+    "pixel_map": [
+      "................",
+      "................",
+      "................",
+      "................",
+      "............#...",
+      "...........###..",
+      "..........###...",
+      ".........###....",
+      "....#...###.....",
+      "...###.###......",
+      "....#####.......",
+      ".....###........",
+      "......#.........",
+      "................",
+      "................",
+      "................"
+    ],
+    "quoted_polyline": {
+      "left_segment": {
+        "from": [
+          4,
+          8
+        ],
+        "to": [
+          6,
+          12
+        ],
+        "delta": [
+          2,
+          4
+        ],
+        "length": 4.4721,
+        "angle_from_horizontal_deg": 63.435,
+        "direction": "descending right",
+        "is_45_degree": false
+      },
+      "right_segment": {
+        "from": [
+          6,
+          12
+        ],
+        "to": [
+          12,
+          4
+        ],
+        "delta": [
+          6,
+          -8
+        ],
+        "length": 10.0,
+        "angle_from_horizontal_deg": 53.13,
+        "direction": "ascending right",
+        "is_45_degree": false
+      },
+      "length_ratio_right_over_left": 2.2361,
+      "interior_angle_at_vertex_deg": 63.435
+    },
+    "what_the_quoted_points_are": "each of (4,8), (6,12), (12,4) is an opaque single-pixel run (tapered cap); (4,8) sits directly above the centre of the row-9 run [3,5], (12,4) directly above the centre of the row-5 run [11,13], (6,12) directly below the centre of the row-11 run [5,7]; the strokes merge in rows 10-11",
+    "row_spans_tip_to_vertex": {
+      "left": 4,
+      "right": 8,
+      "ratio": 2.0
+    },
+    "col_spans_tip_to_vertex": {
+      "left": 2,
+      "right": 6,
+      "ratio": 3.0
+    },
+    "partition_counts_x<=5_x==6_x>=7": [
+      7,
+      3,
+      19
+    ],
+    "partition_bboxes": {
+      "x<=5": {
+        "inclusive": [
+          3,
+          8,
+          5,
+          11
+        ],
+        "size": [
+          3,
+          4
+        ]
+      },
+      "x==6": {
+        "inclusive": [
+          6,
+          10,
+          6,
+          12
+        ],
+        "size": [
+          1,
+          3
+        ]
+      },
+      "x>=7": {
+        "inclusive": [
+          7,
+          4,
+          13,
+          11
+        ],
+        "size": [
+          7,
+          8
+        ]
+      }
+    },
+    "contours": {
+      "left_arm_left_edge_rows_9_12": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "left_arm_left_edge_advances_one_col_per_row": true,
+      "right_arm_right_edge_rows_5_12": [
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6
+      ],
+      "right_arm_right_edge_advances_one_col_per_row": true,
+      "right_arm_left_edge_rows_4_9": [
+        12,
+        11,
+        10,
+        9,
+        8,
+        7
+      ],
+      "right_arm_left_edge_advances_one_col_per_row": true
+    },
+    "alternative_centreline_run_centres_excluding_caps": {
+      "left_segment": {
+        "from": [
+          4,
+          9
+        ],
+        "to": [
+          6,
+          11
+        ],
+        "delta": [
+          2,
+          2
+        ],
+        "length": 2.8284,
+        "angle_from_horizontal_deg": 45.0,
+        "direction": "descending right",
+        "is_45_degree": true
+      },
+      "right_segment": {
+        "from": [
+          6,
+          11
+        ],
+        "to": [
+          12,
+          5
+        ],
+        "delta": [
+          6,
+          -6
+        ],
+        "length": 8.4853,
+        "angle_from_horizontal_deg": 45.0,
+        "direction": "ascending right",
+        "is_45_degree": true
+      },
+      "length_ratio_right_over_left": 3.0,
+      "interior_angle_at_vertex_deg": 90.0
+    },
+    "alternative_outer_contours": {
+      "left_segment": {
+        "from": [
+          3,
+          9
+        ],
+        "to": [
+          6,
+          12
+        ],
+        "delta": [
+          3,
+          3
+        ],
+        "length": 4.2426,
+        "angle_from_horizontal_deg": 45.0,
+        "direction": "descending right",
+        "is_45_degree": true
+      },
+      "right_segment": {
+        "from": [
+          6,
+          12
+        ],
+        "to": [
+          13,
+          5
+        ],
+        "delta": [
+          7,
+          -7
+        ],
+        "length": 9.8995,
+        "angle_from_horizontal_deg": 45.0,
+        "direction": "ascending right",
+        "is_45_degree": true
+      },
+      "length_ratio_right_over_left": 2.3334,
+      "interior_angle_at_vertex_deg": 90.0
+    },
+    "perpendicular_thickness_of_3px_run_on_45deg": 2.121
+  },
+  "comparison_with_specialist": {
+    "primary_quantities": {
+      "left_delta": {
+        "caller": [
+          2,
+          4
+        ],
+        "specialist": [
+          2,
+          4
+        ],
+        "expected_from_feedback": [
+          2,
+          4
+        ],
+        "agree": true
+      },
+      "right_delta": {
+        "caller": [
+          6,
+          -8
+        ],
+        "specialist": [
+          6,
+          -8
+        ],
+        "expected_from_feedback": [
+          6,
+          -8
+        ],
+        "agree": true
+      },
+      "left_length": {
+        "caller": 4.472,
+        "specialist": 4.472,
+        "expected_from_feedback": 4.472,
+        "agree": true
+      },
+      "right_length": {
+        "caller": 10.0,
+        "specialist": 10.0,
+        "expected_from_feedback": 10.0,
+        "agree": true
+      },
+      "ratio": {
+        "caller": 2.236,
+        "specialist": 2.236,
+        "expected_from_feedback": 2.236,
+        "agree": true
+      },
+      "left_angle": {
+        "caller": 63.435,
+        "specialist": 63.435,
+        "expected_from_feedback": 63.435,
+        "agree": true
+      },
+      "right_angle": {
+        "caller": 53.13,
+        "specialist": 53.13,
+        "expected_from_feedback": 53.13,
+        "agree": true
+      },
+      "interior_angle": {
+        "caller": 63.435,
+        "specialist": 63.435,
+        "expected_from_feedback": 63.435,
+        "agree": true
+      }
+    },
+    "all_primary_agree": true,
+    "secondary_checks": {
+      "visible_bbox_11x9": true,
+      "partition_7_3_19": true,
+      "partition_bbox_sizes_3x4_7x8": true,
+      "row_spans_4_8_ratio_2": true,
+      "col_spans_2_6": true,
+      "contours_one_col_per_row": true,
+      "alt_A_45deg_ratio_3": true,
+      "alt_B_45deg_ratio_2.33": true,
+      "stroke_thickness_2.121": true,
+      "quoted_points_are_single_pixel_caps": true,
+      "pixel_map_identical": true,
+      "png_sha256": true
+    },
+    "all_secondary_agree": true,
+    "convention_note": "The specialist reports the right-arm angle as -53.13 deg (signed, y-down screen convention: negative = ascending right); the caller reports its magnitude 53.13 deg with the direction 'ascending right'. Same quantity, different sign convention; not a discrepancy."
+  },
+  "quoted_claims_verified_present_in_unchanged_files": [
+    {
+      "path": "work/queue.ready-reassessment/art-assessment.json",
+      "line": 52,
+      "contains": [
+        "descends right at 45 degrees from (4,8) to the vertex",
+        "axis_length_steps\": 4"
+      ],
+      "present": true,
+      "file_sha256": "576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d"
+    },
+    {
+      "path": "work/queue.ready-reassessment/art-assessment.json",
+      "line": 53,
+      "contains": [
+        "ascends right at 45 degrees from the vertex to (12,4)",
+        "axis_length_steps\": 8"
+      ],
+      "present": true,
+      "file_sha256": "576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d"
+    },
+    {
+      "path": "work/queue.ready-reassessment/art-assessment.json",
+      "line": 54,
+      "contains": [
+        "about 1:2 (4 steps : 8 steps along the 45-degree axes)"
+      ],
+      "present": true,
+      "file_sha256": "576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d"
+    },
+    {
+      "path": "work/queue.ready-reassessment/art-assessment.json",
+      "line": 83,
+      "contains": [
+        "Both arms are exact 45-degree diagonals"
+      ],
+      "present": true,
+      "file_sha256": "576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d"
+    },
+    {
+      "path": "work/render-stage-pixl/render-review.json",
+      "line": 41,
+      "contains": [
+        "\"arm_axis_steps\": \"left about 4, right about 8 (ratio about 1:2)\""
+      ],
+      "present": true,
+      "file_sha256": "facb266d84951feaeb843a6afa52d8303f7af1ec34acaa4ad98cac9365492554"
+    },
+    {
+      "path": "work/render-stage-pixl/render-review.json",
+      "line": 47,
+      "contains": [
+        "arm ratio about 1:2",
+        "Confirmed"
+      ],
+      "present": true,
+      "file_sha256": "facb266d84951feaeb843a6afa52d8303f7af1ec34acaa4ad98cac9365492554"
+    },
+    {
+      "path": "work/render-recheck-review/caller-style-decision.json",
+      "line": 51,
+      "contains": [
+        "arm geometry",
+        "were confirmed against the decoded images"
+      ],
+      "present": true,
+      "file_sha256": "bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30"
+    },
+    {
+      "path": "work/render-stage-pixl/render-review.json",
+      "line": 106,
+      "contains": [
+        "member production comes first"
+      ],
+      "present": true,
+      "file_sha256": "facb266d84951feaeb843a6afa52d8303f7af1ec34acaa4ad98cac9365492554"
+    }
+  ],
+  "caller_judgement_on_claims": {
+    "corrected": [
+      "art-assessment.json lines 52-54: lines through (4,8)->(6,12) and (6,12)->(12,4) are 63.435 and 53.130 degrees from the horizontal, lengths sqrt(20) and 10, ratio sqrt(5)=2.236; they are not 45-degree axes and '4 steps : 8 steps along the 45-degree axes' is not a measurement of them. 4 and 8 are the vertical row spans (rows 8..12, 4..12); the column spans are 2 and 6.",
+      "art-assessment.json line 83: 'Both arms are exact 45-degree diagonals' is true of the 3-pixel-run stroke staircases between the caps (contours advance one column per row) and false of the tip-to-tip arm axes.",
+      "render-review.json line 41 arm_axis_steps 'about 4 / about 8 (ratio about 1:2)' repeats row spans under the name 'axis steps'.",
+      "render-review.json line 47 'Confirmed' for 'arm ratio about 1:2': the cross-check reproduced counts, bbox and contours, which do not verify the axis/ratio claim.",
+      "caller-style-decision.json line 51 'arm geometry ... confirmed': the arm-axis explanation had not been reconciled; the other items in that sentence (pixel map, dx=+9, gaps, 29/261, triangle 10x12, check 11x9) do reproduce."
+    ],
+    "supported": [
+      "29 opaque / 227 transparent pixels, alpha {0,255}, one colour #70b9ed",
+      "visible bbox 11x9 ([3,4,14,13] exclusive = [3,4,13,12] inclusive)",
+      "one 4-connected component",
+      "7 / 3 / 19 occupied-pixel partition by column (x<=5, x==6, x>=7): a count, not an axis length",
+      "contours advance one column per row between the caps and the merge (regular 45-degree staircases); 3-pixel interior runs, 1-pixel tapered tips; about 2.12 px perpendicular stroke",
+      "vertex pixel (6,12) as the lowest tip pixel; the strokes merge in rows 10-11",
+      "legible asymmetric check; asymmetry realised through length (row spans 4 vs 8, column spans 2 vs 6, 7 vs 19 pixels)"
+    ],
+    "about_1_to_2": "acceptable only as approximate visual-proportion language; exact as a ratio of row spans (4:8); measured tip-to-tip axis ratio is 2.24, run-centre ratio 3.0, outer-contour ratio 2.33",
+    "distinct_measurements": [
+      "lines through the quoted tip pixels (deltas, lengths, angles, sqrt(5) ratio)",
+      "occupied-pixel partition counts (7/3/19)",
+      "bounding boxes and row/column spans (3x4 and 7x8; 4/8 rows; 2/6 columns)",
+      "stroke contour staircases (one column per row; 45-degree construction; 2.12 px thickness)",
+      "alternative centrelines (run centres excluding caps: 45 deg, ratio 3.0; outer contours: 45 deg, ratio 2.33; principal axes: 59.0/46.5 deg, ratio 2.76)"
+    ]
+  },
+  "adoption_scope": {
+    "style_decision": "unchanged: ADOPT (scoped) the delivered Ready sample fc5e43ae... as the family style baseline (hard binary edges, about 2 px perpendicular stroke built from 3-pixel runs on 45-degree staircases, flat single #70b9ed fill, footprint 9-12 px in the 12x12 safe area, transparent exterior, binary alpha in practice). These properties are re-measured as true; the corrected axis explanation does not touch them.",
+    "not_a_rejection": true,
+    "no_other_host_style_imposed": true,
+    "art_unchanged": {
+      "path": "assets/ready-confirmed.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+    },
+    "verdicts_unchanged": "six historical verdicts ready.delivery.review.verdict.0-5 remain bound to the historical contract 806a1f2d..."
+  },
+  "plar_save_by_caller": {
+    "operation": "kit CLI `pixl.py plar save` (same operation as pixl_plar_save) with --expect bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "document_saved": {
+      "path": "work/measurement-correction-pixl/plar-update-proposal.json",
+      "sha256": "2bb4a4834ff24c79d2945ac92cb904f68ac5cf09cb05ae536e53ef7b25ee4273",
+      "bytes": 66262
+    },
+    "save_result": {
+      "path": "work/measurement-correction-caller/plar-save-result.json",
+      "sha256": "c56a8ede1fd204877c4654d7121e52d391c33ed2227333e19067572aee692745",
+      "bytes": 16242
+    },
+    "old_hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+    "new_hash": "2bb4a4834ff24c79d2945ac92cb904f68ac5cf09cb05ae536e53ef7b25ee4273",
+    "new_hash_expected": "2bb4a4834ff24c79d2945ac92cb904f68ac5cf09cb05ae536e53ef7b25ee4273",
+    "history_retained": {
+      "path": ".pixl/plar-history/bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169.json",
+      "sha256": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+      "matches_name": true
+    },
+    "diff_regions_vs_old": [
+      "queue.ready next (N01)",
+      "queue.ready evidence append (E01)",
+      "queue.working next (N02)",
+      "queue.retry next (N03)",
+      "queue.paused next (N04)"
+    ],
+    "hash_covered_changes": [],
+    "requirements_hash_by_row_after_save_fresh_reads": {
+      "queue.ready": "29a330a3e5c378c80f59ed6d6d42c539ea99d7d0e5d88575d98aaca60ec0661e",
+      "queue.working": "c6b5121c05396b2d21c68669dc9deffb8f71e9e44ddeb48ada7fec44d01126e5",
+      "queue.retry": "c0404a1486c4a700a5342e3926de3abe363d8362a2ed11ef3a9756ede308bd4a",
+      "queue.paused": "0bb25469522009a4ad8830b5d92b9e393da336d45d69179029bb82c7e5ecd935",
+      "queue.start": "d25bb8982e69cb1f0a2fb448893bfa29432f21f498368312e58cbdba26250c42"
+    },
+    "requirements_hash_changed": false,
+    "save_result_changes": {
+      "baseline_hash": "bb9978992a90dd4ee07ad62d732579fc7a90b72643dc696d91f9f50c7ebd4169",
+      "changed_sources": [],
+      "direct_assets": [],
+      "affected_assets": [],
+      "unaffected_assets": [
+        "queue.paused",
+        "queue.ready",
+        "queue.retry",
+        "queue.start",
+        "queue.working"
+      ],
+      "added_assets": [],
+      "removed_assets": [],
+      "coverage_changed": false,
+      "scope": "Tracked source bindings and declarations only; inspect source/coverage for newly introduced or dynamic consumers."
+    },
+    "considered_and_kept": "approved_style_reference.scope and the member references[].instructions ('3-pixel runs on 45-degree diagonals') describe stroke construction, which is re-measured as true; no requirement text states the axis or 4:8 axis-step claim"
+  },
+  "px2_state": {
+    "path": ".pixl/assets/queue.ready/state.px",
+    "sha256": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "expected": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "revision": 14,
+    "changed": false,
+    "families": [],
+    "pending_jobs": []
+  },
+  "historical_unchanged": [
+    {
+      "path": "work/queue.ready-reassessment/art-assessment.json",
+      "sha256": "576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d",
+      "bytes": 12224
+    },
+    {
+      "path": "work/render-stage-pixl/render-review.json",
+      "sha256": "facb266d84951feaeb843a6afa52d8303f7af1ec34acaa4ad98cac9365492554",
+      "bytes": 26659
+    },
+    {
+      "path": "work/render-recheck-review/caller-style-decision.json",
+      "sha256": "bcb41bead8a81709f760cd72058e7da94b0a649b3ed93073ee9fac50a47d8f30",
+      "bytes": 6501
+    },
+    {
+      "path": "FAMILY-RESULT.json",
+      "sha256": "f8de9301c8c7d3875082e7ab8f2f28eb0e3d9bf9bd06b95339fdf1e6e3f252eb",
+      "bytes": 20377
+    },
+    {
+      "path": "RENDER-RECHECK-RESULT.json",
+      "sha256": "58fb1ef3a9cc627d28f32567b14141ef18ac99699d4331f0d3d262e8e7747c55",
+      "bytes": 15708
+    },
+    {
+      "path": ".pixl/handoffs/ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67.json",
+      "sha256": "ea4a61e117eba8f611f2bee1a43ac8e2f1a6296955dc57c9212142f662baeb67",
+      "bytes": 15049
+    },
+    {
+      "path": "assets/ready-confirmed.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "bytes": 210
+    }
+  ],
+  "next_order_clarified": "Review the current member requirements of queue.working, queue.retry and queue.paused against their sources and the approved_style_reference; save the applicable member/collective plans through the existing family-delivery operation BEFORE any member production; then produce members only under explicit new authorization. Working, Retry and Paused remain missing, not rejected; no family production or collective acceptance is assigned here. render-review.json line 106 ('member production comes first') is superseded as a dispatch order by this PLAR next wording.",
+  "discrepancies": [],
+  "verdict": "consistent"
+}

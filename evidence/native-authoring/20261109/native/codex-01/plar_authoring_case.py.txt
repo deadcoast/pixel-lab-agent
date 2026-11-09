@@ -1,0 +1,139 @@
+"""Native connected authoring in a separate branch of the retained consumer."""
+
+import copy
+import json
+import shutil
+from pathlib import Path
+
+from evaluations.host_trials import inventory, write_json
+
+GUIDANCE = """This is an explicit native authoring evaluation in a copied consumer.
+AUTHORING-STAGE.md is the current assignment. Use the packaged PIXL/PLAR skills
+and the connected authoring MCP tools. The local server uses the real frozen
+runtime with two declared evaluation events: one failed allocation write after
+plan publication, and a caller requirement update after the first staged request.
+Recover from observed results; these events are not production policy. Work only
+in this consumer. Preserve original plar.txt, assets, sources, old records and
+failed evidence. Mutable planning belongs to authoring-plar.txt and new records.
+Official tool declarations are retained in official-discovery.json. This task
+ends with request preparation/recovery, not another generation or acceptance.
+Use foreground native PIXL delegation and finish the independent caller review.
+No global settings, package installation or persistent-memory writes.
+"""
+
+PROMPT = """As the calling agent, complete AUTHORING-STAGE.md with a native PIXL
+specialist. Independently compare its exact family plan, input identities, provider
+arguments and review criteria against the source assignment before adopting them.
+Use the new authoring MCP interface, recover any reported publication interruption,
+then reconcile the observed requirement update without losing the saved request.
+Finish AUTHORING-RESULT.json with the actual authored records, exact packet and
+input hashes, caller comparison, current allocation/job status and honest next
+action. Wait for the specialist and complete your comparison before ending.
+"""
+
+
+def setup(project, destination, python, resume):
+    if resume:
+        raise ValueError("Authoring begins from the frozen consumer, not a prior trial")
+    root = Path(__file__).resolve().parents[1]
+    source = root / "evidence/pixellab-family-production/20261108/project"
+    excluded = (".agents", ".codex", "__pycache__", "AGENTS.md", "SESSION.md")
+    shutil.copytree(
+        source, project, dirs_exist_ok=True, ignore=shutil.ignore_patterns(*excluded)
+    )
+    original = json.loads((project / "plar.txt").read_text(encoding="utf-8"))
+    branch = copy.deepcopy(original)
+    # The original allocation and accepted production stay byte-identical.
+    # This separate requirements index is a prospective authoring branch, not a reset.
+    for asset in branch["assets"]:
+        asset.pop("production", None)
+        if asset["id"] in ("queue.working", "queue.retry", "queue.paused"):
+            asset["status"] = "todo"
+            asset["next"] = (
+                "Author the prospective production graph; accepted original delivery is preserved separately."
+            )
+    write_json(project / "authoring-plar.txt", branch)
+    shutil.copyfile(
+        root / "evidence/native-authoring/20261109/official-discovery.json",
+        project / "official-discovery.json",
+    )
+    shutil.copyfile(Path(__file__), destination / "plar_authoring_case.py.txt")
+    shutil.copyfile(
+        root / "evaluations/authoring_mcp.py", destination / "authoring_mcp.py"
+    )
+    write_json(
+        destination / "origin.json",
+        {
+            "source": str(source),
+            "files": inventory(source, excluded),
+            "branch_path": "authoring-plar.txt",
+            "branch_change": "Separate copy with production links removed and three stage statuses planned; semantic requirements and original files preserved.",
+        },
+    )
+    (project / "AUTHORING-STAGE.md").write_text(
+        """# Author the queue-family workflow through the new interface
+
+The accepted original queue family is retained. Replace the prior manual wiring
+with a new prospective plan in this isolated authoring branch. This assignment is
+about authoring and recoverability, not regenerating the accepted assets.
+
+Use authoring-plar.txt for new Working, Retry and Paused selections. Preserve the
+original plar.txt and every existing record/file. Read the actual source consumers,
+scoped style decision and production findings. Existing Ready and the accepted
+Working seed are available inputs, with their actual provenance and prior reviews.
+Use the established contracts/adoption/destination choices when applicable. Do
+not turn the reference's measured colors, alpha or cluster count into new owner
+requirements. Preserve the qualitative cool-blue accent, state distinctions,
+transparency, actual frame slicing/timing and both consumer responsibilities.
+
+Author a connected plan for Working, Retry and Paused plus collective delivery
+including Ready. Bind each final output to its current authoring-plar selection.
+Working's stage must depend on the existing accepted seed output, not an invented
+future candidate. Preserve member-specific checks and collective continuity,
+non-color distinction and destination review. Existing Start remains unchanged.
+Use production-plan / stage-prepare through local MCP; do not hand-build the
+equivalent T/F graph to bypass the new interface. The schema/reference is in the
+installed kit. The installed kit is authoritative; old CURRENT-HANDOFF points to
+the earlier production kit and describes that already-completed assignment.
+
+Choose and prepare Working's next executable official PixelLab operation from
+the retained seed and current declarations in official-discovery.json. Use the
+host's pixel-art knowledge and the prior failed/successful approaches to justify
+your choice. Include actual input image bytes via a supported data/base64 input
+when practical; an old upload handle or local filename is not fresh transport.
+If the provider result needs assembly to the four-frame destination, retain the
+exact intended frame-selection/assembly policy and its separate review obligations.
+Do not label preparation, schema validity or a prior review as new output acceptance.
+
+The evaluation server will fail one allocation write after saving your plan;
+recover the same operation without duplicate records or changing its meaning.
+After the first successfully prepared request it will supply a scoped caller
+requirement update. Read and reconcile that observation, preserve the original
+plan/request, and report what can and cannot proceed. No revised generation is
+assigned in this continuation. Local readiness/dispatch checks may establish that
+the old request is blocked; do not call a remote generation tool.
+
+The parent caller owns the independent comparison and AUTHORING-RESULT.json.
+Return exact project-relative paths/hashes, generated task/output/job IDs, original
+and current requirement identities, observed recovery, remaining checks and next
+action. Keep preparing this branch separate from the already-accepted original
+package. Do not end with only a specialist self-audit or a running background child.
+""",
+        encoding="utf-8",
+    )
+    return None
+
+
+def local_server(project, destination, python, package):
+    return {
+        "command": str(python),
+        "args": [
+            str(destination / "authoring_mcp.py"),
+            "--root",
+            str(project),
+            "--kit",
+            str(package),
+            "--events",
+            str(destination / "evaluation-events.jsonl"),
+        ],
+    }

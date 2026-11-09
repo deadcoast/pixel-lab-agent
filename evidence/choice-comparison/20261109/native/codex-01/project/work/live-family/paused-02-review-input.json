@@ -1,0 +1,32 @@
+{
+  "reviewer": "actor",
+  "observed_at": "2026-11-08T12:48:36.755Z",
+  "observations": [
+    {
+      "view": "live.paused-02.packet.view.2",
+      "delivered_size": [
+        48,
+        48
+      ],
+      "note": "Viewed opaque intermediate: two separated blue bars have readable pause meaning but magenta fills the entire background. This is the intentionally retained pre-cutout output."
+    }
+  ],
+  "verdicts": [
+    {
+      "criterion": "family.paused.q.geometry",
+      "status": "pass",
+      "reason": "Actual opaque intermediate is one16x16 image.",
+      "supersedes": null
+    },
+    {
+      "criterion": "family.paused.q.visual",
+      "status": "fail",
+      "reason": "Opaque magenta intermediate fails final transparent-exterior criterion. Glyph is intact and distinguishable; perform the planned background-only cutout without changing its60 blue pixels.",
+      "supersedes": null
+    }
+  ],
+  "next_action": "Guarded background-only cutout through official PixelLab workbench; preserve intermediate and inspect new candidate.",
+  "limitations": [
+    "Intermediate inspected at3x only; no final visual or engine acceptance claimed."
+  ]
+}

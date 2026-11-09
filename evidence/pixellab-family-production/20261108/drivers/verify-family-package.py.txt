@@ -1,0 +1,21 @@
+import hashlib
+import json
+import shutil
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]/'evidence/pixellab-family-production/20261108/project'
+WORK=ROOT/'work/live-family'
+receipt=json.loads((WORK/'family-snapshot.json').read_text(encoding='utf-8'))
+manifest_path=ROOT/receipt['manifest']
+manifest=json.loads(manifest_path.read_text(encoding='utf-8'))
+names=['ready-confirmed.png','working.png','error-retry.png','paused.png']
+checks=[]
+for entry,name in zip(manifest['files'],names,strict=True):
+    source=(manifest_path.parent/entry['path']).resolve()
+    assert source.is_relative_to(manifest_path.parent)
+    target=ROOT/'assets'/name
+    assert hashlib.sha256(source.read_bytes()).hexdigest()==entry['sha256']==hashlib.sha256(target.read_bytes()).hexdigest()
+    shutil.copyfile(source,target)
+    checks.append({'copied_from_package':str(source.relative_to(ROOT)).replace('\\','/'),'destination':'assets/'+name,'sha256':entry['sha256'],'candidate':entry['candidate']})
+(WORK/'package-integration.json').write_text(json.dumps({'manifest':receipt['manifest'],'manifest_sha256':hashlib.sha256(manifest_path.read_bytes()).hexdigest(),'checks':checks,'start_preserved_sha256':hashlib.sha256((ROOT/'assets/start.svg').read_bytes()).hexdigest()},indent=2)+'\n',encoding='utf-8')
+print(json.dumps(checks))

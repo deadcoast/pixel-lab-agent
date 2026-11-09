@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "finding": "Prior frozen Claude launch whitelist excludes SendMessage in both --tools and --allowedTools. Do not interpret absent same-instance continuation as a model failure when the harness did not expose the relevant tool.",
+  "trials": [
+    {
+      "trial": "claude-01",
+      "launch": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\handoff-repair\\20261108\\native\\claude-01\\launch.json",
+        "sha256": "2df1a15ee46035daa0e4f9daace19a461a263a9cd7af6e41f24787c9769f677a"
+      },
+      "host_version": "2.1.318 (Claude Code)",
+      "tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent",
+      "allowed_tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,mcp__pixl-local__*,mcp__pixellab-test__*",
+      "send_message_exposed": false
+    },
+    {
+      "trial": "claude-02",
+      "launch": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\handoff-repair\\20261108\\native\\claude-02\\launch.json",
+        "sha256": "e5d8d15f4eb843a0b4f66ae111a5ddc371d65065a6d9bd1798602a479313f936"
+      },
+      "host_version": "2.1.318 (Claude Code)",
+      "tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent",
+      "allowed_tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,mcp__pixl-local__*,mcp__pixellab-test__*",
+      "send_message_exposed": false
+    },
+    {
+      "trial": "claude-03",
+      "launch": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\handoff-repair\\20261108\\native\\claude-03\\launch.json",
+        "sha256": "b6e681385ccfbb0ebadd1764e8f6930d3b25467c78ff73925bd686f293dc873f"
+      },
+      "host_version": "2.1.318 (Claude Code)",
+      "tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent",
+      "allowed_tools": "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,mcp__pixl-local__*,mcp__pixellab-test__*",
+      "send_message_exposed": false
+    }
+  ],
+  "parent_reported_context": "Parent independently established from installed Claude2.1.318 and current official documentation that SendMessage is the continuation mechanism, and reports exposing it in active04 isolated runner. This evaluator verifies prior frozen whitelist here; active04 artifacts are not inspected.",
+  "observed_native_behavior": "Claude03 used two Agent calls with distinct returned IDs and same-role artifact handoff. Exact public behavior remains preserved in reuse-observation.json.",
+  "scope": "A harness limitation supplement, not a change to earlier semantic/routing grades."
+}

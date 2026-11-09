@@ -20,6 +20,8 @@ Read [the project review](docs/PROJECT-REVIEW.md) for the operational model, obs
 ## Continuity of development work
 
 - Read [TODO.md](TODO.md) for the current overall objective, open work and next action before starting a development increment. Detailed evaluation specifications retain their narrower scopes and evidence.
+- Follow the [IDENTIFY workflow](docs/workflows/IDENTIFY.md): [IDENTIFIED](docs/IDENTIFIED.md) and [PLAN](PLAN.md) feed the milestone-ordered [SHELVED](SHELVED.md), which supplies TODO's next work. Keep TODO changes contextual; preserve existing task IDs and results.
+- Continue the active PLAN across increments. When a TODO slice completes, pull its next tasks from SHELVED; run a new full IDENTIFY only after PLAN's required exits are complete. Maintain narrow findings/evidence within the current cycle instead of restarting the audit.
 - Carry the user's outstanding objective across turns. A completed patch, test run or bounded trial does not complete the overall product request.
 - Update the relevant open item when its implementation or evidence changes. Leave unmet acceptance criteria open; record the continuation context instead of quietly substituting a smaller task.
 - In progress and final reports, distinguish changed implementation, observed verification, remaining work and the next action. Do not present an existing suite's total as newly completed work.

@@ -22,10 +22,18 @@ def parser():
     q.add_argument("path")
     q.add_argument("focus")
     q.add_argument("--budget", type=int)
+    q.add_argument("--view", choices=("complete", "authoring"), default="complete")
+    q.add_argument("--plar", dest="plar_path")
+    q.add_argument("--asset", dest="asset_id")
     q.add_argument("--root")
     q = sub.add_parser("request-review", help="Resolve exact request/criteria sources for caller comparison.")
     q.add_argument("packet")
     q.add_argument("--asset", dest="asset_id")
+    q.add_argument("--plan")
+    q.add_argument("--job")
+    q.add_argument("--comparison")
+    q.add_argument("--view", choices=("complete", "changes"), default="complete")
+    q.add_argument("--against-plan")
     q.add_argument("--plar", default="plar.txt")
     q.add_argument("--root", required=True)
     q = sub.add_parser("ready")
@@ -66,6 +74,17 @@ def parser():
     q = sub.add_parser("workflow")
     q.add_argument("path")
     q.add_argument("--root")
+    q = sub.add_parser("review-context", help="Read exact candidate/family criteria, bindings and current acceptance.")
+    q.add_argument("path")
+    q.add_argument("candidate")
+    q.add_argument("--root", required=True)
+    q = sub.add_parser("candidate-review", help="Retain explicit candidate/family observations and optionally nominate or complete.")
+    q.add_argument("store")
+    q.add_argument("candidate")
+    q.add_argument("review")
+    q.add_argument("observation", metavar="REVIEW_JSON")
+    q.add_argument("--expect", required=True)
+    q.add_argument("--root", required=True)
     q = sub.add_parser("inspection", help="Read retained candidate views and reviews.")
     q.add_argument("path")
     q.add_argument("packet", nargs="?")
@@ -104,6 +123,19 @@ def parser():
     q.add_argument("candidate")
     q.add_argument("--expect", required=True)
     q.add_argument("--root")
+    q = sub.add_parser("production-plan", help="Author connected family stages from reviewed JSON.")
+    q.add_argument("store")
+    q.add_argument("plan", metavar="PLAN_JSON")
+    q.add_argument("--expect", required=True)
+    q.add_argument("--root", required=True)
+    q = sub.add_parser("stage-prepare", help="Bind reviewed stage inputs and retain a durable request.")
+    q.add_argument("store")
+    q.add_argument("plan")
+    q.add_argument("stage")
+    q.add_argument("job")
+    q.add_argument("packet", metavar="PACKET_JSON")
+    q.add_argument("--expect", required=True)
+    q.add_argument("--root", required=True)
     q = sub.add_parser("job-prepare", help="Save provider intent without executing it.")
     q.add_argument("store")
     q.add_argument("job")
@@ -171,10 +203,11 @@ def parser():
                 "--since", help="Compare the queue with a retained PLAR hash."
             )
         elif action == "handoff":
+            action_parser.add_argument("--result-path", help="Save exact result under a fresh project-relative path.")
             action_parser.add_argument("details", metavar="DETAILS_JSON")
             action_parser.add_argument("--asset", dest="asset_id", required=True)
             action_parser.add_argument("--requirements", dest="requirements_hash", required=True)
-            action_parser.add_argument("--expect", required=True)
+            action_parser.add_argument("--expect", required=True, help="Current production.continuation.state_hash from the selected PLAR read, not its file hash.")
         elif action == "prepare":
             action_parser.add_argument("--asset", dest="asset_id", required=True)
             action_parser.add_argument(
@@ -238,13 +271,26 @@ def parser():
     q.add_argument("--out", required=True)
     q = sub.add_parser("mcp")
     q.add_argument("--root", required=True)
+    for command in ("context", "request-review", "review-context", "candidate-review", "family", "family-snapshot"):
+        sub.choices[command].add_argument("--result-path", help="Save exact result under a fresh project-relative path; requires --root.")
+    for command, command_parser in sub.choices.items():
+        for action in command_parser._actions:
+            if action.dest == "expect" and not action.help:
+                action.help = ("Expected source-file byte SHA-256." if command == "source" else
+                               "Current canonical production state hash; not a PLAR/file/binding hash.")
+    for action in actions.choices["save"]._actions:
+        if action.dest == "expect":
+            action.help = "Current PLAR file byte SHA-256 from plar read.hash, or new for first save."
     return p
 
 
 def main(argv=None):
     a = parser().parse_args(argv)
+    operation = "plar_" + a.plar_action if a.command == "plar" else a.command
     try:
         cmd, output, binary = a.command, None, None
+        if getattr(a, "result_path", None):
+            service.result_destination(a.root, a.result_path)
         if cmd == "mcp":
             from .mcp import serve
 
@@ -253,13 +299,23 @@ def main(argv=None):
         if cmd == "request-review":
             from .request_review import report
 
-            output = report(a.root, a.packet, a.asset_id, a.plar)
+            output = report(a.root, a.packet, a.asset_id, a.plar, a.plan, a.job, a.comparison, a.view, a.against_plan)
         elif cmd == "validate":
             output = service.inspect_document(a.path, a.root)
+        elif cmd == "context" and a.view == "authoring":
+            if a.root is None:
+                raise PixlError("authoring_context", "--root is required for authoring context")
+            from .authoring_context import report
+
+            if a.budget is not None:
+                raise PixlError("context_budget", "budget applies only to complete wire context")
+            output = report(a.path, a.focus, a.root, a.plar_path, a.asset_id)
         elif cmd in ("context", "ready", "impact", "decode"):
             doc = service.load_document(a.path)
             graph.validate(doc, getattr(a, "root", None))
             if cmd == "context":
+                if a.plar_path is not None or a.asset_id is not None:
+                    raise PixlError("context_view", "selection arguments require --view authoring")
                 binary = codec.encode(graph.context(doc, a.focus, a.budget))
             elif cmd == "ready":
                 output = {"ready": service.workflow(a.path, a.root)["ready"] if doc.format == 2 else graph.ready(doc), "hash": codec.digest(doc)}
@@ -291,6 +347,14 @@ def main(argv=None):
             output = complete(a.store, a.expect, a.task, a.candidates, a.root)
         elif cmd == "workflow":
             output = service.workflow(a.path, a.root)
+        elif cmd == "review-context":
+            from . import candidate_review
+
+            output = candidate_review.context(service.load_document(a.path), a.root, a.candidate)
+        elif cmd == "candidate-review":
+            from . import candidate_review
+
+            output = candidate_review.submit(a.store, a.expect, a.candidate, a.review, service.read_json(a.observation), a.root)
         elif cmd == "inspection":
             output = service.inspection_report(a.path, a.root, a.packet)
         elif cmd == "inspection-prepare":
@@ -321,6 +385,14 @@ def main(argv=None):
             from . import delivery
 
             output = delivery.snapshot(a.store, a.expect, a.output, a.candidate, a.root)
+        elif cmd == "production-plan":
+            from . import production_plan
+
+            output = production_plan.author(a.store, a.expect, service.read_json(a.plan), a.root)
+        elif cmd == "stage-prepare":
+            from . import production_plan
+
+            output = production_plan.prepare(a.store, a.expect, a.plan, a.stage, a.job, service.read_json(a.packet), a.root)
         elif cmd == "job-prepare":
             output = service.job_prepare(
                 a.store,
@@ -443,6 +515,10 @@ def main(argv=None):
             from .poc import run_all
 
             output = run_all(a.out)
+        output = service.describe_result(operation, output)
+        if getattr(a, "result_path", None):
+            output = service.save_result(output, a.root, a.result_path, binary)
+            binary = None
         data = (
             binary
             if binary is not None
@@ -458,10 +534,12 @@ def main(argv=None):
         return (
             1
             if isinstance(output, dict)
-            and (output.get("pass") is False or output.get("status") == "fail")
+            and (output.get("pass") is False or output.get("status") == "fail" or output.get("result_saved") is False)
             else 0
         )
     except (PixlError, OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+        if isinstance(error, PixlError):
+            error = service.operation_error(operation, error)
         print(
             json.dumps(
                 {"error": getattr(error, "code", "operation"), "detail": str(error)}

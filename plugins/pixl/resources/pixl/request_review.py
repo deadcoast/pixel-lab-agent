@@ -87,7 +87,23 @@ def source_evidence(root, source, expected, budget=16384):
     }
 
 
-def report(root, packet_path, asset_id=None, path="plar.txt"):
+def report(root, packet_path, asset_id=None, path="plar.txt", plan=None, job=None, comparison=None, view="complete", against_plan=None):
+    if view not in ("complete", "changes"):
+        raise graph.PixlError("request_review", "view must be complete or changes")
+    if view == "changes":
+        if plan is None or against_plan is None:
+            raise graph.PixlError("request_review", "changes view requires plan and against_plan")
+        from . import successor_review
+
+        return successor_review.report(root, packet_path, plan, against_plan, job, comparison)
+    if against_plan is not None:
+        raise graph.PixlError("request_review", "against_plan requires changes view")
+    if plan is not None:
+        from . import production_review
+
+        return production_review.report(root, packet_path, plan, job, comparison)
+    if job is not None or comparison is not None:
+        raise graph.PixlError("request_review", "job/comparison require a connected plan")
     from jsonschema import Draft202012Validator
 
     from .plar_prepare import SCHEMA, _artifact, _json_file, _require

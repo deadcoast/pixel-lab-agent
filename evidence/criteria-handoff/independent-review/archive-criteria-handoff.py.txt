@@ -1,0 +1,29 @@
+"""Freeze the completed criteria-repair trial without replacing earlier evidence."""
+import json
+from hashlib import sha256
+from pathlib import Path
+from zipfile import ZIP_DEFLATED, ZipFile
+
+repo = Path(__file__).resolve().parents[1]
+base = repo / 'evidence/criteria-handoff/20261109'
+source = base / 'native/claude-01'
+assert (source/'record.json').is_file()
+target = base / 'archives'
+target.mkdir(exist_ok=True)
+archive = target/'claude-01.zip'
+manifest = target/'claude-01-manifest.json'
+assert not archive.exists() and not manifest.exists(), 'Never replace an attempt archive'
+files = {}
+with ZipFile(archive, 'x', compression=ZIP_DEFLATED, compresslevel=6) as output:
+    for path in sorted(source.rglob('*')):
+        if path.is_file() and '__pycache__' not in path.parts:
+            relative = path.relative_to(source).as_posix()
+            files[relative] = sha256(path.read_bytes()).hexdigest()
+            output.write(path, relative)
+with ZipFile(archive) as retained:
+    assert all(sha256(retained.read(name)).hexdigest() == digest for name,digest in files.items())
+value = {'attempt':source.relative_to(repo).as_posix(),'archive':archive.name,
+         'archive_sha256':sha256(archive.read_bytes()).hexdigest(),'files':files,
+         'verification':'Every archived file re-read and matched to its original bytes'}
+manifest.write_text(json.dumps(value,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'files':len(files),'archive_sha256':value['archive_sha256']}))

@@ -1,0 +1,136 @@
+{
+  "status": "delivered caller-requested clarification/citation correction",
+  "reviewer": "/root/guided_pixl_review",
+  "native_role": "generic native collaboration child applying shared PIXL profile/skill; no named-role qualification",
+  "original_mapping": {
+    "path": "work/choice-comparison/guided/specialist-mapping.json",
+    "sha256": "dff48fb2a6310beed6ca1a24a66cdb5828e9399f350ad56bf2bfecbb65bb3f72"
+  },
+  "original_review": {
+    "path": "work/choice-comparison/guided/specialist-review.json",
+    "sha256": "7be4180aaf5a7c0b5638fbfd0cdeb8de2a29d878573b9490b29fca727d782d3f"
+  },
+  "reason": "Caller independently found imprecise line ranges and overgeneralized examples in static rows. I reopened the actual numbered lines and agree with these corrections. Original artifacts remain historical and unchanged.",
+  "citation_corrections": [
+    {
+      "id": "citation-alpha",
+      "original_claim": "SUCCESSOR-ADOPTION.md:25-31 explicitly retains split alpha checks",
+      "correction": "The explicit split wording is at31-35, particularly32-34. The prior range was imprecise, not evidence of an absent requirement.",
+      "evidence": {
+        "path": "SUCCESSOR-ADOPTION.md",
+        "sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+        "lines": [
+          31,
+          35
+        ],
+        "text": "   C/I/Q/S/D/E/V records. Scope normal 100ms animation separately from stationary\n   reduced-motion display. Keep the three split alpha diagnostics/visual decisions,\n   full alpha/selective AA, in-cell margins, scoped expert pacing, qualitative\n   coherence and inferred Start distinction. Retain an exact mapping from all 20\n   original criteria to the new literal checks, plus reduced-motion requirements."
+      }
+    },
+    {
+      "id": "citation-reuse",
+      "original_claim": "SUCCESSOR-ADOPTION.md:39-44 supports exact reuse/provenance/no new generation",
+      "correction": "Use44-46 for exact asset reuse and original-byte provenance with no new-contract generation claim; proposal-r4 /reuse_assets and /request supply operation details.",
+      "evidence": {
+        "path": "SUCCESSOR-ADOPTION.md",
+        "sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+        "lines": [
+          44,
+          46
+        ],
+        "text": "5. Reuse the exact existing PixelLab-produced assets if they satisfy the successor.\n   Retain new candidate X.of identities and provenance to the original bytes for\n   new outputs; do not claim a provider generated them under the new contract."
+      },
+      "additional_pointers": [
+        {
+          "path": "work/focused-successor/specialist-proposal-r4.json",
+          "sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+          "json_pointer": "/reuse_assets"
+        },
+        {
+          "path": "work/focused-successor/specialist-proposal-r4.json",
+          "sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+          "json_pointer": "/request"
+        }
+      ]
+    },
+    {
+      "id": "citation-consumers",
+      "original_claim": "FOCUSED-SUCCESSOR.md:33-37 supports shared consumers/live preference behavior",
+      "correction": "Use35-41 for preservation/versioned consumer and both statusCell/compactStatus with live preference changes at38-39.",
+      "evidence": {
+        "path": "FOCUSED-SUCCESSOR.md",
+        "sha256": "fb2a0401f8f7280dd4b12d137b9fb3457bc3f2689875d20254d33b2a5521a19a",
+        "lines": [
+          35,
+          41
+        ],
+        "text": "   request, criterion, receipt and accepted asset. Source records bind current file\n   bytes: keep old src/queue-view.ts and renderer/ untouched, implement the successor\n   in src/queue-view-successor.ts and renderer-successor/, and explicitly identify\n   the new destination. Use the same backend state machine and both statusCell and\n   compactStatus consumers; respect prefers-reduced-motion and changes while open.\n   Reuse reviewed existing art when it satisfies the new criteria. No invented\n   provider observation, new generation claim, in-place job rebind or acceptance"
+      }
+    }
+  ],
+  "static_scope_corrections": [
+    {
+      "before": {
+        "id": "authoring-01.retry.q.geometry",
+        "record_sha256": "b9181108856b1221fe79ffbe6b773d347dfd2b1cab6cb6faaf8be1de7ad072dd",
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas."
+      },
+      "after": {
+        "id": "provenance-correction.retry.q.geometry",
+        "record_sha256": "396c5a90cc691afd593ed728f95a6b4042fdfa708bd8e5bfed55af5511020ef3",
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas."
+      },
+      "scope_correction": "The literal static geometry check is unchanged: exactly one static16x16 PNG, no strip/animation/extra canvas. Source and Q identities differ between plans. Internal negative space remains composition; this static row adds no reduced-motion phase behavior.",
+      "discriminating_alternative": "A sparse glyph inside a16x16 PNG satisfies canvas geometry even with generous internal transparent margins. A17x16 PNG or a multi-cell strip fails this static rule for source-supported dimensions/frame-count reasons.",
+      "authority": "BRIEF.md:3,7 and successor view static descriptor/display"
+    },
+    {
+      "before": {
+        "id": "authoring-01.retry.q.consumers",
+        "record_sha256": "63bb9a45e56d01026c98299c05c79c19cf0bd6ae4b2abb56242af3c543d4014f",
+        "check": "Exercise error -> failed through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Retry, frames 1, path assets/error-retry.png (not the superseded assets/retry.png), nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior."
+      },
+      "after": {
+        "id": "provenance-correction.retry.q.consumers",
+        "record_sha256": "65d28437aa8b76e17e6a74bfb768d667737d83c711a67e82de5bcfa7bdad96c9",
+        "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1)."
+      },
+      "scope_correction": "error->failed through stateAfter maps both statusCell and compactStatus to label Retry, frames1, destination renderer-successor/assets/error-retry.png; earlier path assets/error-retry.png. One static frame and meaning are unchanged; successor binds the versioned fixture and explicit decode/nearest/compositing checks. Working normal/reduced switching clauses do not add an animation requirement to this static member.",
+      "discriminating_alternative": "A correct single-frame Retry PNG at the versioned path can pass while the shared global scheduler remains active. A Retry descriptor with frames4, wrong mapping, or strip animation fails the static source requirement; absence of a new per-static media-switch animation test is not a defect.",
+      "authority": "src/queue.ts:1-4; src/queue-view-successor.ts:2-11; renderer-successor/view.mjs paint and descriptor.frames guard"
+    },
+    {
+      "before": {
+        "id": "authoring-01.paused.q.geometry",
+        "record_sha256": "6ddf39c0e5ded6d3eb64e2324ee27de7fa7b2e718e033338ed9059088ae77bae",
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas."
+      },
+      "after": {
+        "id": "provenance-correction.paused.q.geometry",
+        "record_sha256": "769cea3fe8aabf815aab4aabc62f7924da0c741f70180f3991b4656f327bfedb",
+        "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas."
+      },
+      "scope_correction": "The literal static geometry check is unchanged: exactly one static16x16 PNG, no strip/animation/extra canvas. Source and Q identities differ between plans. Internal negative space remains composition; this static row adds no reduced-motion phase behavior.",
+      "discriminating_alternative": "A sparse glyph inside a16x16 PNG satisfies canvas geometry even with generous internal transparent margins. A17x16 PNG or a multi-cell strip fails this static rule for source-supported dimensions/frame-count reasons.",
+      "authority": "BRIEF.md:3,7 and successor view static descriptor/display"
+    },
+    {
+      "before": {
+        "id": "authoring-01.paused.q.consumers",
+        "record_sha256": "cf34749f0a5f4696e02a2ca9c1b6ed5e924345c3a21581edf2321726d34e4aa1",
+        "check": "Exercise pause -> paused through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Paused, frames 1, path assets/paused.png, nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior."
+      },
+      "after": {
+        "id": "provenance-correction.paused.q.consumers",
+        "record_sha256": "636b76835783fe750958a331a1f351c7678f1de8d99c837d50037f822640dc3c",
+        "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1)."
+      },
+      "scope_correction": "pause->paused through stateAfter maps both statusCell and compactStatus to label Paused, frames1, destination renderer-successor/assets/paused.png; earlier path assets/paused.png. One static frame and meaning are unchanged; successor binds the versioned fixture and explicit decode/nearest/compositing checks. Working normal/reduced switching clauses do not add an animation requirement to this static member.",
+      "discriminating_alternative": "A correct single-frame Paused PNG at the versioned path can pass while the shared global scheduler remains active. A Paused descriptor with frames4, wrong mapping, or strip animation fails the static source requirement; absence of a new per-static media-switch animation test is not a defect.",
+      "authority": "src/queue.ts:1-4; src/queue-view-successor.ts:2-11; renderer-successor/view.mjs paint and descriptor.frames guard"
+    }
+  ],
+  "scheduler_clarification": "Reduced motion suppresses Working frame advancement; it does not require stopping the shared global requestAnimationFrame scheduler. Static Retry/Paused descriptors likewise do not advance frames even though this scheduler exists. Matrix cells are snapshots/repaints on preference changes, live Working cells cycle normally.",
+  "effect": "No change to literal criteria, contracts, Q identities, source bytes, verdicts, production state or prior acceptance. These corrections improve review precision and stage scope, not the adopted contract. No new acceptance is earned.",
+  "coverage": "Original20/successor23 coverage remains the mapping identity coverage; four static-specific rows clarified here, no IDs added or dropped.",
+  "next": "Caller verify these correction artifacts and retain its independent final disposition."
+}

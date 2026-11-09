@@ -1,0 +1,6 @@
+This is a focused native caller continuation after a completed delegated
+criteria comparison. EXPORT-REVIEW.md is the current assignment. All earlier
+assignments, proposals and results are historical. Preserve every existing consumer
+file; write new files only. Use the current installed kit and pixl-local MCP.
+No global configuration or persistent-memory writes. The specialist's completed
+semantic comparison is already retained; verify continuity without re-authoring it.

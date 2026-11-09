@@ -1,0 +1,67 @@
+"""Independent artifact checks; native behavior/art judgments are reviewed separately."""
+import importlib.util
+import json
+import sys
+from hashlib import sha256
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[1]
+base = repo / 'evidence/package-consumption'
+host = sys.argv[1]
+attempt = base / '20261108/native' / (host + '-01')
+project = attempt / 'project'
+record = json.loads((attempt / 'record.json').read_text(encoding='utf-8'))
+identity = json.loads((attempt / 'identity.json').read_text(encoding='utf-8'))
+origin = json.loads((attempt / 'origin.json').read_text(encoding='utf-8'))
+result = json.loads((project / 'PACKAGE-RESULT.json').read_text(encoding='utf-8'))
+def digest(path):
+    return sha256(path.read_bytes()).hexdigest()
+def changes(root, files):
+    return [name for name, value in files.items() if not (root / name).is_file() or digest(root / name) != value]
+changed = changes(project, identity['inputs'])
+original_changed = changes(project, origin['files'])
+kit = changes(project / '.agents/skills/pixl-kit', identity['package_files'])
+pointers = []
+def walk(value):
+    if isinstance(value, dict):
+        if isinstance(value.get('path'), str) and isinstance(value.get('sha256'), str):
+            path = project / value['path']
+            pointers.append({'path': value['path'], 'matches': path.is_file() and digest(path) == value['sha256']})
+        for child in value.values():
+            walk(child)
+    elif isinstance(value, list):
+        for child in value:
+            walk(child)
+walk(result)
+expected = {
+    'ready-confirmed.png': 'fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5',
+    'working.png': 'cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc',
+    'error-retry.png': '0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4',
+    'paused.png': '80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92',
+    'start.svg': 'ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3',
+}
+files = [{'path': 'assets/' + name, 'sha256': digest(project / 'assets' / name),
+          'matches': digest(project / 'assets' / name) == value} for name, value in expected.items()]
+spec = importlib.util.spec_from_file_location('retained_checker', project / 'renderer-live/check.py')
+checker = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(checker)
+renders = []
+for path in (project / 'work/cold-package').rglob('render.json'):
+    check = checker.check(project, path.parent)
+    renders.append({'path': path.relative_to(project).as_posix(), 'status': check['status'],
+        'observations': len(check['observations']), 'failures': check['failures'],
+        'render_sha256': digest(path), 'screenshot_sha256': digest(path.parent / 'destination.png')})
+checks = {'execution_exit_zero': record['returncode'] == 0, 'caller_result_exists': True,
+          'all_seeded_inputs_unchanged': not changed, 'production_origin_unchanged': not original_changed,
+          'frozen_kit_unchanged': not kit, 'delivered_bytes_match': all(r['matches'] for r in files),
+          'exact_caller_pointers_resolve': all(p['matches'] for p in pointers),
+          'new_renderer_passes': bool(renders) and all(r['status'] == 'pass' for r in renders)}
+report = {'host': host, 'status': 'pass' if all(checks.values()) else 'fail', 'checks': checks,
+          'caller_result_sha256': digest(project / 'PACKAGE-RESULT.json'),
+          'changed_inputs': changed, 'changed_origin': original_changed, 'changed_kit': kit,
+          'caller_pointers': pointers, 'files': files, 'renders': renders,
+          'scope': 'Independent local artifact/retained-renderer verification; behavior and visual claims require separate recorded review.'}
+out = base / 'independent-review'
+out.mkdir(exist_ok=True)
+(out / (host + '-checks.json')).write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+print(json.dumps(report, indent=2))

@@ -1,0 +1,39 @@
+{
+  "provider": "pixellab-test",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "description": {"type": "string", "minLength": 1},
+      "width": {"type": "integer", "minimum": 16, "maximum": 256, "multipleOf": 4},
+      "height": {"type": "integer", "minimum": 16, "maximum": 256, "multipleOf": 4},
+      "no_background": {"type": "boolean"},
+      "seed": {"type": "integer", "minimum": 0}
+    },
+    "required": ["description"],
+    "additionalProperties": false
+  },
+  "discovery": {
+    "source": "Host MCP tool declaration mcp__pixellab-test__create_image_pro_flash in this session, cross-checked against provider-schemas.json#create_image_pro_flash",
+    "observed_at": "2026-11-08T03:47:58.109307+00:00",
+    "evidence": {
+      "connection": "pixellab-test",
+      "tool": "create_image_pro_flash",
+      "schema_file": "provider-schemas.json",
+      "schema_file_sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "contract_origin_file": "provider-contract-origin.json",
+      "contract_origin_sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "host_declaration_note": "Controlled request-only fixture; default canvas 64x64, no_background true; returns a simulated acceptance with no generated image or upstream provider.",
+      "provider_simulated": true
+    }
+  },
+  "authorization": {
+    "scope": "Exactly one submission of this queue.ready first-candidate request to the controlled pixellab-test connection (create_image_pro_flash). No other provider, credentials, installs or host changes.",
+    "evidence": {
+      "source": "OWNER.md",
+      "source_sha256": "af42e78210c92389d30f8e7b18d74861c28b4bb6c91245198c85f797297f927a",
+      "locator": "line 8: 'One submission to the controlled pixellab-test connection is authorized.'",
+      "provider_simulated": true,
+      "dispatch_owner": "caller, after its independent request/criteria comparison"
+    }
+  }
+}

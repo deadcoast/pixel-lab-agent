@@ -95,10 +95,12 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         shutil.copytree(resume / "project", project, ignore=shutil.ignore_patterns("pixl-kit", "__pycache__"))
     else:
         project.mkdir()
-        if case not in ("mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff"):
+        if case not in ("mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff", "plar-package", "plar-authoring"):
             seed(project, case)
     package = project / ".agents/skills/pixl-kit"
-    shutil.copytree(ROOT / "plugins/pixl", package, ignore=shutil.ignore_patterns("__pycache__"))
+    package_source = (ROOT / "evidence/pixellab-family-production/20261108/kit"
+                      if case == "plar-package" else ROOT / "plugins/pixl")
+    shutil.copytree(package_source, package, ignore=shutil.ignore_patterns("__pycache__"))
     manifest = json.loads((package / "bundle-manifest.json").read_text())
     for row in manifest["files"] + manifest.get("generated_files", []):
         if sha(package / row["path"]) != row["sha256"]:
@@ -106,7 +108,19 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
     python = ROOT / ".venv/Scripts/python.exe"
     extra_server = None
     guidance, prompt = GUIDANCE, PROMPT
-    if case == "mcp-edit":
+    if case == "plar-authoring-review":
+        from evaluations import plar_authoring_review_case
+        extra_server = plar_authoring_review_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_authoring_review_case.GUIDANCE, plar_authoring_review_case.PROMPT
+    elif case == "plar-authoring":
+        from evaluations import plar_authoring_case
+        extra_server = plar_authoring_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_authoring_case.GUIDANCE, plar_authoring_case.PROMPT
+    elif case == "plar-package":
+        from evaluations import plar_package_case
+        extra_server = plar_package_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_package_case.GUIDANCE, plar_package_case.PROMPT
+    elif case == "mcp-edit":
         from evaluations import mcp_asset_case
         extra_server = mcp_asset_case.setup(project, destination, python, resume)
         guidance, prompt = mcp_asset_case.GUIDANCE, mcp_asset_case.PROMPT
@@ -126,7 +140,15 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         from evaluations import plar_handoff_case
         extra_server = plar_handoff_case.setup(project, destination, python, resume)
         guidance, prompt = plar_handoff_case.GUIDANCE, plar_handoff_case.PROMPT
-    if resume and case not in ("plar-resume", "plar-delivery", "plar-handoff"):
+    elif case == "plar-family":
+        from evaluations import plar_family_case
+        extra_server = plar_family_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_family_case.GUIDANCE, plar_family_case.PROMPT
+    elif case == "plar-render-recheck":
+        from evaluations import plar_render_recheck_case
+        extra_server = plar_render_recheck_case.setup(project, destination, python, resume)
+        guidance, prompt = plar_render_recheck_case.GUIDANCE, plar_render_recheck_case.PROMPT
+    if resume and case not in ("plar-resume", "plar-delivery", "plar-handoff", "plar-family", "plar-render-recheck", "plar-authoring-review"):
         prompt = ("You are the calling agent resuming the saved consumer project. Delegate a cold status/recovery check to PIXL. "
                   "Inspect its saved contracts, jobs, candidate reviews and delivered file. Recover the next action without repeating "
                   "completed submissions. Save COLD-RESULT.json with actual observed state and evidence. "
@@ -144,6 +166,8 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
     (project / "AGENTS.md").write_text(guidance, encoding="utf-8")
     (destination / "prompt.txt").write_text(prompt + "\n" + guidance, encoding="utf-8")
     local = {"command": str(python), "args": [str(package / "scripts/pixl.py"), "mcp", "--root", str(project)]}
+    if case == "plar-authoring":
+        local = plar_authoring_case.local_server(project, destination, python, package)
     specialist = "You are PIXL for the assigned asset task. " + guidance
     if host == "claude":
         servers = {"pixl-local": {"type": "stdio", **local}}
@@ -156,8 +180,8 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
                    "--no-session-persistence", "--setting-sources", "", "--strict-mcp-config",
                    "--mcp-config", str(destination / "mcp.json"), "--agents", str(destination / "agents.json"),
                    "--plugin-dir", str(package), "--permission-mode", "acceptEdits",
-                   "--permission-prompts", "none", "--tools", "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent",
-                   "--allowedTools", "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,mcp__pixl-local__*,mcp__pixellab-test__*"]
+                   "--permission-prompts", "none", "--tools", "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,SendMessage",
+                   "--allowedTools", "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,SendMessage,mcp__pixl-local__*,mcp__pixellab-test__*"]
         version_command = [command[0], "--version"]
     else:
         agents = project / ".codex/agents"
@@ -181,7 +205,10 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
                 "runner_sha256": sha(Path(__file__)), "package_files": inventory(package),
                 "inputs": inventory(project, ("pixl-kit",)), "prompt_sha256": sha(destination / "prompt.txt"),
                 "predecessor": str(resume) if resume else None,
-                "scope": "Native delegation/contract review and, for provider cases, controlled provider execution; no upstream service."})
+                "scope": ("Cold consumption of retained real-provider production; no new provider work assigned."
+                          if case == "plar-package" else "Targeted native repair of retained connected-plan criterion comparison; original partial result preserved."
+                          if case == "plar-authoring-review" else "Native connected authoring/preparation with explicit allocation interruption and caller requirement change; original production preserved."
+                          if case == "plar-authoring" else "Native delegation/contract review and, for provider cases, controlled provider execution; no upstream service.")})
     shutil.copyfile(Path(__file__), destination / "runner.py.txt")
     shutil.copytree(project, destination / "input-project", ignore=shutil.ignore_patterns("pixl-kit"))
 
@@ -222,6 +249,15 @@ def run(destination: Path) -> None:
             del env[key]
     env.pop("PYTHONPATH", None)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    # Local Claude sessions otherwise share repository auto-memory across fixtures.
+    # Scope this documented override to the evaluation child, not user settings.
+    overrides = {"CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"} if launch["host"] == "claude" else {}
+    env.update(overrides)
+    write_json(destination / "execution-environment.json", {
+        "scope": "Evaluation subprocess only; no persistent host configuration changed",
+        "overrides": overrides,
+        "limit": "Disables the documented automatic-memory feature, not arbitrary filesystem access",
+    })
     started = time.monotonic()
     with (destination / "stdout.jsonl").open("wb") as stdout, (destination / "stderr.txt").open("wb") as stderr:
         process = subprocess.Popen(launch["command"], cwd=launch["cwd"], env=env,
@@ -248,7 +284,7 @@ def run(destination: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("claude", "codex"), required=True)
-    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff"), required=True)
+    parser.add_argument("--case", choices=("drone", "save-indicator", "mcp-edit", "plar-start", "plar-resume", "plar-delivery", "plar-handoff", "plar-family", "plar-render-recheck", "plar-package", "plar-authoring", "plar-authoring-review"), required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--resume", type=Path)

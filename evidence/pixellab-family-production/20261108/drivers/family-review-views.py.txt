@@ -1,0 +1,40 @@
+import hashlib
+import json
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageOps
+
+ROOT=Path(__file__).resolve().parents[1]/'evidence/pixellab-family-production/20261108/project'
+WORK=ROOT/'work/live-family'
+capture=WORK/'render-02'
+report=json.loads((capture/'render.json').read_text(encoding='utf-8'))
+panel=(23,35,54,255)
+rows=[]
+start=next(v for v in report['views'] if v['state']=='idle' and v['scale']==1 and v['consumer']=='statusCell')
+rows.append(('Start (preserved)',Image.open(capture/start['image']['path']).convert('RGBA')))
+for label,path in [('Ready (baseline)','ready-confirmed.png'),('Retry','error-retry.png'),('Paused','paused.png')]:
+    icon=Image.open(ROOT/'assets'/path).convert('RGBA')
+    rows.append((label,Image.alpha_composite(Image.new('RGBA',(16,16),panel),icon)))
+for i,sample in enumerate(report['playback']['samples'][:4]):
+    cell=sample['cells'][0]
+    actual=Image.open(capture/cell['image']['path']).convert('RGBA')
+    rows.append((f'Working {i} / {sample["elapsed"]:.1f}ms',actual.resize((16,16),Image.Resampling.NEAREST)))
+sheet=Image.new('RGBA',(540,40+len(rows)*64),panel)
+draw=ImageDraw.Draw(sheet)
+draw.text((12,12),'Actual consumer pixels | color 1x / 3x | grayscale 1x / 3x',fill='white')
+for i,(label,im) in enumerate(rows):
+    y=40+i*64
+    draw.text((12,y+18),label,fill='white')
+    gray=ImageOps.grayscale(im).convert('RGBA')
+    for x,size,image in [(220,16,im),(260,48,im),(350,16,gray),(390,48,gray)]:
+        sheet.paste(image.resize((size,size),Image.Resampling.NEAREST),(x,y))
+sheet.save(WORK/'family-comparison.png')
+frames=[Image.open(capture/s['cells'][0]['image']['path']).convert('RGB') for s in report['playback']['samples'][:4]]
+frames[0].save(WORK/'working-live-preview.gif',save_all=True,append_images=frames[1:],duration=100,loop=0,disposal=2,optimize=False)
+with Image.open(WORK/'working-live-preview.gif') as gif:
+    assert gif.n_frames==4
+    for i,expected in enumerate(frames):
+        gif.seek(i)
+        assert gif.info['duration']==100 and gif.convert('RGB').tobytes()==expected.tobytes()
+record={'source_capture_sha256':hashlib.sha256((capture/'render.json').read_bytes()).hexdigest(),'comparison':'Actual browser cells plus grayscale derivatives at1x/3x; no asset edits','preview':'First four recorded live frames, exact decoded RGB preserved,100ms GIF timing,400ms loop','sample_elapsed_ms':[s['elapsed'] for s in report['playback']['samples']],'artifacts':[{'path':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in [WORK/'family-comparison.png',WORK/'working-live-preview.gif']]}
+(WORK/'review-views.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(record))

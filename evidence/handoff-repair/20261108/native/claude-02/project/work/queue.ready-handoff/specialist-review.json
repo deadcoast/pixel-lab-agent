@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "reviewer_role": "PIXL specialist self-review (not the independent caller comparison, which remains pending)",
+  "assignment": "PHASE.md contract reassessment of delivered queue.ready sample",
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "provider_simulated": true,
+  "state_hash_at_review": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+  "what_was_checked": [
+    "Read in full: BRIEF.md (9 lines), SOURCE-MAP.md (3), src/queue.ts (4), src/queue-view.ts (14), assets/start.svg (1), OWNER.md (11), STAGE.md (15), PHASE.md (11), provider-schemas.json (43), retrieval-provider-schemas.json (61), provider-contract-origin.json (5), AGENTS.md, SESSION.md; confirmed line counts and that none of the markdown sources contains non-ASCII bytes.",
+    "Read the historical contract artifacts byte-for-byte: work/queue.ready-revision/request-review.json, candidate-plan.json, provider-arguments.json, connection.json, and both prior caller reviews; read the delivery-stage evidence (integration.json, caller-integration.json, retrieval.json, production-continuation.json, work/PIXL-DELIVERY.json, DELIVERY-RESULT.json, PARENT-RESULT.json, COLD-RESULT.json excerpts).",
+    "pixl_plar_read asset_id=queue.ready: plar.txt hash 1794e17c..., requirements_hash 806a1f2d..., selection current, production linked, derived next_action review_delivery, pending_jobs [].",
+    "pixl_workflow / pixl_jobs / pixl_inspection on .pixl/assets/queue.ready/state.px: revision 14, hash 7a97831f...; task r.22e90a2a03fe453a.task done; candidate ready.retained nominated; six criteria pass via ready.delivery.review (reviewer actor); job r.22e90a2a03fe453a.request succeeded, remote_id controlled-create-0002; original job first_request failed (controlled-create-0001); original task 'task' open with changed selection binding.",
+    "pixl_inspection with packet ready.delivery.inspect and all three view ids: image blocks returned and viewed (16x16 transparent, 16x16 on #172336, 48x48 on #172336); payload sizes equal retained sizes; no host resizing reported.",
+    "pixl_asset_check(assets/ready-confirmed.png, 16x16, alpha full, regions ['#70b9ed']): sha256 fc5e43ae..., 29 visible pixels, 1 colour, 0 fractional alpha, 1 component, bbox [3,4,14,13], colour region #70b9edff box [[3,4,14,13]] (zero-based, exclusive right/bottom).",
+    "Independent Pillow decode in the selected Python: same counts; per-row opaque runs recorded in assessment.json; 4- and 8-connected component counts both 1; relative luminance contrast 7.41:1 (diagnostic only).",
+    "pixl_knowledge: read index and methods silhouette-readability, edge-rhythm, integer-presentation, alpha-contract, semantic-clusters, state-driven-pixel-ui, frame-timing.",
+    "pixl_request_review on the historical packet and on the corrected packet; both full reports retained in this directory.",
+    "node verify-integration.mjs assets/ready-confirmed.png re-run from the project root: exit 0; stdout retained (sha256 de6a5efa...). Source-module execution only; not renderer acceptance.",
+    "Confirmed no existing file was modified: plar.txt, state.px, assets/, work/queue.ready*, result JSONs keep their original hashes (listed below)."
+  ],
+  "request_review_diagnostics": {
+    "historical_packet": {
+      "packet": {
+        "path": "work/queue.ready-revision/request-review.json",
+        "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+      },
+      "report_retained_at": "work/queue.ready-handoff/historical-request-review-report.json",
+      "report_sha256": "59a59abd71d66213285b79a3715c2a00a02b629c18ec425d73e58ca6f2efb62c",
+      "diagnostics_count": 3,
+      "diagnostics": [
+        {
+          "packet_source": "provider-schemas.json",
+          "locator": "create_image_pro_flash",
+          "status": "unresolved_locator"
+        },
+        {
+          "packet_source": "provider-contract-origin.json",
+          "locator": "scope",
+          "status": "unresolved_locator"
+        },
+        {
+          "packet_source": "OWNER.md",
+          "locator": "lines 2-12: revised request, retain original, inspect status, one further controlled request, no image or renderer",
+          "status": "invalid_locator"
+        }
+      ],
+      "additional_observations_not_flagged_by_tool": [
+        "request.provider and request.connection were null although work/queue.ready-revision/connection.json existed.",
+        "Criterion pointers carried over-broad lines: BRIEF.md [3,9] for text on line 3 (and line 5); src/queue-view.ts [3,11] for lines 6/9 and 3/6; src/queue.ts [1,4] for line 3. The tool resolved them without diagnostics because the bounds were valid ranges, but they do not equal the cited text's bounds."
+      ]
+    },
+    "corrected_packet": {
+      "packet": {
+        "path": "work/queue.ready-handoff/request-review.json",
+        "sha256": "9c5accb202ffd8df060a1b0db5f8737458efe28675ddb592312a6f343de565af"
+      },
+      "report_retained_at": "work/queue.ready-handoff/request-review-report.json",
+      "report_sha256": "7c96ddadb47af79e5107d16aa52c57bbf13da7cb34fc9804c7b391aec659e280",
+      "diagnostics_count": 0,
+      "diagnostics": [],
+      "source_evidence_entries": 37,
+      "all_resolved": true,
+      "request_binding_read_back": {
+        "provider": "pixellab-test",
+        "provider_simulated_assertion": true,
+        "connection": {
+          "path": "work/queue.ready-revision/connection.json",
+          "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"
+        }
+      },
+      "production_read_back": {
+        "hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+        "revision": 14,
+        "next_action": "review_delivery"
+      },
+      "first_attempt_note": "A first draft of the corrected plan carried an extra top-level 'provenance' key; pixl_request_review rejected it ('Additional properties are not allowed'). The key was removed and the derivation note lives in request-review.json criteria.derived_from/note instead. The final plan has only version, scope and outputs."
+    }
+  },
+  "locator_verification": [
+    {"path": "BRIEF.md", "cited": "16x16 cells / static / transparent / readable silhouettes / cool blue / 1x-3x nearest / working not success / retry without colour", "bounds": [3, 3], "resolved_text_starts": "Create coherent pixel-art status assets for the queue UI."},
+    {"path": "BRIEF.md", "cited": "representative sample first; no approved style; destinations from view", "bounds": [5, 5], "resolved_text_starts": "Assets belong at the paths already used by the view."},
+    {"path": "BRIEF.md", "cited": "paused non-colour distinction", "bounds": [7, 7], "resolved_text_starts": "Update: the queue now supports a paused state."},
+    {"path": "BRIEF.md", "cited": "asymmetrical-arm check mark; destination follows view", "bounds": [9, 9], "resolved_text_starts": "Current update: Ready must visibly use a check mark with asymmetrical arms"},
+    {"path": "src/queue.ts", "cited": "ok -> succeeded", "bounds": [3, 3], "resolved_text_contains": "ok: \"succeeded\""},
+    {"path": "src/queue-view.ts", "cited": "idle Start", "bounds": [3, 3], "resolved_text_contains": "idle: { label: \"Start\", path: \"assets/start.svg\""},
+    {"path": "src/queue-view.ts", "cited": "succeeded Ready frames 1", "bounds": [6, 6], "resolved_text_contains": "succeeded: { label: \"Ready\", path: \"assets/ready-confirmed.png\", frames: 1 }"},
+    {"path": "src/queue-view.ts", "cited": "display descriptor", "bounds": [9, 9], "resolved_text_contains": "cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\""},
+    {"path": "src/queue-view.ts", "cited": "statusCell and compactStatus", "bounds": [10, 11], "resolved_text_contains": "statusCell(state: QueueState)"},
+    {"path": "assets/start.svg", "cited": "fill #70b9ed, path M4 2L14 8L4 14Z", "bounds": [1, 1], "resolved_text_contains": "fill=\"#70b9ed\" d=\"M4 2L14 8L4 14Z\""},
+    {"path": "provider-schemas.json", "cited": "create_image_pro_flash schema", "bounds": [2, 33], "resolved_text_starts": "\"create_image_pro_flash\": {"},
+    {"path": "retrieval-provider-schemas.json", "cited": "get_image schema", "bounds": [43, 60], "resolved_text_starts": "\"get_image\": {"},
+    {"path": "provider-contract-origin.json", "cited": "scope", "bounds": [4, 4], "resolved_text_starts": "\"scope\": \"Controlled connection advertises only"},
+    {"path": "OWNER.md", "cited": "request-stage authorization", "bounds": [2, 11], "line_count": 11},
+    {"path": "STAGE.md", "cited": "delivery-stage scope / get_image", "bounds": [[2, 6], [10, 11]], "line_count": 15},
+    {"path": "PHASE.md", "cited": "current assignment", "bounds": [2, 11], "line_count": 11}
+  ],
+  "criteria_integrity_check": {
+    "method": "Field-by-field comparison of the six criteria between work/queue.ready-revision/candidate-plan.json and work/queue.ready-handoff/candidate-plan.json",
+    "identical_fields": ["id", "order", "domain", "mode", "check", "basis", "scope", "authority", "output id/name/kind", "contract", "plan scope text"],
+    "changed_fields": ["sources[].lines (exact inclusive bounds)", "sources[].locator (labels name the cited line)", "multi-line pointers split into one pointer per cited range (geometry: 2 -> 3 pointers; ready-meaning: 5 -> 6; sample-pixel-craft: 1 -> 2)"],
+    "verdict_transplant": "none; ready.delivery.review.verdict.0-5 stay bound to plan e7f85aa1..."
+  },
+  "files_written": [
+    {"path": "work/queue.ready-handoff/request-review.json", "role": "corrected packet (A)", "sha256": "9c5accb202ffd8df060a1b0db5f8737458efe28675ddb592312a6f343de565af", "bytes": 16789},
+    {"path": "work/queue.ready-handoff/candidate-plan.json", "role": "corrected criteria (B)", "sha256": "bc903d5bc3f6a7d6c72bc61db45c74baa17e82acf799b97deda2455dd93171b8", "bytes": 8808},
+    {"path": "work/queue.ready-handoff/assessment.json", "role": "specialist reassessment (C)", "sha256": "27af95c34e723eb45167b533dc2e1ee2b527403191b5b24906130bde5a89957a", "bytes": 16877},
+    {"path": "work/queue.ready-handoff/specialist-review.json", "role": "this self-review (D); its own hash is recorded in the handoff details and final report", "sha256": null},
+    {"path": "work/queue.ready-handoff/request-review-report.json", "role": "retained pixl_request_review report for the corrected packet", "sha256": "7c96ddadb47af79e5107d16aa52c57bbf13da7cb34fc9804c7b391aec659e280", "bytes": 62641},
+    {"path": "work/queue.ready-handoff/historical-request-review-report.json", "role": "retained pixl_request_review report for the historical packet", "sha256": "59a59abd71d66213285b79a3715c2a00a02b629c18ec425d73e58ca6f2efb62c", "bytes": 53512},
+    {"path": "work/queue.ready-handoff/integration-recheck-stdout.json", "role": "stdout of node verify-integration.mjs re-run (exit 0)", "sha256": "de6a5efa2fca0a98bcdb15f84d8029f8f6c2435200e825d1c0805962dc4339a3", "bytes": 848}
+  ],
+  "existing_files_verified_unchanged": [
+    {"path": "plar.txt", "sha256": "1794e17cdc7b3c0dac61f4c6aa1c711091a4f66468d4dff39b6795b4a5542606"},
+    {"path": ".pixl/assets/queue.ready/state.px", "sha256": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81"},
+    {"path": "assets/ready-confirmed.png", "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"},
+    {"path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"},
+    {"path": "work/queue.ready-revision/request-review.json", "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"},
+    {"path": "work/queue.ready-revision/candidate-plan.json", "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"},
+    {"path": "work/queue.ready-revision/provider-arguments.json", "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3"},
+    {"path": "work/queue.ready-revision/connection.json", "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"},
+    {"path": "work/queue.ready-revision/caller-review.json", "sha256": "e75603035ca3102445221a513f323a0a53d94734db7ff2b74c381822851c6255"},
+    {"path": "work/queue.ready-delivery/caller-review.json", "sha256": "8f8049a1dd6e7509a5af001e0f52c7991f3432ad800e20893ae47547526dda24"},
+    {"path": "work/queue.ready-delivery/integration.json", "sha256": "692216185452f9ccca8ff58af84a756c05763de65c50be4dfd90765a590a34ab"},
+    {"path": "work/queue.ready-delivery/caller-integration.json", "sha256": "9ec61909d28a519d3e104ea246f685169d3462e0d8235a2451e4e421b9aa69e7"},
+    {"path": "work/PIXL-DELIVERY.json", "sha256": "7e226aaa1fd292bf75788157cfe24ae64a26515d55a67752e33cd6a4586de0e8"}
+  ],
+  "discrepancies": [
+    {"n": 1, "finding": "OWNER.md locator 'lines 2-12' invalid (file has 11 lines); same [2,12] in connection.json authorization.evidence.lines and in the durable job record.", "disposition": "Corrected to lines 2-11 in the new packet. Historical packet, connection.json and job record left untouched; the connection defect is noted in request.historical.connection_note."},
+    {"n": 2, "finding": "provider-schemas.json 'create_image_pro_flash' and provider-contract-origin.json 'scope' had no file-local bounds (unresolved).", "disposition": "Corrected to lines 2-33 and line 4 respectively; both resolve."},
+    {"n": 3, "finding": "Criterion pointers used over-broad lines ([3,9], [3,11], [1,4]) and some multi-line labels.", "disposition": "Each pointer now carries the exact inclusive bounds of its cited text; multi-line locators split into one pointer per range; labels name the line. Check text etc. unchanged."},
+    {"n": 4, "finding": "Packet request lacked provider and connection {path, sha256}.", "disposition": "Bound to pixellab-test and work/queue.ready-revision/connection.json (e137fb43...); read back by the tool."},
+    {"n": 5, "finding": "Job discovery note says the connection returns no generated image, yet a PNG was served via get_image.", "disposition": "Historical record untouched. Corrected packet adds retrieval-provider-schemas.json lines 43-60 and STAGE.md lines 10-11 as sources and records the provenance in request.historical."},
+    {"n": 6, "finding": "PLAR row queue.ready says destination 'is missing', 'no delivered art has yet been reviewed', coverage says PNG destinations absent; stale after delivery.", "disposition": "plar.txt not modified because existing/delivery.checks/coverage feed requirements_hash 806a1f2d... and changing it would mark the completed production's selection binding as changed. Exact proposed field changes are listed in the handoff future_work."},
+    {"n": 7, "finding": "Historical packet deferred_obligations.style-decision prerequisite says 'the simulated pixellab-test job returns none'; now stale (an image exists).", "disposition": "Corrected packet marks style-decision as unblocked with no prerequisites; adoption remains the caller/owner decision."},
+    {"n": 8, "finding": "work/PIXL-DELIVERY.json and DELIVERY-RESULT.json cite an absolute state path under evidence\\plar-handoff-delivery\\20261108\\native\\codex-delivery-01\\project, a different workspace from this consumer (claude-02).", "disposition": "Observation only: the state hash they cite (7a97831f...) equals this consumer's state.px, so the content is the same bytes copied forward. No action; the caller may want to note the workspace rebase."},
+    {"n": 9, "finding": "Prior revision-stage caller-review.json cites 'BRIEF.md:3,9' for geometry, mirroring the over-broad range.", "disposition": "Historical; left untouched. The corrected bounds are in the new plan for the next comparison."}
+  ],
+  "unresolved": [
+    "Independent caller comparison of the corrected packet and criteria (pending; reserved to the calling agent).",
+    "Family/style adoption decision and source-binding of the baseline (owner/caller decision; specialist proposal recorded).",
+    "Graphical renderer acceptance (no renderer supplied).",
+    "PLAR refresh of stale queue.ready fields (deferred to avoid changing requirements_hash under the completed production; proposed field list in handoff).",
+    "A future revision will need a freshly discovered connection artifact with correct OWNER/STAGE bounds and current tool surface (none created now; no dispatch assigned)."
+  ]
+}

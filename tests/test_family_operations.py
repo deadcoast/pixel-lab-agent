@@ -124,7 +124,8 @@ class FamilyOperationTests(unittest.TestCase):
     def test_mcp_mutability_and_schema_reject_unchecked_mutations(self):
         by_name = {tool["name"]: tool for tool in self.rpc("tools/list")["tools"]}
         self.assertTrue({"pixl_family", "pixl_family_snapshot"} <= by_name.keys())
-        self.assertTrue(by_name["pixl_family"]["annotations"]["readOnlyHint"])
+        # Default queries remain read-only, but optional result_path writes a file.
+        self.assertFalse(by_name["pixl_family"]["annotations"]["readOnlyHint"])
         self.assertFalse(by_name["pixl_family_snapshot"]["annotations"]["readOnlyHint"])
         for name in ("pixl_family", "pixl_family_snapshot"):
             self.assertFalse(by_name[name]["annotations"]["openWorldHint"])

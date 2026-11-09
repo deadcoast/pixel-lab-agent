@@ -103,6 +103,7 @@ def _verify(summary, run, stage):
         "spec/PIXL-2.md",
         "training/source-inventory.json",
         "knowledge/pixel-art.json",
+        *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/plar-project/renderer").iterdir()) if p.is_file()),
         *(row["path"] for row in inventory["documents"]),
     ):
         summary["checked_input_hashes"][name] = file_hash(ROOT / name)

@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "asset_id": "queue.ready",
+  "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673",
+  "plar": {
+    "path": "plar.txt",
+    "asset_id": "queue.ready",
+    "requirements_hash": "806a1f2d21914fe2ffa0b11cbe8556ea4d64fd5aeb1dc2aae52e60796cf2d673"
+  },
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "role": "owner asset brief",
+      "locators": [
+        "line 3: 16x16 cells, Ready static, transparent backgrounds, readable silhouettes, cool blue accent, no fixed palette, 1x/3x nearest on dark panel, working must not look like success, retry distinguishable without color",
+        "line 5: destination paths from view, badges excluded, no approved style, representative sample first",
+        "line 7: paused distinguishable from activity/completion/retry without color",
+        "line 9: required check mark with asymmetrical arms; current destination follows view"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "role": "consumer state transitions",
+      "locators": [
+        "line 3: ok -> succeeded"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "role": "consumer visual mapping and display descriptor",
+      "locators": [
+        "line 3: idle Start; line 6: Ready destination; line 9: display; lines 10-11: consumers"
+      ]
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "role": "preserved existing Start vector; accent colour observation (#70b9ed) and idle-motif comparison; not an approved pixel-art style reference",
+      "locators": [
+        "line 1: fill #70b9ed, triangle path M4 2L14 8L4 14Z"
+      ]
+    },
+    {
+      "path": "SOURCE-MAP.md",
+      "sha256": "1ff4573dfb255c870171dad9ae09622e29b988200f144b0a88f7fcba430d2081",
+      "role": "current source overview",
+      "locators": [
+        "line 3: state, visual mapping, consumers and scope"
+      ]
+    },
+    {
+      "path": "PHASE.md",
+      "sha256": "0bcf5dbd3c97ae2ae67acf6bb3ed100332ea023cb1f6d0962e9cdfbee54f7a60",
+      "role": "current retained-consumer assignment",
+      "lines": [
+        1,
+        12
+      ],
+      "locator": "PHASE.md lines 1-12"
+    },
+    {
+      "path": "provider-schemas.json",
+      "sha256": "e104c044f6d5ee9143bc6df60e568c24ab1e502c2bab1ab746ab2c8bb7e9127c",
+      "role": "Retained controlled tool subset; historical schema, not new live discovery"
+    },
+    {
+      "path": "provider-contract-origin.json",
+      "sha256": "f11deb3f2710c64bdd18ca59f34978714df038c2940ffbf4007e122743764b09",
+      "role": "Controlled subset scope"
+    },
+    {
+      "path": "work/queue.ready-revision/connection.json",
+      "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8",
+      "role": "Historical controlled connection; credentials absent"
+    }
+  ],
+  "request": {
+    "path": "work/queue.ready-handoff-repair/provider-arguments-v2.json",
+    "sha256": "81dc6e0229a0eec6726655f15ee1906253dcb34efe5e3c1b09562c5482bc1f53",
+    "kind": "provider_arguments",
+    "tool": "create_image_pro_flash",
+    "provider": "pixellab-test",
+    "connection": {
+      "path": "work/queue.ready-revision/connection.json",
+      "sha256": "e137fb4398432e0d280521cd230b204e529f3db674a8e73c84931e7eea7990a8"
+    },
+    "provider_simulated": true
+  },
+  "criteria": {
+    "path": "work/queue.ready-handoff-repair/candidate-plan-v2.json",
+    "sha256": "7577f12bee8706e4d5a4d019ba3cc753ac34afd2a45b69d286d95caf24a03326"
+  },
+  "choices": [
+    {
+      "choice": "Ready representative sample",
+      "basis": "Expert selection under BRIEF.md line 5, not family approval",
+      "appears_in": "creative brief and plan scope"
+    },
+    {
+      "choice": "Specific cluster construction and color extent left open",
+      "basis": "Required readable asymmetrical-arm check and perceptible cool-blue accent do not specify a dominant fill, backing exclusion or AA ban",
+      "appears_in": "creative brief and corrected criteria"
+    }
+  ],
+  "deferred_obligations": [
+    {
+      "id": "family-working-not-success",
+      "obligation": "Working 4-frame loop communicates activity without looking like Ready/success.",
+      "source": "BRIEF.md line 3",
+      "stage": "family expansion after Ready sample approval",
+      "prerequisites": [
+        "approved Ready sample",
+        "Working candidate (queue.working)"
+      ]
+    },
+    {
+      "id": "family-retry-non-color",
+      "obligation": "Retry (assets/error-retry.png) distinguishable from Ready and others without colour alone.",
+      "source": "BRIEF.md lines 3, 7",
+      "stage": "family expansion/collective review",
+      "prerequisites": [
+        "approved Ready sample",
+        "Retry candidate"
+      ]
+    },
+    {
+      "id": "family-paused-non-color",
+      "obligation": "Paused distinguishable from activity, completion and retry without colour alone, including grayscale comparison at 1x and 3x.",
+      "source": "BRIEF.md line 7; PLAR queue.ready delivery checks",
+      "stage": "family collective review",
+      "prerequisites": [
+        "approved Ready sample",
+        "Working, Retry and Paused candidates"
+      ]
+    },
+    {
+      "id": "style-decision",
+      "obligation": "Record the representative-sample style decision and source-bind the approved visual reference before expanding the family.",
+      "source": "BRIEF.md line 5; PLAR queue.ready next/questions",
+      "stage": "pending explicit family/style decision on delivered retained fixture",
+      "prerequisites": [
+        "delivered retained fixture (already exists)",
+        "explicit style decision and source-bound baseline"
+      ]
+    },
+    {
+      "id": "destination-delivery",
+      "obligation": "Place accepted Ready image at assets/ready-confirmed.png; decode and confirm dimensions/frames/transparency there.",
+      "source": "BRIEF.md line 5; src/queue-view.ts line 6",
+      "stage": "delivery after art acceptance",
+      "prerequisites": [
+        "accepted candidate"
+      ],
+      "status": "completed historically",
+      "evidence": "assets/ready-confirmed.png and work/queue.ready-delivery/integration.json",
+      "note": "No replacement delivery assigned."
+    },
+    {
+      "id": "renderer-integration",
+      "obligation": "Exercise statusCell and compactStatus in an actual renderer and confirm the Ready label and asset appear for the ok transition.",
+      "source": "src/queue-view.ts lines 10-11; PLAR queue.ready delivery checks",
+      "stage": "integration/live acceptance",
+      "prerequisites": [
+        "delivered asset",
+        "a renderer or UI entry point (none supplied)"
+      ]
+    }
+  ],
+  "preserved": {
+    "start_vector": {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "note": "Unmodified; no Start production in scope."
+    },
+    "plar_ids": "No PLAR allocation IDs added, removed or renamed."
+  },
+  "review_status": {
+    "specialist_self_review": "Corrected future contract; independent caller comparison pending",
+    "independent_caller_review": "pending"
+  },
+  "resume": {
+    "store": ".pixl/assets/queue.ready",
+    "state": ".pixl/assets/queue.ready/state.px",
+    "state_hash": "7a97831f618ffe1c761c0f839525bf4d763eacb56c7fb05b26f15f9ad3da1a81",
+    "task": "r.22e90a2a03fe453a.task",
+    "output": "r.22e90a2a03fe453a.output.ready",
+    "candidate": "ready.retained",
+    "job": "r.22e90a2a03fe453a.request",
+    "remote_id": "controlled-create-0002",
+    "provider": "pixellab-test",
+    "provider_simulated": true,
+    "note": "Historical completed fixture delivery; exact derived continuation belongs to pixl_plar_handoff. Do not dispatch."
+  },
+  "adoption_scope": "Future contract correction only. No historical criteria, verdicts or completed state are replaced. No old pass is transferred to corrected criteria.",
+  "historical_contract": {
+    "packet": {
+      "path": "work/queue.ready-revision/request-review.json",
+      "sha256": "f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2"
+    },
+    "criteria": {
+      "path": "work/queue.ready-revision/candidate-plan.json",
+      "sha256": "e7f85aa1f115b4f4c40cc5fc7c6e16a6313b4db36df4d133823241b9923750f6"
+    },
+    "arguments": {
+      "path": "work/queue.ready-revision/provider-arguments.json",
+      "sha256": "fd0fa3248550c503b668175426120ff82096f18cd2d197fa52de3e870a9609d3"
+    }
+  },
+  "execution_scope": "Exact future proposed arguments against retained controlled schema only. No dispatch authorized; fresh connection/schema verification required for any later production. No approved pixel-art style reference supplied: text cue is not an uploaded image.",
+  "current_state_corrections": [
+    "PLAR existing.role still says Ready destination missing, but exact delivered PNG now exists and is linked to ready.retained.",
+    "PLAR delivery check prose still says no delivered art reviewed; later evidence/state record completed historical six-criterion review.",
+    "Derived review_delivery remains immediate continuation even after caller review; caller_actions must retain actual caller evidence without replacing derived next.",
+    "new_request_allowed runtime capability is not authorization. No generation assigned."
+  ]
+}

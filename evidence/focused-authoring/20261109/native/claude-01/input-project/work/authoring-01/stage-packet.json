@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "inputs": {
+    "live.seed.output": {
+      "candidate": "live.working-seed.candidate",
+      "sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629"
+    }
+  },
+  "request": {
+    "provider": "pixellab-official-mcp",
+    "tool": "mcp__pixellab__pixelart_workbench",
+    "arguments": {
+      "argv": [
+        "join",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nGNgGPKAEZeE09rP/0H09++sYP7xGA6salmwal7x/D/D7y8MDKw8DFJc7xl+/YUYMjiAE9RrMMBEliEgL1JiAAMrD2Uu4P73E7uEx+Z3/0EYn2Z0eSZkzq9frGAcvA7iR90ZTzEM2+ErxIgzHXBDnfaeiQcc2i/+cRH0DooLNoeKMHL/+ckg9usTgyDjFwaJv68IGjDwAACUwzj9jVACOAAAAABJRU5ErkJggg==",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nGNgGPKAEZeE09rP/0H09++sYP7xGA6salmwal7x/D/D7y8MDKw8DFJc7xl+/YUYMjiAE9RrMMBEliEgL1JiAAMrD2Uu4P73E7uEx+Z3/0EYn2Z0eSZkzq9frGAcvA7iR90ZTzEM2+ErxIgzHXBDnfaeiQcc2i/+cRH0DooLNoeKMHL/+ckg9usTgyDjFwaJv68IGjDwAACUwzj9jVACOAAAAABJRU5ErkJggg==",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nGNgGPKAEZeE09rP/0H09++sYP7xGA6salmwal7x/D/D7y8MDKw8DFJc7xl+/YUYMjiAE9RrMMBEliEgL1JiAAMrD2Uu4P73E7uEx+Z3/0EYn2Z0eSZkzq9frGAcvA7iR90ZTzEM2+ErxIgzHXBDnfaeiQcc2i/+cRH0DooLNoeKMHL/+ckg9usTgyDjFwaJv68IGjDwAACUwzj9jVACOAAAAABJRU5ErkJggg==",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nGNgGPKAEZeE09rP/0H09++sYP7xGA6salmwal7x/D/D7y8MDKw8DFJc7xl+/YUYMjiAE9RrMMBEliEgL1JiAAMrD2Uu4P73E7uEx+Z3/0EYn2Z0eSZkzq9frGAcvA7iR90ZTzEM2+ErxIgzHXBDnfaeiQcc2i/+cRH0DooLNoeKMHL/+ckg9usTgyDjFwaJv68IGjDwAACUwzj9jVACOAAAAABJRU5ErkJggg==",
+        "--as",
+        "sheet",
+        "--columns",
+        "4"
+      ],
+      "mode": "low",
+      "notes": "Working queue status strip (queue.working -> authoring-01.working): step 1 of a two-step deterministic official construction from the accepted 16x16 seed live.working-seed.candidate (sha256 21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629). Join four copies of the exact seed bytes, supplied as data:image/png;base64 URLs, into one 64x16 horizontal sheet: 4 columns x 1 row, no scaling, no redraw, no new pixels. Step 2 (a separate job on the same stage, prepared only after this result is reviewed) applies guarded patch_pixels to sheet cells 2, 3 and 4 so they hold the seed rotated 90, 180 and 270 degrees clockwise about canvas centre (7.5,7.5) via dst(x,y)=src(y,15-x) per quarter-turn; cell 1 remains the seed at 0 degrees. Why not animate_image: the retained AI animation of this same seed (job live.working-animation-01.job) returned five frames whose selected frames morphed and near-held across phases 2/3, jumped at the wrap, and one frame carried 193 opaque #808080 background pixels; the accepted motion live.working-animation-motion-01.candidate is exactly these clockwise quarter-turns, which this construction reproduces without a paid generation. Review obligations for this step's result (preparation is not acceptance): output exactly 64x16 with cells at x=0,16,32,48 and no gutters, padding or added canvas; every cell pixel-identical to the seed including an alpha-0 exterior; measure how the workbench represents transparent pixels before composing step 2 expected values. Later obligations: step-2 pixel-exact rotation check, native/3x frame review, live 100 ms playback with the 4->1 wrap, family distinction, and both statusCell/compactStatus consumers."
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "low",
+            "high"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "discovery": {
+      "source": "Current connected official PixelLab MCP tool declaration retained in official-discovery.json (host-exposed declaration text; not a raw tools/list dump)",
+      "observed_at": "2026-11-09T08:31:55+00:00",
+      "evidence": {
+        "declaration_path": "official-discovery.json",
+        "declaration_sha256": "671cf0859791c54c2a6efc22d4db96d4aef3fa700474c47bff6a4e0fe1e14bea",
+        "declaration_name": "mcp__pixellab__pixelart_workbench",
+        "declaration_recorded_observation": "2026-11-09 08:12:05 UTC",
+        "declaration_text": "Run one pixel-art command on a drawing or image you already made. This is\nthe engine's own command line: it checks work, explains it and improves it.\n\nCommands: check and explain (read-only):\n- lint <id> [--rules outline_gap,orphan_pixel,…] — pixel-art defects, each\n  naming the node and command that drew them\n- inspect <id> --region x0,y0,x1,y1 --scale 10 — a zoomed crop with its\n  exact colours\n- measure <id> --at x,y — what is at a pixel and who drew it\n- explain <id> — resolved geometry, per-command footprints, before rendering\n- motion / storyboard / silhouette / reveal / clusters / parts <id> — reports\n- score <id> — a 0-100 pixel-art discipline score with a breakdown\n- compare <id> <id> — two results side by side\nImprove (returns a NEW drawing id):\n- shade <id> --band 2 --light=-1,-1 — banded shading along a colour ramp\n- selout <id> — selective outlining; reoutline / clean-lines / aa / mirror\n- cluster <id> --at x,y --action recolor --color <name> — one guarded cluster\n- repair <id> — deterministic cleanup of drift, strays, fringe and noise\nSheets and frames (returns a NEW image id):\n- split <image> --grid 3x3 — a sprite sheet, strip or grid as an animation,\n  one frame per cell (columns x rows)\n- join <image> <image> … [--as sheet|rows|animation] [--columns n] — pictures\n  or animations as one sprite sheet, one per row, or one animation\n- scale <image> --by 4 — the same picture or animation bigger, each pixel a\n  4x4 block (a sticker, a print); nothing is redrawn\nA result comes back as an image in the reply AND as a no-auth URL the reply\nprints, `/mcp/pixel-tools/<id>/image.png` (`frames.png` for the frames of a\nmulti-frame one) — so a sheet you joined is both readable inline and\ndownloadable. Sheets hold at most 1024 px a side; `join` refuses a larger\none rather than shrinking the art, and says how many frames do fit.\nCraft operations need colour ramps: run `extract-palette <id>` first, then\npass `--ramps skin=dark,mid,light`.\nAuthoring: `edit <id> --changes '[…]'` applies exact pixel operations and\n`draw <id> --recipe '{…}'` builds or revises a layered scene; both take JSON\nwhose fields are NOT listed here. Colours in that JSON are always `#RRGGBB`\nor `#RRGGBBAA` with alpha `00` or `ff` — `rgb()` and bare hex are refused,\nand nothing strips the `#`, since argv is a JSON list rather than a shell\nline. Every `edit` change carries `operation`, `layer`, `frames` (ONE-based)\nand `reason`; coordinates are zero-based and a `region` is `[x0,y0,x1,y1]`\ninclusive. Then its own fields: `patch_pixels` takes `pixels`, a list of\n`[x,y,expected,replacement]` (1-10000, each assigned only where the pixel\nalready holds `expected`, so a mismatch fails the pass); `copy_region` takes\n`source_layer`, `source_frame`, `region`, `at` `[x,y]`; `map_colors` takes\n`region` and `colors` `{\"#from\":\"#to\"}` (alpha must match); `flood_fill`\n`seed`/`expected`/`color`; `brush` `points` plus `color`; `outline` `mode`\n(outside|inside|recolor|erase). The full contracts and any command's flags\nare one free call away: `describe edits | paint | outline | draw | animation\n| motion | scenes | review`, `<command> -h`, `describe cli`.\nFree for subscribers.\n\nPixelLab AI-powered pixel art generation service.\n\nUse of this service is subject to PixelLab's Terms of Service:\nhttps://pixellab.ai/termsofservice\n\nThis MCP server provides programmatic access to generate:\n- Characters with multiple directional views\n- Character animations\n- Isometric tiles\n- Top-down tilesets for game maps\n- Sidescroller tilesets for platformer games\n\nAll generation operations are non-blocking and return job IDs for status tracking.\nRequires PixelLab subscription (with credit fallback support).\n\n**Pixel tools (free, exact, you are the artist)**: one command line, pixelart_workbench(argv=[...]), inspects, edits, draws and animates pixel art by your own decisions; combine it with the AI tools above. Start with pixelart_workbench(argv=['describe', 'start'], mode='low'|'high') — low acts directly with few tokens, high plans out loud and reviews every frame. Animated effects (spells, hits, explosions, auras): vfx_workbench(argv=['describe', 'start']) — same ids, exports to the user's My effects.\n\n**Git access**: Clone and push game project source code with standard git.\nUse `list_projects` to see your projects and their git clone URLs.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixellab__pixelart_workbench(args: {\n  // One command line, e.g. 'lint <drawing_id> --rules outline_gap' or ['edit', '<id>', '--changes', '[…]']. Omit it for the playbook. A subject is an id or an image reference — never a file path; the server writes the output and returns a new id. A reference is `character:<id>:<direction>` for a rotation, `character:<id>:<direction>:<animation>` for every frame of that animation (the display name, type or [group: ...] id get_character prints), the same two forms for `object:<id>` (a one-direction object's direction is the literal `unknown`), `gallery:<id>`, `job:<id>`, `upload:<id>`, a data URL, an https link or base64. That is how a stored animation's pixels come back inline without downloading anything. Start with 'describe cli' for the full command list.\n  argv?: string | Array<string> | null;\n  // low (default): act directly, fewest tokens — one decisive image per result. high: think openly — fuller evidence and a review checklist; write your plan and observations in `notes`. Use the mode the user asked for.\n  mode?: \"low\" | \"high\";\n  // What you observed and what this step should achieve, in a few sentences (high mode: always; low: optional). On the first call, include the user's request. Stored with the step to improve these tools.\n  notes?: string | null;\n}): Promise<CallToolResult>; };\n```",
+        "schema_representation": "JSON Schema projection of the exposed TypeScript argument declaration: argv string | string[] | null, mode 'low' | 'high', notes string | null; additionalProperties false",
+        "subject_transport": "Each argv subject is a data:image/png;base64 URL of the exact retained seed bytes (declaration: a subject is an id or an image reference, including a data URL, an https link or base64; never a file path). Base64 computed from the artifact file and verified to round-trip to the same sha256.",
+        "official_docs": [
+          "https://api.pixellab.ai/mcp/docs",
+          "https://www.pixellab.ai/docs"
+        ]
+      }
+    },
+    "authorization": {
+      "scope": "User-authorized useful official PixelLab operations for Working, Retry, Paused and collective family review in this retained consumer (PRODUCTION-STAGE.md), carried into the isolated authoring branch by AUTHORING-STAGE.md, which assigns request preparation and recovery only: no remote generation call and no dispatch claim in this continuation. The workbench pixel tools are declared free for subscribers; this step requests no paid generation.",
+      "evidence": {
+        "source": "PRODUCTION-STAGE.md",
+        "sha256": "cf596689393394fcc5a1c50ac61866e8a953bd784f937fb171f64febfd5bf7ad",
+        "continuation": "AUTHORING-STAGE.md",
+        "continuation_sha256": "29e73af9a110353dd1453b1bbbb73d7166cf42a0b8eb97f71b53e73701b600aa",
+        "user_request": "Choose and prepare Working's next executable official PixelLab operation from the retained seed and current declarations in official-discovery.json; include actual input image bytes via a supported data/base64 input; do not call a remote generation tool."
+      }
+    }
+  }
+}

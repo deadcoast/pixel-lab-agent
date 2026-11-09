@@ -1,0 +1,740 @@
+{
+  "reviewer_role": "Independent native calling agent /root, not PIXL self-review",
+  "review_scope_sha256": "004c98f18586db99a7cf39659dcb7d9f4adbe13246cde17b26d3b3a9ca0f708b",
+  "reviewed_proposal": {
+    "path": "work/focused-successor/specialist-proposal-r3.json",
+    "sha256": "36ee55db0667b69975d485c08f14239d28bb4b60b2bdc6c3686171300e1a3794"
+  },
+  "criterion_comparisons": [
+    {
+      "criterion": "authoring-01.working.q.geometry",
+      "record_sha256": "2ed1c002b7e74113a05691c6f1049a5d2687d9cd3d6edc72487c70b289f2b4e1",
+      "original_literal": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters, padding or extra canvas; the consumer slices frame*16,0,16,16 for frames=4 and advances at display.frameMs 100 ms per frame (nominal 400 ms cycle).",
+      "prior_r2_literal": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and advances floor(elapsed/100) mod 4 (nominal 400 ms cycle).",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.geometry",
+          "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view-successor.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer-successor/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and, under no-preference only, advances floor(elapsed/100) mod 4 (nominal 400 ms cycle). Under reduced motion it selects frame zero without changing the four-cell sheet geometry.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 fixes four horizontal16px frames at100ms; source view supplies frame counts and renderer supplies slicing.",
+      "authority_basis": "Required canvas/layout; renderer mechanism observed. No in-cell margin prohibition.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry.",
+      "discriminating_alternative": "A 64x16 Working sheet with generous transparent in-cell margins passes; an extra gutter changes slice coordinates and fails for a source-supported reason. Static members may likewise retain margins.",
+      "disposition": "consistent for locally reviewed successor; Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry."
+    },
+    {
+      "criterion": "authoring-01.working.q.transparent-exterior",
+      "record_sha256": "a2a7a4b732d9f595aca9d557d1a16fbce9e9498d24a3d72a7a3e12a502374c83",
+      "original_literal": "In every cell, all pixels outside the activity marks have alpha 0; no opaque matte, plate, grey tile or fringe in any frame (the rejected generated frame whose background held 193 opaque #808080 pixels is this failure class). Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "prior_r2_literal": "Two records (caller decision: adopt the split for any future plan; for the existing Q record this is documented correction only). MEASURED record (mechanical/local): retain every cell's alpha histogram and exact RGBA component boxes; FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte / grey tile and is not a rejection condition: a corner-to-corner X or a full-height/full-width glyph legitimately touches all four edges with a transparent exterior. Mechanical REJECTION is decidable only under the seed-rotation construction: each cell's alpha channel must equal that of cw^k(seed) (224 alpha-0 pixels per cell); RGB values of alpha-0 pixels are not significant. VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of every frame shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. The rejected frame with 193 opaque #808080 background pixels (live.working-animation-01.review.verdict.1) is the failure class. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.transparent-exterior.diagnostic",
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "observational diagnostic, not artistic verdict"
+        },
+        {
+          "id": "focused-successor.working.q.transparent-exterior",
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires transparent backgrounds; adopted style keeps transparency/full alpha, with no fixed palette or binary-alpha requirement.",
+      "authority_basis": "Visual obligation plus a separate observational diagnostic; full alpha and selective AA remain permitted.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque.",
+      "discriminating_alternative": "A deliberate broad backing shape with transparent exterior may trigger the occupancy flag but can pass visual review; a thin unintended gray matte must fail appearance even if a diagnostic misses it.",
+      "disposition": "consistent for locally reviewed successor; Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque."
+    },
+    {
+      "criterion": "authoring-01.working.q.frame-assembly",
+      "record_sha256": "f524a8f70a0cdf6b7c6b3888c87930cc0dfe0a73db4b35ca57fecc307233fca2",
+      "original_literal": "When the provider result is not already the exact 64x16 four-cell sheet (more frames than four, another layout, gutters or padding), the retained assembly record names the exact source frames or cell rectangles in play order and every delivered cell is a lossless copy: no resize, resample, recolor, duplication or silent frame drop; all raw provider frames are retained beside the assembled strip.",
+      "prior_r2_literal": "When the provider result is not already the exact 64x16 four-cell sheet (more frames than four, another layout, gutters or added canvas), the retained assembly record names the exact source frames or cell rectangles in play order and every delivered cell is a lossless copy: identical alpha everywhere and identical RGBA where alpha>0 (RGB of alpha-0 pixels is not significant); no resize, resample or recolor; no undocumented duplication or silent frame drop (a deliberately repeated phase is allowed when the record says so); all raw provider outputs are retained beside the assembled strip. Construction-scoped (seed-rotation construction only, expert choice): delivered cell k must equal cw^k(seed) under dst(x,y)=src(y,15-x) per quarter-turn, and the step-2 patch list, the measured transparent expected value and the workbench step ids form the assembly record.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.frame-assembly",
+          "check": "For this reuse-only successor, record the exact retained Working source cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc and verify the destination PNG is byte-identical. No new frame assembly, join, patch, resize, resample, recolor, duplication or drop is performed. Preserve the earlier raw provider outputs and assembly records unchanged. The obsolete prepared join and proposed seed-rotation step-two checks are non-applicable to this reuse path; a future construction change requires review of its own exact assembly policy.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "FOCUSED-SUCCESSOR.md:29-42 allows reviewed existing art; authoring construction policy only binds that chosen join/rotation path.",
+      "authority_basis": "Reuse is a reviewed expert implementation choice; byte identity establishes provenance, not new provider execution.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Replace construction-only obligations with exact-byte copy checks for this successor; retain original policy/requests unchanged and explicitly non-applicable to reuse.",
+      "discriminating_alternative": "A copied existing accepted sheet needs no new join/patch or generated frames. A redesigned expressive motion could be valid but would require a new reviewed construction.",
+      "disposition": "consistent for locally reviewed successor; Replace construction-only obligations with exact-byte copy checks for this successor; retain original policy/requests unchanged and explicitly non-applicable to reuse."
+    },
+    {
+      "criterion": "authoring-01.working.q.activity-not-success",
+      "record_sha256": "a5719b7cef8299db0608afec30c2b0e8ee2a732c482663b38fae283d1aac1e30",
+      "original_literal": "Viewed at 1x and 3x nearest on #172336 beside the exact Ready baseline, each frame and the running loop read as ongoing activity: no frame forms a check mark, an arrowhead, pause bars or a success-like terminal pose.",
+      "prior_r2_literal": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in authoring-01.delivery.q.distinction.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.activity-not-success",
+          "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in authoring-01.delivery.q.distinction. For reduced motion, frame zero shown alone with its Working label must read as the stationary Working indicator, distinct from Ready and Paused; the frame choice is this specialist's proposal, not an owner-prescribed motif.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires activity without success; AUTHORING-UPDATE.md:2-5 requires stationary Working distinct from Ready/Paused.",
+      "authority_basis": "Owner outcomes; frame0 and the broken orbital motif are specialist choices. Start/Retry distinction is shared-consumer inference.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Adopt frame0 locally after actual native/3x, grayscale and renderer comparison; do not promote it to a universal owner motif.",
+      "discriminating_alternative": "Another existing frame or dedicated pending ellipsis could satisfy the stationary requirement; paired pause bars cannot satisfy Working-vs-Paused distinction.",
+      "disposition": "consistent for locally reviewed successor; Adopt frame0 locally after actual native/3x, grayscale and renderer comparison; do not promote it to a universal owner motif."
+    },
+    {
+      "criterion": "authoring-01.working.q.motion-continuity",
+      "record_sha256": "3c047ce9c41259f17f2afeb2ca2dc4c62aa931cd7e61a99c14d62acdcff0ea54",
+      "original_literal": "Play the actual four frames at 100 ms per frame including the fourth-to-first wrap: stable center and anchor, stable cluster count and volume in every phase, deliberate stepped phases with no morphing, near-hold or wrap jump (the rejected AI-animation failure class).",
+      "prior_r2_literal": "Play the actual four frames at the consumer's 100 ms per frame including the fourth-to-first wrap, at 1x and 3x on #172336. Required outcome: the strip plays as one continuous activity loop with no visible discontinuity at the fourth-to-first wrap (BRIEF line 3: four frames, 100 ms, loop communicates activity; display.frameMs 100; contract loop-boundary review). Expert quality clauses binding through family.working.contract for this Working asset: stable centre/anchor and stable visual volume across phases. Expert quality clause by specialist judgment (not in the contract text, not owner authority): motion is evenly paced across the four frames with no near-hold, because at 4 x 100 ms a held pair reads as a stutter; under the seed-rotation construction this is satisfied by construction (uniform angular velocity). Construction-scoped clauses for the seed-rotation construction only: stable cluster count (three components per cell) and stepped quarter-turn phases with no morphing. The rejected AI animation (live.working-animation-repair-01.review.verdict.1: morph/near-hold across phases 2/3, jump at wrap) is the failure class, not the definition of the rule.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.motion-continuity",
+          "check": "Normal motion only: play all four existing Working frames at 100 ms per frame at 1x and 3x on #172336 including fourth-to-first wrap; required outcome is one continuous activity loop without a visible discontinuity at the wrap. Stable center/anchor and visual volume are scoped expert quality checks from the Working contract. Evenly paced angular motion/no near-hold is the specialist's chosen quality criterion for this exact reused rotating-segment design, not an owner requirement; a different expressive timing design could satisfy the brief after review. No universal fixed cluster-count/no-morph recipe is imposed. Reduced motion is evaluated separately as stationary frame zero.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 fixes four100ms frames and activity; contract adds stable anchor/volume quality assessment.",
+      "authority_basis": "100ms is required timing; even angular pacing/no near-hold is expert quality for this rotating design only.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep explicit normal-motion scope and wrap review; freeze tested separately. Browser sample sequence supports functional playback; human real-time temporal appraisal remains limited.",
+      "discriminating_alternative": "A source-conforming expressive hold with valid100ms frame cadence might pass the brief but fail this narrower expert construction; changing design requires review rather than rewriting the owner requirement.",
+      "disposition": "consistent for locally reviewed successor; Keep explicit normal-motion scope and wrap review; freeze tested separately. Browser sample sequence supports functional playback; human real-time temporal appraisal remains limited."
+    },
+    {
+      "criterion": "authoring-01.working.q.style-coherence",
+      "record_sha256": "066b5cffb06e93e2f3a4aad785a06ce9328b77547852b26059f115176a6b01db",
+      "original_literal": "Readable compact silhouettes, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "prior_r2_literal": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.style-coherence",
+          "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires readable silhouettes/cool blue, no fixed palette; scoped caller style decision carries exact Ready baseline, deliberate clusters/stepped edges.",
+      "authority_basis": "Required original outcome plus adopted consumer style. Visual judgment; no identical weight/stroke/footprint rule.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test.",
+      "discriminating_alternative": "A lighter thin pause mark or selective-AA curve can be coherent despite different weight, dimensions of occupied shape and alpha values.",
+      "disposition": "consistent for locally reviewed successor; Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test."
+    },
+    {
+      "criterion": "authoring-01.working.q.consumers",
+      "record_sha256": "ed2091c5d4fcc40b51a4ac9deba9c35e60e93e9e070d04101c3beefd7bde8084",
+      "original_literal": "Exercise started -> running through stateAfter and both statusCell and compactStatus with assets/working.png in the actual consumer renderer: label Working, frames 4, nearest sampling at scale 1 and 3, alpha compositing on #172336, and observed live 100 ms frame advance including the wrap.",
+      "prior_r2_literal": "In the supplied browser fixture (renderer/view.mjs executing the actual src/queue.ts and src/queue-view.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.working.q.consumers",
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path renderer-successor/assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render renderer-successor/assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Normal-motion (no-preference) frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed. Under prefers-reduced-motion: reduce, both consumers retain Working label and 64x16/four-cell source geometry but select stationary frame zero via statusFrame(state, elapsed, reduced) and suppress frame advancement. Observe the same frame and pixel hash over at least 800 ms while running in both consumers. Change the media preference to reduce while this page remains open: immediately paint frame zero on both live and matrix Working cells. Change back to no-preference in the same session: restart normal cycling at frame zero through all four 100 ms phases and wrap, without backend-state change, reload, stale canvas, or duplicate animation.",
+          "domain": "engine",
+          "mode": "live",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "src/queue.ts:1-4 maps started -> running; src/queue-view.ts:2-11 shares statusVisuals between both consumers. FOCUSED-SUCCESSOR authorizes versioned destination; changed PLAR requires stationary Working.",
+      "authority_basis": "Required consumer mapping; new destinations are caller-adopted local successor, not historical render.choice.destination migration.",
+      "scope": "working successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence.",
+      "discriminating_alternative": "A renderer freezing one consumer but leaving compactStatus animated fails shared mapping. Renaming backend running to paused to suppress motion would violate state meaning.",
+      "disposition": "consistent for locally reviewed successor; Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence."
+    },
+    {
+      "criterion": "authoring-01.retry.q.geometry",
+      "record_sha256": "b9181108856b1221fe79ffbe6b773d347dfd2b1cab6cb6faaf8be1de7ad072dd",
+      "original_literal": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "prior_r2_literal": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.retry.q.geometry",
+          "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3,7 and src/queue-view.ts:5-7 require the static status in a16px cell.",
+      "authority_basis": "Required canvas/layout; renderer mechanism observed. No in-cell margin prohibition.",
+      "scope": "retry successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry.",
+      "discriminating_alternative": "A 64x16 Working sheet with generous transparent in-cell margins passes; an extra gutter changes slice coordinates and fails for a source-supported reason. Static members may likewise retain margins.",
+      "disposition": "consistent for locally reviewed successor; Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry."
+    },
+    {
+      "criterion": "authoring-01.retry.q.transparent-exterior",
+      "record_sha256": "f076bd55723bcb531f46bd21450bc11bf170b91c8b79d83d19153b29da02e4d4",
+      "original_literal": "All pixels outside the mark have alpha 0; no opaque matte, plate or fringe. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "prior_r2_literal": "Two records (caller decision: adopt the split for any future plan; for the existing Q record this is documented correction only). MEASURED record (mechanical/local): retain the cell's alpha histogram and exact RGBA component boxes; FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte / grey tile and is not a rejection condition: a corner-to-corner X or a full-height/full-width glyph legitimately touches all four edges with a transparent exterior. No mechanical rejection rule is decidable for this static member (no construction fixes its alpha set); RGB values of alpha-0 pixels are not significant. VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of the image shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.retry.q.transparent-exterior.diagnostic",
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "observational diagnostic, not artistic verdict"
+        },
+        {
+          "id": "focused-successor.retry.q.transparent-exterior",
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires transparent backgrounds; adopted style keeps transparency/full alpha, with no fixed palette or binary-alpha requirement.",
+      "authority_basis": "Visual obligation plus a separate observational diagnostic; full alpha and selective AA remain permitted.",
+      "scope": "retry successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque.",
+      "discriminating_alternative": "A deliberate broad backing shape with transparent exterior may trigger the occupancy flag but can pass visual review; a thin unintended gray matte must fail appearance even if a diagnostic misses it.",
+      "disposition": "consistent for locally reviewed successor; Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque."
+    },
+    {
+      "criterion": "authoring-01.retry.q.retry-meaning-without-color",
+      "record_sha256": "021696acc3bb3ec4ed48cc1465c685825830f0c63b5622862c3f2a689bec58c9",
+      "original_literal": "Viewed at 1x and 3x nearest on #172336 in color and in grayscale, the mark reads as failed work / retry and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; it must not be confusable with the Working activity loop.",
+      "prior_r2_literal": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.retry.q.retry-meaning-without-color",
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires Retry distinguishable without color alone; :7 explicitly separates Paused from activity/completion/retry; shared status set contains preserved Start.",
+      "authority_basis": "Owner non-color distinction; Start comparison is consumer inference. No owner arrow/pause-bar recipe.",
+      "scope": "retry successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep qualitative shape comparison against every Working frame and stationary0. Actual grayscale views distinguish connected Retry arrow, disconnected Working arcs, check and pause bars.",
+      "discriminating_alternative": "A readable non-arrow retry symbol or non-bar paused symbol can pass; similar blue hue alone cannot establish or defeat distinction.",
+      "disposition": "consistent for locally reviewed successor; Keep qualitative shape comparison against every Working frame and stationary0. Actual grayscale views distinguish connected Retry arrow, disconnected Working arcs, check and pause bars."
+    },
+    {
+      "criterion": "authoring-01.retry.q.style-coherence",
+      "record_sha256": "ff724740ecd4df5840f310e12c8e22c59228f486e2d82ea979bfedf98865ec96",
+      "original_literal": "Readable compact silhouette, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "prior_r2_literal": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.retry.q.style-coherence",
+          "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires readable silhouettes/cool blue, no fixed palette; scoped caller style decision carries exact Ready baseline, deliberate clusters/stepped edges.",
+      "authority_basis": "Required original outcome plus adopted consumer style. Visual judgment; no identical weight/stroke/footprint rule.",
+      "scope": "retry successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test.",
+      "discriminating_alternative": "A lighter thin pause mark or selective-AA curve can be coherent despite different weight, dimensions of occupied shape and alpha values.",
+      "disposition": "consistent for locally reviewed successor; Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test."
+    },
+    {
+      "criterion": "authoring-01.retry.q.consumers",
+      "record_sha256": "63bb9a45e56d01026c98299c05c79c19cf0bd6ae4b2abb56242af3c543d4014f",
+      "original_literal": "Exercise error -> failed through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Retry, frames 1, path assets/error-retry.png (not the superseded assets/retry.png), nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior.",
+      "prior_r2_literal": "In the supplied browser fixture (renderer/view.mjs executing the actual src/queue.ts and src/queue-view.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+      "successor_checks": [
+        {
+          "id": "focused-successor.retry.q.consumers",
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+          "domain": "engine",
+          "mode": "live",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.116"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "src/queue.ts:1-4 maps error -> failed; src/queue-view.ts:2-11 shares statusVisuals between both consumers. FOCUSED-SUCCESSOR authorizes versioned destination; changed PLAR requires stationary Working.",
+      "authority_basis": "Required consumer mapping; new destinations are caller-adopted local successor, not historical render.choice.destination migration.",
+      "scope": "retry successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence.",
+      "discriminating_alternative": "A renderer freezing one consumer but leaving compactStatus animated fails shared mapping. Renaming backend running to paused to suppress motion would violate state meaning.",
+      "disposition": "consistent for locally reviewed successor; Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence."
+    },
+    {
+      "criterion": "authoring-01.paused.q.geometry",
+      "record_sha256": "6ddf39c0e5ded6d3eb64e2324ee27de7fa7b2e718e033338ed9059088ae77bae",
+      "original_literal": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "prior_r2_literal": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.paused.q.geometry",
+          "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3,7 and src/queue-view.ts:5-7 require the static status in a16px cell.",
+      "authority_basis": "Required canvas/layout; renderer mechanism observed. No in-cell margin prohibition.",
+      "scope": "paused successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry.",
+      "discriminating_alternative": "A 64x16 Working sheet with generous transparent in-cell margins passes; an extra gutter changes slice coordinates and fails for a source-supported reason. Static members may likewise retain margins.",
+      "disposition": "consistent for locally reviewed successor; Clarified geometry retained. Normal advance explicitly no-preference; reduced frame0 retains four-cell source geometry."
+    },
+    {
+      "criterion": "authoring-01.paused.q.transparent-exterior",
+      "record_sha256": "3825694288a35fe5986e104f343e0a667ee8943a9f5b9c1062a7053e979a4e91",
+      "original_literal": "All pixels outside the mark have alpha 0; no opaque matte, plate or fringe (the rejected opaque magenta intermediate is this failure class). Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "prior_r2_literal": "Two records (caller decision: adopt the split for any future plan; for the existing Q record this is documented correction only). MEASURED record (mechanical/local): retain the cell's alpha histogram and exact RGBA component boxes; FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte / grey tile and is not a rejection condition: a corner-to-corner X or a full-height/full-width glyph legitimately touches all four edges with a transparent exterior. No mechanical rejection rule is decidable for this static member (no construction fixes its alpha set); RGB values of alpha-0 pixels are not significant. VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of the image shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. The rejected opaque magenta intermediate (live.paused-02.review.verdict.1) is the failure class. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.paused.q.transparent-exterior.diagnostic",
+          "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+          "domain": "mechanical",
+          "mode": "local",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "observational diagnostic, not artistic verdict"
+        },
+        {
+          "id": "focused-successor.paused.q.transparent-exterior",
+          "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires transparent backgrounds; adopted style keeps transparency/full alpha, with no fixed palette or binary-alpha requirement.",
+      "authority_basis": "Visual obligation plus a separate observational diagnostic; full alpha and selective AA remain permitted.",
+      "scope": "paused successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque.",
+      "discriminating_alternative": "A deliberate broad backing shape with transparent exterior may trigger the occupancy flag but can pass visual review; a thin unintended gray matte must fail appearance even if a diagnostic misses it.",
+      "disposition": "consistent for locally reviewed successor; Keep split measured histogram/component record and deciding visual check. Alpha-zero magenta RGB does not make Paused opaque."
+    },
+    {
+      "criterion": "authoring-01.paused.q.pause-meaning-without-color",
+      "record_sha256": "249bc83e1b2813fcfde4209acf1bcc34ac5a5580cd665d2bd639b5e9136bf777",
+      "original_literal": "Viewed at 1x and 3x nearest on #172336 in color and in grayscale, the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle.",
+      "prior_r2_literal": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.paused.q.pause-meaning-without-color",
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires Retry distinguishable without color alone; :7 explicitly separates Paused from activity/completion/retry; shared status set contains preserved Start.",
+      "authority_basis": "Owner non-color distinction; Start comparison is consumer inference. No owner arrow/pause-bar recipe.",
+      "scope": "paused successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep qualitative shape comparison against every Working frame and stationary0. Actual grayscale views distinguish connected Retry arrow, disconnected Working arcs, check and pause bars.",
+      "discriminating_alternative": "A readable non-arrow retry symbol or non-bar paused symbol can pass; similar blue hue alone cannot establish or defeat distinction.",
+      "disposition": "consistent for locally reviewed successor; Keep qualitative shape comparison against every Working frame and stationary0. Actual grayscale views distinguish connected Retry arrow, disconnected Working arcs, check and pause bars."
+    },
+    {
+      "criterion": "authoring-01.paused.q.style-coherence",
+      "record_sha256": "fb4d6d176c9029e2cee15bd8fca3681b1c3f080a6a67d621ee499ebf71530141",
+      "original_literal": "Readable compact silhouette, deliberate coherent clusters and stepped edges, and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "prior_r2_literal": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.paused.q.style-coherence",
+          "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 requires readable silhouettes/cool blue, no fixed palette; scoped caller style decision carries exact Ready baseline, deliberate clusters/stepped edges.",
+      "authority_basis": "Required original outcome plus adopted consumer style. Visual judgment; no identical weight/stroke/footprint rule.",
+      "scope": "paused successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test.",
+      "discriminating_alternative": "A lighter thin pause mark or selective-AA curve can be coherent despite different weight, dimensions of occupied shape and alpha values.",
+      "disposition": "consistent for locally reviewed successor; Keep outcome-based style check, full alpha and selective AA; inspected actual small and enlarged family, not a numeric palette/stroke test."
+    },
+    {
+      "criterion": "authoring-01.paused.q.consumers",
+      "record_sha256": "cf34749f0a5f4696e02a2ca9c1b6ed5e924345c3a21581edf2321726d34e4aa1",
+      "original_literal": "Exercise pause -> paused through stateAfter and both statusCell and compactStatus in the actual consumer renderer: label Paused, frames 1, path assets/paused.png, nearest sampling at scale 1 and 3, alpha compositing on #172336, static behavior.",
+      "prior_r2_literal": "In the supplied browser fixture (renderer/view.mjs executing the actual src/queue.ts and src/queue-view.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+      "successor_checks": [
+        {
+          "id": "focused-successor.paused.q.consumers",
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+          "domain": "engine",
+          "mode": "live",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.117"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "src/queue.ts:1-4 maps pause -> paused; src/queue-view.ts:2-11 shares statusVisuals between both consumers. FOCUSED-SUCCESSOR authorizes versioned destination; changed PLAR requires stationary Working.",
+      "authority_basis": "Required consumer mapping; new destinations are caller-adopted local successor, not historical render.choice.destination migration.",
+      "scope": "paused successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence.",
+      "discriminating_alternative": "A renderer freezing one consumer but leaving compactStatus animated fails shared mapping. Renaming backend running to paused to suppress motion would violate state meaning.",
+      "disposition": "consistent for locally reviewed successor; Keep actual browser/live route. All20 state/scale views and all5 event mappings checked; working preference switches both ways with>800ms stationary evidence."
+    },
+    {
+      "criterion": "authoring-01.delivery.q.continuity",
+      "record_sha256": "6df7e20ca123e5df9d02960a3c5413b8c3b0b4824ac14dcba5dba3e25b59a84b",
+      "original_literal": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight, perceptible cool-blue accent and transparent exteriors, including Working's four frames and its actual 100 ms playback with the wrap; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+      "prior_r2_literal": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames and its actual 100 ms playback with the wrap; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.delivery.q.continuity",
+          "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames, its actual 100 ms playback with the wrap under no-preference, and its stationary frame-zero presentation under reduce; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+          "domain": "continuity",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114",
+            "source.115",
+            "source.116",
+            "source.117",
+            "source.118"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3 asks coherent pixel-art family, adopted Ready style scopes comparison; normal loop and reduced stationary mode both need readability.",
+      "authority_basis": "Collective visual obligation and expert continuity assessment, not identical weight.",
+      "scope": "delivery successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep readable coherent weight without comparable/identical thickness constraint; normal playback scoped separately from stationary reduced case.",
+      "discriminating_alternative": "Paused can have longer tall bars than Ready check or thinner Working segments while retaining coherent blue stepped craft; mandatory identical footprint would wrongly reject it.",
+      "disposition": "consistent for locally reviewed successor; Keep readable coherent weight without comparable/identical thickness constraint; normal playback scoped separately from stationary reduced case."
+    },
+    {
+      "criterion": "authoring-01.delivery.q.distinction",
+      "record_sha256": "495b765b7d19e863bc8fa14ee344478d9b690552717be8c7dbe09cb735dd78a7",
+      "original_literal": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable.",
+      "prior_r2_literal": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.delivery.q.distinction",
+          "check": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable. Include stationary Working frame zero shown alone in the non-color comparison: required reduced-motion distinction is from Ready and Paused. Distinction from Retry and preserved Start is the shared-consumer inference from the same status set, not a literal owner motif requirement.",
+          "domain": "continuity",
+          "mode": "visual",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114",
+            "source.115",
+            "source.116",
+            "source.117",
+            "source.118"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "BRIEF.md:3,7 gives activity-not-success and Retry/Paused non-color outcomes; changed PLAR adds stationary Working distinct from Ready/Paused.",
+      "authority_basis": "Owner outcomes plus explicit shared-consumer inference for Start; grayscale is an adopted comparison method.",
+      "scope": "delivery successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Keep all frames, normal loop and stationary0 in comparison; frame0 visually distinct from Ready/Paused with Working label. Start inference is labelled, not falsely attributed to preserve-vector wording.",
+      "discriminating_alternative": "Static Working arcs and connected Retry arrow may share orbital direction but remain shape-distinct; copying Ready check into Working would fail regardless of label.",
+      "disposition": "consistent for locally reviewed successor; Keep all frames, normal loop and stationary0 in comparison; frame0 visually distinct from Ready/Paused with Working label. Start inference is labelled, not falsely attributed to preserve-vector wording."
+    },
+    {
+      "criterion": "authoring-01.delivery.q.destination",
+      "record_sha256": "f9d04bde1905a8223494dc3c3ce1573a54b99c3e80e543367edb69055104c5a6",
+      "original_literal": "Exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the confirmed destination paths: labels, frame counts, horizontal slicing, 100 ms timing, nearest sampling at scale 1 and 3, alpha compositing on #172336 and recorded integer placement against the screenshot; assets/start.svg byte hash unchanged.",
+      "prior_r2_literal": "In the supplied browser fixture (renderer/view.mjs executing the actual src/queue.ts and src/queue-view.ts), exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the confirmed destination paths: labels, frame counts, horizontal slicing, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; assets/start.svg byte hash unchanged.",
+      "successor_checks": [
+        {
+          "id": "focused-successor.delivery.q.destination",
+          "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the caller-reviewed proposed successor destination paths: labels, frame counts, horizontal slicing, under no-preference only, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; renderer-successor/assets/start.svg byte hash unchanged. Caller-reviewed proposed successor destination is src/queue-view-successor.ts plus renderer-successor/, with copied exact assets at renderer-successor/assets/{start.svg,working.png,ready-confirmed.png,error-retry.png,paused.png}; old src/queue-view.ts, renderer/ and assets/ remain byte-unchanged. Exercise running under both prefers-reduced-motion settings and switch each direction while open; assert both consumers update together without changing queue.ts backend state. Reduced mode draws stationary Working source rectangle [0,0,16,16] with no advancement, normal mode retains all four frames at 100 ms.",
+          "domain": "engine",
+          "mode": "live",
+          "source_refs": [
+            "source.000",
+            "source.001",
+            "source.002",
+            "source.003",
+            "source.004",
+            "source.005",
+            "source.108",
+            "source.109",
+            "source.114",
+            "source.115",
+            "source.116",
+            "source.117",
+            "source.118"
+          ],
+          "authority": "mixed: original requirements, adopted style and scoped expert methods; see literal historical clauses and successor_delta"
+        }
+      ],
+      "source_obligation": "FOCUSED-SUCCESSOR.md requires untouched old src/renderer, new successor destination, same backend and both consumers, media preference changes and actual render evidence.",
+      "authority_basis": "Assignment-mandated versioned implementation and destination evaluation; historical destination choice is not rebound.",
+      "scope": "delivery successor reuse, same consumer family; original Q unmodified",
+      "literal_delta": "Local successor destination adopted after fresh actual browser/pixel review. UDL generation retention/acceptance remains separate and unresolved; no acceptance transfer.",
+      "discriminating_alternative": "A code-only mapping or screenshot without real state events cannot establish integration. Changing global preference or old source would violate scope.",
+      "disposition": "consistent for locally reviewed successor; Local successor destination adopted after fresh actual browser/pixel review. UDL generation retention/acceptance remains separate and unresolved; no acceptance transfer."
+    }
+  ],
+  "status": "consistent",
+  "adoption_scope": "Local versioned successor source/renderer and exact reused bytes; not new UDL verdicts, provider success or lifecycle completion.",
+  "sources": "Shared index in exact specialist proposal, plus actual opened brief, source backend/view, current selected requirement, actual source/renderer implementation, prior caller D1-D4 and actual composited/rendered images.",
+  "corrections_requested": [
+    "r1 unconditional animation advance corrected in r2/r3 to normal only, retaining old proposals",
+    "r2 confirmed destination wording corrected in r3 to caller-reviewed proposal pending adoption"
+  ],
+  "prior_corrections_verified": {
+    "D1": "Alpha measurements remain diagnostic; deciding check visual.",
+    "D2": "100ms owner cadence separated from expert even pacing/no near-hold.",
+    "D3": "Coherence imposes no identical/comparable footprint or weight.",
+    "D4": "Start distinction attributed to shared consumer inference."
+  },
+  "art_decision": {
+    "choice": "Adopt frozen Working frame0 for this labelled UI in reduced mode",
+    "basis": "Three disconnected stepped orbital segments remain clearly unlike asymmetrical Ready check and paired Paused bars at native/3x and in grayscale; connected Retry arrow and Start triangle remain distinct. Other frames would also be plausible, frame0 gives deterministic entry.",
+    "limits": "Static spinner may suggest waiting/stall; this is scoped to visible Working label. No new AI quality claim; no transferred acceptance."
+  },
+  "verification": {
+    "mechanical": "pixel-check-02.json and motion-check.json",
+    "visual": "Actual host-opened specialist-native-3x.png, specialist-grayscale.png, render-01 destination/reduced-live; final render-02 screenshot also opened before final result. Native-size assets included in views; no universal motif/alpha/palette recipe.",
+    "temporal_limit": "Actual browser animation executed and all phases sampled; host image viewer displays stills. Human real-time temporal playback appraisal not asserted."
+  },
+  "remaining": "Supported retained-generation revision for reuse-only connected plan with existing PLAR links; no new criterion acceptance published."
+}

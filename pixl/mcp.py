@@ -5,8 +5,9 @@ import sys
 
 from jsonschema import Draft202012Validator, ValidationError
 
+from .candidate_review import OBSERVATION_SCHEMA
 from .codec import PixlError
-from .service import call, parse_json
+from .service import RESULT_EXPORT_TOOLS, call, parse_json
 
 
 def schema(properties, required=()):
@@ -23,14 +24,37 @@ INT = {"type": "integer", "minimum": 1}
 OBJ = {"type": "object"}
 TOOLS = [
     (
+        "pixl_review_context",
+        "Read exact saved candidate or family criteria, current verdict IDs, semantic binding_hash and canonical state_hash before explicit review. Family creation status is separate from current acceptance.",
+        schema({"path": STR, "candidate_id": STR}, ["path", "candidate_id"]),
+    ),
+    (
+        "pixl_candidate_review",
+        "Retain explicit specialist observations and criterion judgments for a saved candidate or family. Derive evidence bindings; optionally nominate or complete through existing checks. Retry the identical review ID/payload with current state_hash after interruption. No provider action or automatic visual judgment.",
+        schema({"store": STR, "expect": STR, "candidate_id": STR, "review_id": STR, "observation": OBSERVATION_SCHEMA},
+               ["store", "expect", "candidate_id", "review_id", "observation"]),
+    ),
+    (
+        "pixl_production_plan",
+        "Author connected sample/production stages and collective delivery from reviewed JSON using existing contracts, baseline and choices. Recover PLAR links on identical retries. No execution or acceptance.",
+        schema({"store": STR, "expect": STR, "plan": OBJ}, ["store", "expect", "plan"]),
+    ),
+    (
+        "pixl_stage_prepare",
+        "Bind exact reviewed accepted upstream candidates to a planned stage and prepare its durable provider request. Identical retries recover saved intent; no dispatch or acceptance.",
+        schema({"store": STR, "expect": STR, "plan": STR, "stage": STR, "job": STR, "packet": OBJ}, ["store", "expect", "plan", "stage", "job", "packet"]),
+    ),
+    (
         "pixl_plar_handoff",
         "Save an exact selected-production continuation with agent-authored details; returns immutable path/hash. Keep caller_actions and future_work in details; derived resume/next are preserved unchanged. No acceptance or provider action.",
-        schema({"asset_id": STR, "requirements_hash": STR, "expect": STR, "details": OBJ, "path": STR}, ["asset_id", "requirements_hash", "expect", "details"]),
+        schema({"asset_id": STR, "requirements_hash": STR,
+                "expect": {**STR, "description": "Current production.continuation.state_hash from selected pixl_plar_read; not the PLAR file hash."},
+                "details": OBJ, "path": STR}, ["asset_id", "requirements_hash", "expect", "details"]),
     ),
     (
         "pixl_request_review",
-        "Read exact candidate request/criteria with hash-bound file-local source excerpts and current production continuation. Reports invalid/unresolved locators; semantic comparison remains the caller's responsibility. Read only.",
-        schema({"packet": STR, "asset_id": STR, "path": STR}, ["packet"]),
+        "Read exact candidate or connected-plan criteria and source excerpts. For connected plans, view=changes plus against_plan gives a concise structural comparison, retained choices, review attention and exact full-report links. Default complete report is unchanged. Optional comparison checks identity/coverage, never meaning or acceptance.",
+        schema({"packet": STR, "asset_id": STR, "path": STR, "plan": STR, "job": STR, "comparison": STR, "view": {"enum": ["complete", "changes"]}, "against_plan": STR}, ["packet"]),
     ),
     (
         "pixl_retain_library",
@@ -65,8 +89,8 @@ TOOLS = [
     ),
     (
         "pixl_context",
-        "Retrieve complete task context; fail rather than truncate required byte budget.",
-        schema({"path": STR, "focus": STR, "budget": INT}, ["path", "focus"]),
+        "Retrieve complete task context (default; fail rather than truncate byte budget), or view=authoring for current contracts, literal criteria, source retrieval links, nominees and pending jobs without proof/history payloads. Authoring is an index, not acceptance.",
+        schema({"path": STR, "focus": STR, "budget": INT, "view": {"enum": ["complete", "authoring"]}, "plar_path": STR, "asset_id": STR}, ["path", "focus"]),
     ),
     (
         "pixl_ready",
@@ -352,6 +376,30 @@ TOOLS = [
     ),
 ]
 
+# Optional exact result files use the same request semantics and preserve defaults.
+TOOLS = [
+    (name, description + " Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.",
+     {**declaration, "properties": {**declaration["properties"], "result_path": STR}})
+    if name in RESULT_EXPORT_TOOLS else (name, description, declaration)
+    for name, description, declaration in TOOLS
+]
+
+# Describe the existing guards in discovery; their schemas/algorithms are unchanged.
+TOOLS = [
+    (name, description, {**declaration, "properties": {
+        key: ({**value, "description": (
+            "Current source-file byte SHA-256."
+            if name == "pixl_source" else
+            "Current PLAR file byte SHA-256 from pixl_plar_read.hash, or new for first save."
+            if name == "pixl_plar_save" else
+            value.get("description", "Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.")
+        )} if key == "expect" else
+              {**value, "description": "Selected semantic requirements digest from pixl_plar_read.requirements_hash; not the PLAR file hash."}
+              if key == "requirements_hash" else value)
+        for key, value in declaration["properties"].items()
+    }}) for name, description, declaration in TOOLS
+]
+
 
 def dispatch(request, root):
     if (
@@ -396,13 +444,15 @@ def dispatch(request, root):
                     "description": d,
                     "inputSchema": s,
                     "annotations": {
-                        "readOnlyHint": n
+                        "readOnlyHint": n not in RESULT_EXPORT_TOOLS and n
                         not in (
                             "pixl_init",
                             "pixl_intake",
                             "pixl_commit",
                             "pixl_plar_save",
                             "pixl_plar_prepare",
+                            "pixl_production_plan",
+                            "pixl_stage_prepare",
                             "pixl_plar_handoff",
                             "pixl_job_prepare",
                             "pixl_job_dispatch",
@@ -411,6 +461,7 @@ def dispatch(request, root):
                             "pixl_family_snapshot",
                             "pixl_inspection_prepare",
                             "pixl_inspection_review",
+                            "pixl_candidate_review",
                             "pixl_task_complete",
                         ),
                         "destructiveHint": False,

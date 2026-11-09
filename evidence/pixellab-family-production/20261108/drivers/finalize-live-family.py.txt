@@ -1,0 +1,78 @@
+"""Freeze current production evidence without re-running provider operations."""
+
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+REPO=Path(__file__).resolve().parents[1]
+BASE=REPO/'evidence/pixellab-family-production'
+RUN=BASE/'20261108'
+PROJECT=RUN/'project'
+WORK=PROJECT/'work/live-family'
+PYTHON=REPO/'.venv/Scripts/python.exe'
+VERIFY=REPO/'evidence/verification-runs/20261108T131152.221959Z/result.json'
+
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+def write(path,value):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_text(json.dumps(value,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+
+def command(argv):
+    env=dict(os.environ,UV_CACHE_DIR=str(REPO/'build/uv-cache'),UV_OFFLINE='1')
+    result=subprocess.run([str(a) for a in argv],cwd=REPO,env=env,capture_output=True,text=True,encoding='utf-8',errors='replace')
+    return {'command':[str(a) for a in argv],'exit_code':result.returncode,'stdout':result.stdout,'stderr':result.stderr}
+
+def main():
+    receipt=json.loads(VERIFY.read_text(encoding='utf-8'))
+    assert receipt['status']=='pass' and receipt['stage']=='distribution'
+    drift=[p for p,h in receipt['checked_input_hashes'].items() if sha(REPO/p)!=h]
+    assert not drift,drift
+    manifest=json.loads((REPO/'plugins/pixl/bundle-manifest.json').read_text(encoding='utf-8'))
+    assert sha(REPO/'plugins/pixl/bundle-manifest.json')==receipt['bundle_manifest_sha256']
+    # Final kit is a separate versioned sibling; old installed consumer kit stays intact.
+    assert not (RUN/'kit').exists()
+    shutil.copytree(REPO/'plugins/pixl',RUN/'kit',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    portable=command([PYTHON,'-B',RUN/'kit/scripts/pixl.py','plar','read','--root',PROJECT,'--asset','queue.working'])
+    write(RUN/'portable-check.json',portable)
+    assert portable['exit_code']==0
+    selected=json.loads(portable['stdout'])
+    assert selected['production']['next_action']=='delivered'
+    assert selected['production']['delivery']['complete']
+    write(WORK/'portable-current-selection.json',selected)
+    static=[]
+    for argv in [[PYTHON,'-B','-m','ruff','check','pixl','plugins/pixl/runtime','tests','evaluations','scripts','examples/plar-project/renderer/check.py'],[PYTHON,'-B','-m','mypy','--explicit-package-bases','pixl','evaluations','scripts','examples/plar-project/renderer/check.py'],*[[shutil.which('node'),'--check','examples/plar-project/renderer/'+f] for f in ('server.mjs','capture.mjs','view.mjs')],*[[shutil.which('uv'),'run','--offline','--no-project','--with','pyyaml','python','C:/Users/ryanf/.codex/skills/.system/skill-creator/scripts/quick_validate.py','plugins/pixl/skills/'+s] for s in ('pixl','plar')]]:
+        static.append(command(argv))
+    write(RUN/'static-and-skill-checks.json',static)
+    assert all(r['exit_code']==0 for r in static)
+    drivers=['continue-family-production.py','assemble-live-family.py','prepare-family-repairs.py','prepare-working-motion.py','integrate-live-family.py','integrate-working-motion.py','family-review-views.py','verify-family-package.py','refresh-family-handoff.py','finalize-live-family.py']
+    (RUN/'drivers').mkdir()
+    for name in drivers: shutil.copyfile(REPO/'build'/name,RUN/'drivers'/(name+'.txt'))
+    findings=[]
+    files=[]
+    for parent in (PROJECT,RUN/'kit',RUN/'drivers'):
+        for p in sorted(parent.rglob('*')):
+            if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc':
+                data=p.read_bytes()
+                if re.search(rb'\bpixl_[a-f0-9]{32}\b',data): findings.append(p.relative_to(RUN).as_posix())
+                files.append({'path':p.relative_to(RUN).as_posix(),'sha256':sha(p),'bytes':len(data)})
+    assert not findings,findings
+    archive=RUN/'production-and-kit.zip'
+    assert not archive.exists()
+    with zipfile.ZipFile(archive,'x',zipfile.ZIP_DEFLATED) as z:
+        for f in files: z.write(RUN/f['path'],f['path'])
+    with zipfile.ZipFile(archive) as z:
+        for f in files: assert hashlib.sha256(z.read(f['path'])).hexdigest()==f['sha256']
+    write(RUN/'archive-manifest.json',{'archive':archive.name,'sha256':sha(archive),'entries':files,'scope':'Consumer, final portable kit and exact one-off drivers; excludes pycache. Each archived byte stream rehashed. Limited provider-token-pattern scan, not a general secret audit.'})
+    current=json.loads((WORK/'HANDOFF-current.json').read_text(encoding='utf-8'))
+    checks={'observed_at':datetime.now(UTC).isoformat(),'status':'pass','scope':'Actual official provider outcomes and scoped fixture family acceptance; no new native-host behavioral trial','verification':str(VERIFY.relative_to(REPO)).replace('\\','/'),'verification_sha256':sha(VERIFY),'tests':receipt['tests'],'checked_inputs':len(receipt['checked_input_hashes']),'checked_input_drift':drift,'bundle_entries':len(manifest['files']),'bundle_manifest_sha256':receipt['bundle_manifest_sha256'],'provider_generations_charged':16,'provider_failures_retained':1,'rejected_candidates_retained':3,'final_family_task':'done','current_handoff':current,'renderer_checks_per_capture':404,'semantic_requirement_hashes_unchanged':True,'portable_read_next_action':selected['production']['next_action'],'archive':{'path':str(archive.relative_to(BASE)).replace('\\','/'),'sha256':sha(archive),'files':len(files)},'static_and_skill_checks':{'path':'20261108/static-and-skill-checks.json','passed':len(static)},'limitations':['No new unaided Claude/Codex delegation proof','Ready remains controlled fixture and Start existing vector','Final Working motion is specialist-constructed from generated seed; original model animation rejected','Visual review uses recorded live frames/timing and exact views; no human acceptance or another engine']}
+    write(BASE/'checks.json',checks)
+    print(json.dumps({k:checks[k] for k in ('status','tests','checked_inputs','bundle_entries','portable_read_next_action','archive')}))
+
+if __name__=='__main__':main()

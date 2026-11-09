@@ -4,13 +4,65 @@ Use this operation when extending a reviewed representative sample into related 
 
 ## Start with the actual saved family
 
+For authoring, begin with `context STATE TASK_OR_OUTPUT_OR_PLAN --view authoring
+--root ROOT` (`pixl_context` with `view: "authoring"`). Optionally supply `--plar
+PATH --asset ID` / `plar_path` and `asset_id` for the selected requirements. This
+index exposes literal current criteria, contracts, choices, decisions, source
+retrieval arguments, prerequisite nominees and relevant pending intents. Sources
+are indexed once; retrieve the relevant original lines before interpreting their
+authority. Connected-plan entries return the exact `request_review` arguments.
+The index omits proof history and embedded provider payloads; it neither approves
+a nominee nor replaces the full workflow/jobs checks below. Source drift stays
+visible so the caller can orient itself before repair. Default `context` still
+returns its complete wire dependency closure and never truncates to fit a budget.
+
 Read the [PX2 specification](../../../resources/spec/PIXL-2.md) and [registry](../../../runtime/pixl/registry-v2.json), including their family extension. Discover the installed runner's help or MCP schemas before using the operations below. Existing PX1 and older PX2 projects retain their declared semantics; do not manufacture a migration by relabeling their headers.
 
 Gather the brief and sources, target use, actual sample bytes and verdicts, confirmed style choices, applicable adoption decisions and proofs, member inventory, destination choices, and authorized provider scope. Read `workflow STATE --root ROOT`, `family STATE [OUTPUT] --root ROOT`, and `jobs STATE --root ROOT` before extending or retrying existing work. `family` verifies retained files and reports current selection, requirements, pending jobs and historical snapshot drift. It changes no state.
 
 Open the exact nominated sample X and its retained observations. Confirm its sample task is done and that its passing verdicts answer the family-relevant question. A replaced or rejected candidate cannot serve as the approved baseline merely because its old PNG remains. A sample that demonstrated a front idle pose does not establish all-direction walk contacts or diagonal tile seams; use the [sample operation](intake-sample.md) to exercise that uncertainty before scaling it.
 
+When a corrected contract follows an earlier delivery, identify which review actually
+adopts the sample for this family. Preserve the earlier contract/verdicts; evaluate
+the retained bytes against the new saved criteria before claiming new acceptance.
+For linked PLAR stages, the connected plan's optional `selection.replaces` names
+the exact current store/task/output link. After resolving earlier pending intents,
+author a new plan ID with that explicit replacement and current state hash. The
+adapter retains the old generation and allocation history. This route also supports
+reuse with new review criteria; no provider job is invented for unchanged files.
+The same image can remain useful without another generation. Record the baseline's
+exact identity, the caller's scoped style decision and which properties carry into
+later members. A completion glyph may establish edge treatment and color roles; it
+does not prescribe the other members' silhouettes or prove their motion/meaning.
+The caller may resolve expert design choices within its delegated assignment; do
+not invent a separate owner approval when that authority was already supplied.
+
+Inventory available and missing members before collective review. A sample decision
+and a comparison with an existing control can be complete while the family remains
+unfinished. Keep missing members planned, with concrete next work; do not create a
+passing family snapshot or silently remove them from the family to finish a report.
+
 ## Save the members and collective requirements first
+
+For a new family or staged seed → animation/edit workflow, prefer the
+[connected authoring operation](../../../resources/spec/production-plan.md).
+`production-plan` / `pixl_production_plan` takes reviewed stages, existing contracts,
+baseline, adoption and destination choices, then writes the dependency graph and
+explicit PLAR links. It leaves all work open. Once inputs are accepted,
+`stage-prepare` / `pixl_stage_prepare` binds their exact bytes and the reviewed
+official request before the normal durable-job workflow. Use the returned IDs;
+do not reproduce the same wiring manually. Existing linked generations and unusual
+amendments keep the explicit saved-state/revision route below.
+
+Pass the returned `request_review` arguments to `pixl_request_review` and save its
+report. It contains the exact member **and collective** Q identities, literal
+clauses, cited source excerpts, controls and any prepared request. Complete the
+[request and criteria handoff](request-review.md#connected-family-and-stage-handoff)
+with the caller before adopting those interpretations. A grouped statement that
+the family preserves style or geometry is not a comparison of its individual
+rejection rules. Method-specific criteria can be useful; state their actual scope
+without attributing the construction to the owner. Preserve required qualitative
+outcomes when correcting an overly specific recipe.
 
 Use the normal decode/edit/encode/validate/expected-hash commit sequence. Record only fields defined in the current specification. Before files exist, save F plans rather than invented X identities.
 
@@ -35,6 +87,12 @@ Evaluate each member against its own requirements and approved baseline. Keep me
 
 A dimension or palette check cannot supply these visual judgments. If playback, neighborhood assembly or visual access is unavailable, retain that precise boundary and leave its criterion unavailable/unperformed. Do not write a passing visual receipt for an unseen artifact. When an inspection fails, retain X/E/V and its actual defect, create a revised X at a new path, inspect the revision, and nominate it only with its own current evidence. A successful generation request does not answer the member's acceptance criteria.
 
+For timed consumers, retain the frames actually painted during a live loop and
+their observed clock values, including wrap. Calculated boundary crops alone do
+not show that the running view advanced. Check those pixels against the retained
+sheet and inspect the sequence separately for motion quality. A mechanically
+correct clock can still play a visibly hesitant or morphing sequence.
+
 ## Retain and review the exact delivery
 
 When the baseline is still eligible and every planned member has a nominee on a done task, inspect the family report for pending jobs and blockers. The delivery task must be open or active for retention. Invoke:
@@ -54,10 +112,44 @@ Published manifest candidates and their constituent X identities are immutable. 
 
 ## Destination boundary and cold handoff
 
+For collective and destination judgments, prefer `pixl_review_context` followed by
+`pixl_candidate_review` on the saved manifest candidate, using the
+[candidate/family review contract](../../../resources/spec/candidate-review.md).
+Bind actual viewed files and renderer reports to their hashes, state each literal
+criterion's judgment and limitations, and explicitly choose record, nominate or
+complete. The operation handles evidence bindings and lifecycle publication; it
+does not run the renderer or judge the pixels. `snapshot_acceptance` remains the
+immutable package-creation status; `current_acceptance` and task status describe
+subsequent review. Read both without rewriting the original manifest.
+
 Use the target engine and the retained files to exercise the applicable import behavior: frame slicing and order, pivots/contact alignment, timing and loop transitions, direction mapping, texture sampling/display scale, alpha/atlas edges, tile neighbor mapping, or required material/lighting behavior. Record the actual engine/project version, files tested, settings and observed outcome. Metadata inspection alone does not establish engine acceptance.
+
+Exercise the real consumer path, including backend transitions and every assigned
+shared view, rather than drawing the asset in an unrelated preview. If an existing
+representative fixture only supplies source descriptors, an explicitly scoped
+graphical entry point can make those modules executable. Bind captures to the
+actual modules, image bytes and renderer version; report this fixture's observed
+behavior without claiming another project's engine acceptance. Preserve missing
+or failed states visibly. Browser screenshots, pixel/compositing measurements and
+the specialist's visual judgment answer different questions; retain each as needed.
+
+Prefer the project's existing isolated capture/integration command for that
+execution. Review the resulting actual playback sequence and native/enlarged
+images through available image tools. Desktop control is one optional observation
+route, not a prerequisite for family or destination acceptance. A supplemental
+playback surface can cover a missing review scale, but keep it distinct from the
+actual destination run and verify it uses the same asset bytes and timing.
 
 If the engine or target project is unavailable, still deliver links to the retained manifest and useful files. Record an unavailable V with `ev=[]` and the precise missing capability; keep delivery unfinished. Leave the concrete next action, such as importing the named copied sheet into the specified target scene, applying the saved slice/pivot/timing settings, and playing the listed loop and direction transitions. State that destination acceptance is unverified. Do not turn missing engine access into a visual rejection or a fabricated live receipt.
 
 Commit a handoff containing the state path and observed revision/hash, family output and manifest candidate, package and copied-file locations, baseline and selected member IDs, relevant failed/unavailable verdicts, pending job IDs and last observed states, and the next task with its required context and action. An N record can point to the retained records/tasks; retain the human-readable instructions in project evidence as needed.
 
 A cold session starts with `family`, `workflow` and `jobs` against that root, then retrieves focused `context` and opens the cited artifacts and observations. Reconcile unknown jobs first, review reported plan/selection drift before new evaluation, and execute only the outstanding check or revision. Mark the delivery T done only after every declared criterion on its current nominee passes and prerequisites are done. Finish with the useful files, actual verification, unresolved limits and actionable handoff, without claiming art quality or engine readiness from local fixtures.
+
+## Saving family results
+
+Use MCP `result_path` or CLI `--result-path` on family, family-snapshot and
+candidate-review to retain exact result JSON under a fresh consumer-relative path.
+Read the returned file when comparing the immutable snapshot with current
+acceptance. A post-publication export error retains `operation_result`; reconcile
+current state before retrying. Never hand-copy JSON paths from a tool transcript.

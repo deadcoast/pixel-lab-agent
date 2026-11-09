@@ -1,0 +1,84 @@
+"""Append-only native continuation of the completed caller after independent review."""
+import json, os, shutil, subprocess, sys, time
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from evaluations.request_review_trials import inventory, retain_journals, sha, write_json, outcome
+
+original=ROOT/"evidence/handoff-repair/20261108/native/codex-04"
+destination=ROOT/"evidence/handoff-repair/20261108/native/codex-04-review-followup"
+project=original/"project"
+feedback=ROOT/"build/handoff-repair-forward-20261107T224225830/native-grades/codex-04/comparison-record-gap.json"
+assert (original/"record.json").is_file() and feedback.is_file()
+assert not destination.exists(),"Use a fresh feedback stage"
+helper_source=(ROOT/"build/finalize-handoff-repair-evidence.py").read_text(encoding="utf-8")
+helpers={};exec(compile(helper_source.split("assert (review/")[0],"<archive-helpers>","exec"),helpers)
+archive=helpers["archive"](original,"codex-04")
+destination.mkdir(parents=True)
+write_json(destination/"original-archive.json",archive)
+shutil.copytree(project,destination/"input-project",ignore=shutil.ignore_patterns(".git"))
+baseline=inventory(project,(".git",))
+write_json(destination/"baseline.json",baseline)
+feedback_target=project/"work/queue.ready-caller-followup/feedback.json"
+feedback_target.parent.mkdir(parents=True,exist_ok=False)
+shutil.copyfile(feedback,feedback_target)
+shutil.copyfile(feedback,destination/"feedback.json")
+shutil.copyfile(Path(__file__),destination/"followup_runner.py.txt")
+thread_ids=[]
+for line in (original/"stdout.jsonl").read_text(encoding="utf-8").splitlines():
+    try:event=json.loads(line)
+    except ValueError:continue
+    if event.get("type")=="thread.started":thread_ids.append(event["thread_id"])
+assert len(set(thread_ids))==1,thread_ids
+session_id=thread_ids[0]
+launch=json.loads((original/"launch.json").read_text(encoding="utf-8"))
+assert launch["command"][-1]=="-"
+launch["command"]=launch["command"][:-1]+["resume",session_id,"-"]
+launch["case"]="retained-caller-review-feedback"
+launch["continued_thread_id"]=session_id
+launch["scope"]="Native caller continuation after explicit independent feedback; not an unassisted fresh trial. Original files must remain byte-identical; new evidence is appended only."
+write_json(destination/"launch.json",launch)
+prompt="""Continue your recorded PIXL caller assignment in this same consumer. An independent
+reviewer verified the corrected contract and exact handoff but found a retained-evidence
+gap. Read work/queue.ready-caller-followup/feedback.json and the original brief, exact
+criteria and your caller review. Resolve that specific finding through the actual
+request-review workflow; use the existing specialist continuation if useful and available.
+
+This follow-up is append-only. Do not change or overwrite any existing file, including
+HANDOFF-RESULT.json, plar.txt, your old caller-review.json, the criteria/packet, state,
+images, verdicts, jobs, source or kit. The old attempt and its partial grade remain valid
+historical evidence. Save the completed independent caller comparison in a NEW file
+under work/queue.ready-caller-followup/. Keep source obligations, actual literal deltas,
+tested alternatives and dispositions explicit for all rejection rules; do not claim
+that the specialist's own comparison is your independent comparison. No new contract,
+acceptance, generation, renderer result, installation or global setting is assigned.
+
+Read current selected PLAR and use pixl_plar_handoff to save a NEW immutable handoff
+whose caller_actions accurately links the new comparison and observed outcome. Keep
+derived resume/next unchanged. Save HANDOFF-REVIEW-FOLLOWUP.json (new filename) linking
+the old result, feedback, new review and new handoff with hashes, completed scope and
+remaining obligations. Preserve previous authorship and label this as reviewer-guided
+correction, not a claim that the original caller record was complete. Your final response
+should identify those new artifacts and the actual result.
+"""
+(destination/"prompt.txt").write_text(prompt,encoding="utf-8")
+write_json(destination/"identity.json",{"predecessor_record":str(original/"record.json"),"predecessor_record_sha256":sha(original/"record.json"),"continued_thread_id":session_id,"feedback_sha256":sha(feedback),"prompt_sha256":sha(destination/"prompt.txt"),"package_files":inventory(project/"pixl-kit"),"runner_sha256":sha(Path(__file__)),"source_revision":subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip(),"scope":launch["scope"]})
+env=dict(os.environ)
+for key in list(env):
+    if any(word in key.upper() for word in ("PIXELLAB","PIXEL_LAB","ANTHROPIC_API_KEY","OPENAI_API_KEY")):del env[key]
+env.pop("PYTHONPATH",None);env["PYTHONDONTWRITEBYTECODE"]="1"
+started=time.monotonic()
+with (destination/"stdout.jsonl").open("wb") as stdout,(destination/"stderr.txt").open("wb") as stderr:
+    process=subprocess.Popen(launch["command"],cwd=project,env=env,stdin=subprocess.PIPE,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW if os.name=="nt" else 0)
+    process.communicate(prompt.encode("utf-8"))
+output=(destination/"stdout.jsonl").read_text(encoding="utf-8",errors="replace");events=[]
+for line in output.splitlines():
+    try:events.append(json.loads(line))
+    except ValueError:pass
+retain_journals(destination,events)
+shutil.copytree(project,destination/"project",ignore=shutil.ignore_patterns(".git"))
+changed=[rel for rel,h in baseline.items() if not (project/rel).is_file() or sha(project/rel)!=h]
+write_json(destination/"preservation.json",{"baseline_files":len(baseline),"changed":changed,"source_project":str(project),"snapshot_project":"project","new_files":sorted(set(inventory(project,(".git",)))-set(baseline))})
+write_json(destination/"record.json",{"host":"codex","case":launch["case"],"returncode":process.returncode,"execution_status":outcome(process.returncode,False,output),"elapsed_seconds":round(time.monotonic()-started,3),"behavioral_verdict":"ungraded","guided":True,"execution_project":str(project),"continued_thread_id":session_id,"historical_changes":changed,"artifacts":inventory(destination/"project",("pixl-kit","__pycache__")),"recorded_files":inventory(destination,("project","input-project","record.json"))})
+print(json.dumps({"attempt":str(destination),"returncode":process.returncode,"historical_changes":changed}))

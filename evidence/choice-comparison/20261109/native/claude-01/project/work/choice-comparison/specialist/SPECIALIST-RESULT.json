@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "kind": "specialist-result",
+  "status": "delivered",
+  "assignment": "CHOICE-COMPARISON.md step 3: focused semantic review of the actual source choices and old/new criteria for provenance-correction.plan against authoring-01.plan; read-only",
+  "identity": {
+    "role": "delegated native PIXL specialist; pixl:pixl skill loaded, PROFILE.md adopted for this review",
+    "invocation": "Claude Code Agent tool, subagent_type 'pixl' (the named role registered in the evaluation's agents.json: 'PIXL visual asset specialist for source-authority comparison')",
+    "model": "inherited from the parent: claude-fable-5-1",
+    "memory": "no inherited conversation or instance memory; reconstructed from the exported files and sources listed under checks",
+    "not_claimed": "not a separately trained model, not the caller, not a foreground user-approval gate"
+  },
+  "artifacts": [
+    {"path": "work/choice-comparison/specialist/criterion-mapping.json", "sha256": "a1962321e330e924e5660960211c71d50c18ace6a5bd4374527412b5d1059bdf", "bytes": 110790, "role": "explicit mapping of all 20 old and 23 new criterion IDs/record hashes with literal checks, per-pair literal changes, obligation judgments (unchanged/clarified/narrowed/widened/re-scoped) with named authority, three .diagnostic splits, historical verdict preservation"},
+    {"path": "work/choice-comparison/specialist/semantic-review.json", "sha256": "67b9b9a2d5a9c939de12beb94f6c8344c43f10f88da8e50892b0ba86c519bf46", "bytes": 44692, "role": "five themes (a-e) with exact before/after quotes from 03/04, obligation change and named authority; sources changed; linked vs unlinked choices; defects and attention items"},
+    {"path": "work/choice-comparison/specialist/build_criterion_mapping.py", "sha256": "413ba3e5c15dafee6a4552f351b09b5f53a75dfef2644b97b47f617f926a9e47", "bytes": 40629, "role": "reproducible generator for criterion-mapping.json; copies IDs, hashes and check text from exports 02/03/04/07/08/09 and asserts coverage; the judgment table is the only authored content"}
+  ],
+  "inputs_verified": {
+    "note": "SHA-256 recomputed locally for every export and source; all match the caller's stated values",
+    "exports": {
+      "01-context-authoring.json": "a3734ed9936e89e58752587e74b23af2380e3e6467e7e46f50fe0d63bc582dc6",
+      "02-request-review-changes.json": "a54b7d2a55b0fe37821cee7816d5ef6132d34801509998a39da4468f0a92d3ff",
+      "03-request-review-full-before-authoring-01.json": "ce984212ae75121f73dd502408aa38c43a61e4a6eba3343213ea3f987ddc8ce8",
+      "04-request-review-full-after-provenance-correction.json": "d911ea42aa2ef8f202cc99ff86e4ca89ad383fdbfe926d79983b7257bb07bddd",
+      "05-other-intake-focused-successor.choice.destination.json": "eba993863258aa31d769d2b51caa8ff400d1cc4a3979246866f4107975d2147d",
+      "06-other-intake-choice.ready.json": "eba993863258aa31d769d2b51caa8ff400d1cc4a3979246866f4107975d2147d",
+      "07-criterion-literal-diff.json": "53563eadbb6222ac4c2c53c1c0206e2b8eeedee8cc5139fbcbc464e3e28b4e31",
+      "08-review-context-working-candidate.json": "6486f9a6f3e34fef67f3aa2fd2d14808cbc5388e64f538b59b5d4b1a17af073f",
+      "09-review-context-family-candidate.json": "01275f69a14f78dbc3690b518c831a23a8d143d7afc8f9e8aae8efe6ae414f37"
+    },
+    "sources": {
+      "BRIEF.md": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "src/queue-view-successor.ts": "4ace984b2b53d5b30d99f41b1f2ee72fa3581a29e552b340010e82b6f7b9e80a",
+      "renderer-successor/view.mjs": "8e01a73c9144de815b5b573982a1931eee71935e6c31cc37e7730258ac99b862",
+      "SUCCESSOR-ADOPTION.md": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+      "work/focused-successor/specialist-proposal-r4.json": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+      "work/focused-successor/caller-comparison-final.json": "38a2716f9439b8ea14622293cc6bec550390ba1679d5f644a2e891e0507711b8",
+      "renderer-successor/assets/working.png": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+      "renderer-successor/assets/ready-confirmed.png": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "renderer-successor/assets/error-retry.png": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4",
+      "renderer-successor/assets/paused.png": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+      "renderer-successor/assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"
+    },
+    "state": {"path": ".pixl/assets/queue.ready/state.px", "sha256": "23718b6d027836af49f3548fcb38979bd4afca032e8113d7a9222c7c570c8c49", "revision": 126, "mutated": false}
+  },
+  "checks": {
+    "kit_read": ["resources/agent/PROFILE.md", "skills/pixl/SKILL.md (via skill load)", "skills/pixl/references/request-review.md", "skills/pixl/references/delegation.md", "resources/spec/production-plan.md section 'Concise successor comparison' (lines 121-151)", "CHOICE-COMPARISON.md"],
+    "literal_criteria": "All 20 before and 23 after checks read in full from 03/04 (programmatic dump); 02 criterion_index hashes matched against both full reports; 07 pairing cross-checked (identical-text pairs retry/geometry and paused/geometry agree).",
+    "r4_identity": "Current 23 checks compared with r4 criteria[].successor_checks: byte-identical except the cross-reference ID inside working.q.activity-not-success.",
+    "sources_read": ["BRIEF.md all 9 lines", "src/queue.ts", "src/queue-view-successor.ts (statusFrame, motionQuery, shared statusCell/compactStatus)", "renderer-successor/view.mjs (paint, animate/applyMotionPreference routes, capture timeline)", "SUCCESSOR-ADOPTION.md steps 1-6", "specialist-proposal-r4.json fields art_choice, request.reduced, revision_changes, criteria[].successor_checks/applicability/successor_delta (read programmatically, not printed whole)", "caller-comparison-final.json prior_corrections_verified D1-D4, art_decision, verification, criterion_comparisons reasoning fields (programmatic)"],
+    "state_read_only": ["pixl_review_context for provenance-correction.retry.candidate and provenance-correction.paused.candidate (all required pass, tasks done, verdict IDs provenance.retry/paused.review.verdict.0-4 and *.engine.verdict)", "grep of state.px for V records provenance.working.motion.unavailable (unavailable, ob=+), native-review.working.motion.verdict.0 (pass), provenance.working.review.verdict.1/.2, live.working-animation-01.review.verdict.1, live.paused-02.review.verdict.1, live.working-animation-repair-01.review.verdict.1 (all fails retained)", "S records successor.source.* vs provenance.source.* (same paths/digests/ranges; timestamps 20:00:00 placeholder vs 11:28:43 actual)"],
+    "measured": ["pixl_asset_check on working.png (64x16, 128 visible px, 12 components, 0 fractional alpha), ready-confirmed.png (29 px, 1 colour), error-retry.png (54 px, 31 colours, 1 component), paused.png (60 px, 20 colours, 2 components)", "own per-cell script: working cells each alpha {0:224,255:32}, 3 components, no full-span component; Ready single colour (112,185,237) = #70b9ed = start.svg fill"],
+    "images_actually_viewed": ["renderer-successor/assets/working.png (native)", "work/native-review/family-views/family-{running,succeeded,failed,paused,idle}-3x-color.png", "family-{running,paused,failed}-3x-gray.png", "family-{running,succeeded,paused,failed}-1x-color.png", "work/acceptance-01/headless-review-03/playback.png and stationary.png (full-page captures with colour/grayscale rows and 17 recorded frame exposures)", "work/acceptance-01/observed-views/transition-00..03-3x-color.png (the four Working frames at 3x on the panel)"],
+    "visual_findings_labelled_expert": [
+      "Family reads as one set by hue and panel contrast; shapes are distinct in colour and grayscale: filled triangle (Start), broken three-segment ring (Working), two tall bars (Paused), asymmetrical check (Ready), connected arrow with head (Retry).",
+      "Working frames are the same ring in quarter-turn steps; unequal segment weights give a slight lope that reads as deliberate rotation; frame zero alone with the Working label is a plausible stationary indicator, sparse at 1x without the label (r4 risk note accurate).",
+      "Retry is the most anti-aliased member (31 colours in 54 px) and the least 'stepped-cluster'; permitted by the explicit selective-AA clause; recorded as observation, not failure.",
+      "No unintended matte, halo or fringe seen on any member at 1x/3x on #172336 in the viewed composites."
+    ],
+    "not_performed": ["no generation, no provider call", "no PIXL mutation (no commit, candidate-review, inspection-prepare/review, task-complete, family-snapshot, plar-save, job-*)", "no live browser run; renderer behaviour taken from the retained captures and the source text", "no real-time playback appraisal"]
+  },
+  "findings_summary": {
+    "coverage": "20 old -> 23 new criteria fully mapped; 3 added criteria are .diagnostic splits of the three transparent-exterior rules; 0 removed; 2 pairs identical text; 3 pairs changed route mechanical/local -> visual/visual; all 20 pairs changed source bindings.",
+    "obligation_counts": {"unchanged": 8, "clarified": 8, "re-scoped": 10, "narrowed": 7, "widened": 5},
+    "themes": {
+      "a_alpha_vs_visual": "route corrected to visual; deliberate backing no longer auto-rejected; diagnostics are proxies without thresholds (BRIEF l3, PROFILE transparency, request-review route rule, D1)",
+      "b_geometry_vs_margins": "owner geometry unchanged; in-cell transparent margin named composition, removing an invented padding reading (BRIEF l3, view.mjs l40-41, D-geometry rows)",
+      "c_100ms_vs_quality": "owner cadence/outcome kept; centre/volume as contract-scoped expert quality; even pacing attributed to specialist for this design; timing claim narrowed to sampled indices with wall-clock unmeasured (BRIEF l3, contract li, D2, view.mjs l138-139)",
+      "d_coherence_vs_weight": "qualitative coherence retained; identical stroke/footprint explicitly not required; selective AA permitted; reduced presentation added to collective check (BRIEF l3, render.choice.style, D3, PLAR update)",
+      "e_reduced_motion_consumers": "new obligations for stationary frame zero and live switching across both shared consumers, worded to view.mjs's event-or-rAF reconciliation; destination re-scoped with old-file preservation; Start distinction attributed to shared-consumer inference (PLAR update, queue-view-successor.ts l10-22, view.mjs l94-115, SUCCESSOR-ADOPTION l49-51, r4 request.reduced/revision_changes, D4)"
+    },
+    "choices": "provenance.choice.destination and the unlinked focused-successor.choice.destination have identical values; only the S bindings differ (same digests, actual 11:28:43 timestamps vs 20:00:00 placeholder) - the time-binding fix. choice.ready is the superseded first Ready intent (assets/ready.png, accent near #70b9ed, no asymmetry requirement); superseded by r.22e90a2a03fe453a.choice.ready after BRIEF line 9. Unlinked records remain evidence of intent and value stability and bind nothing; linked choices bind only as choices, never as owner authority.",
+    "historical_preservation": "provenance.working.motion.unavailable (unavailable, obsolete) is retained beside the superseding pass native-review.working.motion.verdict.0; the three earlier fails named by the old criterion texts remain in state; added diagnostics erase nothing."
+  },
+  "defects_or_corrections_for_caller": [
+    "Correction: the superseding motion-continuity pass is native-review.working.motion.verdict.0, not a provenance.working.review.verdict.* ID (those cover the other six working criteria; consumers is provenance.working.engine.verdict).",
+    "Attention: provenance.working.review.verdict.1/.2 explicitly rest on retained earlier observation, not new viewing at 11:29; describe the visual transparency pass accordingly.",
+    "Attention: uniform 8-source lists and whole-file ranges on proposal/comparison sources reduce locator precision (needs_narrower_range); fix only in a future proposal.",
+    "No defect found in 07's structural pairing; no interpretation error found in the current 23 literal checks against the owner brief, consumers and assignment."
+  ],
+  "limitations": [
+    "Still-image host: real-time pacing, near-hold and wrap smoothness cannot be judged here; the recorded exposures and measured intervals in the retained pass are accepted as the record, not re-verified in real time.",
+    "Image views were the caller's retained composites plus the native assets; no new renders were produced.",
+    "Source lines cited are from the current files whose digests match the bound S records; the proposal/comparison files were read programmatically by field, not line-by-line.",
+    "This review does not establish broad artistic or host reliability; it is one bounded comparison on one consumer."
+  ],
+  "acceptance_statement": "No approval is manufactured here. Completed acceptance for provenance-correction.working/retry/paused/delivery already exists in state revision 126 and is neither re-earned nor altered by this review.",
+  "next": "Caller (step 4): verify this mapping against exports 02/03/04 independently, adopt the verdict-ID correction in CALLER-RESULT.json, and retain any disagreement as a separate follow-up file; no state change is required or recommended by this review."
+}
