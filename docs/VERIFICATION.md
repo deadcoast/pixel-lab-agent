@@ -1,5 +1,27 @@
 # Verification and limits
 
+## Native records and Claude continuation, 2026-11-09
+
+The [recording and continuation report](../evidence/native-continuation/README.md)
+separates the old non-persistent usage interruption, explicit recovery of its
+20-to-29 comparison and a successful separate-process continuation of the same
+parent and registered PIXL child. All 12 caller findings are reconciled, including
+two source-backed narrowings; no production or new art/renderer verdict follows.
+All 24 independent routing, history, identity, comparison and preservation checks
+pass. The initial grader representation error and three native script/citation
+self-corrections remain recorded. This is one native case, not broad reliability.
+
+Nine new regressions cover partial records, actual timeout, scoped environment,
+historical inspection, resume identity/configuration, package drift and Codex
+metadata. The [final full verifier](../evidence/verification-runs/20261109T201648.803400Z/result.json)
+passes **604 tests with one Windows privilege skip**, 39 reference checks,
+benchmark and installed-wheel/copied-plugin probes. Its 158 checked inputs and all
+172 final bundle entries match. The first sandbox-constrained broad failure is
+retained. Native trials use the frozen prior package; the rebuilt package differs
+only in four regenerated proof resources/references, with unchanged runtime,
+profile, skills and scripts. Exact identities are in the report. M1 remains open.
+
+
 ## Everyday production, identities and locators, 2026-11-09
 
 The [implementation and native report](../evidence/everyday-guide/README.md)

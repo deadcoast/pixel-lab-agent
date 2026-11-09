@@ -1,0 +1,141 @@
+"""Independent identity/trace checks; semantic findings are reviewed separately."""
+
+import hashlib
+import json
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def events(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def main():
+    first = HERE / "phase1-claude-01"
+    second = HERE / "phase2-claude-01"
+    one, two = read(first / "continuation.json"), read(second / "continuation.json")
+    consumer = Path(one["cwd"])
+    identity = read(first / "identity.json")
+    work = consumer / "work/continuation"
+    review = read(work / "CALLER-REVIEW-01.json")
+    proposal = read(consumer / "work/focused-successor/specialist-proposal.json")
+    checks = {}
+
+    def check(name, condition, details=None):
+        checks[name] = {"pass": bool(condition), "details": details}
+
+    drift = [name for name, value in identity["inputs"].items()
+             if not (consumer / name).is_file() or digest(consumer / name) != value]
+    check("original_consumer_inputs_unchanged", not drift,
+          {"files": len(identity["inputs"]), "drift": drift})
+    kit = consumer / ".agents/skills/continuation-kit"
+    drift = [name for name, value in identity["package_files"].items()
+             if not (kit / name).is_file() or digest(kit / name) != value]
+    check("frozen_kit_unchanged", not drift, {"files": len(identity["package_files"]), "drift": drift})
+    old = Path(identity["predecessor"]["path"])
+    check("historical_receipt_unchanged", digest(old) == identity["predecessor"]["sha256"])
+    drift = [name for name, value in read(old)["artifacts"].items()
+             if digest(old.parent / "project" / name) != value]
+    check("historical_consumer_unchanged", not drift, drift)
+    check("proposal_identity", review["identities"]["proposal"]["sha256"] == identity["original_proposal"]["sha256"])
+    originals = {row["id"]: row for row in review["original_criteria"]}
+    proposed = {row["id"]: row for row in review["proposed_criteria"]}
+    check("twenty_literal_originals_and_mappings", len(originals) == len(review["original_criteria"]) == 20
+          and all(originals[row["original_id"]]["record_sha256"] == row["record_sha256"]
+                  and originals[row["original_id"]]["check"] == row["original_check"]
+                  and originals[row["original_id"]]["mapped_proposed_ids"] == row["carried_by"]
+                  for row in proposal["mapping"]))
+    check("twenty_nine_literal_proposals", len(proposed) == len(review["proposed_criteria"]) == 29
+          and all(proposed[row["id"]]["check"] == row["check"] for row in proposal["criteria"]))
+    drift = [name for name, value in review["sources"].items()
+             if digest(consumer / value["path"]) != value["sha256"]]
+    check("caller_source_identities", not drift, {"count": len(review["sources"]), "drift": drift})
+    failures = []
+    for name, locator in review["locators"].items():
+        source = consumer / review["sources"][locator["source"]]["path"]
+        lines = source.read_text(encoding="utf-8").splitlines()
+        start, end = locator["lines"]
+        text = "\n".join(lines[start - 1:end])
+        if not (1 <= start <= end <= len(lines) and locator["expected_wording"] in text):
+            failures.append(name)
+    check("caller_locator_text", not failures, {"count": len(review["locators"]), "failed": failures})
+    check("two_completed_processes", all(r["status"] == "finished" and r["returncode"] == 0
+          and r["interruption_reason"] is None for r in (one, two)))
+    check("same_native_parent", one["session_id"] == two["session_id"] == two["expected_session_id"]
+          and one["observed_expected_session"] and two["observed_expected_session"])
+    child = two["expected_child_id"]
+    check("original_registered_child", any(r["id"] == child and r.get("role") == "pixl" for r in one["children"]))
+    check("same_consumer", one["cwd"] == two["cwd"])
+    check("same_configuration", one["configuration"] == two["configuration"])
+    sends = [r for r in two["calls"] if r["tool"] == "SendMessage" and r["to"] == child
+             and r.get("result_line") and not r.get("is_error") and not r.get("transcript_missing")]
+    check("native_send_to_original_child", bool(sends), sends)
+    check("no_replacement_agent", not any(r["tool"] == "Agent" for r in two["calls"]))
+    stream = events(second / "stdout.jsonl")
+    check("same_child_followup_activity", bool(sends) and any(e.get("agent_id") == child
+          for e in stream[min(r["line"] for r in sends):]))
+    before = (first / "native-transcripts" / (child + ".jsonl")).read_bytes()
+    after = (second / "native-transcripts" / (child + ".jsonl")).read_bytes()
+    check("native_child_history_retained_and_extended", after.startswith(before) and len(after) > len(before),
+          {"before_bytes": len(before), "after_bytes": len(after)})
+    drift = [item["path"] for item in one["artifacts"]
+             if not Path(item["path"]).is_file() or digest(Path(item["path"])) != item["sha256"]]
+    check("round_one_outputs_unchanged", not drift, drift)
+    check("round_two_outputs_exist", all((work / name).is_file()
+          for name in ("SPECIALIST-ROUND2.json", "PHASE2-CALLER.json")))
+    reconciliation = read(work / "SPECIALIST-ROUND2.json")
+    check("round_two_input_and_source_identities", all(digest(consumer / row["path"]) == row["sha256"]
+          for row in [*reconciliation["inputs"].values(), *reconciliation["sources"].values()]))
+    old_hashes = {row["id"]: row["record_sha256"] for row in review["original_criteria"]}
+    retained = reconciliation["retained_comparison"]["original_20"]
+    corrected = {row["id"]: row for row in reconciliation["corrected_criteria"]}
+    check("round_two_preserves_original_comparison", len(retained) == 20
+          and {row["id"]: row["record_sha256"] for row in retained} == old_hashes
+          and len(corrected) == len(reconciliation["corrected_criteria"]) == 29
+          and all(corrected[row["id"]]["original_check"] == row["check"]
+                  and corrected[row["id"]]["carries"] == [item["id"] for item in row.get("carries", [])]
+                  and corrected[row["id"]]["corrected_check"] for row in proposal["criteria"]))
+    dispositions = {row["id"]: row for row in reconciliation["dispositions"]}
+    check("round_two_answers_all_exact_caller_findings", len(dispositions) == len(reconciliation["dispositions"]) == 12
+          and all(dispositions[row["id"]]["caller_finding"] == row["finding"]
+                  and dispositions[row["id"]]["caller_correction"] == row["correction"]
+                  and dispositions[row["id"]]["disposition"] and dispositions[row["id"]]["reconciliation"]
+                  for row in review["corrections"]))
+    citations, failed = [], []
+
+    def visit(value):
+        if isinstance(value, dict):
+            if value.get("source") in reconciliation["sources"] and "lines" in value and "contains" in value:
+                citations.append(value)
+                source = consumer / reconciliation["sources"][value["source"]]["path"]
+                lines = source.read_text(encoding="utf-8").splitlines()
+                start, end = value["lines"]
+                if not 1 <= start <= end <= len(lines) or value["contains"] not in "\n".join(lines[start - 1:end]):
+                    failed.append(value)
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(reconciliation)
+    check("round_two_source_excerpts", bool(citations) and not failed, {"count": len(citations), "failed": failed})
+    result = {"scope": "Mechanical identity, preservation and native routing; semantic reconciliation reviewed in README/RESULT.",
+              "passed": sum(row["pass"] for row in checks.values()), "total": len(checks),
+              "checks": checks, "grader_sha256": digest(Path(__file__))}
+    (HERE / "independent-checks.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"passed": result["passed"], "total": result["total"],
+                      "failed": [key for key, row in checks.items() if not row["pass"]]}))
+
+
+if __name__ == "__main__":
+    main()

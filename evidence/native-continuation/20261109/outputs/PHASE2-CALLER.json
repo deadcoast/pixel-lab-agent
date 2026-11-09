@@ -1,0 +1,205 @@
+{
+ "version": 1,
+ "kind": "phase2-caller-result",
+ "assignment": {
+  "path": "CONTINUATION-ASSIGNMENT.md",
+  "sha256": "08eae93f3f13400853392b5709fd0ffa7ffa6ee81a7d3b13f99d40b090e482a9",
+  "phase": 2
+ },
+ "native_child": {
+  "agent_id": "a740390f35e32deea",
+  "agent_type": "pixl (registered native PIXL child created in phase 1)",
+  "phase2_delivery": "SendMessage to that agent ID from the resumed parent session; the host reported success with resumedAgentId equal to the phase-1 ID; the completion notification arrived under the same task ID as the phase-1 round",
+  "no_new_agent_created": true,
+  "artifact_restart_represented_as_native_continuation": false
+ },
+ "native_continuation_established": {
+  "established": [
+   "The phase-1 child ID accepted a follow-up message and resumed (host result: resumedAgentId = a740390f35e32deea); no new Agent instance was started in phase 2.",
+   "The same child produced work/continuation/SPECIALIST-ROUND2.json, which self-identifies with that agent ID, records the five input identities by sha256 (caller review 513e808b..., round 1 8333476..., PHASE1-CALLER fd3ca891..., proposal 792d4b8f..., state.px 3484cf38...) and maps every caller item C1-C12 to its own round-1 items S1-S12.",
+   "The child reused its round-1 internal structure (criteria_classification clause indices, defect numbering, accepted-notes mapping) without being told it, consistent with continuity of the same session; its round-1 file is byte-unchanged.",
+   "Delivery, resumption and completion all succeeded; no failure to retain."
+  ],
+  "not_established": [
+   "Whether the child's in-session memory, as opposed to re-reading its retained files, supplied the round-1 context cannot be distinguished from the artifacts; the caller claims only identity continuity and successful delivery.",
+   "Nothing about broader host reliability (repeat resumptions, long gaps, other hosts) is established by this single successful continuation."
+  ]
+ },
+ "inputs": {
+  "work/continuation/CALLER-REVIEW-01.json": "513e808bc7bbf02b4ad8d2b5fdd916651136b047bd9a3c357da487838fd95a0e",
+  "work/continuation/SPECIALIST-ROUND1.json": "8333476302c408cd42758aa30b3b7247d479d9cb710541adc27179481a1899f5",
+  "work/focused-successor/specialist-proposal.json": "792d4b8f47211a0c646466793e54cc4c16e85c6556bd471f44de2562809b14b3",
+  ".pixl/assets/queue.ready/state.px": "3484cf385c91c8c28fa04316fb2c7c5b52c740178b505ccbd88631f57c893c9b",
+  "work/continuation/PHASE1-CALLER.json": "fd3ca89131a78676a32575acc0f4fc9cfb3e8b077e89de028fcb72a404a99d11"
+ },
+ "outputs": {
+  "specialist_round2": {
+   "path": "work/continuation/SPECIALIST-ROUND2.json",
+   "sha256": "717adcca832dbfe5a2580a1fc80873ef38175968007ba3bac00e7b24b5720b20"
+  },
+  "new_files_this_phase": {
+   "work/continuation/SPECIALIST-ROUND2.json": "717adcca832dbfe5a2580a1fc80873ef38175968007ba3bac00e7b24b5720b20",
+   "work/continuation/build_phase2.py": "2db3dad09813cb29b1e5c1e825fe38723233dd352fc7cafc778411d6a2717870",
+   "work/continuation/phase2-assessment-input.json": "a7fae71f537ab77c96529beb25cbf4a6a23ce086c7588c14cad49034e10ee8df",
+   "work/continuation/phase2-baseline-continuation-hashes.json": "afe467eee8ada407afbe75b5038693eae116afecbef9b5a0e0687594573c895c",
+   "work/continuation/specialist-round2-build.py": "83cf26105e9da0bd54fafb1980c665069ae913965bb5f72dc1374b2d92d9249e"
+  }
+ },
+ "specialist_round2_summary": {
+  "path": "work/continuation/SPECIALIST-ROUND2.json",
+  "kind": "specialist-round2-reconciliation",
+  "dispositions": {
+   "agree": 10,
+   "narrow": 2,
+   "challenge": 0
+  },
+  "narrowed": [
+   "C2",
+   "C10"
+  ],
+  "corrected_criteria": {
+   "check_text_changed": 11,
+   "authority_scope_sources_or_route_only": 11,
+   "unchanged": 7,
+   "total": 29
+  },
+  "accepted_notes_applied": [
+   "S8",
+   "S9",
+   "S10"
+  ],
+  "subsumed": {
+   "S7": "by C3",
+   "S11": "by C2"
+  },
+  "files_created": [
+   "work/continuation/SPECIALIST-ROUND2.json",
+   "work/continuation/specialist-round2-build.py"
+  ],
+  "files_modified": []
+ },
+ "caller_checks_on_round2": {
+  "input_identities": "all five recorded input hashes equal the caller's own hashes of those files",
+  "twenty_original_rows": "retained_comparison.original_20 lists all 20 ids with record hashes identical to the context packet and pixl_validate revision 88",
+  "twenty_nine_proposed_rows": "all 29 ids present; original_check quoted verbatim for every row (equal to the proposal's check text); 'carries' listed by original id only (hashes carried in original_20), same id sets as the proposal",
+  "corrected_wording": "exactly the 11 criteria listed in corrected_summary have changed check text; the other 18 keep the original check with authority/scope/source/route changes or no change",
+  "owner_outcomes_preserved": "every changed check retains its owner, caller-update or assignment outcome clause (per-clause classes present); the two exceptions are the measured-exterior record (diagnostic/proposal by design, D1) and the cell-identity record (proposal + measured), which never carried an owner outcome",
+  "C1_verified": "the loop-phase clause is gone from the stationary-meaning check and appears as 'PROPOSAL (this successor, P1 candidate only)' in expert_clauses; non-success and non-pause outcomes retained; label reads 'requirement (owner / caller update)'",
+  "C2_verified": "stationary-distinct-retry-start is split into clause (a) requirement and clause (b) inference with the D4 locators; label 'requirement (clause a) / inference (clause b)'",
+  "C2_narrowing_assessed": "accepted: the held cell is a shown status only through the caller update (PLAR line 422) and the successor design, so 'owner line (BRIEF line 3) applied to the status set extended by the caller update' is the more exact attribution; the clause still binds as a requirement, as the caller intended",
+  "C3_verified": "descriptor-field clauses in consumers-normal-motion, reduced-motion-consumer-mapping, retry/paused consumers and live-preference-switch are classed consumer_fact_successor_proposed with scope 'this successor destination as designed; re-derive if the module changes'; outcome clauses remain required",
+  "C4_verified": "activity-not-success splits loop (owner), held cell (caller update), transient cells 1-3 (expert clause)",
+  "C5_C6_verified": "labels now 'proposal (cell choice) + observation (measurements)' and 'observation (measurement and flag) + proposal (construction-scoped rejection clause)'; measurements kept; S8 wording applied",
+  "C7_verified": "held cell judged alone and then beside the label; label is context",
+  "C10_verified_and_narrowing_assessed": "consumers-normal-motion now states what check.py asserts and names the live-loop cycling as not asserted; the caller verified the narrowing in renderer-successor/view.mjs: live cells are created at display.scale only (line 105), animate() repaints only liveCells (line 124), matrix cells are made once at elapsed 0 (lines 56, 95). So 1x playback cannot be viewed on the current fixture; the original renderer/view.mjs (lines 83, 91-93) has the same limitation. Narrowing accepted; the 1x playback leg becomes a production-time fixture decision.",
+  "C11_verified": "AUTHORING-STAGE.md (sha256 29e73af9...) is in the round-2 source index and cited at lines 31-32 for the assembly clause",
+  "C12_verified": "live-preference-switch and reduced-motion-consumer-mapping now label 'other states repaint unchanged' and the as-launched forced-reduced run as caller visual observations unless check.py gains the assertions",
+  "r2_D1_D4": "retained and restated; D1's construction-scoped rejection now labelled proposal (C6); D4 now also carried in the authority label (C2)",
+  "preservation": "the child's rehash statement (1,332 files outside work/continuation unchanged; all phase-1 files unchanged) is confirmed by the caller's own re-hash in this file's preservation section",
+  "no_pass_from_unavailable_evidence": "the round-2 limits restate that no fixture capture, check.py run, inspection view or playback exists and that nothing is accepted or adopted; the corrected wording adds no pass"
+ },
+ "findings": [
+  {
+   "id": "C1",
+   "caller": "correct",
+   "specialist": "agree (S1)",
+   "result": "resolved: loop-phase clause moved to a P1-scoped expert clause; owner outcome retained"
+  },
+  {
+   "id": "C2",
+   "caller": "correct",
+   "specialist": "narrow (S11)",
+   "result": "resolved with the narrowing accepted: Retry clause = owner line applied to the caller-extended status set (requirement); Start clause = D4 inference"
+  },
+  {
+   "id": "C3",
+   "caller": "clarify",
+   "specialist": "agree (S6, S7)",
+   "result": "resolved: per-clause classes; descriptor shapes scoped to the implementation; M1 remains an open alternative"
+  },
+  {
+   "id": "C4",
+   "caller": "clarify",
+   "specialist": "agree (S4)",
+   "result": "resolved: loop/held-cell required, transient frames expert"
+  },
+  {
+   "id": "C5",
+   "caller": "clarify",
+   "specialist": "agree (new to the specialist as a defect)",
+   "result": "resolved: proposal + observation label"
+  },
+  {
+   "id": "C6",
+   "caller": "clarify",
+   "specialist": "agree (new as a label defect; S8 wording applied)",
+   "result": "resolved"
+  },
+  {
+   "id": "C7",
+   "caller": "note",
+   "specialist": "agree (S2)",
+   "result": "resolved: glyph judged alone and beside the label"
+  },
+  {
+   "id": "C8",
+   "caller": "note",
+   "specialist": "agree",
+   "result": "recorded limit; no evidence exists; nothing passes"
+  },
+  {
+   "id": "C9",
+   "caller": "note",
+   "specialist": "agree",
+   "result": "recorded; mechanical reuse records reproduced by both parties"
+  },
+  {
+   "id": "C10",
+   "caller": "clarify",
+   "specialist": "narrow (S5)",
+   "result": "resolved with the narrowing accepted: 3x playback viewable on the live page; 1x playback needs a fixture change or a labelled viewing aid; wall-clock not measured"
+  },
+  {
+   "id": "C11",
+   "caller": "clarify",
+   "specialist": "agree (S3)",
+   "result": "resolved: AUTHORING-STAGE.md 31-32 added to the source index"
+  },
+  {
+   "id": "C12",
+   "caller": "note",
+   "specialist": "agree (S12)",
+   "result": "resolved as labelled visual observations pending checker assertions"
+  }
+ ],
+ "remaining_disagreements": [],
+ "remaining_decisions": [
+  "Owner/caller: frozen-spinner semantics for the stationary Working symbol (P1, no new art) versus a distinct static glyph (P2, one generation).",
+  "Caller: M1 mapping alternative versus the implemented M2-style descriptor extension; the corrected criteria bind the outcome under either and scope the descriptor shape to the chosen implementation.",
+  "Caller at production time: 1x live cell in the fixture (or a labelled viewing aid) for the 1x playback leg; optional check.py assertions for static states on the change event and for the as-launched forced-reduced phase.",
+  "Caller at production time: run the successor capture against this consumer root, run check.py with a baseline, retain it, perform the visual review on native/enlarged fixture views, and resolve job authoring-01.working.join-01 through its existing failed-observation route."
+ ],
+ "preservation": {
+  "outside_work_continuation": {
+   "baseline": "work/continuation/baseline-hashes.json",
+   "files": 1332,
+   "changed": [],
+   "missing": [],
+   "added": [],
+   "unchanged": true
+  },
+  "phase1_files_under_work_continuation": {
+   "baseline": "work/continuation/phase2-baseline-continuation-hashes.json",
+   "files": 22,
+   "changed_or_missing": [],
+   "unchanged": true
+  }
+ },
+ "not_done_by_design": [
+  "no production adoption, renderer execution, new art acceptance, state commit, PLAR write, job action, inspection packet or PixelLab call",
+  "original proposal, 20 Q records, state.px revision 88, assets, historical results and every phase-1 output unchanged",
+  "M1 mapping alternative and broader host reliability remain open"
+ ],
+ "next_action": "Comparison and reconciliation are complete with no open disagreement. The next executable step is outside this assignment: author the successor plan/criteria through the public operations using the round-2 corrected wording and per-clause authority classes, preserving the 20 original Q records and the prepared job's history; then the production-time capture, checker and visual review listed above. No file from phases 1 or 2 should be rewritten; later work adds new files.",
+ "generated_at": "2026-11-09T20:46:12.300081+00:00"
+}

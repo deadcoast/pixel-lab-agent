@@ -8,7 +8,7 @@ import os
 import re
 import shutil
 import subprocess
-import time
+import uuid
 import zipfile
 from pathlib import Path
 
@@ -177,7 +177,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         write_json(destination / "agents.json", {"pixl": {"description": "Visual asset specialist for the assigned contract.", "prompt": specialist}})
         command = [shutil.which("claude") or "claude", "--print", "--verbose",
                    "--output-format", "stream-json", "--forward-subagent-text",
-                   "--no-session-persistence", "--setting-sources", "", "--strict-mcp-config",
+                   "--session-id", str(uuid.uuid4()), "--setting-sources", "", "--strict-mcp-config",
                    "--mcp-config", str(destination / "mcp.json"), "--agents", str(destination / "agents.json"),
                    "--plugin-dir", str(package), "--permission-mode", "acceptEdits",
                    "--permission-prompts", "none", "--tools", "Read,Write,Edit,Bash,Glob,Grep,Skill,Agent,SendMessage",
@@ -239,7 +239,9 @@ def retain_journals(destination: Path, events: list[dict]) -> None:
                         ids.add(result["agent_id"])
 
 
-def run(destination: Path) -> None:
+def run(destination: Path, *, timeout: float | None = None) -> None:
+    from evaluations.native_trial_records import atomic_json, codex_journals, execute
+
     launch = json.loads((destination / "launch.json").read_text())
     if (destination / "stdout.jsonl").exists():
         raise ValueError("Use a fresh attempt")
@@ -249,6 +251,9 @@ def run(destination: Path) -> None:
             del env[key]
     env.pop("PYTHONPATH", None)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    removed_history_override = False
+    if launch["host"] == "claude" and "--no-session-persistence" not in launch["command"]:
+        removed_history_override = env.pop("CLAUDE_CODE_SKIP_PROMPT_HISTORY", None) is not None
     # Local Claude sessions otherwise share repository auto-memory across fixtures.
     # Scope this documented override to the evaluation child, not user settings.
     overrides = {"CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"} if launch["host"] == "claude" else {}
@@ -256,29 +261,23 @@ def run(destination: Path) -> None:
     write_json(destination / "execution-environment.json", {
         "scope": "Evaluation subprocess only; no persistent host configuration changed",
         "overrides": overrides,
+        "removed_history_override": removed_history_override,
         "limit": "Disables the documented automatic-memory feature, not arbitrary filesystem access",
     })
-    started = time.monotonic()
-    with (destination / "stdout.jsonl").open("wb") as stdout, (destination / "stderr.txt").open("wb") as stderr:
-        process = subprocess.Popen(launch["command"], cwd=launch["cwd"], env=env,
-                    stdin=subprocess.PIPE, stdout=stdout, stderr=stderr,
-                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
-        process.communicate((destination / "prompt.txt").read_bytes())
+    returncode, elapsed, events, continuation = execute(destination, launch, env, timeout)
     output = (destination / "stdout.jsonl").read_text(encoding="utf-8", errors="replace")
-    events = []
-    for line in output.splitlines():
-        try:
-            events.append(json.loads(line))
-        except ValueError:
-            pass
     if launch["host"] == "codex":
         retain_journals(destination, events)
+        continuation = codex_journals(destination, continuation)
+        atomic_json(destination / "continuation.json", continuation)
     write_json(destination / "record.json", {"host": launch["host"], "case": launch["case"],
-        "returncode": process.returncode, "execution_status": outcome(process.returncode, False, output),
-        "elapsed_seconds": round(time.monotonic() - started, 3), "behavioral_verdict": "ungraded",
-        "artifacts": inventory(destination / "project", ("pixl-kit", "__pycache__")),
+        "returncode": returncode, "execution_status": outcome(returncode, continuation["interruption_reason"] == "timeout", output),
+        "elapsed_seconds": elapsed, "behavioral_verdict": "ungraded",
+        "continuation": {"path": "continuation.json", "sha256": sha(destination / "continuation.json"),
+                         "interruption_reason": continuation["interruption_reason"]},
+        "artifacts": inventory(Path(launch["cwd"]), ("pixl-kit", "__pycache__")),
         "recorded_files": inventory(destination, ("project", "input-project", "record.json"))})
-    print(json.dumps({"attempt": str(destination), "returncode": process.returncode}))
+    print(json.dumps({"attempt": str(destination), "returncode": returncode}))
 
 
 def main() -> None:

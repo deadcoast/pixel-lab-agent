@@ -1,0 +1,33 @@
+# Phase 2: continue the original parent and PIXL child
+
+This invocation resumes the same parent session from phase 1. Continue the exact
+comparison in CONTINUATION-ASSIGNMENT.md. Your existing registered PIXL child is
+`a740390f35e32deea`. Use native `SendMessage` to that child; do not create a new
+Agent or represent an artifact restart as native continuation.
+
+Read your retained `work/continuation/PHASE1-CALLER.json`,
+`CALLER-REVIEW-01.json` and `SPECIALIST-ROUND1.json`. Send the same child your
+independent caller review, including every correction/clarification and its exact
+source locators, and your recorded follow-up. Ask it to reconcile each item with
+its round-1 assessment. It may agree, narrow, or challenge a finding with source
+evidence; agreement is not the acceptance criterion. Have it write a separate
+`work/continuation/SPECIALIST-ROUND2.json` with exact input identities, per-item
+dispositions, any corrected proposed wording/authority, remaining choices and
+limits. It must retain the exact 20-original/29-proposed comparison, prior r2
+corrections and owner versus expert authority. It may refer to phase-1 literal
+rows by ID and file hash rather than copying the entire report again.
+
+Wait for that actual child's completed follow-up. Independently check its response
+against the retained caller review and sources. Write a new
+`work/continuation/PHASE2-CALLER.json` with the native child identity, input/output
+paths and SHA-256 values, each finding's disposition, remaining disagreements or
+decisions, and the concrete next action. State what the native continuation
+actually established. If delivery or resumption fails, retain that failure and
+the unfinished work; do not silently switch to a new child.
+
+Preserve every phase-1 output and all original consumer/production files. New
+files belong only under `work/continuation` and must use new names. This remains a
+comparison/reconciliation assignment: no production adoption, renderer execution
+or new art acceptance. Do not rewrite original proposal, criteria, state, PLAR,
+assets, historical results, or earlier output files to imply that the new review
+was already performed. M1 and broader host reliability remain open.

@@ -12,8 +12,10 @@ The audit feeds the [milestone plan](../PLAN.md) and [ordered backlog](../SHELVE
 review-interface changes now have [implementation and verification evidence](../evidence/candidate-review/README.md).
 SC-04/QOL-08 now have [focused choice/comparison implementation and native evidence](../evidence/choice-comparison/README.md).
 QOL-03/QOL-04/QOL-01 now have [hash/path guidance, a shipped everyday workflow and consumer-use evidence](../evidence/everyday-guide/README.md).
-The next enabling work is M2 TM-06/CF-04 native trial continuation, followed by
-CF-05 named-role qualification; M1 remains open. No new audit is started.
+M2 TM-06 now has [durable native records and comparison recovery evidence](../evidence/native-continuation/README.md);
+CF-04 passes one same-parent/same-child continuation across separate processes,
+with 24 independent checks and the original failure retained. CF-05 named-role
+qualification follows; M1 remains open. No new audit is started.
 The Codex initial partial result and guided continuation remain distinct. Current
 native findings also identify broad historical source ranges and a stale optional
 consumer role adapter; these feed existing locator/context and M2 work rather than
@@ -29,12 +31,12 @@ The repository now demonstrates useful production beyond the original scaffold. 
 
 | Intended behavior | Current evidence | Remaining difference |
 | --- | --- | --- |
-| Another agent invokes a visual specialist with the actual project context | Shared [profile](../.agents/PROFILE.md), [Claude agent](../.claude/agents/pixl.md), [Codex agent](../.codex/agents/pixl.toml), common skills and native trials exist | Named Codex custom-role selection, Claude same-child continuation and dependable cold operation remain unqualified |
+| Another agent invokes a visual specialist with the actual project context | Shared [profile](../.agents/PROFILE.md), [Claude agent](../.claude/agents/pixl.md), [Codex agent](../.codex/agents/pixl.toml), common skills and native trials exist | Within-cycle update: one Claude same-child continuation now passes; named Codex selection, repeated continuation and dependable cold operation remain unqualified |
 | Locate existing/missing assets and connect them to code | PLAR allocation, change tracking, selected-asset preparation and recoverable production linking are implemented | Representative dynamic surfaces, other consumer structures and broader source-change/integration coverage remain open |
 | Convert a selected asset into an executable official request | Single-asset preparation, connected stage authoring, exact upstream selection and durable jobs are implemented | Later review/evidence/nomination steps still require low-level authoring; simplify the entire operation, rather than adding another disconnected request layer |
 | Preserve caller aesthetic authority and exact review criteria | Exact criterion packets and comparison identity are implemented; targeted repairs and failed attempts are retained | Structural coverage cannot judge the meaning of a comparison; independent native artistic-authority reliability remains open |
 | Generate and revise through PixelLab | [Official production](../evidence/pixellab-family-production/README.md) records 16 charged generations, generated Working seed/Retry/Paused, failed attempts and repairs | Final Working frames include deterministic construction from the generated seed; Ready has different retained provenance. Do not describe all package members as newly generated |
-| Review the family in its actual destination | [Successor acceptance](../evidence/successor-acceptance/README.md) records Working motion, family distinction/continuity and actual execution in both fixture consumers | This is a scoped maintainer evaluation. It does not close interrupted Claude work, native end-to-end qualification or other engines/asset classes |
+| Review the family in its actual destination | [Successor acceptance](../evidence/successor-acceptance/README.md) records Working motion, family distinction/continuity and actual execution in both fixture consumers | This is a scoped maintainer evaluation. It does not close the production/rendering portion of the interrupted Claude assignment, native end-to-end qualification or other engines/asset classes; comparison recovery is recorded separately |
 | Return usable results and resume without losing context | Immutable handoff, exact package identities, selection checks, job history and kit-update recovery exist | Everyday callers still encounter hash/path vocabulary, large payloads and manual nomination/provenance corrections |
 | Install and use the specialist without maintainer tooling | Runtime dependencies are separated; clean wheel and copied-plugin checks are retained | Broader installation/update/host combinations and a production-first entry point still need qualification |
 
@@ -66,7 +68,7 @@ The repository now demonstrates useful production beyond the original scaffold. 
 ## Source-code weaknesses and operational consequences
 
 - **Routine review still drops into internal record construction.** The successor acceptance needed a maintainer script for evidence/verdict records; a reversed record constructor was rejected, and prior nomination repair was separate. The necessary mechanisms exist, but their normal interface is incomplete.
-- **Native qualification trails local capabilities.** A generic Codex child called PIXL is not evidence of named-role loading. Claude's interrupted comparison and same-child resumption need their own resolution; a saved-file restart proves a different route.
+- **Native qualification trails local capabilities.** A generic Codex child called PIXL is not evidence of named-role loading. The audit identified unresolved Claude comparison/resumption gaps. Within-cycle [recovery and native continuation](../evidence/native-continuation/README.md) now pass for that comparison; saved-file restart and same-child continuation remain separately evidenced, with broader reliability open.
 - **Entry-point claims have drifted.** [README](../README.md) still describes 34 MCP tools and says live generation/target import were not run. Current source exposes 36 tools, and retained production evidence says otherwise. Historical reports should remain historical; current-facing claims need reconciliation.
 - **Cross-module private helpers carry public behavior.** For example, production review imports private plan/PLAR helpers, and authoring context uses private job/PLAR helpers. This makes seemingly local changes affect other public operations.
 - **Large dynamically shaped operation bodies increase maintenance risk.** The measured largest modules include `poc.py` (1,616 lines), `platform.py` (1,220), `inspection_views.py` (912), `inspection.py` (877), `plar_prepare.py` (725), `jobs.py` (704) and `production_plan.py` (691). Size alone is not a bug; extraction should follow specific operation boundaries and regressions.
@@ -161,6 +163,6 @@ There are **50 actionable findings**, ten in each requested category. Each stabl
 
 ## Next steps and document handoff
 
-Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) keeps its existing unfinished work and records execution/results. The immediate development slice remains ordinary candidate/family review and nomination using the completed successor as the concrete case; its native caller verification follows the local operation.
+Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) keeps its existing unfinished work and records execution/results. The current native-continuation increment has [scoped results](../evidence/native-continuation/README.md); use its actual dispositions in SHELVED before moving to CF-05 named Codex role qualification. M1 remains open; the earlier review/nomination implementation is retained rather than restarted.
 
 Update evidence links or a narrowly changed finding within this cycle when work reveals new facts. Do not rerun a full IDENTIFY because an increment or TODO slice ended. Once all required PLAN exits are satisfied and remaining proposals have explicit dispositions, preserve this cycle and run the next IDENTIFY workflow.
