@@ -4,8 +4,15 @@ Current maintainer operations: [native trial recording and continuation](NATIVE-
 retains actual host/session/child identities and separates native continuation from
 artifact recovery. [Claude continuation](../evidence/native-continuation/README.md)
 and [named Codex role qualification](../evidence/named-codex-role/README.md) retain
-their separate native routes, original failures and exact scope. The product
-[TODO](../TODO.md) carries the next work; M1 remains open.
+their separate native routes, original failures and exact scope. The
+[artistic-revision result](../evidence/artistic-revision/README.md) completes the
+original Claude corrected29 successor through a fresh named Codex child, with
+same-child corrections and fresh acceptance of reused art. All independent task
+outcomes pass; the overall 17/18 grade remains partial because the recorder failed
+and the OS exit is unknown. Original failures and additive recovery remain visible.
+[Current contract checks](../evidence/artistic-revision/20261109/contracts-review-02/RESULT.json)
+remain separate from provider execution. The product [TODO](../TODO.md) carries
+NF-03 readiness/QOL-06 setup next; M1/M2 remain open.
 
 **Historical controlled milestone, 2026-11-05:** [PX-EVAL-004](delegated-asset-request.spec.md)
 tests the official PixelLab integration through a delegated generation request in

@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +15,56 @@ from evaluations.host_trials import sha, write_json
 
 SESSION = "12345678-1234-1234-1234-123456789abc"
 CHILD = "a123456789"
+
+
+def windows_replace_probe(root):
+    """Exercise an actual owned Windows handle that denies shared deletion."""
+    import ctypes
+    import threading
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+                                  wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    kernel.CreateFileW.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.CloseHandle.restype = wintypes.BOOL
+    target = Path(root) / "continuation.json"
+    write_json(target, {"snapshot": "original"})
+    original = target.read_bytes()
+    # GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, OPEN_EXISTING. The
+    # intentionally absent FILE_SHARE_DELETE holds replacement until release.
+    handle = kernel.CreateFileW(str(target), 0x80000000, 0x1 | 0x2, None, 3, 0x80, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    closed = []
+
+    def release():
+        closed.append(bool(kernel.CloseHandle(handle)))
+
+    timer = threading.Timer(0.2, release)
+    replace, observed = os.replace, []
+
+    def observe_replace(source, destination):
+        try:
+            replace(source, destination)
+        except PermissionError as error:
+            observed.append({"winerror": getattr(error, "winerror", None), "errno": error.errno,
+                             "original_bytes_preserved": target.read_bytes() == original})
+            raise
+
+    started = time.monotonic()
+    timer.start()
+    try:
+        with patch.object(records.os, "replace", side_effect=observe_replace):
+            records.atomic_json(target, {"snapshot": "replacement"})
+    finally:
+        timer.join()
+    return {"scope": "Owned temporary file and actual Windows sharing lock; no native model or provider execution",
+            "denied_attempts": observed, "handle_closed": closed == [True],
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "replacement_saved": json.loads(target.read_bytes()) == {"snapshot": "replacement"},
+            "pending_files_after_success": len(list(target.parent.glob("*.tmp")))}
 
 
 class NativeTrialRecordTests(unittest.TestCase):
@@ -41,6 +92,124 @@ class NativeTrialRecordTests(unittest.TestCase):
         parent.write_text("parent history", encoding="utf-8")
         child.write_text("child history", encoding="utf-8")
         return parent, child
+
+    def windows_lock(self):
+        error = PermissionError(13, "Synthetic Windows replacement denial")
+        error.winerror = 5
+        return error
+
+    def test_atomic_json_retries_transient_windows_lock_with_same_pending_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "continuation.json"
+            target.write_bytes(b"old target")
+            replace = os.replace
+            attempts = []
+
+            def transient(source, destination):
+                attempts.append((Path(source), Path(source).read_bytes()))
+                self.assertEqual(target.read_bytes(), b"old target")
+                if len(attempts) < 3:
+                    raise self.windows_lock()
+                replace(source, destination)
+
+            with patch.object(records.os, "replace", side_effect=transient), patch.object(records.time, "sleep") as sleep:
+                records.atomic_json(target, {"new": "value"})
+            self.assertEqual(json.loads(target.read_bytes()), {"new": "value"})
+            self.assertEqual(len(attempts), 3)
+            self.assertTrue(all(item == attempts[0] for item in attempts))
+            self.assertEqual(sleep.call_count, 2)
+            self.assertFalse(list(target.parent.glob("*.tmp")))
+
+    def test_atomic_json_permanent_lock_preserves_original_and_each_pending_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "continuation.json"
+            target.write_bytes(b"old target")
+            pending = []
+            with patch.object(records.os, "replace", side_effect=lambda *_: (_ for _ in ()).throw(self.windows_lock())) as replace, patch.object(records.time, "sleep"):
+                for value in (1, 2):
+                    with self.assertRaises(PermissionError) as caught:
+                        records.atomic_json(target, {"snapshot": value})
+                    pending.append(Path(caught.exception.pending_json_path))
+                    self.assertEqual(caught.exception.atomic_replace_attempts, 5)
+            self.assertEqual(replace.call_count, 10)
+            self.assertEqual(target.read_bytes(), b"old target")
+            self.assertEqual(len(set(pending)), 2)
+            self.assertEqual([json.loads(path.read_bytes()) for path in pending], [{"snapshot": 1}, {"snapshot": 2}])
+
+    def test_atomic_json_does_not_retry_unrelated_io_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "continuation.json"
+            target.write_bytes(b"old target")
+            with (patch.object(records.os, "replace", side_effect=OSError(5, "synthetic I/O failure")) as replace,
+                  patch.object(records.time, "sleep") as sleep, self.assertRaises(OSError)):
+                records.atomic_json(target, {"snapshot": "pending"})
+            self.assertEqual(replace.call_count, 1)
+            sleep.assert_not_called()
+            self.assertEqual(target.read_bytes(), b"old target")
+
+    @unittest.skipUnless(os.name == "nt", "An actual Windows sharing handle is required")
+    def test_actual_windows_share_lock_releases_during_bounded_retry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = windows_replace_probe(directory)
+        self.assertTrue(result["denied_attempts"])
+        self.assertTrue(all(row["original_bytes_preserved"] for row in result["denied_attempts"]))
+        self.assertTrue(result["handle_closed"])
+        self.assertTrue(result["replacement_saved"])
+        self.assertEqual(result["pending_files_after_success"], 0)
+
+    def test_recording_lock_does_not_abandon_live_child_or_claim_launch_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            attempt, consumer, launch = self.setup_attempt(root)
+            launch["host"] = "codex"
+            script = consumer / "host.py"
+            script.write_text(
+                "import json,time,pathlib\n"
+                "print(json.dumps({'type':'thread.started','thread_id':" + repr(SESSION) + "}),flush=True)\n"
+                "deadline=time.monotonic()+8\n"
+                "while not pathlib.Path('release').exists() and time.monotonic()<deadline: time.sleep(.02)\n"
+                "time.sleep(.15)\npathlib.Path('finished').write_text('completed once')\n"
+                "print(json.dumps({'type':'turn.completed'}),flush=True)\n", encoding="utf-8")
+            launch["command"] = [sys.executable, str(script)]
+            write_json(attempt / "launch.json", launch)
+            replace = os.replace
+            original = []
+
+            def locked_after_initial(source, destination):
+                if not original:
+                    replace(source, destination)
+                    original.append(Path(destination).read_bytes())
+                    return
+                (consumer / "release").write_text("recording failed while native process was owned", encoding="utf-8")
+                raise self.windows_lock()
+
+            with patch.object(records.os, "replace", side_effect=locked_after_initial), patch.object(records, "stop_process") as stop:
+                code, _, events, result = records.execute(attempt, launch, dict(os.environ), timeout=10)
+            stop.assert_not_called()
+            self.assertEqual(code, 0)
+            self.assertEqual((consumer / "finished").read_text(), "completed once")
+            self.assertEqual([event["type"] for event in events], ["thread.started", "turn.completed"])
+            self.assertEqual(result["status"], "finished")
+            self.assertIsNone(result["interruption_reason"])
+            self.assertEqual(result["recording_status"], "snapshot_failed")
+            self.assertTrue(all(failure["process_started"] for failure in result["recording_errors"]))
+            self.assertEqual((attempt / "continuation.json").read_bytes(), original[0])
+            receipts = [json.loads(path.read_bytes()) for path in attempt.glob("recording-error-*.json")]
+            final = next(item for item in receipts if item["failure"]["snapshot_status"] == "finished")
+            self.assertEqual(final["record"]["returncode"], 0)
+            self.assertEqual(final["record"]["session_id"], SESSION)
+            self.assertIsNone(final["record"]["interruption_reason"])
+            self.assertGreaterEqual(len(list(attempt.glob("continuation.json.*.tmp"))), 2)
+
+    def test_real_launch_failure_remains_distinct_from_recording_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            attempt, _, launch = self.setup_attempt(Path(directory))
+            with (patch.object(records.subprocess, "Popen", side_effect=OSError(2, "synthetic launch failure")),
+                  self.assertRaises(OSError)):
+                records.execute(attempt, launch, dict(os.environ))
+            result = json.loads((attempt / "continuation.json").read_bytes())
+            self.assertEqual(result["interruption_reason"], "launch_error")
+            self.assertEqual(result["recording_status"], "recorded")
 
     def test_incremental_stream_preserves_ids_and_partial_bytes(self):
         with tempfile.TemporaryDirectory() as directory:

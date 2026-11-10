@@ -1,0 +1,35 @@
+{
+  "scope": "Correction of checker reporting and evidence immutability; original frozen contracts directory is preserved unchanged.",
+  "findings": [
+    "The original checker could omit a retained tool absent from the selected current snapshot and still report all six signatures unchanged.",
+    "The original run() could replace RESULT.json and current-schema-projections.json on rerun."
+  ],
+  "fixes": [
+    "Compare the union of retained and observed selected names and report not_observed_in_current_snapshot without claiming complete upstream tool removal.",
+    "Return incompatible_or_incomplete_contract_check for missing or incompatible retained declarations/requests; handle missing replay tools without KeyError.",
+    "Refuse any run whose result or projections already exist; exclusively create outputs to prevent overwrite races."
+  ],
+  "effect_on_prior_result": "The original actual capture contained all six retained tools, so its recorded successful comparisons remain valid within the original scope. The original directory was already frozen into native evaluation and was not rewritten.",
+  "independent_review": {
+    "reviewer": "/root/revision_scope",
+    "outcome": "No further actionable finding in the bounded helper; both missing-name reporting and evidence immutability corrections confirmed.",
+    "remaining_limit": "A concurrent race can leave newly created partial evidence, which is retained; it cannot overwrite existing output."
+  },
+  "identity": {
+    "original_helper_snapshot_matches_recorded_helper": true,
+    "copied_inputs_match_original": {
+      "current-tool-declarations.json": true,
+      "workbench-describe-edits-request.json": true,
+      "workbench-describe-edits-response.json": true
+    },
+    "original_contract_file_hashes": {
+      "current-schema-projections.json": "dd3d17e8e796d9339944ec4291ac433fcbc019de6552f72abfea4d827ede8ac4",
+      "current-tool-declarations.json": "aeadd381b3e8a92ef5eee9d4a8d0724b71d1981d91208753c1b3f4a7c9cbd146",
+      "regression-attempt-01.json": "9dac65e0ae9256e2516272ba77fc11fdc392b701780a07606e72115da0f20187",
+      "regression-attempt-02.json": "f1635bf84e2815835f1ecd74dfa3180d529137d5320026e4b54ae98064be5e23",
+      "RESULT.json": "5a910811e5d50a53b96cab6d0c6f5d3d2051f98bf5f015bc90d957fcac7b6764",
+      "workbench-describe-edits-request.json": "1c6bb9ad6507528e653dab8aca7140097ce38655da61ec75f3276fc24bb33b8b",
+      "workbench-describe-edits-response.json": "978a956ae2ef8df55ce85e09e7746cdaf6a01277a843682f08760d4b3c91aead"
+    }
+  }
+}

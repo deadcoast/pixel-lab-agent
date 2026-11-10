@@ -1,0 +1,96 @@
+{
+  "observed_at": "2026-11-10T03:08:20.074632+00:00",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "probe": {
+    "scope": "Owned temporary file and actual Windows sharing lock; no native model or provider execution",
+    "denied_attempts": [
+      {
+        "winerror": 5,
+        "errno": 13,
+        "original_bytes_preserved": true
+      },
+      {
+        "winerror": 5,
+        "errno": 13,
+        "original_bytes_preserved": true
+      },
+      {
+        "winerror": 5,
+        "errno": 13,
+        "original_bytes_preserved": true
+      }
+    ],
+    "handle_closed": true,
+    "elapsed_seconds": 0.354,
+    "replacement_saved": true,
+    "pending_files_after_success": 0
+  },
+  "source_sha256": {
+    "evaluations/native_trial_records.py": "94c610087ecb0d08f465606d4d39bae46e1bf9226ddfa1a1fd4caef83f79bd86",
+    "tests/test_native_trial_records.py": "3dca58708b81c4d3368197d98d3e6d2ac65161adb391cacbf2bf97753e96e2c2",
+    "evidence/artistic-revision/20261109/native/codex-01/native_trial_records.py.txt": "a11ff15ac6ebbfd2131b9238d6f92ad9f6c43838f46dad690e96a50ac66f682b"
+  },
+  "scope": "Local recorder repair proof, separate from the original native Codex attempt and its outcome. The original native source snapshot and receipts were not changed.",
+  "repair": {
+    "replace_attempts_maximum": 5,
+    "retry_delays_seconds": [
+      0.05,
+      0.1,
+      0.2,
+      0.4
+    ],
+    "pending_bytes": "Each failed write retains its own uniquely named temporary JSON; existing target stays intact until successful replace.",
+    "snapshot_failure": "Exclusive fallback receipt retains failure and in-memory observation; execution continues observing the owned process.",
+    "failure_classification": "Snapshot faults are snapshot_recording_error; only failures before Popen are launch_error. Other postlaunch I/O faults trigger controlled cleanup and runner_io_error."
+  },
+  "verification": {
+    "new_regressions": 6,
+    "existing_recorder_tests": 17,
+    "initial_results": [
+      {
+        "command": ".venv/Scripts/python.exe -m unittest tests.test_native_trial_records",
+        "chunk_id": "5774ef",
+        "wall_time_seconds": 8.8762614,
+        "exit_code": 0,
+        "original_token_count": 123,
+        "output": "......................\r\n----------------------------------------------------------------------\r\nRan 22 tests in 8.157s\r\n\r\nOK\r\n{\"attempt\": \"C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\tmpfhx73hh_\\\\attempt\", \"returncode\": 0}\r\n{\"output\": \"C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\tmpvrr3lu67\\\\review\\\\historical.json\", \"native_resume\": {\"available\": false, \"reason\": \"Native parent transcript unavailable or persistence disabled; use an explicit artifact-based restart.\"}, \"reason\": \"usage_limit\"}\r\n"
+      },
+      {
+        "command": ".venv/Scripts/python.exe -m ruff check evaluations/native_trial_records.py tests/test_native_trial_records.py",
+        "chunk_id": "90d734",
+        "wall_time_seconds": 0.5408607,
+        "exit_code": 1,
+        "original_token_count": 356,
+        "output": "SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements\n  --> tests\\test_native_trial_records.py:92:13\n   |\n90 |   …     target = Path(directory) / \"continuation.json\"\n91 |   …     target.write_bytes(b\"old target\")\n92 | / …     with patch.object(records.os, \"replace\", side_effect=OSError(5, \"synthetic I/O failure\")) as replace, patch.object(records.tim…\n93 | | …         with self.assertRaises(OSError):\n   | |__________________________________________^\n94 |   …             records.atomic_json(target, {\"snapshot\": \"pending\"})\n95 |   …     self.assertEqual(replace.call_count, 1)\n   |\nhelp: Combine `with` statements\n\nSIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements\n   --> tests\\test_native_trial_records.py:146:13\n    |\n144 |           with tempfile.TemporaryDirectory() as directory:\n145 |               attempt, _, launch = self.setup_attempt(Path(directory))\n146 | /             with patch.object(records.subprocess, \"Popen\", side_effect=OSError(2, \"synthetic launch failure\")):\n147 | |                 with self.assertRaises(OSError):\n    | |________________________________________________^\n148 |                       records.execute(attempt, launch, dict(os.environ))\n149 |               result = json.loads((attempt / \"continuation.json\").read_bytes())\n    |\nhelp: Combine `with` statements\n\nFound 2 errors.\n"
+      }
+    ],
+    "final_results": [
+      {
+        "command": ".venv/Scripts/python.exe -m unittest tests.test_native_trial_records",
+        "chunk_id": "7594fe",
+        "wall_time_seconds": 8.5909574,
+        "exit_code": 0,
+        "original_token_count": 123,
+        "output": ".......................\r\n----------------------------------------------------------------------\r\nRan 23 tests in 7.899s\r\n\r\nOK\r\n{\"attempt\": \"C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\tmpw4ezzvhi\\\\attempt\", \"returncode\": 0}\r\n{\"output\": \"C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\tmphhype04d\\\\review\\\\historical.json\", \"native_resume\": {\"available\": false, \"reason\": \"Native parent transcript unavailable or persistence disabled; use an explicit artifact-based restart.\"}, \"reason\": \"usage_limit\"}\r\n"
+      },
+      {
+        "command": ".venv/Scripts/python.exe -m ruff check evaluations/native_trial_records.py tests/test_native_trial_records.py",
+        "chunk_id": "e2467e",
+        "wall_time_seconds": 0.5364046,
+        "exit_code": 0,
+        "original_token_count": 5,
+        "output": "All checks passed!\n"
+      }
+    ],
+    "independent_review": {
+      "reviewer": "/root/revision_scope",
+      "outcome": "No actionable defect found in the changed atomic_json/execute path."
+    }
+  },
+  "limits": [
+    "The actual sharing-lock probe reproduces Windows replacement denial but does not establish what held the original native attempt's target.",
+    "The permanent recording-failure process regression uses a small real local Python child, not a new Claude/Codex behavioral trial.",
+    "Later request_review_trials.run publication writes occur after process completion and remain outside execute's fallback; this is not recovery of every recording I/O surface.",
+    "If the fallback receipt itself cannot be written, the error remains in the returned in-memory record and is reported to stderr when available."
+  ]
+}

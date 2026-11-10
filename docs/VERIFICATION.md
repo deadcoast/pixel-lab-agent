@@ -1,5 +1,44 @@
 # Verification and limits
 
+## Artistic revision and tool contracts, 2026-11-09
+
+The [scoped outcome](../evidence/artistic-revision/README.md) adopts the original
+Claude corrected29 successor through a fresh named Codex child and caller
+corrections to that same child. `artistic-02.plan` completes four tasks at revision
+108, with exact existing art, fresh candidate/collective reviews and a current
+public handoff. Both consumers receive native/enlarged actual browser observations,
+normal/reduced motion, live preference switches and an initially-reduced run.
+The 20 original Q identities, job lineage and 1,395 immutable input paths survive.
+
+[Independent grade 02](../evidence/artistic-revision/20261109/native/independent-grade-02.json)
+passes all task-outcome checks: **17/18 overall, partial**. The remaining check is
+the unobserved OS exit after a Windows recorder `os.replace` failure. Native
+parent/child work continued to its terminal event without relaunch; original
+progress and failed temporary bytes remain, with additive recovered metadata.
+Grade 01's mistaken treatment of the guard against creating another snapshot of a
+completed family is preserved; it was a grader defect, not failed family delivery.
+Earlier browser captures, the first plan and native corrections remain retained.
+Sampled paint/exposure clocks do not establish exact uninterrupted platform cadence.
+
+The [corrected TM-04 receipt](../evidence/artistic-revision/20261109/contracts-review-02/RESULT.json)
+retains ten actual typed declarations and a read-only workbench command response.
+Six retained signatures and three projected request schemas agree; three historical
+requests validate locally without dispatch. Typed projections are not raw
+`tools/list` schemas and do not capture every prose or command-grammar constraint.
+Current edit-tool prose differs from the dated catalog. Missing-tool summary
+coverage and output-overwrite repairs have separate evidence; the original snapshot
+is unchanged.
+
+[Final focused verification](../evidence/artistic-revision/20261109/verification/focused-final-02.json)
+passes **105 tests and Ruff**: 55 new regressions (6 runner, 16 contract, 27 grader
+and 6 recorder) plus 50 existing tests. The [real Windows sharing-lock probe](../evidence/artistic-revision/20261109/verification/recorder-lock-check.json)
+observes three `WinError 5` denials with original bytes preserved, then replacement
+after release in 0.354 seconds. Bounded retry and fallback-record tests separately
+verify continued observation of an owned process under recording failures. This
+is a local repair proof; the original native wrapper remains partial. The preceding
+604-pass/one-skip full verifier was not rerun; no new generation quality or M1/M2
+completion is claimed.
+
 ## Named Codex role and same-child handoff, 2026-11-09
 
 The [qualification report](../evidence/named-codex-role/README.md) separates

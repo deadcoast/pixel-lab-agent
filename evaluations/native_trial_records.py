@@ -8,8 +8,10 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 import tomllib
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -26,9 +28,28 @@ def reference(path):
 
 
 def atomic_json(path, value):
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    write_json(temporary, value)
-    os.replace(temporary, path)
+    path = Path(path)
+    # A failed replacement keeps both the prior target and its pending bytes.
+    # Later snapshots must not overwrite that failed snapshot's temporary file.
+    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    attempts = 0
+    try:
+        write_json(temporary, value)
+        delays = (0.05, 0.1, 0.2, 0.4)
+        while True:
+            attempts += 1
+            try:
+                os.replace(temporary, path)
+                return
+            except PermissionError as error:
+                windows_lock = os.name == "nt" or getattr(error, "winerror", None) in (5, 32, 33)
+                if not windows_lock or attempts > len(delays):
+                    raise
+                time.sleep(delays[attempts - 1])
+    except OSError as error:
+        error.pending_json_path = str(temporary)
+        error.atomic_replace_attempts = attempts
+        raise
 
 
 def persistence(launch, env):
@@ -379,10 +400,44 @@ def execute(destination, launch, env, timeout=None):
             raise ValueError("Native transcript disappeared after preparation; use explicit artifact recovery")
     (destination / "native_trial_records.py.txt").write_bytes(Path(__file__).read_bytes())
     journal = AttemptRecord(destination, launch, env)
-    journal.snapshot()
-    started = time.monotonic()
     interruption = None
     process = None
+
+    def snapshot(status="running", *, returncode=None, interruption=None, retain=False):
+        """Recording faults must not end observation of an owned live process."""
+        journal.data["recording_status"] = "recorded_with_prior_errors" if journal.data.get("recording_errors") else "recorded"
+        try:
+            return journal.snapshot(status, returncode=returncode, interruption=interruption, retain=retain)
+        except OSError as error:
+            receipt = destination / ("recording-error-" + uuid.uuid4().hex + ".json")
+            failure = {"kind": "snapshot_recording_error", "observed_at": now(), "snapshot_status": status,
+                       "error_type": type(error).__name__, "errno": error.errno,
+                       "winerror": getattr(error, "winerror", None),
+                       "pending_json_path": getattr(error, "pending_json_path", None),
+                       "replace_attempts": getattr(error, "atomic_replace_attempts", None),
+                       "process_started": process is not None, "pid": process.pid if process else None,
+                       "returncode": returncode, "receipt": str(receipt)}
+            journal.data.setdefault("recording_errors", []).append(failure)
+            journal.data.update(recording_status="snapshot_failed", status=status, returncode=returncode)
+            journal.data.setdefault("interruption_reason", interruption)
+            if interruption:
+                journal.data["interruption_reason"] = interruption
+            # This distinct, exclusive receipt does not depend on replacing the
+            # locked target. It also retains the in-memory final observation.
+            try:
+                with receipt.open("x", encoding="utf-8") as stream:
+                    json.dump({"failure": failure, "record": journal.data}, stream, indent=2, ensure_ascii=False)
+                    stream.write("\n")
+            except OSError as fallback_error:
+                failure["receipt_error"] = {"type": type(fallback_error).__name__, "errno": fallback_error.errno}
+                try:
+                    print(json.dumps({"native_recording_error": failure}), file=sys.stderr, flush=True)
+                except OSError:
+                    pass
+            return journal.data
+
+    snapshot()
+    started = time.monotonic()
     try:
         with (destination / "stdout.jsonl").open("xb") as stdout, (destination / "stderr.txt").open("xb") as stderr:
             process = subprocess.Popen(launch["command"], cwd=launch["cwd"], env=env,
@@ -396,7 +451,7 @@ def execute(destination, launch, env, timeout=None):
             except BrokenPipeError:
                 pass
             while process.poll() is None:
-                journal.snapshot()
+                snapshot()
                 if timeout is not None and time.monotonic() - started >= timeout:
                     interruption = "timeout"
                     journal.data["termination"] = stop_process(process)
@@ -407,10 +462,17 @@ def execute(destination, launch, env, timeout=None):
         if process and process.poll() is None:
             journal.data["termination"] = stop_process(process)
     except OSError:
-        journal.snapshot("finished", returncode=None, interruption="launch_error")
+        if process is None:
+            snapshot("finished", returncode=None, interruption="launch_error")
+        else:
+            # Non-recording I/O faults after Popen are not launch failures. Stop
+            # the owned process explicitly rather than abandoning it on unwind.
+            if process.poll() is None:
+                journal.data["termination"] = stop_process(process)
+            snapshot("finished", returncode=process.returncode, interruption="runner_io_error")
         raise
     code = process.returncode if process else None
-    record = journal.snapshot("finished", returncode=code, interruption=interruption, retain=True)
+    record = snapshot("finished", returncode=code, interruption=interruption, retain=True)
     return code, round(time.monotonic() - started, 3), journal.events, record
 
 

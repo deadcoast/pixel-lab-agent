@@ -1,0 +1,592 @@
+{
+  "actor": "actor",
+  "baseline": "ready.retained",
+  "decisions": [
+    "render.decision.style",
+    "recheck.decision.destination"
+  ],
+  "delivery": {
+    "criteria": [
+      {
+        "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames, its actual 100 ms playback with the wrap under normal motion, and the held cell shown stationary under reduced motion; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+        "domain": "continuity",
+        "id": "continuity",
+        "mode": "visual",
+        "sources": [
+          "artistic.source.brief",
+          "artistic.source.evaluation",
+          "artistic.source.artistic-module",
+          "artistic2.source.view.0",
+          "artistic2.source.view.1",
+          "artistic2.source.check.0",
+          "artistic2.source.check.1",
+          "artistic2.source.round2.delivery.continuity",
+          "artistic2.source.plar.512.528"
+        ]
+      },
+      {
+        "check": "View Ready, every Working frame, the running loop AND the stationary held cell, Retry and Paused together at 1x and 3x including a grayscale/non-colour comparison: Working (animated or held) never reads as success; the held cell is distinct from Ready and from Paused by shape or structure alone; Retry and Paused are each distinct from activity (including the held cell), completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable from every member including the held cell.",
+        "domain": "continuity",
+        "id": "distinction",
+        "mode": "visual",
+        "sources": [
+          "artistic.source.brief",
+          "artistic.source.view-ts",
+          "artistic.source.successor-ts",
+          "artistic.source.evaluation",
+          "artistic.source.artistic-module",
+          "artistic2.source.view.0",
+          "artistic2.source.view.1",
+          "artistic2.source.check.0",
+          "artistic2.source.check.1",
+          "artistic2.source.round2.delivery.distinction",
+          "artistic2.source.plar.422.422"
+        ]
+      },
+      {
+        "check": "Destination for the successor: src/queue-view-artistic.ts + renderer-artistic/ with the existing asset paths (assets/working.png, assets/ready-confirmed.png, assets/error-retry.png, assets/paused.png, assets/start.svg); src/queue-view.ts, renderer/ and every existing asset byte remain unchanged (hashes compared against the retained baseline). In the successor browser fixture renderer-artistic/view.mjs executing the actual src/queue.ts and src/queue-view-artistic.ts modules, checked by renderer-artistic/check.py against the retained capture, exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus under normal and reduced preferences with the exact package files at those paths: labels, frame counts (sheet geometry), horizontal slicing, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap under normal and frame 0 at every sample under reduced (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; assets/start.svg byte hash unchanged; the fixture executed the successor module and not the retained original.",
+        "domain": "engine",
+        "id": "destination",
+        "mode": "live",
+        "sources": [
+          "artistic.source.brief",
+          "artistic.source.assignment",
+          "artistic.source.successor-ts",
+          "artistic.source.queue-ts",
+          "artistic.source.evaluation",
+          "artistic.source.artistic-module",
+          "artistic2.source.view.0",
+          "artistic2.source.view.1",
+          "artistic2.source.check.0",
+          "artistic2.source.check.1",
+          "artistic2.source.round2.delivery.destination"
+        ]
+      }
+    ],
+    "destinations": [
+      "artistic.choice.destination"
+    ],
+    "members": [
+      "r.22e90a2a03fe453a.output.ready",
+      "working",
+      "retry",
+      "paused"
+    ],
+    "name": "Corrected artistic reused-art family"
+  },
+  "id": "artistic-02",
+  "knowledge": [],
+  "project": "project",
+  "stages": [
+    {
+      "contract": "artistic.working.contract",
+      "criteria": [
+        {
+          "check": "Decode assets/working.png as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Consumer basis (unchanged original module src/queue-view.ts lines 4 and 9; identical constants in the proposed successor module lines 8 and 13): running frames 4 (the sheet's cell count, unchanged under either preference), display.cell [16,16] and frameMs 100. Fixture behaviour, descriptive only and scoped to this successor destination as designed: the successor fixture draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and derives the frame from frameAt() (floor(elapsed/100) mod 4 when animating; the held cell otherwise).",
+          "domain": "mechanical",
+          "id": "geometry",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.geometry",
+            "artistic2.source.plar.529.545"
+          ]
+        },
+        {
+          "check": "MEASURED record (mechanical/local, diagnostic): retain every cell's alpha histogram and exact RGBA component boxes (zero-based, half-open). FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte or grey tile and is NOT a rejection condition (a corner-to-corner X or full-span glyph legitimately touches all four edges with a transparent exterior). RGB values of alpha-0 pixels are not significant. PROPOSAL (seed-rotation construction only): mechanical REJECTION is decidable only under that construction, where each cell's alpha channel must equal that of cw^k(seed) under dst(x,y)=src(y,15-x) (for the current seed 21f5baca...: measured 224 alpha-0 / 32 alpha-255 pixels per cell). Outside that construction the measured record carries no rejection rule.",
+          "domain": "mechanical",
+          "id": "transparent-exterior-measured",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.transparent-exterior-measured",
+            "artistic2.source.plar.529.545"
+          ]
+        },
+        {
+          "check": "VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of every frame, including the held cell when stationary shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. Partial alpha on mark pixels is permitted; binary alpha is not required. The rejected generated frame whose background held 193 opaque #808080 pixels is the failure class, not the definition of the rule.",
+          "domain": "visual",
+          "id": "transparent-exterior-visual",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.transparent-exterior-visual"
+          ]
+        },
+        {
+          "check": "For the successor the candidate sheet is the existing assets/working.png (sha256 cf101610...), already the exact 64x16 four-cell sheet, so no assembly step occurs and this clause is satisfied vacuously; the retained record must still name the exact candidate bytes and their provenance (byte-identical to accepted live.working-animation-motion-01.candidate; cells equal cw^k(seed) on alpha and visible RGBA). If a future provider result is not already the exact 64x16 four-cell sheet, the retained assembly record names the exact source frames or cell rectangles in play order and every delivered cell is a lossless copy: identical alpha everywhere and identical RGBA where alpha>0 (RGB of alpha-0 pixels is not significant); no resize, resample or recolor; no undocumented duplication or silent frame drop (a deliberately repeated phase is allowed when the record says so); all raw provider outputs are retained beside the assembled strip.",
+          "domain": "mechanical",
+          "id": "frame-assembly",
+          "mode": "local",
+          "sources": [
+            "artistic.source.assignment",
+            "artistic.source.brief",
+            "artistic.source.authoring-stage",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.frame-assembly"
+          ]
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method). REQUIRED (owner, BRIEF line 3; PLAR 560-570 state_meaning): the running loop reads as ongoing activity and not as completion, with no completion/success silhouette or success-like terminal pose in the loop. REQUIRED (caller update, PLAR line 422; judged in stationary-meaning): the held cell, shown alone under reduced motion, reads as activity and not as completion. EXPERT CLAUSE (specialist; scope this successor): each transient frame (cells 1-3), seen singly, also reads as activity rather than completion, because frames are exposed singly for 100 ms and frame 0 is painted at cell creation.",
+          "domain": "visual",
+          "id": "activity-not-success",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.activity-not-success",
+            "artistic2.source.plar.422.422",
+            "artistic2.source.plar.560.570"
+          ]
+        },
+        {
+          "check": "Under normal motion, play the actual four frames at the consumer's 100 ms per frame including the fourth-to-first wrap, at 1x and 3x on #172336. Required outcome: the strip plays as one continuous activity loop with no visible discontinuity at the fourth-to-first wrap. All four frames remain in the sheet and in play under normal motion; the reduced-motion hold does not remove or reorder them.",
+          "domain": "visual",
+          "id": "motion-continuity",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.motion-continuity",
+            "artistic2.source.plar.546.559",
+            "artistic2.source.plar.606.619"
+          ]
+        },
+        {
+          "check": "Readable compact silhouette(s), deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "style-coherence",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.style-coherence",
+            "artistic2.source.plar.512.528"
+          ]
+        },
+        {
+          "check": "In the successor browser fixture renderer-artistic/view.mjs executing the actual src/queue.ts and src/queue-view-artistic.ts modules, checked by renderer-artistic/check.py against the retained capture, with the preference resolving to normal, exercise started -> running through stateAfter. REQUIRED (caller update PLAR 422 consumer mapping; assignment step 4 both consumers): statusCell and compactStatus resolve the same Working visual for the running state, and the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. CONSUMER-CODE FACT of the proposed successor module (scope: this successor destination as designed; re-derive if the module changes): the identical descriptor is {label Working, path assets/working.png, frames 4, still 0, motion normal, animate true, holdFrame null}. Frame-advance evidence as the checker asserts (mechanical): the synthetic capture timeline (cells painted at chosen elapsed values) reports frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and covers all four cells; each live cell is sampled once and its frame agrees with its elapsed time within the frame-boundary tolerance. Not asserted by this criterion: cycling of the live requestAnimationFrame loop and wall-clock frame duration; actual playback is the visual/temporal leg of motion-continuity.",
+          "domain": "engine",
+          "id": "consumers-normal-motion",
+          "mode": "live",
+          "sources": [
+            "artistic.source.queue-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.succ-index",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.consumers-normal-motion"
+          ]
+        },
+        {
+          "check": "PROPOSAL (P1; specialist cell choice bound to the proposed module's statusVisuals.running.still = 0, painted when animate is false): the stationary Working symbol is cell 0 of assets/working.png, the crop (0,0,16,16) in zero-based half-open coordinates. OBSERVATION (measured on cf101610... frame 0): visible pixels 32, three 4-connected components with boxes [[5, 3, 10, 5], [12, 6, 14, 11], [3, 10, 8, 14]] (half-open, zero-based), visible box [3, 3, 14, 14], mass centroid [7.906, 9.0] in pixel-edge coordinates (canvas centre 8.0,8.0), alpha histogram {'0': 224, '255': 32}; cell 0 equals the accepted seed (sha256 21f5baca...) on alpha and visible RGBA. The visual criteria are judged on exactly this cell; if `still` changes, the identity record and those visual verdicts must be redone.",
+          "domain": "mechanical",
+          "id": "stationary-cell-identity",
+          "mode": "local",
+          "sources": [
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.stationary-cell-identity"
+          ]
+        },
+        {
+          "check": "Viewed stationary (no animation) at 1x and 3x nearest on #172336, in colour and in a non-colour comparison (grayscale or binarized silhouettes), the held cell is distinguishable from the Ready mark (assets/ready-confirmed.png) and from the Paused mark (assets/paused.png) by shape or structure alone, and does not read as completion or as pause.",
+          "domain": "visual",
+          "id": "stationary-distinct-ready-paused",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.update",
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.stationary-distinct-ready-paused",
+            "artistic2.source.plar.422.422"
+          ]
+        },
+        {
+          "check": "Viewed stationary at 1x and 3x nearest on #172336, in colour and in a non-colour comparison. (a) REQUIREMENT (owner BRIEF line 3 'Error/retry must be distinguishable without color alone', read over the statuses the view shows; the held cell is a shown status by the caller update PLAR line 422): the held cell is distinguishable by shape or structure alone from the Retry mark (assets/error-retry.png) and does not read as failure/retry. (b) INFERENCE (shared-consumer, D4; adopted by the caller, not an owner line: idle resolves to Start in the same status cells through both consumers in the original module src/queue-view.ts lines 3, 10-11 and the successor lines 7, 27-28): the held cell is distinguishable by shape or structure alone from the preserved Start triangle (assets/start.svg as rendered in the idle cell) and does not read as the Start control.",
+          "domain": "visual",
+          "id": "stationary-distinct-retry-start",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.view-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.stationary-distinct-retry-start"
+          ]
+        },
+        {
+          "check": "Viewed stationary at 1x and 3x on #172336, the held cell is judged alone and then beside its consumer label as the consumers render it: by itself it reads as the Working status's own symbol, does not read as success (no check mark or terminal pose) and does not read as pause; the label is viewing context and does not carry this reading.",
+          "domain": "visual",
+          "id": "stationary-meaning",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.stationary-meaning",
+            "artistic2.source.plar.422.422"
+          ]
+        },
+        {
+          "check": "In the successor browser fixture renderer-artistic/view.mjs executing the actual src/queue.ts and src/queue-view-artistic.ts modules, checked by renderer-artistic/check.py against the retained capture, with the preference resolving to reduced ((prefers-reduced-motion: reduce) matches; the preference mechanism is fixed by assignment step 4), exercise started -> running through stateAfter. REQUIRED (caller update PLAR line 422 'confirm its consumer mapping'; assignment step 4 both consumers): statusCell and compactStatus resolve one and the same stationary Working visual, no animation loop repaints Working cells, every Working cell (live 3x, matrix 1x and 3x) shows the designated held cell, and the sheet geometry stays 64x16 with frames 4 under both preferences (owner: frames is the sheet's cell count, never changed by the preference). CONSUMER-CODE FACTS of the proposed successor module (scope: this successor destination as designed; re-derive if the module changes): the identical descriptor is {label Working, path assets/working.png, frames 4, still 0, motion reduced, animate false, holdFrame 0} (under normal {..., motion normal, animate true, holdFrame null}); the held cell index is holdFrame = still = 0 and the capture timeline reports frame 0 at every sample point (0..400 ms); the static members (Start, Ready, Paused, Retry) resolve animate false / holdFrame 0 with frames 1 under both preferences; the default preference source is matchMedia('(prefers-reduced-motion: reduce)') consulted by both consumers through motionPreference(), and an explicit motion argument overrides it identically for both.",
+          "domain": "engine",
+          "id": "reduced-motion-consumer-mapping",
+          "mode": "live",
+          "sources": [
+            "artistic.source.update",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.reduced-motion-consumer-mapping",
+            "artistic2.source.plar.422.422"
+          ]
+        },
+        {
+          "check": "With the page open and Working shown (live cells and the state matrix in both consumers), change the preference in the same page session. REQUIRED (assignment step 4 'changes while open', step 6 'switching the preference in the same session', step 3): on the media query change event every Working cell in both consumers (statusCell and compactStatus; live 3x; matrix 1x and 3x) is re-derived from the same consumer under the new preference and repainted in place, with no reload: stationary on the designated held cell when the preference becomes reduced, and cycling again when it returns to normal. CONSUMER-CODE FACTS of the proposed successor module and fixture (scope: this successor destination as designed; re-derive if the module changes): the repainted descriptors read animate false, frame == holdFrame == 0 under reduced and animate true, holdFrame null under normal; cycling after restore is asserted on the normal-restored synthetic timeline (all four cells); one sessionId across all phases, the change event recorded with from/to and the repainted cell list, and the live Working cells among the repainted cells. CALLER VISUAL OBSERVATION on the reduced-phase screenshot (not asserted by check.py, whose [switch] block inspects only running cells) unless an assertion is added at production time: other states repaint unchanged.",
+          "domain": "engine",
+          "id": "live-preference-switch",
+          "mode": "live",
+          "sources": [
+            "artistic.source.assignment",
+            "artistic.source.succ-capture",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.working.live-preference-switch"
+          ]
+        }
+      ],
+      "id": "working",
+      "kind": "animation",
+      "name": "Corrected artistic working",
+      "needs": [],
+      "phase": "production",
+      "selection": {
+        "asset": "queue.working",
+        "path": "authoring-plar.txt",
+        "replaces": {
+          "output": "artistic-01.working.output",
+          "store": ".pixl/assets/queue.ready",
+          "task": "artistic-01.working.task"
+        },
+        "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5"
+      }
+    },
+    {
+      "contract": "artistic.retry.contract",
+      "criteria": [
+        {
+          "check": "Decode assets/error-retry.png as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "id": "geometry",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.geometry"
+          ]
+        },
+        {
+          "check": "MEASURED record (mechanical/local, diagnostic): retain every cell's alpha histogram and exact RGBA component boxes (zero-based, half-open). FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte or grey tile and is NOT a rejection condition (a corner-to-corner X or full-span glyph legitimately touches all four edges with a transparent exterior). RGB values of alpha-0 pixels are not significant. No mechanical rejection rule is decidable for this static member (no construction fixes its alpha set); the measured record is diagnostic only.",
+          "domain": "mechanical",
+          "id": "transparent-exterior-measured",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.transparent-exterior-measured"
+          ]
+        },
+        {
+          "check": "VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of the image shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. Partial alpha on mark pixels is permitted; binary alpha is not required.",
+          "domain": "visual",
+          "id": "transparent-exterior-visual",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.transparent-exterior-visual"
+          ]
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame including the held cell, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop or its held cell. No specific retry motif (such as an arrow) is required.",
+          "domain": "visual",
+          "id": "retry-meaning-without-color",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.view-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.retry-meaning-without-color"
+          ]
+        },
+        {
+          "check": "Readable compact silhouette(s), deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "style-coherence",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.style-coherence",
+            "artistic2.source.plar.512.528"
+          ]
+        },
+        {
+          "check": "In the successor browser fixture renderer-artistic/view.mjs executing the actual src/queue.ts and src/queue-view-artistic.ts modules, checked by renderer-artistic/check.py against the retained capture, exercise error -> failed through stateAfter under both preferences. REQUIRED (owner BRIEF lines 3 and 7; original module line 7; assignment step 4 both consumers): statusCell and compactStatus resolve the same Retry visual {label Retry, path assets/error-retry.png, frames 1}, the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and the static member does not animate under either preference. CONSUMER-CODE FACT of the proposed successor module (scope: this successor destination as designed; re-derive if the module changes): the identical descriptor is {label Retry, path assets/error-retry.png, frames 1, still 0, animate false, holdFrame 0}; static behaviour follows the frames > 1 gate in describe().",
+          "domain": "engine",
+          "id": "consumers",
+          "mode": "live",
+          "sources": [
+            "artistic.source.queue-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.succ-index",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.retry.consumers"
+          ]
+        }
+      ],
+      "id": "retry",
+      "kind": "sprite",
+      "name": "Corrected artistic retry",
+      "needs": [],
+      "phase": "production",
+      "selection": {
+        "asset": "queue.retry",
+        "path": "authoring-plar.txt",
+        "replaces": {
+          "output": "artistic-01.retry.output",
+          "store": ".pixl/assets/queue.ready",
+          "task": "artistic-01.retry.task"
+        },
+        "requirements_hash": "91fb591e96062009b0c89575c8b17f8280f4ea2218ceb47bd9527046a0cac8b4"
+      }
+    },
+    {
+      "contract": "artistic.paused.contract",
+      "criteria": [
+        {
+          "check": "Decode assets/paused.png as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+          "domain": "mechanical",
+          "id": "geometry",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.geometry"
+          ]
+        },
+        {
+          "check": "MEASURED record (mechanical/local, diagnostic): retain every cell's alpha histogram and exact RGBA component boxes (zero-based, half-open). FLAG for visual review any alpha>0 component touching all four cell edges, or any single alpha>0 component covering more than half of the cell's 256 pixels. The flag is a diagnostic proxy for a canvas matte or grey tile and is NOT a rejection condition (a corner-to-corner X or full-span glyph legitimately touches all four edges with a transparent exterior). RGB values of alpha-0 pixels are not significant. No mechanical rejection rule is decidable for this static member (no construction fixes its alpha set); the measured record is diagnostic only.",
+          "domain": "mechanical",
+          "id": "transparent-exterior-measured",
+          "mode": "local",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.transparent-exterior-measured"
+          ]
+        },
+        {
+          "check": "VISUAL record (visual/visual; the deciding rule): viewed at 1x and 3x on #172336, the exterior of the image shows the panel with no unintended matte, tile, plate, halo or fringe; a deliberate opaque backing shape is acceptable only when it is part of the mark's recorded design and the exterior stays transparent. Partial alpha on mark pixels is permitted; binary alpha is not required. The rejected opaque magenta intermediate is the failure class, not the definition of the rule.",
+          "domain": "visual",
+          "id": "transparent-exterior-visual",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.transparent-exterior-visual"
+          ]
+        },
+        {
+          "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame including the held cell (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+          "domain": "visual",
+          "id": "pause-meaning-without-color",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.view-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.pause-meaning-without-color"
+          ]
+        },
+        {
+          "check": "Readable compact silhouette(s), deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+          "domain": "visual",
+          "id": "style-coherence",
+          "mode": "visual",
+          "sources": [
+            "artistic.source.brief",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.style-coherence",
+            "artistic2.source.plar.512.528"
+          ]
+        },
+        {
+          "check": "In the successor browser fixture renderer-artistic/view.mjs executing the actual src/queue.ts and src/queue-view-artistic.ts modules, checked by renderer-artistic/check.py against the retained capture, exercise pause -> paused through stateAfter under both preferences. REQUIRED (owner BRIEF lines 3, 5 and 7; original module line 5; assignment step 4 both consumers): statusCell and compactStatus resolve the same Paused visual {label Paused, path assets/paused.png, frames 1}, the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and the static member does not animate under either preference. CONSUMER-CODE FACT of the proposed successor module (scope: this successor destination as designed; re-derive if the module changes): the identical descriptor is {label Paused, path assets/paused.png, frames 1, still 0, animate false, holdFrame 0}; static behaviour follows the frames > 1 gate in describe().",
+          "domain": "engine",
+          "id": "consumers",
+          "mode": "live",
+          "sources": [
+            "artistic.source.queue-ts",
+            "artistic.source.successor-ts",
+            "artistic.source.succ-index",
+            "artistic.source.evaluation",
+            "artistic.source.artistic-module",
+            "artistic2.source.view.0",
+            "artistic2.source.view.1",
+            "artistic2.source.check.0",
+            "artistic2.source.check.1",
+            "artistic2.source.round2.paused.consumers"
+          ]
+        }
+      ],
+      "id": "paused",
+      "kind": "sprite",
+      "name": "Corrected artistic paused",
+      "needs": [],
+      "phase": "production",
+      "selection": {
+        "asset": "queue.paused",
+        "path": "authoring-plar.txt",
+        "replaces": {
+          "output": "artistic-01.paused.output",
+          "store": ".pixl/assets/queue.ready",
+          "task": "artistic-01.paused.task"
+        },
+        "requirements_hash": "e50add665ae98a05fcade86d0d281f998f81b4253644a3415d41d0117daf46d6"
+      }
+    }
+  ],
+  "version": 1
+}
