@@ -15,6 +15,10 @@ def parser():
         description="PIXL agent project state and pixel-art tools (PX1/PX2)",
     )
     sub = p.add_subparsers(dest="command", required=True)
+    from .readiness import configure_parser
+
+    q = sub.add_parser("readiness", help="Read local setup facts and supplied host observations without provider probes.")
+    configure_parser(q)
     q = sub.add_parser("validate")
     q.add_argument("path")
     q.add_argument("--root")
@@ -285,6 +289,13 @@ def parser():
 
 
 def main(argv=None):
+    arguments = sys.argv[1:] if argv is None else argv
+    if arguments and arguments[0] == "readiness":
+        # The public bootstrap dispatches this before importing this module;
+        # retain the same route for callers that already imported cli.main.
+        from .readiness import main as readiness_main
+
+        return readiness_main(arguments[1:])
     a = parser().parse_args(argv)
     operation = "plar_" + a.plar_action if a.command == "plar" else a.command
     try:

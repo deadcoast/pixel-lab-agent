@@ -1,0 +1,209 @@
+{
+  "scope": "Complete ALL_TOOLS catalog exposed to caller at capture; direct native collaboration declarations are separately recorded in caller report.",
+  "tools": [
+    {
+      "name": "apply_patch",
+      "description": "The `apply_patch` tool can be used to edit files. This is a FREEFORM tool, so do not wrap the patch in JSON.\n\nexec tool declaration:\n```ts\ndeclare const tools: { apply_patch(input: string): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "clock__curr_time",
+      "description": "Return the current time in UTC.\n\nTools for reading and waiting on time.\n\nexec tool declaration:\n```ts\ndeclare const tools: { clock__curr_time(args: {}): Promise<{\n  // Current UTC time formatted as YYYY-MM-DD HH:MM:SS UTC.\n  current_time: string;\n}>; };\n```"
+    },
+    {
+      "name": "create_goal",
+      "description": "Create a goal only when explicitly requested by the user or system/developer instructions; do not infer goals from ordinary tasks.\nSet token_budget only when an explicit token budget is requested. Fails if an unfinished goal exists; use update_goal only for status.\n\nexec tool declaration:\n```ts\ndeclare const tools: { create_goal(args: {\n  // Required. The concrete objective to start pursuing. This starts a new active goal when no goal exists or replaces the current goal when it is complete.\n  objective: string;\n  // Positive token budget for the new goal. Omit unless explicitly requested.\n  token_budget?: number;\n}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "exec_command",
+      "description": "Runs a command in a PTY, returning output or a session ID for ongoing interaction.\n\nWindows safety rules:\n- Do not compose destructive filesystem commands across shells. Do not enumerate paths in PowerShell and then pass them to `cmd /c`, batch builtins, or another shell for deletion or moving. Use one shell end-to-end, prefer native PowerShell cmdlets such as `Remove-Item` / `Move-Item` with `-LiteralPath`, and avoid string-built shell commands for file operations.\n- Before any recursive delete or move on Windows, verify the resolved absolute target paths stay within the intended workspace or explicitly named target directory. Never issue a recursive delete or move against a computed path if the final target has not been checked.\n- When using `Start-Process` to launch a background helper or service, pass `-WindowStyle Hidden` unless the user explicitly asked for a visible interactive window. Use visible windows only for interactive tools the user needs to see or control.\n\nexec tool declaration:\n```ts\ndeclare const tools: { exec_command(args: {\n  // Shell command to execute.\n  cmd: string;\n  // User-facing approval question for `require_escalated`; omit otherwise.\n  justification?: string;\n  // True runs the shell with -l/-i semantics; false disables them. Defaults to true.\n  login?: boolean;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Reusable approval prefix for `cmd`, only with `sandbox_permissions: \"require_escalated\"`; for example [\"git\", \"pull\"].\n  prefix_rule?: Array<string>;\n  // Per-command sandbox override. Defaults to `use_default`; use `require_escalated` for unsandboxed execution.\n  sandbox_permissions?: \"use_default\" | \"require_escalated\";\n  // Shell binary to launch. Defaults to the user's default shell.\n  shell?: string;\n  // True allocates a PTY for the command; false or omitted uses plain pipes.\n  tty?: boolean;\n  // Working directory for the command. Defaults to the turn cwd.\n  workdir?: string;\n  // Maximum time to wait before returning a session ID for a still-running command. Commands that finish sooner return immediately. For ordinary commands, omit this parameter to use the 10000 ms default. Effective range on Windows is 10000-30000 ms.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```"
+    },
+    {
+      "name": "get_goal",
+      "description": "Get the current goal for this thread, including status, budgets, token and elapsed-time usage, and remaining token budget.\n\nexec tool declaration:\n```ts\ndeclare const tools: { get_goal(args: {}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "image_gen__imagegen",
+      "description": "The `image_gen.imagegen` tool enables image generation from descriptions and editing of existing images based on specific instructions. Use it when:\r\n\r\n- The user requests an image based on a scene description, such as a diagram, portrait, comic, meme, or any other visual.\r\n- The user wants to modify an attached or previously generated image with specific changes, including adding or removing elements, altering colors, improving quality/resolution, or transforming the style (e.g., cartoon, oil painting).\r\n\r\nGuidelines:\r\n- imagegen needs a few minutes to finish. In code-mode, use the first-line @exec directive to give the initial call 120 seconds and the same yield for any waits that follow. Once it finishes, return the image with generatedImage(result).\r\n- Avoid printing the full result or its base64 image data with `text()` or `notify()`; print only small metadata when needed.\r\n- Set `transparent_background` to true when the request calls for a transparent background, including background removal or a cutout; set it to false otherwise. For edits, preserve existing transparency unless the user asks to change it.\r\n- Omit both `referenced_image_paths` and `num_last_images_to_include` when generating a brand new image.\r\n- For edits, use `referenced_image_paths` when every target image has a local file path.\r\n- If you have not seen a local image yet, use `view_image` to inspect it before editing.\r\n- Use `num_last_images_to_include` only when at least one target image has no local file path.\r\n- Set `num_last_images_to_include` to the smallest number of recent conversation images that includes every target image, up to 5.\r\n- Never provide both `referenced_image_paths` and `num_last_images_to_include`.\r\n- If neither mechanism can include every target image, ask the user to attach the missing images again.\r\n- Directly generate the image without reconfirmation or clarification unless required images must be attached again.\r\n- Always use this tool for image editing unless the user explicitly requests otherwise. Do not use the `python` tool for image editing unless specifically instructed.\r\n\n\nTools in the image_gen namespace.\n\nexec tool declaration:\n```ts\ndeclare const tools: { image_gen__imagegen(args: {\n  num_last_images_to_include?: number | null;\n  prompt: string;\n  referenced_image_paths?: Array<string> | null;\n  // Whether the output should have a transparent background. Defaults to false.\n  transparent_background?: boolean;\n}): Promise<{ image_url: string; output_hint?: string; }>; };\n```"
+    },
+    {
+      "name": "list_mcp_resource_templates",
+      "description": "Lists resource templates provided by MCP servers. Parameterized resource templates allow servers to share data that takes parameters and provides context to language models, such as files, database schemas, or application-specific information. Prefer resource templates over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resource_templates(args: {\n  // Opaque cursor from a previous list_mcp_resource_templates call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resource templates from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "list_mcp_resources",
+      "description": "Lists resources provided by MCP servers. Resources allow servers to share data that provides context to language models, such as files, database schemas, or application-specific information. Prefer resources over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resources(args: {\n  // Opaque cursor from a previous list_mcp_resources call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resources from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_asset_check",
+      "description": "Measure image dimensions, palette, alpha and components. Optional regions selects exact RGBA colors for measured component boxes; no artistic judgment.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_asset_check(args: { alpha?: \"binary\" | \"full\"; height?: number; palette?: Array<string>; path: string; regions?: Array<string>; width?: number; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_candidate_review",
+      "description": "Retain explicit specialist observations and criterion judgments for a saved candidate or family. Derive evidence bindings; optionally nominate or complete through existing checks. Retry the identical review ID/payload with current state_hash after interruption. No provider action or automatic visual judgment. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_candidate_review(args: {\n  candidate_id: string;\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  observation: { action: \"record\" | \"nominate\" | \"complete\"; binding_hash: string; limitations: Array<string>; next_action: string; observations: Array<{ mode: \"local\" | \"visual\" | \"live\"; note: string; path: string; sha256: string; }>; observed_at: string; reviewer: string; verdicts: Array<{ criterion: string; observations: Array<number>; reason: string; status: \"pass\" | \"fail\" | \"unavailable\"; supersedes: string | null; }>; version: 1; };\n  result_path?: string;\n  review_id: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_capabilities",
+      "description": "Read dated PixelLab documentation inventory; not live tool discovery.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_capabilities(args: { name?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_catalog",
+      "description": "Index local source sections without executing embedded content.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_catalog(args: { paths?: Array<string>; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_commit",
+      "description": "Commit a candidate file or inline JSON document after expected-hash, revision and evidence validation.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_commit(args: { [key: string]: unknown; } | { [key: string]: unknown; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_context",
+      "description": "Retrieve complete task context (default; fail rather than truncate byte budget), or view=authoring for current contracts, literal criteria, source retrieval links, nominees and pending jobs without proof/history payloads. Authoring is an index, not acceptance. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_context(args: { asset_id?: string; budget?: number; focus: string; path: string; plar_path?: string; result_path?: string; view?: \"complete\" | \"authoring\"; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_encode",
+      "description": "Compile lossless host records into canonical PIXL wire syntax, deriving UTF-8 lengths.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_encode(args: { document: { [key: string]: unknown; }; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_family",
+      "description": "Verify retained family files and report baseline, member selection, destination requirements, pending jobs and drift. No acceptance or remote action. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_family(args: { output?: string; path: string; result_path?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_family_snapshot",
+      "description": "Copy selected local family files into a retained delivery candidate using the expected state hash. Does not nominate or accept it, change task state, or execute remotely. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_family_snapshot(args: {\n  candidate_id: string;\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  output_id: string;\n  result_path?: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_impact",
+      "description": "Find records transitively depending on a changed ID.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_impact(args: { id: string; path: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_init",
+      "description": "Initialize a local PIXL store with explicitly unconfirmed intake defaults.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_init(args: { name?: string; store: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_inspection",
+      "description": "Verify retained inspection and reviews. With packet_id and view_ids, deliver selected PNG image blocks with exact payload dimensions and hashes for viewing. Read-only; no artistic or engine acceptance.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_inspection(args: { packet_id?: string; path: string; view_ids?: Array<string>; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_inspection_prepare",
+      "description": "Retain saved candidate/reference bytes, native and integer-nearest views, and measurements using the expected state hash. No verdict, nomination, task completion or remote action.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_inspection_prepare(args: {\n  candidate_id: string;\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  options: { [key: string]: unknown; };\n  packet_id: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_inspection_review",
+      "description": "Retain explicit caller viewing observations and criterion verdicts against a prepared packet using the expected hash. Does not establish actual host viewing, nominate the candidate, complete the task or execute an engine.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_inspection_review(args: {\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  observation: { [key: string]: unknown; };\n  packet_id: string;\n  review_id: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_intake",
+      "description": "Initialize a PX2 project with a brief and no invented style or production decisions.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_intake(args: { brief?: string; name?: string; store: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_job",
+      "description": "Legacy stateless journal update from supplied observations. Does not publish project state, poll or create remote jobs.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_job(args: { event: string; evidence?: { [key: string]: unknown; }; job: { [key: string]: unknown; }; remote_id?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_job_dispatch",
+      "description": "Save a one-time dispatch claim as unknown before returning the exact request for host execution. Never submits remotely; reconcile after any uncertain result.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_job_dispatch(args: {\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  job_id: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_job_import",
+      "description": "Snapshot an already downloaded project file and link an unaccepted candidate to a succeeded job output. Never downloads or creates acceptance evidence.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_job_import(args: {\n  candidate_id: string;\n  evidence: { [key: string]: unknown; };\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  job_id: string;\n  output_id: string;\n  path: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_job_observe",
+      "description": "Save caller-supplied provider observations and remote identity. Never polls or attests provider success.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_job_observe(args: {\n  event: \"submitted\" | \"running\" | \"succeeded\" | \"failed\" | \"unknown\";\n  evidence: { [key: string]: unknown; };\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  job_id: string;\n  remote_id?: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_job_prepare",
+      "description": "Save exact caller-discovered provider intent and authorization in the local project. Never executes remotely.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_job_prepare(args: {\n  arguments: { [key: string]: unknown; };\n  authorization: { [key: string]: unknown; };\n  discovery: { [key: string]: unknown; };\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  job_id: string;\n  outputs: Array<string>;\n  provider: string;\n  schema: { [key: string]: unknown; };\n  store: string;\n  task_id: string;\n  tool: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_jobs",
+      "description": "Verify saved job files and report full requests, history, drift, candidates and recovery actions. Does not grant dispatch or contact a provider.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_jobs(args: { path: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_knowledge",
+      "description": "Read the pixel-art method index or one source-grounded method.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_knowledge(args: { method?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_plar_handoff",
+      "description": "Save an exact selected-production continuation with agent-authored details; returns immutable path/hash. Keep caller_actions and future_work in details; derived resume/next are preserved unchanged. No acceptance or provider action. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_plar_handoff(args: {\n  asset_id: string;\n  details: { [key: string]: unknown; };\n  // Current production.continuation.state_hash from selected pixl_plar_read; not the PLAR file hash.\n  expect: string;\n  path?: string;\n  // Selected semantic requirements digest from pixl_plar_read.requirements_hash; not the PLAR file hash.\n  requirements_hash: string;\n  result_path?: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_plar_prepare",
+      "description": "Prepare a selected asset from reviewed request/criteria and discovered provider schema. Retains the candidate plan and durable job, links the allocation, and resumes identical calls. Explicit revise plus expect appends a reviewed generation after pending work is resolved. No dispatch or art acceptance.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_plar_prepare(args: {\n  asset_id: string;\n  connection: { [key: string]: unknown; } | string;\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect?: string;\n  packet: string;\n  path?: string;\n  // Selected semantic requirements digest from pixl_plar_read.requirements_hash; not the PLAR file hash.\n  requirements_hash: string;\n  revise?: boolean;\n  store?: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_plar_read",
+      "description": "Read project asset requirements, source drift and update impact; select asset_id for current production links, pending jobs and next actions.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_plar_read(args: { asset_id?: string; path?: string; since?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_plar_save",
+      "description": "Save a PLAR requirements document with expected file hash (new to create); retain previous bytes and bind new source paths. No provider call.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_plar_save(args: {\n  document: { [key: string]: unknown; };\n  // Current PLAR file byte SHA-256 from pixl_plar_read.hash, or new for first save.\n  expect: string;\n  path?: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_prepare",
+      "description": "Legacy stateless request validation. Does not save project intent or submit to PixelLab.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_prepare(args: { arguments: { [key: string]: unknown; }; authorization?: { [key: string]: unknown; }; schema: { [key: string]: unknown; }; tool: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_production_plan",
+      "description": "Author connected sample/production stages and collective delivery from reviewed JSON using existing contracts, baseline and choices. Recover PLAR links on identical retries. No execution or acceptance.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_production_plan(args: {\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  plan: { [key: string]: unknown; };\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_readiness",
+      "description": "Read local installation/runtime facts and explicitly supplied host observations. Static files do not prove a loaded specialist; tool visibility does not prove authentication. No provider probes or writes.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_readiness(args: {\n  host?: \"codex\" | \"claude\";\n  // Installation directory: absolute, or relative to the configured consumer root.\n  installation?: string;\n  observations?: { host: \"codex\" | \"claude\"; host_version?: string; local_tools?: { complete_inventory: boolean; names: Array<string>; }; named_role?: \"available\" | \"unavailable\" | \"not_observed\"; observed_at: string; official_tools?: { complete_inventory: boolean; names: Array<string>; }; };\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_ready",
+      "description": "List open tasks whose prerequisites are completed and whose tagged PLAR selections remain current.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_ready(args: { path: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_request_review",
+      "description": "Read exact candidate or connected-plan criteria and source excerpts. For connected plans, view=changes plus against_plan gives a concise structural comparison, retained choices, review attention and exact full-report links. Default complete report is unchanged. Optional comparison checks identity/coverage, never meaning or acceptance. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_request_review(args: { against_plan?: string; asset_id?: string; comparison?: string; job?: string; packet: string; path?: string; plan?: string; result_path?: string; view?: \"complete\" | \"changes\"; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_retain_library",
+      "description": "Retain exact library S-source bytes for a project before a kit update, or recover them from its original kit. Keeps state and receipts unchanged; no new proof or provider action.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_retain_library(args: {\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  from_library?: string;\n  library: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_review_context",
+      "description": "Read exact saved candidate or family criteria, current verdict IDs, semantic binding_hash and canonical state_hash before explicit review. Family creation status is separate from current acceptance. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_review_context(args: { candidate_id: string; path: string; result_path?: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_source",
+      "description": "Read exact hash-verified source lines within a byte budget, from the project or installed library.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_source(args: {\n  budget?: number;\n  end: number;\n  // Current source-file byte SHA-256.\n  expect: string;\n  path: string;\n  scope?: \"project\" | \"library\";\n  start: number;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_sources",
+      "description": "Discover and verify the installed knowledge corpus source identities. Not remote research.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_sources(args: {}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_stage_prepare",
+      "description": "Bind exact reviewed accepted upstream candidates to a planned stage and prepare its durable provider request. Identical retries recover saved intent; no dispatch or acceptance.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_stage_prepare(args: {\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  job: string;\n  packet: { [key: string]: unknown; };\n  plan: string;\n  stage: string;\n  store: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_task_complete",
+      "description": "Nominate explicit already-reviewed candidates and complete their PX2 task. Requires every saved criterion passed and provider attempts terminal; creates no acceptance evidence or remote action.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_task_complete(args: {\n  candidates: Array<string>;\n  // Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.\n  expect: string;\n  store: string;\n  task_id: string;\n}): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_validate",
+      "description": "Validate PIXL state, record bindings and local file hashes.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_validate(args: { path: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "mcp__pixl_local__pixl_workflow",
+      "description": "Inspect PX2 intake, planned outputs, candidate verdicts, blockers and next ready tasks. No acceptance or remote side effect.\n\nAll tools are local. PixelLab must be connected separately. Paths are relative to the configured project root.\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__pixl_local__pixl_workflow(args: { path: string; }): Promise<CallToolResult>; };\n```"
+    },
+    {
+      "name": "read_mcp_resource",
+      "description": "Read a specific resource from an MCP server given the server name and resource URI.\n\nexec tool declaration:\n```ts\ndeclare const tools: { read_mcp_resource(args: {\n  // MCP server name exactly as configured. Must match the 'server' field returned by list_mcp_resources.\n  server: string;\n  // Resource URI to read. Must be one of the URIs returned by list_mcp_resources.\n  uri: string;\n}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "update_goal",
+      "description": "Update the existing goal.\nSet status to `paused` only at the user's explicit request to pause this goal, never on your own initiative. Ask if unclear; a later resume revokes that request. Report the returned status and stop goal work. Budget limits take precedence over pausing.\nSet status to `complete` only when the objective has actually been achieved and no required work remains.\nSet status to `blocked` only when the same blocking condition has repeated for at least three consecutive goal turns, counting the original/user-triggered turn and any automatic continuations, and the agent cannot make meaningful progress without user input or an external-state change.\nIf the user resumes a goal that was previously marked `blocked`, treat the resumed run as a fresh blocked audit. If the same blocking condition then repeats for at least three consecutive resumed goal turns, set status to `blocked` again.\nOnce the blocked threshold is satisfied, do not keep reporting that you are still blocked while leaving the goal active; set status to `blocked`.\nDo not use `blocked` merely because the work is hard, slow, uncertain, incomplete, or would benefit from clarification.\nDo not mark a goal complete merely because its budget is nearly exhausted or because you are stopping work.\nYou cannot use this tool to resume, budget-limit, or usage-limit a goal; those status changes are controlled by the user or system.\nWhen marking a budgeted goal achieved with status `complete`, report the final token usage from the tool result to the user.\n\nexec tool declaration:\n```ts\ndeclare const tools: { update_goal(args: {\n  // Required. `paused` requires an explicit user request. Set to `complete` only when the objective is achieved and no required work remains. Set to `blocked` only after the same blocking condition has recurred for at least three consecutive goal turns and the agent is at an impasse. After a previously blocked goal is resumed, the resumed run starts a fresh blocked audit.\n  status: \"complete\" | \"blocked\" | \"paused\";\n}): Promise<unknown>; };\n```"
+    },
+    {
+      "name": "view_image",
+      "description": "View a local image file from the filesystem when visual inspection is needed. Use this for images already available on disk.\n\nexec tool declaration:\n```ts\ndeclare const tools: { view_image(args: {\n  // Image detail level. Defaults to `high`; use `original` to preserve exact resolution.\n  detail?: \"high\" | \"original\";\n  // Local filesystem path to an image file.\n  path: string;\n}): Promise<{\n  // Image detail hint returned by view_image. Returns `high` for default resized behavior or `original` when original resolution is preserved.\n  detail: \"high\" | \"original\";\n  // Data URL for the loaded image.\n  image_url: string;\n}>; };\n```"
+    },
+    {
+      "name": "write_stdin",
+      "description": "Writes characters to an existing unified exec session and returns recent output.\n\nexec tool declaration:\n```ts\ndeclare const tools: { write_stdin(args: {\n  // Bytes to write to stdin. Defaults to empty, which polls without writing.\n  chars?: string;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Identifier of the running unified exec session.\n  session_id: number;\n  // Wait before yielding output. Non-empty writes default to 250 ms and cap at 30000 ms; empty polls wait 5000-300000 ms by default.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```"
+    }
+  ]
+}

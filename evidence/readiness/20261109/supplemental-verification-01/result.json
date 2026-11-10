@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-11-10T04:17:02.054780+00:00",
+  "scope": "Supplemental evaluation-only checks after full verifier 20261110T035753.519588Z; no claim that the earlier full run covered these grader revisions.",
+  "inputs": {
+    "evaluations/readiness_case.py": "1a0d25bf7a717599f6a626a58c2bc4c95693fb49d1deca32805e3279c6920996",
+    "evaluations/grade_readiness.py": "a0ba5251f08b5c406fb0e8f02e6c9c6d5604c366baf5c70d64104371362cfd5a",
+    "tests/test_readiness_case.py": "38b4929379b012d46e538a158fe60f93caa48d4e5e6f7bc779a0045b07cf7c3c"
+  },
+  "inputs_unchanged": true,
+  "commands": [
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "tests.test_readiness_case",
+        "-v"
+      ],
+      "returncode": 0,
+      "output": "evidence/readiness/20261109/supplemental-verification-01/check-1.txt",
+      "sha256": "53c435105a64a7272b5d7bf0a8fab886c8539586beb22a2059bffefcc8140158"
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "evaluations/readiness_case.py",
+        "evaluations/grade_readiness.py",
+        "tests/test_readiness_case.py"
+      ],
+      "returncode": 0,
+      "output": "evidence/readiness/20261109/supplemental-verification-01/check-2.txt",
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy",
+        "--explicit-package-bases",
+        "--follow-imports=silent",
+        "evaluations/readiness_case.py",
+        "evaluations/grade_readiness.py"
+      ],
+      "returncode": 0,
+      "output": "evidence/readiness/20261109/supplemental-verification-01/check-3.txt",
+      "sha256": "0c37c4158c91ef55c724ba017bf6465f26018199badb08e3ff13f98acdf056c2"
+    }
+  ],
+  "pass": true
+}

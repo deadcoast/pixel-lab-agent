@@ -1,5 +1,45 @@
 # Verification and limits
 
+## Readiness and consumer setup, 2026-11-09
+
+The [readiness increment](../evidence/readiness/README.md) adds a standard-library
+bootstrap and a read-only CLI/MCP report. Static installation facts, supplied host
+observations and provider authentication remain separate. Consumer instructions
+now distinguish copied-kit, wheel and source installation from maintainer work.
+
+The [full verifier](../evidence/verification-runs/20261110T035753.519588Z/result.json)
+passes **716 tests with one Windows symlink-privilege skip**, 39 reference checks,
+benchmark and installed-wheel/copied-plugin checks. Its 176 input hashes identify
+the exact checked source snapshot. The frozen bundle contains 177 manifest-listed
+payloads plus generated requirements; the manifest's own bytes are recorded
+separately. [Focused lint and default Mypy](../evidence/readiness/20261109/verification/local-final-01.json)
+pass for their listed files; default Mypy does not fully check untyped bodies.
+
+The [fresh setup proof](../evidence/readiness/20261109/setup/attempt-01/RESULT.json)
+records 17 commands: a bare environment returns structured incomplete readiness,
+then copied-kit requirements, a real installed-wheel console entrypoint and a
+locked source environment without the development group all pass exact local
+source/readiness checks. No maintainer packages are installed. Consumer/package
+bytes and all 299 inputs in the frozen source fixture remain unchanged; the original maintainer
+environment was not an installation target. Exact wheel/sdist copies and hashes
+are [retained](../evidence/readiness/20261109/setup/retained-distribution-01/IDENTITY.json).
+This tests Windows/Python 3.14.3, not every declared Python or OS combination.
+
+Native evidence is graded separately in the [readiness report](../evidence/readiness/README.md).
+Codex passes 19/19 clean-setup checks and 16/16 omitted-role-loading checks,
+including actual named-child instruction loading in the clean case and successful
+local source/library/readiness calls in both. The grader was updated after the
+full verifier to handle the actual canonical child identity, native catalog and
+full MCP envelopes. [18 supplemental tests plus Ruff/Mypy](../evidence/readiness/20261109/supplemental-verification-01/result.json)
+pass for that evaluation-only change. Initial grades and grader source versions
+remain preserved; runtime and frozen bundle are unchanged. Counts overlap and
+are not additional native production outcomes.
+Claude's initial clean and omitted-role-loading trials stop before model work
+because the host CLI login expired; startup discovery is not behavior or task
+acceptance. That is a Claude host authentication result, not a PixelLab account
+or service result. No provider authentication, generation, artistic or engine
+acceptance is established by this increment. M1/M2 remain open.
+
 ## Artistic revision and tool contracts, 2026-11-09
 
 The [scoped outcome](../evidence/artistic-revision/README.md) adopts the original

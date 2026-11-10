@@ -11,8 +11,13 @@ same-child corrections and fresh acceptance of reused art. All independent task
 outcomes pass; the overall 17/18 grade remains partial because the recorder failed
 and the OS exit is unknown. Original failures and additive recovery remain visible.
 [Current contract checks](../evidence/artistic-revision/20261109/contracts-review-02/RESULT.json)
-remain separate from provider execution. The product [TODO](../TODO.md) carries
-NF-03 readiness/QOL-06 setup next; M1/M2 remain open.
+remain separate from provider execution. [NF-03 readiness/QOL-06 setup](../evidence/readiness/README.md)
+now has three fresh local install proofs, Codex complete setup at 19/19 and missing
+registration at 16/16 independent checks. Both fresh Claude attempts remain
+authentication-blocked before model/child work; their 3/3 preparation checks are
+not behavioral passes. Original grades and the MCP-envelope grader correction
+remain preserved. The product [TODO](../TODO.md) takes QOL-10 compact caller results
+with supporting SC-08 next; authenticated Claude qualification and M1/M2 remain open.
 
 **Historical controlled milestone, 2026-11-05:** [PX-EVAL-004](delegated-asset-request.spec.md)
 tests the official PixelLab integration through a delegated generation request in
@@ -78,6 +83,37 @@ or a causal benefit from PIXL. There is no profile-disabled control arm.
 never a passing behavioral score. Claude can emit a result with `subtype: success`
 and `is_error: true` after authentication fails; the recorder treats that as a
 host error. Init metadata identifies a selected model, not an inference response.
+
+## Fresh consumer setup checks
+
+The [setup checker](consumer_setup_check.py) installs the documented copied-kit,
+wheel-console and locked source routes into fresh environments, and tests bare
+readiness before dependencies. It retains exact commands, package/source hashes
+and read-only source results. Inspect and freeze the bundle first; the work and
+evidence paths below must be new. This is maintainer verification, not a consumer
+setup prerequisite.
+
+```powershell
+.venv/Scripts/python.exe -B evaluations/consumer_setup_check.py --work build/readiness-setup-02 --evidence evidence/readiness/20261109/setup/attempt-02
+.venv/Scripts/python.exe -m evaluations.readiness_case prepare evidence/readiness/20261109/native/codex-clean-02 --host codex --setup clean --python build/readiness-setup-02/runtime/Scripts/python.exe
+.venv/Scripts/python.exe -m evaluations.readiness_case run evidence/readiness/20261109/native/codex-clean-02
+.venv/Scripts/python.exe -m evaluations.grade_readiness evidence/readiness/20261109/native/codex-clean-02 --output evidence/readiness/20261109/native/codex-clean-02/independent-grade-01.json
+```
+
+Preparation does not launch a host. The separate `run` command does; the grader
+reads retained evidence and refuses an existing output. Select another fresh
+attempt for `--setup missing-registration` or `--host claude`. Restore the required
+host authentication before repeating an authentication-stopped case; elapsed time
+or prior scenarios are not a changed condition. Native consumers are outside
+repository ancestry and use the complete relocated kit. These isolated trials
+deliberately omit the official provider connection; their configuration exclusions
+are not ordinary [consumer setup](../docs/AGENT-KIT.md#set-up-a-consumer-project).
+
+[Actual results](../evidence/readiness/README.md) distinguish setup, startup discovery,
+named instruction loading, local source/library reads and caller results. The
+[716-pass/one-skip full verifier](../evidence/verification-runs/20261110T035753.519588Z/result.json)
+and [18-test supplemental grader checks](../evidence/readiness/20261109/supplemental-verification-01/result.json)
+have separate scopes and overlapping test coverage; do not add their counts.
 
 ## Running and replaying
 

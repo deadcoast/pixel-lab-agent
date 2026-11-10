@@ -11,8 +11,8 @@ def main() -> None:
     runtime = plugin_root / "runtime"
     if not (runtime / "pixl" / "__main__.py").is_file():
         print(
-            "PIXL bundled runtime is missing. Build the plugin with "
-            "python scripts/build_plugin.py from the source repository.",
+            "PIXL bundled runtime is missing. Reinstall or copy the complete "
+            "PIXL kit, including its runtime directory.",
             file=sys.stderr,
         )
         raise SystemExit(2)

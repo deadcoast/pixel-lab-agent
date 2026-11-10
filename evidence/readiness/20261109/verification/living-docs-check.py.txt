@@ -1,0 +1,97 @@
+"""Read-only local link/ledger checks; append one fresh validation receipt."""
+import hashlib
+import json
+import re
+import subprocess
+from collections import Counter
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote, urldefrag
+
+ROOT = Path.cwd().resolve()
+DOCS = ["TODO.md", "SHELVED.md", "PLAN.md", "docs/IDENTIFIED.md",
+        "evaluations/TODO.spec.md", "README.md", "docs/AGENT-KIT.md",
+        "evaluations/README.md", "docs/VERIFICATION.md"]
+ID = r"\b(?:PX-[A-Z]+-\d{3}|(?:NF|SC|QOL|CF|TM)-\d{2})\b"
+LINK = re.compile(r"!?\[[^\]]*\]\((<[^>]+>|[^)\s]+)(?:\s+[^)]*)?\)")
+
+
+def unfenced(text):
+    return re.sub(r"(?ms)^```[^\n]*\n.*?^```[^\n]*$", "", text)
+
+
+def anchors(path):
+    text = unfenced(path.read_text(encoding="utf-8"))
+    result, seen = set(), Counter()
+    for heading in re.findall(r"(?m)^#{1,6}\s+(.+?)\s*#*\s*$", text):
+        heading = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", heading)
+        heading = re.sub(r"<[^>]*>", "", heading)
+        slug = re.sub(r"[^\w\- ]", "", heading.lower()).replace(" ", "-")
+        occurrence = seen[slug]
+        seen[slug] += 1
+        result.add(slug + (f"-{occurrence}" if occurrence else ""))
+    result.update(re.findall(r"\bid=[\"']([^\"']+)[\"']", text))
+    return result
+
+
+issues, identities, retained_ids = [], [], {}
+local_links = fragment_links = remote_links = 0
+for name in DOCS:
+    path = ROOT / name
+    data = path.read_bytes()
+    text = data.decode("utf-8")
+    identities.append({"path": name, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
+    previous = subprocess.run(["git", "show", "HEAD:" + name], cwd=ROOT, capture_output=True,
+                              text=True, encoding="utf-8", check=True).stdout
+    old_ids, current_ids = set(re.findall(ID, previous)), set(re.findall(ID, text))
+    missing = sorted(old_ids - current_ids)
+    retained_ids[name] = {"previous_unique": len(old_ids), "current_unique": len(current_ids), "missing": missing}
+    if missing:
+        issues.append({"document": name, "missing_ids": missing})
+    for match in LINK.finditer(unfenced(text)):
+        target = match.group(1).strip("<>")
+        if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target) or target.startswith("//"):
+            remote_links += 1
+            continue
+        location, fragment = urldefrag(unquote(target))
+        resolved = (path.parent / location).resolve() if location else path
+        local_links += 1
+        if not resolved.exists():
+            issues.append({"document": name, "link": target, "issue": "target_missing"})
+        elif fragment and resolved.is_file() and resolved.suffix.lower() == ".md":
+            fragment_links += 1
+            if fragment not in anchors(resolved):
+                issues.append({"document": name, "link": target, "issue": "heading_missing"})
+
+findings = re.findall(r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d{2})\s+—",
+                      (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d{2})\]",
+                    (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+coverage = len(findings) == len(set(findings)) == len(backlog) == len(set(backlog)) == 50 and set(findings) == set(backlog)
+if not coverage:
+    issues.append({"issue": "finding_backlog_coverage", "findings": findings, "backlog": backlog})
+cycle = "IDENTIFY-2026-11-09-01"
+if not all(cycle in (ROOT / name).read_text(encoding="utf-8") for name in DOCS[:4]):
+    issues.append({"issue": "active_cycle_missing"})
+parse_path = Path(__file__).with_name("powershell-doc-examples-01.json")
+parsed = json.loads(parse_path.read_bytes())
+if parsed["status"] != "pass":
+    issues.append({"issue": "powershell_examples_parse_failed"})
+result = {"status": "pass" if not issues else "fail", "observed_at": datetime.now(UTC).isoformat(),
+          "base_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+          "scope": "Local Markdown targets/headings outside fenced examples, existing task/finding ID preservation, one backlog row per finding, active cycle and PowerShell syntax. Remote URLs were not fetched. Runtime/native outcomes retain their separate receipts.",
+          "documents": identities, "local_links_checked": local_links, "markdown_fragments_checked": fragment_links,
+          "remote_links_excluded": remote_links, "retained_ids": retained_ids,
+          "findings": len(findings), "unique_backlog_rows": len(set(backlog)), "exact_finding_coverage": coverage,
+          "cycle": cycle, "powershell_fences_parsed": parsed["fences"],
+          "powershell_receipt": {"path": parse_path.relative_to(ROOT).as_posix(), "sha256": hashlib.sha256(parse_path.read_bytes()).hexdigest()},
+          "checker": {"path": Path(__file__).resolve().relative_to(ROOT).as_posix(), "sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},
+          "issues": issues}
+destination = Path(__file__).with_name("living-docs-final.json" if not issues else "living-docs-failed-01.json")
+with destination.open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2)
+    stream.write("\n")
+print(json.dumps({"status": result["status"], "documents": len(DOCS), "local_links": local_links,
+                  "fragments": fragment_links, "finding_ids": len(findings), "issues": issues,
+                  "receipt": str(destination)}))
+raise SystemExit(bool(issues))

@@ -20,6 +20,7 @@ from scripts.family_probe import run_family_probe
 from scripts.plar_probe import run_plar_probe
 from scripts.production_plan_probe import run_production_plan_probe
 from scripts.provider_probe import run_provider_probe
+from scripts.readiness_probe import run_readiness_probe
 from scripts.retention_probe import run_retention_probe
 
 
@@ -322,6 +323,10 @@ def run(log_dir=None):
                 raise RuntimeError(result.stderr.decode("utf-8"))
             return json.loads(result.stdout)
 
+        readiness = run_readiness_probe(cli, cwd / "wheel-readiness", "wheel")
+        copied_readiness = run_readiness_probe(plugin_cli, cwd / "plugin-readiness", "plugin", plugin)
+        checks.append({"command": "installed read-only readiness", **readiness})
+        checks.append({"command": "copied-plugin read-only readiness", **copied_readiness})
         shutil.copytree(
             plugin / "resources/examples/plar-project", cwd / "plugin consumer"
         )
@@ -356,6 +361,7 @@ def run(log_dir=None):
             "provider_probe": provider,
             "family_probe": family,
             "production_authoring": {"wheel": authoring, "copied_plugin": copied_authoring},
+            "readiness": {"wheel": readiness, "copied_plugin": copied_readiness},
             "scope": "uv default sdist-to-wheel build; fresh wheel installation with resolved production dependencies; copied-plugin execution; no global installation or source import; no whole-module coverage claim",
         }
 

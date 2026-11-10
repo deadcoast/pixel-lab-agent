@@ -6,6 +6,154 @@ companion [hash/root/locator guide](../plugins/pixl/skills/pixl/references/ident
 explains the additive public `hash_domains` labels and runnable consumer examples.
 Both ship with the common skill; setup and advanced surfaces remain below.
 
+## Set up a consumer project
+
+Load PIXL's profile and skills in the host that will do the asset work, preserve
+that parent's official PixelLab connection, and supply the actual consumer root.
+The local runtime supports requirements, state, inspection and handoff. It is not
+the specialist or the provider connection. Use a complete copied `plugins/pixl`
+directory; its runtime/resources already belong to that distribution. Consumers
+do not need to build the repository or run its full verifier.
+
+Choose the actual installation and consumer paths. Use an existing suitable
+Python environment, or create a fresh consumer environment as shown below. The
+example refuses to replace an existing `.venv`:
+
+```powershell
+$pixlKit = (Resolve-Path 'C:/path/to/copied pixl kit').Path
+$pixlProject = (Resolve-Path 'C:/path/to/consumer project').Path
+$pixlEnvironment = Join-Path $pixlProject '.venv'
+if (Test-Path -LiteralPath $pixlEnvironment) {
+  throw 'Select the existing environment explicitly instead of recreating it.'
+}
+python -m venv $pixlEnvironment
+$pixlPython = Join-Path $pixlEnvironment 'Scripts/python.exe'
+$pixlRunner = Join-Path $pixlKit 'scripts/pixl.py'
+& $pixlPython -m pip install -r (Join-Path $pixlKit 'requirements.txt')
+& $pixlPython $pixlRunner readiness --root $pixlProject --host codex --installation $pixlKit
+```
+
+Select Python 3.11 or newer. On POSIX use `bin/python` inside the environment.
+Only Pillow and jsonschema are mandatory runtime dependencies. The bootstrap
+`readiness` command uses the standard library and can also run before dependency
+installation to report missing local prerequisites. It performs no generation
+or authentication probe; read [the observation boundary](../plugins/pixl/skills/pixl/references/readiness.md)
+before interpreting its report. Use `--host claude` for that host.
+Relative `--installation` paths resolve from the consumer root; absolute paths can select a kit elsewhere.
+Exit 0 establishes local runtime prerequisites only; role loading and provider
+access retain their own observations. Exit 1 reports incomplete local setup, and
+exit 2 reports invalid input.
+
+### Codex in another project
+
+For a fresh consumer, copy the supplied [portable agent template](../plugins/pixl/config/codex-agent.example.toml)
+with its installation paths resolved. Add lightweight wrappers so `$pixl` and
+`$plar` can lead to the same installed skills. Existing role/wrapper files need
+deliberate reconciliation; this example refuses to overwrite them:
+
+```powershell
+$pixlRolePath = Join-Path $pixlProject '.codex/agents/pixl.toml'
+$pixlSkillNames = @('pixl', 'plar')
+$pixlWrapperPaths = @($pixlSkillNames | ForEach-Object {
+  Join-Path $pixlProject ".agents/skills/$_/SKILL.md"
+})
+foreach ($pixlTarget in (@($pixlRolePath) + $pixlWrapperPaths)) {
+  if (Test-Path -LiteralPath $pixlTarget) {
+    throw "Preserve and reconcile the existing file: $pixlTarget"
+  }
+}
+$pixlKitPath = $pixlKit.Replace('\', '/')
+$pixlUtf8 = [System.Text.UTF8Encoding]::new($false)
+$pixlRoleText = [System.IO.File]::ReadAllText((Join-Path $pixlKit 'config/codex-agent.example.toml'))
+$pixlRoleText = $pixlRoleText.Replace('/ABSOLUTE/PLUGIN/pixl', $pixlKitPath)
+[System.IO.Directory]::CreateDirectory((Split-Path $pixlRolePath)) | Out-Null
+[System.IO.File]::WriteAllText($pixlRolePath, $pixlRoleText, $pixlUtf8)
+foreach ($pixlSkillName in $pixlSkillNames) {
+  $pixlWrapper = Join-Path $pixlProject ".agents/skills/$pixlSkillName/SKILL.md"
+  [System.IO.Directory]::CreateDirectory((Split-Path $pixlWrapper)) | Out-Null
+  $pixlText = "---`nname: $pixlSkillName`ndescription: Load the installed PIXL production workflow.`n---`n`nRead [the shared skill](<$pixlKitPath/skills/$pixlSkillName/SKILL.md>), resolving links from that file.`n"
+  [System.IO.File]::WriteAllText($pixlWrapper, $pixlText, $pixlUtf8)
+}
+$pixlRoleConfig = ConvertTo-Json -Compress -InputObject $pixlRolePath.Replace('\', '/')
+codex -C $pixlProject -c agents.enabled=true -c "agents.pixl.config_file=$pixlRoleConfig" `
+  'Use the registered pixl specialist for this consumer. Report observed setup and local/official tool access before the assigned asset work.'
+```
+
+Current [Codex custom-agent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents#custom-agents)
+describes project `.codex/agents` files and parent MCP/provider inheritance.
+The explicit invocation registration above is the mechanism exercised in the
+[named-role evaluation](../evidence/named-codex-role/README.md); that trial used its
+own retained role bytes. File presence alone is not a loading or behavior proof.
+The fresh [consumer setup evaluation](../evidence/readiness/README.md) now qualifies
+this resolved portable template: its actual named child loads the instructions
+and completes local source/library reads, with 19/19 independent checks. The
+missing-registration case passes 16/16 without substituting a generic specialist. Preserve
+the parent's configured provider tools: do not copy isolated evaluation flags
+such as `--ignore-user-config` or settings that disable existing connections.
+
+### Claude Code in another project
+
+From the consumer project, load the complete kit for the session:
+
+```powershell
+Push-Location $pixlProject
+try {
+  claude --plugin-dir $pixlKit
+} finally {
+  Pop-Location
+}
+```
+
+Invoke `/pixl:pixl` for the plugin skill, or ask the caller to delegate to the
+actual plugin specialist it discovers. `--agent pixl:pixl` selects that specialist
+for the current session; it is a different operation from parent-to-child
+delegation. The source checkout's `/pixl` and `claude --agent pixl` refer to its
+checked-in adapters. Local folder loading is described in [Claude's plugin guide](https://code.claude.com/docs/en/plugins/install).
+When adding local MCP, use the [session configuration below](#connect-the-local-runtime-for-one-session)
+without suppressing the existing official PixelLab connection. The fresh
+[complete and missing-registration trials](../evidence/readiness/README.md) record
+startup discovery and local MCP connection, but both stop at expired CLI
+authentication before model/child work. Their preparation checks do not qualify
+authenticated behavior; earlier Claude successes retain their own scenarios.
+
+### Connect tools and start the assignment
+
+Configure or reuse the [official PixelLab connection](#connect-official-pixellab)
+in the parent host. Inspect actual current declarations before affected calls.
+Keep credentials in that connection's environment. Add the local runtime through
+[session MCP configuration](#connect-the-local-runtime-for-one-session), or use
+its CLI directly. The two tool surfaces serve different purposes.
+
+The read-only `readiness` / `pixl_readiness` report distinguishes installation
+facts, dependencies, caller-supplied host observations and official tool visibility.
+It does not invoke a specialist or verify authentication. A successful local
+`pixl_source` read of a known consumer file and `pixl_sources` retrieval from the
+installed library establish useful local access. Retain actual native invocation
+and returned identity separately when specialist delegation is assigned. If an
+isolated session has no official server configured, report that scope rather than
+asserting a service outage or authentication failure.
+
+A locally supplied wheel can be installed into the selected environment with
+`python -m pip install PATH_TO_WHEEL`; `python -m pixl readiness` and other local
+operations then use that installed runtime. The wheel carries profile/knowledge
+resources, but no host skill/role registration. Keep the host setup above when
+using the wheel. `uv sync --locked --no-dev` is a separate source-checkout option
+requiring this repository and lockfile; neither command replaces host loading.
+
+The [2026-11-09 fresh installation proof](../evidence/readiness/20261109/setup/attempt-01/RESULT.json)
+exercises those three routes on Windows/Python 3.14: the copied-kit requirements
+install, exact-wheel install with its real console entrypoint, and confined locked
+source sync. Each performs a known source read and readiness check while preserving
+consumer/package bytes; no maintainer packages enter those environments. A bare
+pip-only environment also returns incomplete readiness JSON before dependency
+installation. [Exact distribution copies](../evidence/readiness/20261109/setup/retained-distribution-01/IDENTITY.json)
+and an [existing-output refusal](../evidence/readiness/20261109/setup/existing-output-rejection-01.json)
+retain the tested bytes and prior receipts. These local checks do not establish
+host role loading, provider visibility or authentication; other platforms and
+Python versions remain separate qualification work.
+
+## Operation references
+
 For ordinary candidate/family review, use [review-context and candidate-review](../spec/candidate-review.md):
 read exact criteria and bindings, supply actual observations and explicit judgments,
 then choose record, nominate or complete. The operation retains evidence and handles
@@ -46,6 +194,13 @@ Markdown instructions, JSON plugin manifests, MCP JSON arguments, and TOML confi
 
 Research order on 2026-09-10 (America/Vancouver): inspect installed Codex skill/plugin instructions and CLI help first, then verify missing discovery/configuration details with official OpenAI documentation; inspect Claude CLI help and official Claude documentation. The local versions inspected were **codex-cli 0.154.0** and **Claude Code 2.1.263**. CLI flags below are grounded in those versions; inspect current `--help` if another installation differs.
 
+The consumer setup commands were rechecked on 2026-11-09 local against installed
+**Codex 0.167.0** and **Claude Code 2.1.318** help and the current official host
+documentation. Codex still exposes marketplace-based plugin commands rather than
+Claude's `--plugin-dir` route. Help/configuration support and observed native
+loading remain separate evidence; the historical validation tables below keep
+their original dates and scopes.
+
 ## Source and bundle layout
 
 ```text
@@ -73,26 +228,24 @@ plugins/pixl/
   bundle-manifest.json                 Generated source/copy hash inventory
 ```
 
-Run from the repository with Python 3.11 or newer:
+This layout is maintained in the repository. Rebuilding its generated
+runtime/resources is maintainer work, not a consumer installation step. From the
+source checkout, preserve the selected `.venv` and use:
 
 ```powershell
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -e .
+uv sync --locked
 .venv/Scripts/python.exe scripts/build_plugin.py
 .venv/Scripts/python.exe plugins/pixl/scripts/pixl.py --help
 ```
 
-On POSIX systems use `.venv/bin/python` in place of `.venv/Scripts/python.exe`. The source package declares **Pillow 10 or newer** for image inspection and **jsonschema 4.18 or newer** for provider-schema validation; `pip install -e .` installs those dependencies into the selected environment. A copied plugin still needs Python and those packages. In its destination project, create an environment and install the dependencies before invoking the copied runner:
-
-```powershell
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -r /ABSOLUTE/PLUGIN/pixl/requirements.txt
-.venv/Scripts/python.exe /ABSOLUTE/PLUGIN/pixl/scripts/pixl.py --help
-```
+On POSIX use `.venv/bin/python`. For the complete copied kit and a runtime-only
+consumer environment, follow [consumer setup](#set-up-a-consumer-project) above.
+The package declares **Pillow 10+** and **jsonschema 4.18+**; an editable source
+installation is available to maintainers but is not needed for a copied kit.
 
 The complete `plugins/pixl` directory is the portable unit after building; copying only `skills/pixl` loses its runtime and resources. Rebuild after changing the source package, profile, specification, knowledge, or examples. Keep project stores and generated assets outside the installed plugin directory. The runner sets `PIXL_PLUGIN_ROOT` for bundled resource discovery. Bundling the PIXL source does not bundle a Python interpreter, third-party wheels, or PixelLab credentials.
 
-`resources/pixl/` preserves the complete Python source package used by proof receipts, including `__init__.py` and every sibling import. The active launcher loads `runtime/pixl/`; both copies are byte-checked against source by the bundle manifest. The resource package is also exercised independently after relocation, so its POC can resolve its own service and knowledge resources. Wheels retain the same complete source package. Verify a wheel with `uv run python scripts/check_wheel.py`; it builds through an sdist, installs the wheel and its declared production dependencies into a fresh unseeded environment, then exercises the installed runtime and copied plugin there. Development packages are explicitly checked absent. Maintain the repository with `uv sync --locked`; the dev group retains lint, type, build, coverage and benchmark tooling. Consumers can use `uv sync --locked --no-dev`; the optional `benchmark` extra supplies tokenizer measurements when requested.
+`resources/pixl/` preserves the complete Python source package used by proof receipts, including `__init__.py` and every sibling import. The active launcher loads `runtime/pixl/`; both copies are byte-checked against source by the bundle manifest. The resource package is also exercised independently after relocation, so its POC can resolve its own service and knowledge resources. Wheels retain the same complete source package. Maintainers verify a wheel with `uv run python scripts/check_wheel.py`; it builds through an sdist, installs the wheel and its declared production dependencies into a fresh unseeded environment, then exercises the installed runtime and copied plugin there. Development packages are explicitly checked absent. This writes distribution evidence. The broader `scripts/verify.py` rebuilds tracked fixtures and the bundle as well as running checks; inspect its side effects before execution. The dev group retains lint, type, build, coverage and benchmark tooling; the optional `benchmark` extra supplies tokenizer measurements when requested.
 
 ## Use from this repository
 
@@ -140,12 +293,16 @@ The authenticated official MCP surface is the primary agent interface. The local
 
 ## Connect the local runtime for one session
 
-The CLI works without MCP. MCP lets the agent invoke local state operations through structured tools. The templates have explicit replacement paths and are not active configuration. Generate a concrete Claude session file from the current checkout without modifying harness settings:
+The CLI works without MCP. MCP lets the agent invoke local state operations through
+structured tools. Templates are inactive examples. Using the selected interpreter,
+complete kit and consumer paths from [consumer setup](#set-up-a-consumer-project),
+create a fresh Claude session file without replacing host settings:
 
 ```powershell
-$pixlRunner = (Resolve-Path './plugins/pixl/scripts/pixl.py').Path
-$pixlProject = (Get-Location).Path
-$pixlPython = (Resolve-Path './.venv/Scripts/python.exe').Path
+$pixlMcpFile = Join-Path $pixlProject 'pixl-mcp.local.json'
+if (Test-Path -LiteralPath $pixlMcpFile) {
+  throw 'Preserve and reconcile the existing session configuration.'
+}
 $pixlMcp = @{
   mcpServers = @{
     'pixl-local' = @{
@@ -155,24 +312,30 @@ $pixlMcp = @{
     }
   }
 }
-$pixlMcp | ConvertTo-Json -Depth 6 | Set-Content -Encoding utf8 './pixl-mcp.local.json'
-claude --plugin-dir ./plugins/pixl --mcp-config ./pixl-mcp.local.json
+$pixlMcpJson = $pixlMcp | ConvertTo-Json -Depth 6
+[System.IO.File]::WriteAllText($pixlMcpFile, $pixlMcpJson, [System.Text.UTF8Encoding]::new($false))
+Push-Location $pixlProject
+try {
+  claude --plugin-dir $pixlKit --mcp-config $pixlMcpFile
+} finally {
+  Pop-Location
+}
 ```
 
 Choose the intended project directory for `$pixlProject`. Do not pass `--strict-mcp-config` when the existing harness PixelLab connection is needed; that flag excludes other configured servers. Session loading is documented by [Claude's CLI and MCP support](https://code.claude.com/docs/en/mcp).
 
-Codex accepts session-only configuration overrides. From this checkout, resolve the selected interpreter, runner and consumer root instead of copying a machine-specific installation path:
+Codex accepts invocation-only configuration overrides. With the same selected
+consumer paths and resolved role from the Codex setup above:
 
 ```powershell
-$pixlPython = (Resolve-Path './.venv/Scripts/python.exe').Path
-$pixlRunner = (Resolve-Path './plugins/pixl/scripts/pixl.py').Path
-$pixlProject = (Get-Location).Path
 $pixlCommand = ConvertTo-Json -Compress -InputObject $pixlPython
 $pixlArguments = ConvertTo-Json -Compress -InputObject @($pixlRunner, 'mcp', '--root', $pixlProject)
 codex -C $pixlProject `
+  -c agents.enabled=true `
+  -c "agents.pixl.config_file=$pixlRoleConfig" `
   -c "mcp_servers.pixl_local.command=$pixlCommand" `
   -c "mcp_servers.pixl_local.args=$pixlArguments" `
-  'Use $pixl. Discover the local PIXL tools and report capabilities before remote work.'
+  'Use the registered pixl specialist. Read the selected consumer and report observed local/official tool access for the assigned work.'
 ```
 
 For reviewed project configuration, translate the paths in [the Codex template](../plugins/pixl/config/codex.mcp.example.toml) into the project's `.codex/config.toml`. Codex documents stdio `command` and `args` configuration. This kit does not write that file or install a global server. [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
@@ -335,7 +498,7 @@ its file is registered for that invocation:
 $pixlConsumer = (Resolve-Path 'C:/path/to/consumer').Path
 $pixlRole = (Resolve-Path "$pixlConsumer/.codex/agents/pixl.toml").Path.Replace('\', '/')
 $pixlRoleSetting = 'agents.pixl.config_file="' + $pixlRole + '"'
-codex -C $pixlConsumer -c $pixlRoleSetting
+codex -C $pixlConsumer -c agents.enabled=true -c $pixlRoleSetting
 ```
 
 This setting points to the existing role file and leaves user-wide configuration

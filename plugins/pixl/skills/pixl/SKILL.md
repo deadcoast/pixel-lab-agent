@@ -8,6 +8,9 @@ For an assigned pixel-art production task, adopt the [PIXL profile](../../resour
 Start with [everyday asset production](references/everyday.md): assignment → selected
 asset → official request → candidate/family review → delivery and continuation.
 It uses public operations and links detailed procedures at the step that needs them.
+For another consumer or uncertain host/tool setup, use [observed readiness](references/readiness.md)
+to distinguish installed files, actual specialist/local-tool access and the
+official provider connection. Continue established work when access is already known.
 Use [hash identities and paths](references/identities-and-paths.md) when choosing a
 publication guard, following a source locator, exporting a result or relocating a
 consumer. Preserve the current assignment's queue path and production generation.

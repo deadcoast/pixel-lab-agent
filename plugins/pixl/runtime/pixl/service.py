@@ -409,6 +409,13 @@ def _call(name, args, root):
     def path(key):
         return graph.confined(root, args[key])
 
+    if name == "pixl_readiness":
+        from .readiness import ReadinessError, report
+
+        try:
+            return report(root, args.get("host"), args.get("installation"), args.get("observations"))
+        except ReadinessError as error:
+            raise PixlError(error.code, error.detail) from error
     if name == "pixl_validate":
         return inspect_document(path("path"), root)
     if name in ("pixl_context", "pixl_ready", "pixl_impact"):

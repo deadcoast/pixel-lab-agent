@@ -7,6 +7,7 @@ from jsonschema import Draft202012Validator, ValidationError
 
 from .candidate_review import OBSERVATION_SCHEMA
 from .codec import PixlError
+from .readiness import OBSERVATIONS_SCHEMA
 from .service import RESULT_EXPORT_TOOLS, call, parse_json
 
 
@@ -23,6 +24,12 @@ STR = {"type": "string", "minLength": 1}
 INT = {"type": "integer", "minimum": 1}
 OBJ = {"type": "object"}
 TOOLS = [
+    (
+        "pixl_readiness",
+        "Read local installation/runtime facts and explicitly supplied host observations. Static files do not prove a loaded specialist; tool visibility does not prove authentication. No provider probes or writes.",
+        schema({"host": {"type": "string", "enum": ["codex", "claude"]}, "installation": {**STR, "description": "Installation directory: absolute, or relative to the configured consumer root."},
+                "observations": OBSERVATIONS_SCHEMA}),
+    ),
     (
         "pixl_review_context",
         "Read exact saved candidate or family criteria, current verdict IDs, semantic binding_hash and canonical state_hash before explicit review. Family creation status is separate from current acceptance.",

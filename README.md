@@ -6,6 +6,8 @@ PIXL is a pixel-art production agent profile and skill system for Claude and Cod
 
 **Current stage: scoped production demonstrated; broader reliability remains in development.** Allocation, first-request preparation, connected authoring, durable provider recovery, inspection and family delivery are implemented. [Official PixelLab production](evidence/pixellab-family-production/README.md) records actual generated assets and repairs; [successor acceptance](evidence/successor-acceptance/README.md) records motion/family review in both existing consumers. [Named Codex qualification](evidence/named-codex-role/README.md) passes one explicitly registered role and same-child recovery/handoff. The [artistic-revision task](evidence/artistic-revision/README.md) now completes the original Claude corrected29 successor with fresh acceptance of existing artwork; all task-outcome checks pass, while an outer recorder failure keeps the overall trial partial. These scoped results retain caller corrections and failed evidence. Automatic discovery, broader host reliability, independent artistic consistency and other asset/engine classes remain open. The [last complete verifier](evidence/test-results.json) establishes its recorded implementation checks, not general production readiness. [PLAN](PLAN.md), [SHELVED](SHELVED.md) and [TODO](TODO.md) carry the remaining work.
 
+**Consumer setup:** the read-only readiness report distinguishes installed files, supplied host observations and provider visibility. [Fresh installation and native results](evidence/readiness/README.md) qualify copied-kit, wheel and locked source local use, plus Codex's explicit portable role and missing-registration behavior. Both fresh Claude attempts remain authentication-blocked before model or child work; startup discovery is separate. Follow the [consumer-first setup guide](docs/AGENT-KIT.md#set-up-a-consumer-project).
+
 **Candidate/family review:** [review-context and candidate-review](spec/candidate-review.md) expose literal criteria and exact bindings, retain explicit observations, and connect nomination/completion with recoverable retries. The specialist still supplies actual visual and destination judgments. Prepared inspection packets retain their existing view-coverage rules.
 
 **Historical HTTP integration milestone complete for the controlled test.** Claude and Codex each delegated to PIXL, submitted through the official HTTP adapter, retrieved and inspected the fixture, and saved an independent parent review. See the [recorded outcomes](evidence/delegated-asset-request/README.md) and [milestone contract](evaluations/delegated-asset-request.spec.md). Provider transport was simulated; these results establish the delivery workflow, not newly generated artwork or target-engine quality.
@@ -24,10 +26,36 @@ The UDL is designed for agent operation. Human readability is not a wire-design 
 
 For an asset assignment, start with the [everyday production guide](plugins/pixl/skills/pixl/references/everyday.md):
 select the actual queue/asset, prepare or resume the official request, review the
-candidate and family, and return usable files with a saved continuation. The
-[hash and path reference](plugins/pixl/skills/pixl/references/identities-and-paths.md)
-explains the public result labels and examples for another consumer root. The
-commands below are repository development/setup checks, not the asset workflow.
+candidate and family, and return usable files with a saved continuation.
+
+1. Load the complete PIXL kit in the consumer project through the [host setup](docs/AGENT-KIT.md#set-up-a-consumer-project).
+   The profile and skills make PIXL the visual specialist; a Python installation
+   alone does not register the host's agent or skills.
+2. Keep the host's official PixelLab connection available for production. The
+   local CLI/MCP supports requirements, state, inspection and handoff; it does not
+   replace the official provider. Inspect the actual connected tool declarations.
+3. Give PIXL the consumer root, selected asset or brief, reference roles and
+   existing choices/authorization. The caller receives actual files, findings
+   and a precise continuation.
+
+The complete portable kit is [`plugins/pixl`](plugins/pixl). Its consumer runtime
+needs Python 3.11+, Pillow and jsonschema, without maintainer tooling. Follow the
+[copied-kit instructions](docs/AGENT-KIT.md#set-up-a-consumer-project) for a selected
+environment and host entrypoint. A wheel is an alternative local-runtime
+distribution; it does not install skills or register a named specialist.
+
+When setup is uncertain, use the [read-only readiness report](plugins/pixl/skills/pixl/references/readiness.md):
+
+```text
+python ABSOLUTE_KIT/scripts/pixl.py readiness --root CONSUMER --host codex --installation ABSOLUTE_KIT
+```
+
+Use the selected interpreter and quote paths containing spaces. The report
+separates installed files, caller-supplied host observations and tool visibility;
+it performs no authentication or generation probe. The [hash and path reference](plugins/pixl/skills/pixl/references/identities-and-paths.md)
+explains the distinct installation, consumer and store roots during production.
+
+## Maintain this repository
 
 The project is uv managed. Keep the existing `.venv`; the current development environment uses Python 3.14.3 (the package declares Python 3.11 or newer):
 
@@ -41,11 +69,18 @@ uv run --no-sync python -m pixl validate examples/atelier/project.px --root .
 uv run --no-sync python -m pixl context examples/atelier/project.px produce
 ```
 
-Runtime installation requires Pillow and jsonschema. The default development sync keeps lint, type-checking, build and benchmark tools in the dev group. For a consumer environment use `uv sync --locked --no-dev` or install the wheel normally; tokenizer benchmarking is also available through the `benchmark` extra.
+The default development sync keeps lint, type-checking, build and benchmark tools
+in the dev group. `uv sync --locked --no-dev` is a runtime-only source-checkout
+route; it needs this repository and lockfile. It is not required for a consumer
+using a complete copied kit. Tokenizer benchmarking remains in the optional
+`benchmark` extra as well as the maintainer environment.
 
 The verifier archives previous generated evidence, regenerates local fixtures and the plugin, discovers the entire test suite, and builds/installs a wheel through its source distribution. Each attempt has its own directory under `evidence/verification-runs/`; a failed stage leaves a current failure report and identifies unperformed stages. See [verification scope](docs/VERIFICATION.md) for separate lint/type checks and evidence limits.
 
-Invoke `$pixl` in Codex from this repository, or `/pixl` in Claude. Claude also supports `claude --agent pixl`. The complete portable plugin is [`plugins/pixl`](plugins/pixl); [`AGENT-KIT.md`](docs/AGENT-KIT.md) gives exact discovery, relocation and MCP setup instructions. No global configuration has been changed.
+The checked-in source adapters expose `$pixl` in Codex and `/pixl` in Claude;
+Claude also supports `claude --agent pixl` from this checkout. Consumer/plugin
+entrypoints have their own paths and names in [AGENT-KIT.md](docs/AGENT-KIT.md).
+No global configuration is changed by the kit.
 
 ## Scaffold mechanisms
 
