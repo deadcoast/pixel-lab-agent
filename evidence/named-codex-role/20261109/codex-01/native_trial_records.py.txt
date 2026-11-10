@@ -1,0 +1,478 @@
+"""Durable native-attempt metadata; host completion is never a behavioral grade."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import subprocess
+import time
+import tomllib
+from datetime import UTC, datetime
+from pathlib import Path
+
+from evaluations.host_trials import sha, write_json
+
+
+def now():
+    return datetime.now(UTC).isoformat()
+
+
+def reference(path):
+    path = Path(path).resolve()
+    return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def atomic_json(path, value):
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    write_json(temporary, value)
+    os.replace(temporary, path)
+
+
+def persistence(launch, env):
+    if launch["host"] != "claude":
+        return {"configured": "host_managed", "reason": "Observe the native session; no Claude policy applies."}
+    disabled = "--no-session-persistence" in launch["command"] or env.get("CLAUDE_CODE_SKIP_PROMPT_HISTORY", "").lower() in {"1", "true", "yes"}
+    return {"configured": "disabled" if disabled else "enabled",
+            "reason": "Explicit print-history/session suppression" if disabled else "Session persistence enabled; transcript availability must still be observed."}
+
+
+def transcript_locations(session_id, child_ids, host_root=None):
+    root = Path(host_root) if host_root else Path.home() / ".claude/projects"
+    valid = isinstance(session_id, str) and re.fullmatch(r"[0-9a-fA-F-]{36}", session_id)
+    parents = sorted(root.glob(f"*/{session_id}.jsonl")) if valid else []
+    parent = parents[0] if len(parents) == 1 else None
+    children = {}
+    if parent:
+        for ident in child_ids:
+            if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", ident):
+                continue
+            path = parent.with_suffix("") / "subagents" / f"agent-{ident}.jsonl"
+            if path.is_file():
+                children[ident] = reference(path)
+    return {"parent": reference(parent) if parent else None, "children": children,
+            "parent_matches": len(parents), "observed_at": now()}
+
+
+def codex_journals(destination, data):
+    """Use observed session metadata only, never interpret encrypted payloads."""
+    journals, children = {}, {row["id"]: row for row in data["children"]}
+    calls, instructions, sessions = [], [], {}
+    configured = {}
+    for name, item in data.get("configuration", {}).items():
+        path = Path(item["path"])
+        if path.suffix == ".toml" and path.is_file() and sha(path) == item["sha256"]:
+            try:
+                value = tomllib.loads(path.read_text(encoding="utf-8"))
+            except (ValueError, UnicodeError):
+                continue
+            text = value.get("developer_instructions")
+            if isinstance(text, str) and text.strip():
+                configured[name] = (item, text.strip())
+    for path in sorted(Path(destination).glob("native-*.jsonl")):
+        with path.open(encoding="utf-8") as stream:
+            try:
+                event = json.loads(stream.readline())
+            except ValueError:
+                continue
+            remaining = list(stream)
+        if not isinstance(event, dict) or not isinstance(event.get("payload"), dict):
+            continue
+        meta = event["payload"]
+        ident = meta.get("id")
+        if (event.get("type") != "session_meta" or not ident
+                or meta.get("session_id", ident) != data["session_id"]
+                or path.stem != "native-" + ident):
+            continue
+        journals[ident] = reference(path)
+        sessions[ident] = {"cwd": meta.get("cwd"), "observed_in": str(path), "line": 1,
+                           "subagent_history_start_ordinal": meta.get("subagent_history_start_ordinal")}
+        if ident != data["session_id"]:
+            spawn = meta.get("source", {})
+            spawn = spawn.get("subagent", {}).get("thread_spawn", {}) if isinstance(spawn, dict) else {}
+            children[ident] = {"id": ident, "parent_id": meta.get("parent_thread_id", spawn.get("parent_thread_id")),
+                               "agent_path": meta.get("agent_path", spawn.get("agent_path")),
+                               "role": spawn.get("agent_role"), "cwd": meta.get("cwd"),
+                               "observed_in": str(path), "line": 1}
+        own_start = meta.get("subagent_history_start_ordinal")
+        journal_calls = {}
+        for line_number, line in enumerate(remaining, 2):
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(event, dict):
+                continue
+            # A fork's journal includes its parent's history. Do not attribute
+            # inherited calls or instructions to the child's own execution.
+            own_event = ident == data["session_id"] or (isinstance(own_start, int)
+                and isinstance(event.get("ordinal"), int) and event["ordinal"] >= own_start)
+            payload = event.get("payload", {})
+            if not isinstance(payload, dict):
+                continue
+            if payload.get("type") == "message" and payload.get("role") == "developer":
+                for index, block in enumerate(payload.get("content", [])):
+                    text = block.get("text") if isinstance(block, dict) else None
+                    if not isinstance(text, str):
+                        continue
+                    matches = [{"configuration": name, **item} for name, (item, expected) in configured.items()
+                               if expected in text]
+                    instructions.append({"thread_id": ident, "observed_in": str(path), "line": line_number,
+                        "content_index": index, "text_sha256": hashlib.sha256(text.encode()).hexdigest(),
+                        "context_scope": "own_execution" if own_event else "inherited_or_initial_child_context",
+                        "configured_instruction_matches": matches})
+            if not own_event:
+                continue
+            if payload.get("type") == "function_call" and payload.get("namespace") == "collaboration":
+                try:
+                    args = json.loads(payload.get("arguments", "{}"))
+                except (ValueError, TypeError):
+                    args = {}
+                if not isinstance(args, dict):
+                    args = {}
+                call_id = payload.get("call_id")
+                if not isinstance(call_id, str):
+                    continue
+                journal_calls[call_id] = {"id": call_id, "tool": payload.get("name"),
+                    "thread_id": ident, "line": line_number, "observed_in": str(path),
+                    "requested_role": args.get("agent_type"), "task_name": args.get("task_name"),
+                    "to": args.get("target"), "fork_turns": args.get("fork_turns")}
+            elif payload.get("type") == "function_call_output":
+                if call := journal_calls.get(payload.get("call_id")):
+                    call.update(result_line=line_number, result_observed=True)
+            activity = payload.get("item", {})
+            if isinstance(activity, dict) and activity.get("type") == "SubAgentActivity":
+                if call := journal_calls.get(activity.get("id")):
+                    call.update(activity_line=line_number, activity_kind=activity.get("kind"),
+                                child_id=activity.get("agent_thread_id"), agent_path=activity.get("agent_path"))
+        calls.extend(journal_calls.values())
+    data.update(children=list(children.values()), retained_journals=journals,
+                native_session_metadata=sessions, native_collaboration_calls=calls,
+                native_instruction_observations=instructions)
+    return data
+
+
+class AttemptRecord:
+    def __init__(self, destination, launch, env, *, host_root=None):
+        self.destination = Path(destination).resolve()
+        self.launch = launch
+        self.host_root = host_root
+        self.pending = b""
+        self.offset = 0
+        self.lines = 0
+        self.calls = {}
+        self.children = {}
+        self.sessions = set()
+        self.results = []
+        self.malformed_lines = 0
+        self.events = []
+        self.data = {
+            "version": 1, "attempt": str(self.destination), "host": launch["host"],
+            "case": launch["case"], "cwd": str(Path(launch["cwd"]).resolve()),
+            "host_version": launch.get("host_version"), "started_at": now(),
+            "recorder": reference(Path(__file__)),
+            "status": "running", "behavioral_verdict": "ungraded",
+            "persistence": persistence(launch, env), "predecessor": launch.get("predecessor"),
+            "mode": launch.get("continuation_mode", "new_session"),
+            "expected_session_id": launch.get("expected_session_id"),
+            "expected_child_id": launch.get("expected_child_id"),
+            "inputs": {name: reference(self.destination / name) for name in
+                       ("launch.json", "prompt.txt", "identity.json") if (self.destination / name).is_file()},
+            "configuration": {},
+        }
+        for flag in ("--agents", "--mcp-config"):
+            command = launch["command"]
+            if flag in command:
+                path = Path(command[command.index(flag) + 1])
+                if path.is_file():
+                    self.data["configuration"][flag] = reference(path)
+        command = launch["command"]
+        if "--plugin-dir" in command:
+            manifest = Path(command[command.index("--plugin-dir") + 1]) / "bundle-manifest.json"
+            if manifest.is_file():
+                self.data["configuration"]["package"] = reference(manifest)
+        for name, configured_path in launch.get("configuration_files", {}).items():
+            path = Path(configured_path)
+            if not path.is_absolute():
+                path = Path(self.data["cwd"]) / path
+            self.data["configuration"]["file:" + name] = reference(path)
+
+    def observe(self, event):
+        self.events.append(event)
+        if ident := event.get("session_id"):
+            self.sessions.add(ident)
+        if event.get("type") == "thread.started" and event.get("thread_id"):
+            self.sessions.add(event["thread_id"])
+        item = event.get("item", {})
+        if isinstance(item, dict) and item.get("type") == "collab_tool_call" and isinstance(item.get("id"), str):
+            key = "codex:" + item["id"]
+            call = self.calls.setdefault(key, {"id": item["id"], "line": self.lines,
+                                             "observed_in": str(self.destination / "stdout.jsonl")})
+            call.update(tool=item.get("tool"), sender_thread_id=item.get("sender_thread_id"),
+                        receiver_thread_ids=item.get("receiver_thread_ids", []), status=item.get("status"))
+            if event.get("type") == "item.completed":
+                call["result_line"] = self.lines
+        child = event.get("agent_id")
+        if not child and event.get("subagent_type"):
+            child = event.get("task_id")
+        if child:
+            row = self.children.setdefault(child, {"id": child, "first_line": self.lines})
+            row.update(last_line=self.lines)
+            if event.get("subagent_type"):
+                row["role"] = event["subagent_type"]
+        message = event.get("message", {})
+        content = message.get("content", []) if isinstance(message, dict) else []
+        for block in content if isinstance(content, list) else []:
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use" and block.get("name") in {"Agent", "SendMessage"}:
+                args = block.get("input", {})
+                self.calls[block["id"]] = {"id": block["id"], "tool": block["name"], "line": self.lines,
+                    "role": args.get("subagent_type"), "to": args.get("to", args.get("recipient")),
+                    "parent_tool_use_id": event.get("parent_tool_use_id")}
+            elif block.get("type") == "tool_result":
+                call = self.calls.get(block.get("tool_use_id"))
+                if call is not None:
+                    text = json.dumps(block.get("content", ""))
+                    call.update(result_line=self.lines, is_error=bool(block.get("is_error")),
+                                transcript_missing="No transcript found" in text)
+                    for ident in re.findall(r"agentId:\s*([A-Za-z0-9_-]+)", text):
+                        self.children.setdefault(ident, {"id": ident, "first_line": self.lines, "last_line": self.lines})
+        if event.get("type") in {"result", "turn.failed", "turn.completed", "error"}:
+            text = json.dumps(event).lower()
+            reason = ("usage_limit" if any(s in text for s in ("out of usage credits", "usage limit", "rate_limit_error")) else
+                      "authentication" if any(s in text for s in ("failed to authenticate", "not logged in")) else
+                      "host_error" if event.get("is_error") or event.get("type") in {"turn.failed", "error"} else None)
+            self.results.append({"line": self.lines, "type": event["type"], "subtype": event.get("subtype"),
+                                 "reason": reason, "parent_tool_use_id": event.get("parent_tool_use_id")})
+
+    def read_output(self):
+        path = self.destination / "stdout.jsonl"
+        if not path.exists():
+            return
+        with path.open("rb") as stream:
+            stream.seek(self.offset)
+            chunk = stream.read()
+        self.offset += len(chunk)
+        parts = (self.pending + chunk).split(b"\n")
+        self.pending = parts.pop()
+        for line in parts:
+            self.lines += 1
+            try:
+                event = json.loads(line)
+            except (ValueError, UnicodeError):
+                self.malformed_lines += 1
+                continue
+            if isinstance(event, dict):
+                self.observe(event)
+
+    def snapshot(self, status="running", *, returncode=None, interruption=None, output=None, retain=False):
+        self.read_output()
+        sessions = sorted(self.sessions)
+        session = sessions[0] if len(sessions) == 1 else None
+        transcripts = transcript_locations(session, self.children, self.host_root) if self.launch["host"] == "claude" else {}
+        roots = self.launch.get("artifact_roots", [])
+        artifacts = []
+        cwd = Path(self.data["cwd"])
+        for relative in roots:
+            path = (cwd / relative).resolve()
+            if not path.is_relative_to(cwd):
+                raise ValueError("Artifact root escapes consumer")
+            for file in sorted(path.rglob("*")) if path.is_dir() else [path]:
+                if file.is_file() and file.resolve().is_relative_to(cwd):
+                    artifacts.append(reference(file))
+        terminal = [r for r in self.results if not r["parent_tool_use_id"]]
+        reason = interruption or next((r["reason"] for r in reversed(terminal) if r["reason"]), None)
+        if status != "running" and not reason:
+            if returncode != 0:
+                reason = "process_error"
+            elif not terminal:
+                reason = "incomplete_stream"
+        expected = self.data["expected_session_id"]
+        available = (self.data["persistence"]["configured"] == "enabled" and bool(transcripts.get("parent"))
+                     and (not expected or expected == session))
+        retained = {}
+        if retain and transcripts.get("parent"):
+            for key, item in {"parent": transcripts["parent"], **transcripts["children"]}.items():
+                target = self.destination / "native-transcripts" / (key + ".jsonl")
+                target.parent.mkdir(exist_ok=True)
+                with target.open("xb") as stream:
+                    stream.write(Path(item["path"]).read_bytes())
+                retained[key] = reference(target)
+        self.data.update(status=status, updated_at=now(), returncode=returncode,
+                         interruption_reason=reason, session_id=session, observed_session_ids=sessions,
+                         children=list(self.children.values()), calls=list(self.calls.values()),
+                         terminal_events=self.results, stream={"complete_lines": self.lines, "bytes_read": self.offset,
+                         "partial_tail_bytes": len(self.pending), "malformed_lines": self.malformed_lines},
+                         transcripts=transcripts, retained_transcripts=retained, artifacts=artifacts,
+                         observed_expected_session=(session == expected) if expected else None,
+                         native_resume={"available": available and status != "running", "reason":
+                           "Codex native continuation is not qualified by this Claude resume helper; retain the observed thread IDs and artifacts."
+                           if self.launch["host"] != "claude" else
+                           "Observed persisted parent; selected child transcript is checked before native continuation."
+                           if available else "Native parent transcript unavailable or persistence disabled; use an explicit artifact-based restart."})
+        if self.launch["host"] == "codex":
+            codex_journals(self.destination, self.data)
+        atomic_json(Path(output) if output else self.destination / "continuation.json", self.data)
+        return self.data
+
+
+def stop_process(process):
+    if os.name == "nt":
+        try:
+            result = subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], capture_output=True, check=False,
+                                    creationflags=subprocess.CREATE_NO_WINDOW, timeout=5)
+            tree_stopped = result.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            tree_stopped = False
+        # Sandboxed Windows process enumeration may hide even our own child.
+        # The Popen handle still permits termination; do not call that a tree kill.
+        if process.poll() is None:
+            process.kill()
+        method = "windows_process_tree" if tree_stopped else "owned_process_handle"
+    else:
+        import signal
+        os.killpg(process.pid, signal.SIGTERM)
+        tree_stopped, method = True, "process_group"
+    process.wait(timeout=5)
+    return {"method": method, "tree_termination_confirmed": tree_stopped}
+
+
+def execute(destination, launch, env, timeout=None):
+    """Retain usable metadata during execution and on interruption, not just at exit."""
+    destination = Path(destination)
+    if any((destination / name).exists() for name in ("stdout.jsonl", "stderr.txt", "continuation.json")):
+        raise ValueError("Use a fresh native attempt; previous logs and continuation are retained")
+    if launch.get("continuation_mode") == "native_same_session":
+        predecessor = launch["predecessor"]
+        if sha(Path(predecessor["path"])) != predecessor["sha256"]:
+            raise ValueError("Predecessor continuation changed after preparation")
+        saved = json.loads(Path(predecessor["path"]).read_bytes())
+        verify_inputs(saved)
+        locations = transcript_locations(launch["expected_session_id"], [launch["expected_child_id"]])
+        if not locations["parent"] or launch["expected_child_id"] not in locations["children"]:
+            raise ValueError("Native transcript disappeared after preparation; use explicit artifact recovery")
+    (destination / "native_trial_records.py.txt").write_bytes(Path(__file__).read_bytes())
+    journal = AttemptRecord(destination, launch, env)
+    journal.snapshot()
+    started = time.monotonic()
+    interruption = None
+    process = None
+    try:
+        with (destination / "stdout.jsonl").open("xb") as stdout, (destination / "stderr.txt").open("xb") as stderr:
+            process = subprocess.Popen(launch["command"], cwd=launch["cwd"], env=env,
+                stdin=subprocess.PIPE, stdout=stdout, stderr=stderr,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                start_new_session=os.name != "nt")
+            assert process.stdin is not None
+            try:
+                process.stdin.write((destination / "prompt.txt").read_bytes())
+                process.stdin.close()
+            except BrokenPipeError:
+                pass
+            while process.poll() is None:
+                journal.snapshot()
+                if timeout is not None and time.monotonic() - started >= timeout:
+                    interruption = "timeout"
+                    journal.data["termination"] = stop_process(process)
+                    break
+                time.sleep(1)
+    except KeyboardInterrupt:
+        interruption = "operator_interrupt"
+        if process and process.poll() is None:
+            journal.data["termination"] = stop_process(process)
+    except OSError:
+        journal.snapshot("finished", returncode=None, interruption="launch_error")
+        raise
+    code = process.returncode if process else None
+    record = journal.snapshot("finished", returncode=code, interruption=interruption, retain=True)
+    return code, round(time.monotonic() - started, 3), journal.events, record
+
+
+def verify_inputs(saved):
+    for item in [*saved["inputs"].values(), *saved["configuration"].values()]:
+        if not Path(item["path"]).is_file() or sha(Path(item["path"])) != item["sha256"]:
+            raise ValueError("Predecessor input or host/package configuration changed")
+    if package := saved["configuration"].get("package"):
+        manifest = Path(package["path"])
+        root = manifest.parent.resolve()
+        for item in json.loads(manifest.read_bytes())["files"]:
+            path = (root / item["path"]).resolve()
+            if not path.is_relative_to(root) or not path.is_file() or sha(path) != item["sha256"]:
+                raise ValueError("Frozen package payload changed; native continuation requires the same package")
+
+
+def prepare_resume(previous, destination, prompt, child_id):
+    """Prepare a fresh log directory for the same native parent and child."""
+    previous, destination = Path(previous).resolve(), Path(destination).resolve()
+    saved = json.loads((previous / "continuation.json").read_bytes())
+    launch = json.loads((previous / "launch.json").read_bytes())
+    if launch["host"] != "claude" or saved["status"] == "running" or not saved["native_resume"]["available"]:
+        raise ValueError("Native continuation unavailable; retain this result and use an explicit artifact-based restart.")
+    if child_id not in {row["id"] for row in saved["children"]}:
+        raise ValueError("Requested child was not observed in the predecessor")
+    locations = transcript_locations(saved["session_id"], [child_id])
+    if not locations["parent"] or child_id not in locations["children"]:
+        raise ValueError("Original parent/child transcript is absent; artifact-based restart is a separate mode")
+    verify_inputs(saved)
+    command = launch["command"]
+    revised = []
+    index = 0
+    while index < len(command):
+        arg = command[index]
+        if arg in {"--session-id", "--resume", "-r"}:
+            index += 2
+            continue
+        if arg in {"--continue", "-c", "--fork-session", "--no-session-persistence"}:
+            index += 1
+            continue
+        revised.append(arg)
+        index += 1
+    revised += ["--resume", saved["session_id"]]
+    destination.mkdir(parents=True, exist_ok=False)
+    launch.update(command=revised, predecessor=reference(previous / "continuation.json"),
+                  continuation_mode="native_same_session", expected_session_id=saved["session_id"], expected_child_id=child_id)
+    write_json(destination / "launch.json", launch)
+    (destination / "prompt.txt").write_text(prompt, encoding="utf-8")
+    write_json(destination / "identity.json", {"predecessor": reference(previous / "continuation.json"),
+               "original_consumer": saved["cwd"], "session_id": saved["session_id"], "child_id": child_id,
+               "prompt_sha256": sha(destination / "prompt.txt"), "mode": "native_same_session"})
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="action", required=True)
+    inspect = sub.add_parser("inspect", help="Derive metadata from an old attempt without editing its receipts")
+    inspect.add_argument("attempt", type=Path)
+    inspect.add_argument("--out", type=Path, required=True)
+    resume = sub.add_parser("resume", help="Prepare new logs for the same persisted parent and child")
+    resume.add_argument("attempt", type=Path)
+    resume.add_argument("destination", type=Path)
+    resume.add_argument("--prompt", type=Path, required=True)
+    resume.add_argument("--child", required=True)
+    run = sub.add_parser("run", help="Execute an already prepared attempt and retain interruption metadata")
+    run.add_argument("attempt", type=Path)
+    run.add_argument("--timeout", type=float)
+    args = parser.parse_args()
+    if args.action == "run":
+        from evaluations.request_review_trials import run as run_attempt
+        run_attempt(args.attempt.resolve(), timeout=args.timeout)
+    elif args.action == "resume":
+        prepare_resume(args.attempt, args.destination, args.prompt.read_text(encoding="utf-8"), args.child)
+    else:
+        if args.out.exists():
+            raise ValueError("Choose a fresh inspection output")
+        launch = json.loads((args.attempt / "launch.json").read_bytes())
+        record = AttemptRecord(args.attempt, launch, {})
+        record.read_output()
+        # Snapshot writes only to the requested new file, never the old receipt.
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        old = json.loads((args.attempt / "record.json").read_bytes())
+        data = record.snapshot("historical", returncode=old.get("returncode"), output=args.out)
+        print(json.dumps({"output": str(args.out), "native_resume": data["native_resume"], "reason": data["interruption_reason"]}))
+
+
+if __name__ == "__main__":
+    main()

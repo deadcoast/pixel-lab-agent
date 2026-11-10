@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from evaluations import native_trial_records as records
@@ -212,6 +213,251 @@ class NativeTrialRecordTests(unittest.TestCase):
             self.assertIsNone(result["children"][0]["role"])
             self.assertIn(child, result["retained_journals"])
             self.assertIn("not qualified", result["native_resume"]["reason"])
+
+    def test_explicit_consumer_configuration_and_generated_package_drift_are_checked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            attempt, consumer, launch = self.setup_attempt(root)
+            role = consumer / "role.toml"
+            wrapper = consumer / "SKILL.md"
+            role.write_text('name = "pixl"\ndeveloper_instructions = "Follow the selected skill."\n', encoding="utf-8")
+            wrapper.write_text("Selected wrapper", encoding="utf-8")
+            package = consumer / "kit"
+            package.mkdir()
+            generated = package / "generated.md"
+            generated.write_text("frozen", encoding="utf-8")
+            write_json(package / "bundle-manifest.json", {"files": [], "generated_files": [
+                {"path": "generated.md", "sha256": sha(generated)}]})
+            launch["configuration_files"] = {"role": "role.toml", "wrapper": str(wrapper),
+                                              "package": "kit/bundle-manifest.json"}
+            write_json(attempt / "launch.json", launch)
+            saved = records.AttemptRecord(attempt, launch, {}).snapshot("finished", returncode=0)
+            self.assertEqual(saved["configuration"]["file:role"]["path"], str(role.resolve()))
+            records.verify_inputs(saved)
+            generated.write_text("changed", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "package payload changed"):
+                records.verify_inputs(saved)
+            generated.write_text("frozen", encoding="utf-8")
+            wrapper.write_text("Changed wrapper", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "configuration changed"):
+                records.verify_inputs(saved)
+            role.unlink()
+            with self.assertRaises(FileNotFoundError):
+                records.AttemptRecord(attempt, launch, {})
+
+    def test_codex_requested_role_and_observed_role_are_distinct_with_same_child_followup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            attempt, consumer, launch = self.setup_attempt(root)
+            launch["host"] = "codex"
+            role = consumer / "role.toml"
+            instruction = "Read the selected profile and preserve this consumer's assignment."
+            role.write_text('name = "pixl"\ndeveloper_instructions = ' + json.dumps(instruction), encoding="utf-8")
+            launch["configuration_files"] = {"role": "role.toml"}
+            self.event(attempt, {"type": "thread.started", "thread_id": SESSION})
+            self.event(attempt, {"type": "turn.completed"})
+            child = "12345678-1234-1234-1234-123456789def"
+            parent_events = [{"type": "session_meta", "payload": {"id": SESSION, "session_id": SESSION,
+                              "cwd": str(consumer)}}]
+            for index, tool in enumerate(["spawn_agent", "followup_task"]):
+                call_id = "call-" + str(index)
+                args = {"agent_type": "pixl", "task_name": "specialist", "message": "opaque-content"} if index == 0 else {
+                    "target": "specialist", "message": "opaque-content"}
+                parent_events.extend([
+                    {"type": "response_item", "payload": {"type": "function_call", "namespace": "collaboration",
+                     "name": tool, "call_id": call_id, "arguments": json.dumps(args)}},
+                    {"type": "event_msg", "payload": {"type": "item_completed", "item": {"type": "SubAgentActivity",
+                     "id": call_id, "kind": "started" if index == 0 else "interacted", "agent_thread_id": child,
+                     "agent_path": "/root/specialist"}}},
+                    {"type": "response_item", "payload": {"type": "function_call_output", "call_id": call_id, "output": ""}},
+                ])
+            parent_path = attempt / ("native-" + SESSION + ".jsonl")
+            parent_path.write_text("\n".join(map(json.dumps, parent_events)) + '\n{"unfinished":', encoding="utf-8")
+            child_meta = {"type": "session_meta", "payload": {"id": child, "session_id": SESSION,
+                "parent_thread_id": SESSION, "cwd": str(consumer), "subagent_history_start_ordinal": 5,
+                "source": {"subagent": {"thread_spawn": {"agent_role": None}}}}}
+            inherited_call = {**parent_events[1], "ordinal": 2}
+            developer = {"type": "response_item", "ordinal": 6, "payload": {"type": "message", "role": "developer",
+                          "content": [{"type": "input_text", "text": instruction}]}}
+            child_path = attempt / ("native-" + child + ".jsonl")
+            for actual_role in [None, "pixl", {"name": "pixl", "path": str(role)}]:
+                with self.subTest(actual_role=actual_role):
+                    child_meta["payload"]["source"]["subagent"]["thread_spawn"]["agent_role"] = actual_role
+                    child_path.write_text("\n".join(map(json.dumps, [child_meta, inherited_call,
+                        {**developer, "ordinal": 3}, developer])) + "\n", encoding="utf-8")
+                    journal = records.AttemptRecord(attempt, launch, {})
+                    saved = journal.snapshot("finished", returncode=0)
+                    self.assertEqual(saved["children"][0]["role"], actual_role)
+                    calls = saved["native_collaboration_calls"]
+                    self.assertEqual([row["tool"] for row in calls], ["spawn_agent", "followup_task"])
+                    self.assertEqual(calls[0]["requested_role"], "pixl")
+                    self.assertEqual({row["child_id"] for row in calls}, {child})
+                    self.assertTrue(all(row["result_observed"] for row in calls))
+                    self.assertEqual(calls[1]["to"], "specialist")
+                    self.assertNotIn("opaque-content", json.dumps(saved))
+                    observations = saved["native_instruction_observations"]
+                    self.assertEqual([row["context_scope"] for row in observations],
+                        ["inherited_or_initial_child_context", "own_execution"])
+                    self.assertEqual(observations[1]["configured_instruction_matches"][0]["sha256"], sha(role))
+                    self.assertEqual(saved["native_session_metadata"][child]["cwd"], str(consumer))
+                    self.assertEqual(saved["behavioral_verdict"], "ungraded")
+                    self.assertFalse(saved["native_resume"]["available"])
+            role.write_text('developer_instructions = "Changed after recording"', encoding="utf-8")
+            records.codex_journals(attempt, saved)
+            self.assertTrue(all(not row["configured_instruction_matches"] for row in saved["native_instruction_observations"]))
+
+    def test_codex_stdout_collaboration_records_observed_status_without_role_inference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            attempt, _, launch = self.setup_attempt(Path(directory))
+            launch["host"] = "codex"
+            self.event(attempt, {"type": "thread.started", "thread_id": SESSION})
+            item = {"id": "item_11", "type": "collab_tool_call", "tool": "wait", "sender_thread_id": SESSION,
+                    "receiver_thread_ids": [], "prompt": None, "agents_states": {}, "status": "in_progress"}
+            self.event(attempt, {"type": "item.started", "item": item})
+            self.event(attempt, {"type": "item.completed", "item": {**item, "status": "completed"}})
+            result = records.AttemptRecord(attempt, launch, {}).snapshot("finished", returncode=0)
+            self.assertEqual(result["calls"][0]["tool"], "wait")
+            self.assertEqual(result["calls"][0]["result_line"], 3)
+            self.assertEqual(result["calls"][0]["status"], "completed")
+            self.assertEqual(result["children"], [])
+            self.assertEqual(result["native_instruction_observations"], [])
+
+    def test_codex_role_parameter_availability_comes_from_actual_tool_declaration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            attempt, _, launch = self.setup_attempt(Path(directory))
+            launch["host"] = "codex"
+            self.event(attempt, {"type": "thread.started", "thread_id": SESSION})
+            path = attempt / ("native-" + SESSION + ".jsonl")
+            metadata = {"type": "session_meta", "payload": {"id": SESSION}}
+            for role_parameter in [None, {"type": "string", "description": "Available roles: pixl"}]:
+                with self.subTest(role_parameter=role_parameter):
+                    properties = {"task_name": {"type": "string"}, "message": {"type": "string", "encrypted": True}}
+                    if role_parameter:
+                        properties["agent_type"] = role_parameter
+                    tool = {"type": "function", "name": "spawn_agent", "parameters": {"properties": properties}}
+                    declaration = {"type": "response_item", "payload": {"type": "additional_tools",
+                        "tools": [{"type": "namespace", "name": "collaboration", "tools": [tool]}]}}
+                    path.write_text(json.dumps(metadata) + "\n" + json.dumps(declaration) + "\n", encoding="utf-8")
+                    saved = records.AttemptRecord(attempt, launch, {}).snapshot("finished", returncode=0)
+                    observed = saved["native_tool_declarations"][0]
+                    self.assertEqual(observed["role_parameter"], role_parameter)
+                    self.assertEqual("agent_type" in observed["parameter_names"], bool(role_parameter))
+                    self.assertEqual(observed["line"], 2)
+                    self.assertEqual(saved["children"], [])
+                    self.assertEqual(saved["behavioral_verdict"], "ungraded")
+
+    def test_codex_cold_child_instruction_scope_requires_observed_no_history_spawn(self):
+        with tempfile.TemporaryDirectory() as directory:
+            attempt, consumer, launch = self.setup_attempt(Path(directory))
+            launch["host"] = "codex"
+            self.event(attempt, {"type": "thread.started", "thread_id": SESSION})
+            # Sort the child before the parent to exercise parent-first parsing.
+            child = "02345678-1234-1234-1234-123456789def"
+            parent_events = [{"type": "session_meta", "payload": {"id": SESSION}},
+                {"type": "response_item", "payload": {"type": "function_call", "namespace": "collaboration",
+                 "name": "spawn_agent", "call_id": "spawn", "arguments": json.dumps({"agent_type": "pixl", "fork_turns": "none"})}},
+                {"type": "event_msg", "payload": {"item": {"type": "SubAgentActivity", "id": "spawn",
+                 "kind": "started", "agent_thread_id": child, "agent_path": "/root/specialist"}}}]
+            parent_path = attempt / ("native-" + SESSION + ".jsonl")
+            parent_path.write_text("\n".join(map(json.dumps, parent_events)) + "\n", encoding="utf-8")
+            metadata = {"type": "session_meta", "payload": {"id": child, "session_id": SESSION,
+                "parent_thread_id": SESSION, "cwd": str(consumer), "agent_role": "pixl",
+                "source": {"subagent": {"thread_spawn": {"agent_role": "pixl"}}}}}
+            developer = {"type": "response_item", "ordinal": 4, "payload": {"type": "message", "role": "developer",
+                "content": [{"type": "input_text", "text": "Role instructions"}]}}
+            child_path = attempt / ("native-" + child + ".jsonl")
+            for forked_from in [None, SESSION]:
+                with self.subTest(forked_from=forked_from):
+                    metadata["payload"]["forked_from_id"] = forked_from
+                    child_path.write_text(json.dumps(metadata) + "\n" + json.dumps(developer) + "\n", encoding="utf-8")
+                    saved = records.AttemptRecord(attempt, launch, {}).snapshot("finished", returncode=0)
+                    self.assertEqual(saved["native_session_metadata"][child]["observed_fork_turns"], "none")
+                    self.assertEqual(saved["children"][0]["top_level_role"], "pixl")
+                    self.assertEqual(saved["native_instruction_observations"][0]["context_scope"],
+                        "own_execution" if forked_from is None else "inherited_or_initial_child_context")
+
+    def test_new_codex_preparation_registers_exact_project_role_and_records_its_hash(self):
+        from evaluations import request_review_trials as trials
+
+        with tempfile.TemporaryDirectory() as directory:
+            attempt = (Path(directory) / "attempt").resolve()
+            with patch.object(trials, "codex_command", return_value=["codex"]), patch.object(
+                    trials.subprocess, "check_output", return_value="fixture-version\n"):
+                trials.prepare(attempt, "codex", "save-indicator")
+            launch = json.loads((attempt / "launch.json").read_bytes())
+            registration = next(arg for arg in launch["command"] if arg.startswith("agents.pixl.config_file="))
+            role = Path(json.loads(registration.split("=", 1)[1]))
+            self.assertEqual(role, attempt / "project/.codex/agents/pixl.toml")
+            self.assertEqual(launch["configuration_files"]["codex_role"], str(role))
+            saved = records.AttemptRecord(attempt, launch, {}).snapshot("finished", returncode=None)
+            self.assertEqual(saved["configuration"]["file:codex_role"]["sha256"], sha(role))
+            self.assertEqual(saved["configuration"]["package"]["sha256"], sha(
+                attempt / "project/.agents/skills/pixl-kit/bundle-manifest.json"))
+            records.verify_inputs(saved)
+            self.assertFalse((attempt / "stdout.jsonl").exists())
+            self.assertEqual(saved["behavioral_verdict"], "ungraded")
+
+    def test_cloned_export_consumer_relocates_recorded_configuration_with_its_command(self):
+        from evaluations import candidate_review_export_case as case
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            predecessor = root / "evidence/candidate-review/20261109/native/codex-01"
+            project = predecessor / "project"
+            role = project / ".codex/agents/pixl.toml"
+            role.parent.mkdir(parents=True)
+            role.write_text('name="pixl"\ndeveloper_instructions="Selected role"', encoding="utf-8")
+            old_manifest = project / ".agents/skills/review-kit/bundle-manifest.json"
+            old_manifest.parent.mkdir(parents=True)
+            write_json(old_manifest, {"files": [], "old": True})
+            package = root / "plugins/pixl"
+            package.mkdir(parents=True)
+            write_json(package / "bundle-manifest.json", {"files": [], "current": True})
+            (project / "work").mkdir()
+            write_json(project / "review.json", {"observation": {}})
+            write_json(predecessor / "launch.json", {"host": "codex", "cwd": str(project),
+                "command": ["codex", "-C", str(project), "-c", "agents.pixl.config_file=" + json.dumps(str(role))],
+                "configuration_files": {"codex_role": str(role), "package": str(old_manifest)}})
+            original_launch = sha(predecessor / "launch.json")
+            candidate = SimpleNamespace(id="candidate")
+            doc = SimpleNamespace(records={
+                "provenance-correction.delivery.task": SimpleNamespace(kind="T", fields={"ca": [candidate]}),
+                "review": SimpleNamespace(kind="X", id="review", fields={
+                    "mt": {"candidate_review": 1, "candidate": candidate}, "ur": "review.json"})})
+            destination = root / "new-export"
+            with patch.object(case, "ROOT", root), patch.object(case.store, "load", return_value=doc), patch.object(
+                    case.graph, "validate"), patch.object(case.codec, "digest", return_value="state"):
+                case.prepare(destination, "codex")
+            launch = json.loads((destination / "launch.json").read_bytes())
+            new_role = destination / "project/.codex/agents/pixl.toml"
+            self.assertEqual(launch["configuration_files"]["codex_role"], str(new_role))
+            self.assertEqual(json.loads(launch["command"][-1].split("=", 1)[1]), str(new_role))
+            self.assertEqual(launch["configuration_files"]["package"],
+                             str(destination / "project/.agents/skills/export-kit/bundle-manifest.json"))
+            saved = records.AttemptRecord(destination, launch, {}).snapshot("finished", returncode=None)
+            role.unlink()
+            old_manifest.unlink()
+            records.verify_inputs(saved)
+            self.assertEqual(sha(predecessor / "launch.json"), original_launch)
+
+    def test_codex_retains_children_with_partial_journal_tail(self):
+        from evaluations.request_review_trials import retain_journals
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            attempt, _, _ = self.setup_attempt(root)
+            sessions = root / "host/sessions"
+            sessions.mkdir(parents=True)
+            child = "12345678-1234-1234-1234-123456789def"
+            parent = sessions / (SESSION + ".jsonl")
+            parent.write_text(json.dumps({"payload": {"item": {"type": "SubAgentActivity", "agent_thread_id": child}}})
+                              + '\n{"unfinished":', encoding="utf-8")
+            child_path = sessions / (child + ".jsonl")
+            child_path.write_text("{}\n", encoding="utf-8")
+            with patch.dict(os.environ, {"CODEX_HOME": str(root / "host")}):
+                retain_journals(attempt, [{"type": "thread.started", "thread_id": SESSION}])
+            self.assertEqual(sha(attempt / ("native-" + SESSION + ".jsonl")), sha(parent))
+            self.assertEqual(sha(attempt / ("native-" + child + ".jsonl")), sha(child_path))
 
 
 records_locations = records.transcript_locations

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import subprocess
 import time
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -57,26 +59,120 @@ def transcript_locations(session_id, child_ids, host_root=None):
 def codex_journals(destination, data):
     """Use observed session metadata only, never interpret encrypted payloads."""
     journals, children = {}, {row["id"]: row for row in data["children"]}
-    for path in Path(destination).glob("native-*.jsonl"):
+    calls, instructions, sessions, declarations = [], [], {}, []
+    configured = {}
+    for name, item in data.get("configuration", {}).items():
+        path = Path(item["path"])
+        if path.suffix == ".toml" and path.is_file() and sha(path) == item["sha256"]:
+            try:
+                value = tomllib.loads(path.read_text(encoding="utf-8"))
+            except (ValueError, UnicodeError):
+                continue
+            text = value.get("developer_instructions")
+            if isinstance(text, str) and text.strip():
+                configured[name] = (item, text.strip())
+    parent_name = "native-" + str(data["session_id"]) + ".jsonl"
+    for path in sorted(Path(destination).glob("native-*.jsonl"), key=lambda p: (p.name != parent_name, p.name)):
         with path.open(encoding="utf-8") as stream:
             try:
                 event = json.loads(stream.readline())
             except ValueError:
                 continue
-        meta = event.get("payload", {})
+            remaining = list(stream)
+        if not isinstance(event, dict) or not isinstance(event.get("payload"), dict):
+            continue
+        meta = event["payload"]
         ident = meta.get("id")
         if (event.get("type") != "session_meta" or not ident
                 or meta.get("session_id", ident) != data["session_id"]
                 or path.stem != "native-" + ident):
             continue
         journals[ident] = reference(path)
+        observed_spawn = next((call for call in calls if call.get("child_id") == ident
+                               and call["tool"] == "spawn_agent"), {})
+        cold_child = (observed_spawn.get("fork_turns") == "none" and not meta.get("forked_from_id")
+                      and meta.get("subagent_history_start_ordinal") is None)
+        sessions[ident] = {"cwd": meta.get("cwd"), "observed_in": str(path), "line": 1,
+                           "subagent_history_start_ordinal": meta.get("subagent_history_start_ordinal"),
+                           "forked_from_id": meta.get("forked_from_id"),
+                           "observed_fork_turns": observed_spawn.get("fork_turns")}
         if ident != data["session_id"]:
             spawn = meta.get("source", {})
             spawn = spawn.get("subagent", {}).get("thread_spawn", {}) if isinstance(spawn, dict) else {}
             children[ident] = {"id": ident, "parent_id": meta.get("parent_thread_id", spawn.get("parent_thread_id")),
                                "agent_path": meta.get("agent_path", spawn.get("agent_path")),
-                               "role": spawn.get("agent_role"), "observed_in": str(path), "line": 1}
-    data.update(children=list(children.values()), retained_journals=journals)
+                               "role": spawn.get("agent_role"), "cwd": meta.get("cwd"),
+                               "top_level_role": meta.get("agent_role"),
+                               "observed_in": str(path), "line": 1}
+        own_start = meta.get("subagent_history_start_ordinal")
+        journal_calls = {}
+        for line_number, line in enumerate(remaining, 2):
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(event, dict):
+                continue
+            # A fork's journal includes its parent's history. Do not attribute
+            # inherited calls or instructions to the child's own execution.
+            own_event = ident == data["session_id"] or cold_child or (isinstance(own_start, int)
+                and isinstance(event.get("ordinal"), int) and event["ordinal"] >= own_start)
+            payload = event.get("payload", {})
+            if not isinstance(payload, dict):
+                continue
+            if payload.get("type") == "additional_tools":
+                for namespace in payload.get("tools", []):
+                    if not isinstance(namespace, dict) or namespace.get("name") != "collaboration":
+                        continue
+                    for tool in namespace.get("tools", []):
+                        if not isinstance(tool, dict) or tool.get("name") != "spawn_agent":
+                            continue
+                        parameters = tool.get("parameters", {})
+                        properties = parameters.get("properties", {})
+                        declarations.append({"thread_id": ident, "observed_in": str(path), "line": line_number,
+                            "tool": "collaboration.spawn_agent", "parameter_names": sorted(properties),
+                            "role_parameter": properties.get("agent_type"),
+                            "context_scope": "own_execution" if own_event else "inherited_or_initial_child_context",
+                            "schema_sha256": hashlib.sha256(json.dumps(tool, sort_keys=True).encode()).hexdigest()})
+            if payload.get("type") == "message" and payload.get("role") == "developer":
+                for index, block in enumerate(payload.get("content", [])):
+                    text = block.get("text") if isinstance(block, dict) else None
+                    if not isinstance(text, str):
+                        continue
+                    matches = [{"configuration": name, **item} for name, (item, expected) in configured.items()
+                               if expected in text]
+                    instructions.append({"thread_id": ident, "observed_in": str(path), "line": line_number,
+                        "content_index": index, "text_sha256": hashlib.sha256(text.encode()).hexdigest(),
+                        "context_scope": "own_execution" if own_event else "inherited_or_initial_child_context",
+                        "configured_instruction_matches": matches})
+            if not own_event:
+                continue
+            if payload.get("type") == "function_call" and payload.get("namespace") == "collaboration":
+                try:
+                    args = json.loads(payload.get("arguments", "{}"))
+                except (ValueError, TypeError):
+                    args = {}
+                if not isinstance(args, dict):
+                    args = {}
+                call_id = payload.get("call_id")
+                if not isinstance(call_id, str):
+                    continue
+                journal_calls[call_id] = {"id": call_id, "tool": payload.get("name"),
+                    "thread_id": ident, "line": line_number, "observed_in": str(path),
+                    "requested_role": args.get("agent_type"), "task_name": args.get("task_name"),
+                    "to": args.get("target"), "fork_turns": args.get("fork_turns")}
+            elif payload.get("type") == "function_call_output":
+                if call := journal_calls.get(payload.get("call_id")):
+                    call.update(result_line=line_number, result_observed=True)
+            activity = payload.get("item", {})
+            if (isinstance(activity, dict) and activity.get("type") == "SubAgentActivity"
+                    and (call := journal_calls.get(activity.get("id")))):
+                call.update(activity_line=line_number, activity_kind=activity.get("kind"),
+                            child_id=activity.get("agent_thread_id"), agent_path=activity.get("agent_path"))
+        calls.extend(journal_calls.values())
+    data.update(children=list(children.values()), retained_journals=journals,
+                native_session_metadata=sessions, native_collaboration_calls=calls,
+                native_instruction_observations=instructions, native_tool_declarations=declarations)
     return data
 
 
@@ -119,6 +215,12 @@ class AttemptRecord:
             manifest = Path(command[command.index("--plugin-dir") + 1]) / "bundle-manifest.json"
             if manifest.is_file():
                 self.data["configuration"]["package"] = reference(manifest)
+        for name, configured_path in launch.get("configuration_files", {}).items():
+            path = Path(configured_path)
+            if not path.is_absolute():
+                path = Path(self.data["cwd"]) / path
+            key = "package" if name == "package" else "file:" + name
+            self.data["configuration"][key] = reference(path)
 
     def observe(self, event):
         self.events.append(event)
@@ -126,6 +228,15 @@ class AttemptRecord:
             self.sessions.add(ident)
         if event.get("type") == "thread.started" and event.get("thread_id"):
             self.sessions.add(event["thread_id"])
+        item = event.get("item", {})
+        if isinstance(item, dict) and item.get("type") == "collab_tool_call" and isinstance(item.get("id"), str):
+            key = "codex:" + item["id"]
+            call = self.calls.setdefault(key, {"id": item["id"], "line": self.lines,
+                                             "observed_in": str(self.destination / "stdout.jsonl")})
+            call.update(tool=item.get("tool"), sender_thread_id=item.get("sender_thread_id"),
+                        receiver_thread_ids=item.get("receiver_thread_ids", []), status=item.get("status"))
+            if event.get("type") == "item.completed":
+                call["result_line"] = self.lines
         child = event.get("agent_id")
         if not child and event.get("subagent_type"):
             child = event.get("task_id")
@@ -310,7 +421,8 @@ def verify_inputs(saved):
     if package := saved["configuration"].get("package"):
         manifest = Path(package["path"])
         root = manifest.parent.resolve()
-        for item in json.loads(manifest.read_bytes())["files"]:
+        contents = json.loads(manifest.read_bytes())
+        for item in contents["files"] + contents.get("generated_files", []):
             path = (root / item["path"]).resolve()
             if not path.is_relative_to(root) or not path.is_file() or sha(path) != item["sha256"]:
                 raise ValueError("Frozen package payload changed; native continuation requires the same package")

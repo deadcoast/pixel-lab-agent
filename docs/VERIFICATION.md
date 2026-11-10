@@ -1,5 +1,29 @@
 # Verification and limits
 
+## Named Codex role and same-child handoff, 2026-11-09
+
+The [qualification report](../evidence/named-codex-role/README.md) separates
+file-only discovery failures, local configuration probes, actual named-role and
+instruction loading, and the completed retained-asset assignment. Explicit
+session registration exposes `pixl` in the installed CLI; the role/profile/skill
+sources and frozen production bundle remain unchanged. A cold caller verifies
+exact exports, continues the same child through unchanged-review recovery and
+independently consumes its public handoff. All **28 independent checks pass**,
+including 4,142 unchanged initial files, preserved production state and one new
+immutable handoff. No new provider, artistic or renderer acceptance is inferred.
+
+The two missing-role attempts and the scope-conflicted partial predecessor remain
+preserved. The latter honestly stopped before handoff because the evaluation
+restricted all new files to its report directory while assigning an operation
+that writes `.pixl/handoffs`. A fresh corrected-scope trial completes that work.
+Grader corrections are separately retained rather than relabelling native output.
+
+Fresh verification runs **30 focused tests** (17 recorder and 13 scenario/grader)
+and Ruff. The preceding 604-pass/one-skip complete verifier below is historical;
+it was not rerun for this evaluation-infrastructure increment. Automatic role
+discovery, cross-process Codex resume, repeated/long-gap continuation and broader
+native production reliability remain open. M1/M2 stay open.
+
 ## Native records and Claude continuation, 2026-11-09
 
 The [recording and continuation report](../evidence/native-continuation/README.md)

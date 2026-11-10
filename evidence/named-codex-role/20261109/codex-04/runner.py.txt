@@ -1,0 +1,234 @@
+"""Cold registered Codex role and same-child follow-up on retained production."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import shutil
+import subprocess
+import zipfile
+from pathlib import Path
+
+from evaluations.host_trials import codex_command, inventory, sha, write_json
+from evaluations.native_trial_records import reference
+from evaluations.request_review_trials import ROOT, run
+
+PREDECESSOR = ROOT / "evidence/everyday-guide/20261109/native/codex-01"
+WORK = "work/named-role"
+KIT = ".agents/skills/role-kit"
+BASELINE = ROOT / "evidence/named-codex-role/20261109/baseline-untracked.json"
+ENTRYPOINTS = ("AGENTS.md", "SESSION.md", "NAMED-ROLE-ASSIGNMENT.md", ".codex/agents/pixl.toml",
+              ".agents/skills/pixl/SKILL.md", ".agents/skills/plar/SKILL.md")
+
+
+def retain_delta(destination: Path) -> None:
+    """Preserve new handoffs and unexpected edits, including ignored state files."""
+    consumer = Path(json.loads((destination / "launch.json").read_bytes())["cwd"])
+    baseline = json.loads((destination / "identity.json").read_bytes())["inputs"]
+    current = inventory(consumer, ("__pycache__",))
+    changed = {name: digest for name, digest in current.items()
+               if baseline.get(name) != digest and not name.startswith(WORK + "/")}
+    archive = destination / "consumer-delta.zip"
+    with zipfile.ZipFile(archive, "x", zipfile.ZIP_DEFLATED) as saved:
+        for name in changed:
+            saved.write(consumer / name, name)
+    write_json(destination / "consumer-delta.json", {
+        "archive": reference(archive), "files": changed,
+        "changed_existing": [name for name in changed if name in baseline],
+        "removed": [name for name in baseline if name not in current],
+        "scope": "New/changed files outside the copied work outputs; retention does not establish permitted scope or acceptance.",
+    })
+
+
+def retain_outputs(destination: Path) -> None:
+    """Keep portable outputs and entrypoints without duplicating the consumer."""
+    launch = json.loads((destination / "launch.json").read_bytes())
+    consumer = Path(launch["cwd"])
+    shutil.copytree(consumer / WORK, destination / "outputs")
+    with zipfile.ZipFile(destination / "consumer-entrypoints.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for name in ENTRYPOINTS:
+            archive.write(consumer / name, name)
+    write_json(destination / "retained.json", {
+        "consumer": str(consumer), "outputs": inventory(destination / "outputs"),
+        "entrypoints": reference(destination / "consumer-entrypoints.zip"),
+        "baseline_supplement": reference(BASELINE),
+        "package": reference(consumer / KIT / "bundle-manifest.json"),
+    })
+    retain_delta(destination)
+
+
+def restore_inputs(consumer: Path, retained: dict) -> None:
+    """Recover ignored baseline state without rewriting the original evidence."""
+    baseline = json.loads(BASELINE.read_bytes())
+    archive = BASELINE.parent / baseline["archive"]
+    if sha(archive) != baseline["sha256"]:
+        raise ValueError("Retained baseline archive changed")
+    with zipfile.ZipFile(archive) as saved:
+        for name, digest in baseline["files"].items():
+            target = (consumer / name).resolve()
+            if not target.is_relative_to(consumer):
+                raise ValueError("Baseline input escapes consumer")
+            data = saved.read(name)
+            if hashlib.sha256(data).hexdigest() != digest:
+                raise ValueError(f"Retained baseline entry changed: {name}")
+            if target.exists():
+                if sha(target) != digest:
+                    raise ValueError(f"Existing baseline input changed: {name}")
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+    for name, digest in retained["artifacts"].items():
+        if sha(consumer / name) != digest:
+            raise ValueError(f"Retained consumer changed: {name}")
+
+
+def prepare(destination: Path, consumer: Path, *, role_tools: str = "legacy", registration: str = "explicit") -> None:
+    destination, consumer = destination.resolve(), consumer.resolve()
+    retained = json.loads((PREDECESSOR / "record.json").read_bytes())
+    previous = json.loads((PREDECESSOR / "identity.json").read_bytes())
+    destination.mkdir(parents=True, exist_ok=False)
+    shutil.copytree(PREDECESSOR / "project", consumer, ignore=shutil.ignore_patterns("__pycache__", "node_modules"))
+    restore_inputs(consumer, retained)
+    kit = consumer / KIT
+    shutil.copytree(ROOT / "plugins/pixl", kit, ignore=shutil.ignore_patterns("__pycache__"))
+    (consumer / WORK).mkdir()
+    python = ROOT / ".venv/Scripts/python.exe"
+    guidance = f"""This is the explicit CF-05 named Codex role evaluation.
+Follow NAMED-ROLE-ASSIGNMENT.md in this retained asset consumer. The current kit is
+{KIT}; its shared entrypoint is {KIT}/skills/pixl/SKILL.md.
+Old assignments and kits remain history. New reports and result exports belong
+under {WORK}. The assigned public PLAR handoff may additionally create its new
+immutable files under .pixl/handoffs; preserve all existing files in that directory.
+Consumer root: {consumer.as_posix()}. Selected Python: {python.as_posix()}.
+Preserve existing sources, assets, production state, reviews and historical files.
+No remote generation, new art acceptance, package installs, global settings or memory edits.
+The caller owns independent verification; PIXL owns the delegated specialist work.
+"""
+    for name in ("AGENTS.md", "SESSION.md"):
+        (consumer / name).write_text(guidance, encoding="utf-8")
+    # Exercise the exact repository role, with consumer discovery wrappers pointing
+    # to the frozen portable kit. Do not encode this trial's expected answers in it.
+    role = consumer / ".codex/agents/pixl.toml"
+    role.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ROOT / ".codex/agents/pixl.toml", role)
+    for name in ("pixl", "plar"):
+        wrapper = consumer / f".agents/skills/{name}/SKILL.md"
+        wrapper.parent.mkdir(parents=True, exist_ok=True)
+        wrapper.write_text(
+            f"---\nname: {name}\ndescription: Load the installed {name.upper()} production workflow.\n---\n\n"
+            f"Read [the shared skill](../role-kit/skills/{name}/SKILL.md), resolving its links from that file.\n",
+            encoding="utf-8",
+        )
+    assignment = f"""# Qualify the registered specialist with a useful retained-asset handoff
+
+You are a cold calling agent. Use the native registered `pixl` role for one child
+by explicitly selecting agent_type="pixl" and fork_turns="none" in the available
+native spawn tool. Supply the actual assignment and paths in its delegated brief.
+Keep actual returned child identity. If the host rejects or omits that role,
+retain the exact failure in {WORK}/CALLER-RESULT.json; a generic fallback does
+not satisfy this assignment. Do not change the role file or host configuration.
+The repository role is copied unchanged; it leads through the consumer wrappers
+to the current shared skill/profile. Reading a role file alone is not invoking it.
+
+The asset is queue.working in authoring-plar.txt, plan provenance-correction.plan,
+store .pixl/assets/queue.ready, candidate {previous['candidate']}, existing family
+review {previous['review']}. The old plar.txt is another generation. This is a
+bounded recovery/handoff of existing accepted work. No fresh visual or renderer
+observation, new state adoption, provider call or art production is assigned.
+
+Round 1: delegate to that registered child. It should follow the shared everyday
+workflow and identities/path guidance; use public CLI/MCP operations to read the
+selected asset, export exact candidate/family context to fresh files under
+{WORK}, and retrieve a precise original source range supporting one current
+requirement. Read only relevant context; parse large exports programmatically.
+Have it return {WORK}/SPECIALIST-ROUND1.json with actual consumer/install/store
+roots, exact result paths and file hashes, canonical state/requirements identities,
+current versus creation-time acceptance, source locator and literal excerpt,
+reused evidence limits and the useful continuation. Also retain the skill/profile
+entrypoints it actually read and their byte hashes. Those read observations are
+separate from the evaluator's native role-loading proof.
+
+Independently verify the returned files and source excerpt, selected generation,
+and current acceptance. Save {WORK}/CALLER-REVIEW.json with your actual findings
+and a concrete follow-up. Then send that follow-up to the SAME native child using
+the host's continuation/follow-up tool, without spawning a replacement. Ask it to
+address any findings and verify unchanged-review recovery: replay
+work/export-review/identical-review.json with candidate {previous['candidate']}
+and review ID {previous['review']}, using the current public state hash and a new
+result path. It must report actual reuse/publication results and preserve the
+original review. Save a public PLAR handoff for authoring-plar.txt / queue.working
+with honest retained findings and exact continuation, plus SPECIALIST-ROUND2.json.
+The second round's root, scope and state must remain tied to round 1. Do not
+pretend a follow-up message alone proves completed continuation.
+
+Independently verify the second round and handoff, all named file hashes, the
+unchanged original input files and production history, and zero new production-state publications
+or provider attempts. Write {WORK}/CALLER-RESULT.json with actual child identity,
+role selection/continuation observations, round results, corrections, useful
+handoff locators and exact next action. Keep reports concise and reference the
+exact large exports instead of repeating them. Keep the child available when
+finished. This qualifies the observed route only; M1/M2 and broader reliability,
+generated quality and native end-to-end production remain open.
+"""
+    (consumer / "NAMED-ROLE-ASSIGNMENT.md").write_text(assignment, encoding="utf-8")
+    (destination / "prompt.txt").write_text(guidance + "\nComplete NAMED-ROLE-ASSIGNMENT.md.\n", encoding="utf-8")
+    command = codex_command() + [
+        "exec", "--ignore-user-config", "--ignore-rules", "--json", "--skip-git-repo-check",
+        "--sandbox", "danger-full-access", "-C", str(consumer),
+        "-c", 'approval_policy="never"', "-c", "agents.enabled=true",
+        "-c", "agents.max_concurrent_threads_per_session=1",
+        "-c", "features.apps=false", "-c", "features.plugins=false",
+        "-c", "features.memories=false", "-c", 'web_search="disabled"',
+    ]
+    server = {"command": str(python), "args": [str(kit / "scripts/pixl.py"), "mcp", "--root", str(consumer)]}
+    if role_tools == "v2":
+        command += ["-c", "features.multi_agent_v2=true"]
+    if registration == "explicit":
+        # The installed CLI can omit file-only discovery in isolated invocations.
+        # Register this unchanged role for this invocation; no user config edit.
+        command += ["-c", "agents.pixl.config_file=" + json.dumps(role.as_posix())]
+    for key, value in server.items():
+        command += ["-c", f"mcp_servers.pixl_local.{key}=" + json.dumps(value)]
+    command.append("-")
+    configuration = {
+        "codex_role": str(role),
+        "pixl_wrapper": str(consumer / ".agents/skills/pixl/SKILL.md"),
+        "plar_wrapper": str(consumer / ".agents/skills/plar/SKILL.md"),
+        "package": str(kit / "bundle-manifest.json"),
+    }
+    write_json(destination / "launch.json", {
+        "host": "codex", "case": "named-codex-role", "cwd": str(consumer), "command": command,
+        "host_version": subprocess.check_output(codex_command() + ["--version"], text=True).strip(),
+        "continuation_mode": "new_session", "predecessor": reference(PREDECESSOR / "record.json"),
+        "artifact_roots": [WORK], "configuration_files": configuration,
+        "role_tool_setting": role_tools,
+        "role_registration": registration,
+    })
+    write_json(destination / "identity.json", {
+        "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "predecessor": reference(PREDECESSOR / "record.json"), "consumer": str(consumer),
+        "baseline_supplement": reference(BASELINE),
+        "original_role": reference(ROOT / ".codex/agents/pixl.toml"),
+        "baseline_state_hash": previous["baseline_state_hash"],
+        "candidate": previous["candidate"], "review": previous["review"],
+        "inputs": inventory(consumer, ("__pycache__",)),
+        "current_package": reference(kit / "bundle-manifest.json"),
+        "package_files": inventory(kit), "runner": reference(Path(__file__)),
+        "scope": "Cold registered role and same-child follow-up within one parent process; retained accepted production only.",
+    })
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("destination", type=Path)
+    parser.add_argument("--consumer", type=Path, required=True)
+    parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--role-tools", choices=("legacy", "v2"), default="legacy")
+    parser.add_argument("--registration", choices=("discovery", "explicit"), default="explicit")
+    args = parser.parse_args()
+    prepare(args.destination, args.consumer, role_tools=args.role_tools, registration=args.registration)
+    if not args.prepare_only:
+        run(args.destination.resolve())
+        retain_outputs(args.destination.resolve())

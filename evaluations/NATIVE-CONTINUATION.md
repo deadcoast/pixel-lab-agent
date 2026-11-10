@@ -15,18 +15,44 @@ native logs and exact transcript snapshots with each result.
 | Mode | Meaning | Required evidence |
 | --- | --- | --- |
 | New session | New caller with an explicit assignment | Actual session ID, loaded configuration and caller result |
-| Native continuation | Original caller session sends an existing child its follow-up | Same observed parent session, `SendMessage` to the original child, subsequent work/result from that child, preserved project authority |
+| Native continuation | Original caller session sends an existing child its follow-up | Same observed parent session, actual host follow-up to the original child, subsequent work/result from that child, preserved project authority |
 | Artifact-based restart | New caller/child recovers saved work | Exact predecessor identities, original files/failed grade retained, explicit new native identity and scoped continuation outcome |
 
 An exit code or a resumable transcript does not establish behavioral success.
 `continuation.json` always leaves `behavioral_verdict` ungraded. Review the native
-trace and returned files separately. A successfully delivered `SendMessage` alone
+trace and returned files separately. A successfully delivered follow-up alone
 does not prove that the child completed the requested work.
 
-For Codex, the recorder retains observed thread identities and reads role/path
-metadata from the saved native journals. A generic child remains generic even if
-its task name includes PIXL. This helper does not yet qualify Codex native resume
-or named-role loading; those are separate native evaluations.
+For Codex, the recorder retains observed thread identities, actual role/path
+metadata, tool declarations, loaded-instruction matches and collaboration call
+locations from the native journals. Requested roles and inherited context remain
+distinct from the child's own loaded role and work. A generic child remains
+generic even if its task name includes PIXL. The [named-role evaluation](../evidence/named-codex-role/README.md)
+passes one explicit registered-role assignment and completed same-child follow-up
+within a parent process, while retaining earlier failed/partial attempts. The Claude resume helper
+does not implement or qualify Codex continuation across separate processes.
+
+The installed isolated Codex launcher needs an explicit invocation-scoped
+`agents.pixl.config_file` setting to expose the role selector; merely copying
+`.codex/agents/pixl.toml` did not do so in the retained attempts. See the
+[consumer setup](../docs/AGENT-KIT.md#plar-and-current-host-delegation). Preserve the
+actual role file, wrappers and package in `configuration_files` so later input
+checks can detect drift. No user-global registration is required by this route.
+
+The dedicated case reuses the accepted everyday-guide consumer, restores its
+ignored production state from the retained baseline archive, and copies the
+unchanged repository role plus a frozen portable kit. Prepare a fresh attempt:
+
+```powershell
+.venv/Scripts/python.exe -m evaluations.named_codex_role_case evidence/my-trial/codex-01 --consumer build/my-trial-consumer --prepare-only
+```
+
+Omitting `--prepare-only` also starts the native Codex caller and retains its
+outputs and changed-file archive, including new immutable handoffs under `.pixl`.
+The assigned operation reuses accepted work; it makes no new provider request or
+art/renderer acceptance. The independent grader uses actual journal roles,
+instruction loading, completed follow-up work and returned public-operation
+artifacts. A configuration probe or a report-shaped JSON file is insufficient.
 
 ## Run and inspect
 

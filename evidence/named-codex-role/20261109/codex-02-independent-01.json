@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "attempt": "C:\\github\\pixel-lab-agent\\evidence\\named-codex-role\\20261109\\codex-02",
+  "grader_sha256": "acd387a01754391e4f9a17da928313861e46e3cc82562ed6997a4a6a7b54a950",
+  "host_version": "codex-cli 0.167.0",
+  "parent_id": "01a1c2b3-592c-7530-9188-50ab2c2e0526",
+  "children": [],
+  "passes": 6,
+  "total": 17,
+  "all_passed": false,
+  "checks": [
+    {
+      "check": "unchanged_repository_role",
+      "pass": true,
+      "evidence": {
+        "path": "C:\\github\\pixel-lab-agent\\.codex\\agents\\pixl.toml",
+        "sha256": "61022dfd68864a6cf0e223628d7baa85c239ae243c7731e2cccb398b4fd04dae",
+        "bytes": 1010
+      }
+    },
+    {
+      "check": "cold_parent_identity",
+      "pass": true,
+      "evidence": "01a1c2b3-592c-7530-9188-50ab2c2e0526"
+    },
+    {
+      "check": "native_tool_exposes_role_selection",
+      "pass": false,
+      "evidence": [
+        {
+          "file": "C:\\github\\pixel-lab-agent\\evidence\\named-codex-role\\20261109\\codex-02\\native-01a1c2b3-592c-7530-9188-50ab2c2e0526.jsonl",
+          "line": 3,
+          "parameters": [
+            "fork_turns",
+            "message",
+            "model",
+            "reasoning_effort",
+            "task_name"
+          ],
+          "description": "\n        Available model overrides (optional; inherited parent model is preferred):\n- `gpt-6.1-sol`: Latest workhorse model for coding and everyday work. Reasoning efforts: low (default), medium, high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-6-astra`: Frontier intelligence for the most demanding work. Reasoning efforts: low, medium (default), high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-6.1-terra`: GPT-6.1 Terra Codex model. Reasoning efforts: low (default), medium, high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-6-sol`: Previous generation workhorse model. Reasoning efforts: low, medium (default), high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-6-luna`: Fast and affordable model for easier tasks. Reasoning efforts: low, medium (default), high, xhigh, max. Service tiers: priority.\n        Spawns an agent to work on the specified task. If your current task is `/root/task1` and you spawn_agent with task_name \"task_3\" the agent will have canonical task name `/root/task1/task_3`.\nYou are then able to refer to this agent as `task_3` or `/root/task1/task_3` interchangeably. However an agent `/root/task2/task_3` would only be able to communicate with this agent via its canonical name `/root/task1/task_3`.\nThe spawned agent will have the same tools as you and the ability to spawn its own subagents.\n\nIt will be able to send you and other running agents messages, and its final answer will be provided to you when it finishes.\nThe new agent's canonical task name will be provided to it along with the message.\n\nNote that passing `fork_turns=\"none\"` will not pass any surrounding context to the spawned subagent, which may cause the agent to lack the context it needs to complete its task, whereas `fork_turns=\"all\"` will provide the subagent with all surrounding context."
+        }
+      ]
+    },
+    {
+      "check": "one_explicit_pixl_spawn",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "one_actual_named_child",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "configured_role_instructions_loaded",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "same_child_completed_after_followup",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "native_roots_match_consumer",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "child_read_current_shared_skill_and_profile",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "all_original_inputs_unchanged",
+      "pass": true,
+      "evidence": {
+        "count": 4142,
+        "missing": [],
+        "changed": []
+      }
+    },
+    {
+      "check": "only_assigned_outputs_and_handoffs_added",
+      "pass": true,
+      "evidence": {
+        "additions": [
+          "work/named-role/CALLER-RESULT.json"
+        ],
+        "unexpected": []
+      }
+    },
+    {
+      "check": "canonical_state_unchanged",
+      "pass": true,
+      "evidence": {
+        "expected": "fea95799d4c0686e4e7b40e4ffdfaf9b8083363f98d76c33a0c22c1720cc492e",
+        "actual": "fea95799d4c0686e4e7b40e4ffdfaf9b8083363f98d76c33a0c22c1720cc492e"
+      }
+    },
+    {
+      "check": "both_rounds_and_caller_reviews_returned",
+      "pass": false,
+      "evidence": [
+        "CALLER-RESULT.json"
+      ]
+    },
+    {
+      "check": "reported_file_hashes_match_bytes",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "actual_review_replay_reuses_original",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "immutable_handoff_returned",
+      "pass": false,
+      "evidence": []
+    },
+    {
+      "check": "no_new_durable_jobs_or_state_publications",
+      "pass": true,
+      "evidence": {
+        "store_additions": [],
+        "limit": "Durable state/history identity; this alone does not audit unrecorded external activity."
+      }
+    }
+  ],
+  "scope": "Registered role loading, retained file/state operations and same-parent-process follow-up. No new art, renderer or cross-process continuation qualification."
+}

@@ -55,6 +55,7 @@ spec/PIXL-1.md                         UDL specification
 knowledge/                            Curated source-backed knowledge
 examples/                             Valid production-state examples
 .agents/skills/pixl/SKILL.md           Codex repository wrapper
+.codex/agents/pixl.toml               Codex repository role
 .claude/skills/pixl/SKILL.md            Claude repository wrapper
 .claude/agents/pixl.md                 Claude repository agent
 plugins/pixl/
@@ -316,6 +317,41 @@ This exercise did not call the platform prepare/job methods or the method-POC co
 Use `$plar` (Codex repository skill) or `/plar` (Claude repository skill) for project-to-asset requirements. The portable Claude plugin exposes `/pixl:plar`. The full plugin now includes `skills/plar/` and the three local PLAR MCP operations. The [format reference](../plugins/pixl/skills/plar/references/format.md) gives focused read/save commands from another project's root. Compare saved allocation with `plar read --root CONSUMER --since PRIOR_PLAR_HASH` to identify tracked changes and dependent assets. Once the exact request and candidate criteria have caller review, use `pixl_plar_prepare` (or `plar prepare`) to retain their inputs and create the first durable job. The [preparation workflow](../plugins/pixl/skills/plar/references/prepare.md) gives the ordinary JSON contract. Dispatch and actual PixelLab execution follow through the existing provider workflow; preparation itself does not create an image or accept art.
 
 Codex's repository agent is [pixl.toml](../.codex/agents/pixl.toml); Claude's remains [.claude/agents/pixl.md](../.claude/agents/pixl.md). For another project, use the [Codex agent template](../plugins/pixl/config/codex-agent.example.toml) with the actual installed plugin path. Templates do not modify user configuration. A host can also explicitly delegate through its ordinary native agent tool and load the shared skill without a custom agent registration.
+
+`$pixl` loads a skill in the current agent. Selecting the registered role requires
+the native spawn tool's `agent_type="pixl"` argument. Use `fork_turns="none"` and
+supply the consumer assignment and paths to that fresh child. Continue its actual
+returned identity with the host's follow-up tool. A generic child explicitly
+loading the skill remains a useful separate route; its task name does not prove
+that the registered role was loaded.
+
+**Installed Codex route, checked 2026-11-09:** isolated `codex-cli 0.167.0` runs
+using `--ignore-user-config` did not expose `agent_type` from the role file alone.
+A second attempt enabling `multi_agent_v2` still lacked the selector. Local
+configuration probes and a subsequent native launch expose the named role when
+its file is registered for that invocation:
+
+```powershell
+$pixlConsumer = (Resolve-Path 'C:/path/to/consumer').Path
+$pixlRole = (Resolve-Path "$pixlConsumer/.codex/agents/pixl.toml").Path.Replace('\', '/')
+$pixlRoleSetting = 'agents.pixl.config_file="' + $pixlRole + '"'
+codex -C $pixlConsumer -c $pixlRoleSetting
+```
+
+This setting points to the existing role file and leaves user-wide configuration
+unchanged. Inspect the actual tool declaration before claiming named-role access;
+the [qualification evidence](../evidence/named-codex-role/README.md) distinguishes
+configuration discovery, loaded instructions, useful work and continuation. The
+portable absolute-path template and automatic project discovery remain separately
+scoped from the tested repository-role/wrapper route. OpenAI's [custom-agent
+documentation](https://developers.openai.com/codex/subagents) describes the intended
+configuration model; observed installed behavior determines this result.
+
+The completed cold trial passes 28 independent checks for the actual role and
+loaded instructions, exact returned evidence, completed same-child follow-up and
+public handoff. Production state and earlier files remain unchanged. This
+qualifies one retained-asset operation within a parent process; it does not
+establish automatic discovery, Codex resume across processes or new art quality.
 
 Give the delegate: absolute consumer root, installed skill location, PLAR path and asset ID (or the complete brief), reference paths, relevant user decisions/authorization, and required deliverables. A natural request is: “Delegate to PIXL to produce asset queue.working from this project's plar.txt using PixelLab, inspect it, and return its paths and integration results.” Requirements-only requests stop after allocation; production requests continue through actual generation and delivery.
 

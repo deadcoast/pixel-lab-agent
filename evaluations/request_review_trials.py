@@ -169,6 +169,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
     if case == "plar-authoring":
         local = plar_authoring_case.local_server(project, destination, python, package)
     specialist = "You are PIXL for the assigned asset task. " + guidance
+    configuration_files = {}
     if host == "claude":
         servers = {"pixl-local": {"type": "stdio", **local}}
         if extra_server:
@@ -191,6 +192,15 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
                    "--skip-git-repo-check", "--approve-for-me", "-C", str(project),
                    "-c", "agents.enabled=true", "-c", "agents.max_concurrent_threads_per_session=1",
                    "-c", "features.apps=false", "-c", "features.plugins=false", "-c", 'web_search="disabled"']
+        # The isolated host does not discover this project role from its file
+        # alone. Explicit session registration keeps user settings untouched.
+        command += ["-c", "agents.pixl.config_file=" + json.dumps(str(agents / "pixl.toml"))]
+        configuration_files = {"codex_role": str(agents / "pixl.toml"),
+                               "package": str(package / "bundle-manifest.json")}
+        for name in ("pixl", "plar"):
+            wrapper = project / ".agents/skills" / name / "SKILL.md"
+            if wrapper.is_file():
+                configuration_files[name + "_wrapper"] = str(wrapper)
         servers = {"pixl_local": local}
         if extra_server:
             servers["pixellab_test"] = extra_server
@@ -200,6 +210,7 @@ def prepare(destination: Path, host: str, case: str, resume: Path | None = None,
         command += ["-"]
         version_command = codex_command() + ["--version"]
     write_json(destination / "launch.json", {"host": host, "case": case, "cwd": str(project), "command": command,
+                "configuration_files": configuration_files,
                 "host_version": subprocess.check_output(version_command, text=True).strip()})
     write_json(destination / "identity.json", {"source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                 "runner_sha256": sha(Path(__file__)), "package_files": inventory(package),
@@ -225,7 +236,14 @@ def retain_journals(destination: Path, events: list[dict]) -> None:
             if not copy.exists():
                 shutil.copyfile(journal, copy)
             for line in copy.read_text(encoding="utf-8").splitlines():
-                event = json.loads(line)
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    # An interrupted journal may end in a partial event. Keep
+                    # its bytes and continue locating already observed children.
+                    continue
+                if not isinstance(event, dict) or not isinstance(event.get("payload"), dict):
+                    continue
                 payload = event.get("payload", {})
                 activity = payload.get("item", {})
                 if activity.get("type") == "SubAgentActivity" and isinstance(activity.get("agent_thread_id"), str):

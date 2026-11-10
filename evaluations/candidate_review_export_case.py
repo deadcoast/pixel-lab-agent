@@ -79,6 +79,8 @@ It does not establish broader art quality, named-role selection or new rendering
         return value.replace(str(predecessor).replace("\\", "\\\\"), str(destination).replace("\\", "\\\\")).replace(str(predecessor), str(destination)).replace("review-kit", "export-kit")
 
     launch["command"] = [relocate(arg) for arg in launch["command"]]
+    if "configuration_files" in launch:
+        launch["configuration_files"] = {name: relocate(path) for name, path in launch["configuration_files"].items()}
     launch.update(cwd=str(project), case="candidate-review-result-export")
     if host == "claude":
         config = relocate((predecessor / "mcp.json").read_text(encoding="utf-8"))
