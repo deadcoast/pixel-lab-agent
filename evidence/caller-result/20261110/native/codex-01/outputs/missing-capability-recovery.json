@@ -1,0 +1,58 @@
+{
+  "action": "inspect_tool_inventory",
+  "protocol": "work/compact-caller/missing-capability-protocol.jsonl",
+  "unsupported_operation_absent": true,
+  "supported_operation": "pixl_plar_handoff",
+  "schema": {
+    "name": "pixl_plar_handoff",
+    "description": "Save an exact selected-production continuation with agent-authored details. view=caller returns bounded assignment, files, issues and integration observations beside derived state and exact detail/resume references; default receipt unchanged. No acceptance or provider action. Optional result_path saves the exact full JSON under a fresh project-relative path and returns a compact path/hash summary.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "asset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirements_hash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Selected semantic requirements digest from pixl_plar_read.requirements_hash; not the PLAR file hash."
+        },
+        "expect": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Current production.continuation.state_hash from selected pixl_plar_read; not the PLAR file hash."
+        },
+        "details": {
+          "type": "object"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "view": {
+          "enum": [
+            "receipt",
+            "caller"
+          ]
+        },
+        "result_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "asset_id",
+        "requirements_hash",
+        "expect",
+        "details"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  }
+}

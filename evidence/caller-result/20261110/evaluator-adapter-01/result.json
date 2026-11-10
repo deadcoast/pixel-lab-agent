@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-11-10T09:09:40.617507+00:00",
+  "inputs": {
+    "evaluations/caller_result_case.py": "87235359ccd524c1401566c0a992634bf980edea7bf90a5366c68411076ec958",
+    "evaluations/grade_caller_result.py": "4a32b693676254f3a35b5e98172e10c0f04c8fd4422f6930625c6411c65cd10f",
+    "tests/test_caller_result_case.py": "86f285aa3cd515bfbaf5ed173acb2100dc1036b8d5728e8e70df55c3be182e31"
+  },
+  "inputs_unchanged": true,
+  "commands": [
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "tests.test_caller_result_case",
+        "-v"
+      ],
+      "returncode": 0,
+      "output": "evidence/caller-result/20261110/evaluator-adapter-01/check-1.txt",
+      "sha256": "bed0c1df91b162e5902a02874500dc05586f7038c7b78c573668270390737a59"
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "evaluations/caller_result_case.py",
+        "evaluations/grade_caller_result.py",
+        "tests/test_caller_result_case.py"
+      ],
+      "returncode": 0,
+      "output": "evidence/caller-result/20261110/evaluator-adapter-01/check-2.txt",
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy",
+        "--explicit-package-bases",
+        "--follow-imports=silent",
+        "evaluations/caller_result_case.py",
+        "evaluations/grade_caller_result.py"
+      ],
+      "returncode": 0,
+      "output": "evidence/caller-result/20261110/evaluator-adapter-01/check-3.txt",
+      "sha256": "0c37c4158c91ef55c724ba017bf6465f26018199badb08e3ff13f98acdf056c2"
+    }
+  ],
+  "pass": true,
+  "scope": "Evaluator adapters only. Original grades and pre-adapter source snapshots preserved; native outputs unchanged. Refresh proof retains explicit host truncation limitation."
+}

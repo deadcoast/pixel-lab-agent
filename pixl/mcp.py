@@ -1,12 +1,14 @@
 """Small synchronous MCP stdio server for local PIXL operations only."""
 
 import json
+import re
 import sys
 
 from jsonschema import Draft202012Validator, ValidationError
 
 from .candidate_review import OBSERVATION_SCHEMA
 from .codec import PixlError
+from .diagnostics import error_result
 from .readiness import OBSERVATIONS_SCHEMA
 from .service import RESULT_EXPORT_TOOLS, call, parse_json
 
@@ -53,10 +55,10 @@ TOOLS = [
     ),
     (
         "pixl_plar_handoff",
-        "Save an exact selected-production continuation with agent-authored details; returns immutable path/hash. Keep caller_actions and future_work in details; derived resume/next are preserved unchanged. No acceptance or provider action.",
+        "Save an exact selected-production continuation with agent-authored details. view=caller returns bounded assignment, files, issues and integration observations beside derived state and exact detail/resume references; default receipt unchanged. No acceptance or provider action.",
         schema({"asset_id": STR, "requirements_hash": STR,
                 "expect": {**STR, "description": "Current production.continuation.state_hash from selected pixl_plar_read; not the PLAR file hash."},
-                "details": OBJ, "path": STR}, ["asset_id", "requirements_hash", "expect", "details"]),
+                "details": OBJ, "path": STR, "view": {"enum": ["receipt", "caller"]}}, ["asset_id", "requirements_hash", "expect", "details"]),
     ),
     (
         "pixl_request_review",
@@ -481,6 +483,8 @@ def dispatch(request, root):
     elif method == "tools/call":
         try:
             name, args = params.get("name"), params.get("arguments", {})
+            if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]{0,127}", name):
+                raise PixlError("input_schema", "name must be a bounded tool identifier")
             found = next((s for n, _, s in TOOLS if n == name), None)
             if found is None:
                 raise PixlError("unknown_tool", str(name))
@@ -507,13 +511,15 @@ def dispatch(request, root):
                 "isError": False,
             }
         except ValidationError as error:
+            diagnostic = error_result(name, PixlError("input_schema", f"arguments violate inputSchema ({error.validator})"), args)
             result = {
                 "content": [
                     {
                         "type": "text",
-                        "text": f"arguments violate inputSchema ({error.validator})",
+                        "text": json.dumps(diagnostic, ensure_ascii=True),
                     }
                 ],
+                "structuredContent": diagnostic,
                 "isError": True,
             }
         except (
@@ -524,8 +530,10 @@ def dispatch(request, root):
             TypeError,
             RecursionError,
         ) as error:
+            diagnostic = error_result(name, error, args)
             result = {
-                "content": [{"type": "text", "text": str(error)}],
+                "content": [{"type": "text", "text": json.dumps(diagnostic, ensure_ascii=True)}],
+                "structuredContent": diagnostic,
                 "isError": True,
             }
     else:

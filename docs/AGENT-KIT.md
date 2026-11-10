@@ -167,6 +167,13 @@ review attention, then follow both full-report locators for literal comparison.
 These are optional views of the existing [connected-plan workflow](../spec/production-plan.md);
 direct result-file export avoids copying large JSON into commands.
 
+For an ordinary PLAR-bound return, use `plar handoff --view caller` or
+`pixl_plar_handoff` with `view: "caller"`. The [caller-result contract](../spec/caller-result.md)
+keeps a bounded authored summary beside derived production facts and exact
+full-handoff/details/resume locators. Default handoff receipts remain available;
+[delegation](../plugins/pixl/skills/pixl/references/delegation.md) explains scope,
+partial outcomes and caller consumption.
+
 The [native host evaluation](../evaluations/README.md) now records the exact packaged
 instructions in authenticated Claude and Codex trials, including repeated visual
 rejection and cold intake continuation. The original Claude login failure is preserved

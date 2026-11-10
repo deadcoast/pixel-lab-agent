@@ -38,8 +38,10 @@ invocation; Claude uses its actual plugin role. No global configuration is edite
 
 ## Verification and native results
 
-The [result and identity index](20261109/RESULT.json) separates local setup,
-native loading, instruction following and useful source/library retrieval.
+The [current result and identity index](20261110/RESULT.json) adds authenticated
+Claude outcomes to the retained Codex qualification. The [initial index](20261109/RESULT.json)
+remains unchanged, including its authentication blocks. These records separate
+local setup, native loading, instruction following and useful source/library retrieval.
 The [full verifier](../verification-runs/20261110T035753.519588Z/result.json) passes
 **716 tests with one Windows symlink-privilege skip**, 39 reference checks,
 benchmark and fresh installed-wheel/copied-plugin checks. This is the suite's
@@ -64,13 +66,30 @@ other OS/Python combinations remain unqualified.
 | --- | --- | --- |
 | Codex 0.167.0, clean | Resolved portable template registered; actual `pixl` child completed; exact source/library/readiness results consumed | [19/19 pass](20261109/native/codex-clean-01/independent-grade-02.json) |
 | Codex 0.167.0, role loading omitted | Exact role not observable/selectable; no generic replacement; all three local operations completed | [16/16 pass](20261109/native/codex-missing-registration-01/independent-grade-02.json) |
-| Claude 2.1.318, clean | Startup advertises `pixl:pixl` and plugin; local MCP connected; expired host login stops before model work | [Authentication blocked](20261109/native/claude-clean-01/independent-grade-02.json) |
-| Claude 2.1.318, plugin loading omitted | Startup omits that plugin/role; local MCP connected; same expired-login stop | [Authentication blocked](20261109/native/claude-missing-registration-01/independent-grade-02.json) |
+| Claude 2.1.318, clean, authenticated follow-up | Actual `pixl:pixl` child loads the profile/skill and returns exact source/library/readiness results | [18/18 pass](20261110/native/claude-clean-01/independent-grade-03.json) |
+| Claude 2.1.318, plugin loading omitted, authenticated follow-up | Exact role/skill probes fail in this invocation; no generic replacement; all three local operations completed | [16/16 pass](20261110/native/claude-missing-registration-01/independent-grade-02.json) |
 
-Claude's three passing checks per attempt cover preparation and preservation only.
-Both attempts use zero model tokens and create no child or caller result. Fresh
-authenticated Claude behavior/task qualification remains open; no PixelLab
-authentication conclusion follows from the host CLI login failure.
+Both authenticated Claude processes exit 0. The clean case records registered
+child `a30b1c71a0d89f028`; the incomplete case has no child. These fresh attempts
+follow the retained [clean](20261109/native/claude-clean-01/independent-grade-02.json)
+and [omitted-plugin](20261109/native/claude-missing-registration-01/independent-grade-02.json)
+authentication blocks. Those original attempts still have zero model tokens and
+no child or caller result; their three passing checks cover preparation and
+preservation only. No PixelLab authentication conclusion follows from either the
+old host-login failure or the new successful local work.
+
+The authenticated clean case initially scored 16/18 because the grader did not
+recognize the actual numbered/tabbed `Read` result or the host's skill-body
+injection, which omits YAML frontmatter. The [correction](20261110/grader-correction-01/result.json)
+binds successful calls, results and injected source to the selected child; it
+does not accept assistant quotations as loading evidence. Its 22 focused tests
+include four new negative regressions; Ruff and focused Mypy pass. The original
+grade, exact before/after sources and initial Mypy configuration/baseline issues
+remain retained. Final grade 03 reads the unchanged native attempt; no relaunch
+or rewritten native result supplies the passing observation. A later
+[format identity check](../caller-result/20261110/format-verification-01/result.json)
+restores the grader/test sources' original LF endings and re-executes their affected
+grades with unchanged results; the original source snapshots remain retained.
 
 The Codex child's native journal binds its actual `/root/readiness_specialist`
 identity to the parent spawn and `pixl` role. Its injected instructions match the
@@ -100,8 +119,8 @@ other user sessions, account authentication or service availability.
 
 **A — Improvement:** setup now has one small diagnostic report and concrete
 consumer routes. It identifies useful next actions without turning a setup check
-into another production approval gate. Compact caller results remain the next
-ordered M2 usability work.
+into another production approval gate. Compact caller results and scoped recovery are now the active
+M2 usability work, with qualification tracked separately in [their evidence](../caller-result/README.md).
 
 **B — Claude/Codex compatibility:** static files, role declarations, actual
 invocation and loaded instructions are different observations. The fresh trials
@@ -125,7 +144,8 @@ work. A cached capability catalog is documentation, not live provider discovery.
 ## Continuation
 
 Keep the [active plan](../../PLAN.md) and [M2 backlog](../../SHELVED.md#m2--dependable-native-agent-to-agent-operation).
-Resume the two Claude setup cases in fresh attempts after its host login is
-refreshed; preserve these expired-login receipts. QOL-10 compact caller result
-and continuation is the next useful independent group, with SC-08 error categories
-informed by observed recovery cases. Broader production and M1/M2 exits remain open.
+The two fresh authenticated Claude cases complete this bounded setup qualification
+alongside the retained Codex results; earlier expired-login receipts remain
+historical. Continue the active QOL-10 compact caller result and continuation
+qualification, with SC-08 error categories informed by observed recovery cases.
+Broader production, repeated host reliability and M1/M2 exits remain open.

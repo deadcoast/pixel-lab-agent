@@ -182,6 +182,64 @@ def claude_child_paths(attempt: Path, parent: str, child_ids: set[str]) -> list[
             if p.stem not in {"parent", parent} and p.stem.removeprefix("agent-") in child_ids]
 
 
+def claude_loading_proof(journals: list[list[dict]], kit: Path) -> dict:
+    """Bind complete file reads or host-injected skill bodies to successful child tools."""
+    paths = ("skills/pixl/SKILL.md", "resources/agent/PROFILE.md")
+    proof: dict[str, dict] = {path: {"loaded": False, "expected_file": path, "sha256": sha(kit / path), "evidence": []} for path in paths}
+    expected = {path: normalized((kit / path).read_text(encoding="utf-8")) for path in paths}
+    skill_body = expected[paths[0]]
+    if skill_body.startswith("---\n"):
+        skill_body = normalized(skill_body.split("\n---\n", 1)[1])
+
+    def blocks(row):
+        value = row.get("message", {}).get("content", [])
+        return value if isinstance(value, list) else []
+
+    for journal in journals:
+        calls, successes = {}, {}
+        for row in journal:
+            for block in blocks(row):
+                if row.get("type") == "assistant" and block.get("type") == "tool_use":
+                    calls[block.get("id")] = (row, block)
+                elif row.get("type") == "user" and block.get("type") == "tool_result" and not block.get("is_error"):
+                    call = calls.get(block.get("tool_use_id"))
+                    if call is None:
+                        continue
+                    call_row, tool = call
+                    entry = {"file": row.get("file"), "call_line": call_row.get("line"),
+                             "result_line": row.get("line"), "tool_use_id": tool.get("id")}
+                    if tool.get("name") == "Skill" and tool.get("input", {}).get("skill") == "pixl:pixl":
+                        if row.get("toolUseResult", {}).get("success") is True and row["toolUseResult"].get("commandName") == "pixl:pixl":
+                            successes[tool["id"]] = entry
+                    elif tool.get("name") == "Read":
+                        requested = tool.get("input", {}).get("file_path")
+                        if not isinstance(requested, str):
+                            continue
+                        for path in paths:
+                            if Path(requested).resolve() != (kit / path).resolve():
+                                continue
+                            for text in strings(block.get("content", "")):
+                                numbered = [re.fullmatch(r"(\d+)\t(.*)", line) for line in normalized(text).splitlines()]
+                                lines = [(int(m[1]), m[2]) for m in numbered if m is not None]
+                                matched = normalized(text) == expected[path] or lines == list(enumerate(expected[path].splitlines(), 1))
+                                if matched:
+                                    proof[path]["loaded"] = True
+                                    proof[path]["evidence"].append({**entry, "mechanism": "complete_file_read"})
+            source = row.get("sourceToolUseID")
+            if row.get("type") == "user" and row.get("isMeta") is True and source in successes:
+                for block in blocks(row):
+                    text = block.get("text", "") if block.get("type") == "text" else ""
+                    prefix = "Base directory for this skill: "
+                    if not text.startswith(prefix) or "\n" not in text:
+                        continue
+                    directory, body = text[len(prefix):].split("\n", 1)
+                    if Path(directory.strip()).resolve() == (kit / "skills/pixl").resolve() and normalized(body) == skill_body:
+                        proof[paths[0]]["loaded"] = True
+                        proof[paths[0]]["evidence"].append({**successes[source], "source_line": row.get("line"),
+                                                          "mechanism": "operational_skill_body_loaded", "frontmatter_returned": False})
+    return proof
+
+
 def startup_discovery(events: list[dict]) -> dict:
     inits = [r for r in events if r.get("type") == "system" and r.get("subtype") == "init"]
     terminals = [r for r in events if r.get("type") == "result"]
@@ -308,7 +366,8 @@ def _grade(attempt: Path) -> dict:
         loaded = bool(agents) and bool(selected_ids) and any("pixl" in json.dumps(r.get("plugins", [])) for r in inits)
         role_evidence = {"plugin_initialization": inits, "agent_calls": agents, "children": actual_children}
         child_paths = claude_child_paths(attempt, continuation.get("session_id"), selected_ids)
-        child_text = "\n".join(text for p in child_paths for text in strings(rows(p)))
+        loading = claude_loading_proof([rows(p) for p in child_paths], root / KIT)
+        role_evidence["loading"] = loading
         check("actual_plugin_route_without_replacement_agent", "--agents" not in launch["command"]
               and (("--plugin-dir" in launch["command"]) == (launch["setup"] == "clean")))
     role_claim = observation.get("named_role", "not_observed")
@@ -316,7 +375,10 @@ def _grade(attempt: Path) -> dict:
         check("actual_named_specialist_loaded", loaded and role_claim == "available", role_evidence)
         for path in ("skills/pixl/SKILL.md", "resources/agent/PROFILE.md"):
             expected = normalized((root / KIT / path).read_text(encoding="utf-8"))
-            check("child_read_" + path, expected in normalized(child_text), {"expected_file": path, "sha256": sha(root / KIT / path)})
+            if launch["host"] == "claude":
+                check("child_loaded_" + path, loading[path]["loaded"], loading[path])
+            else:
+                check("child_read_" + path, expected in normalized(child_text), {"expected_file": path, "sha256": sha(root / KIT / path)})
         check("specialist_result_returned", bool(caller.get("specialist_result")) and reference(root, caller["specialist_result"]).is_file())
     else:
         # The omitted route is a fixture fact. Another genuinely observed route

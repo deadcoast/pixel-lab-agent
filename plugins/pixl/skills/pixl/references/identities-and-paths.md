@@ -31,14 +31,39 @@ Example for the queue successor, after the setup in [everyday production](everyd
 $Selected = pixl plar read --path $Queue --asset $Asset --root $Project | ConvertFrom-Json
 $RequirementsHash = $Selected.requirements_hash
 $ProductionStateHash = $Selected.production.continuation.state_hash
-pixl plar handoff work/handoff-details.json --path $Queue --asset $Asset --requirements $RequirementsHash --expect $ProductionStateHash --root $Project --result-path work/handoff-result.json
+$DetailsFile = Join-Path $Project "work/handoff-details.json"
+pixl plar handoff $DetailsFile --path $Queue --asset $Asset --requirements $RequirementsHash --expect $ProductionStateHash --view caller --root $Project --result-path work/handoff-caller-01.json
 ```
 
 Create `work/handoff-details.json` from actual expert findings, for example
 `{"status":"delivered","caller_actions":[],"future_work":[]}` only when that
 status is warranted. Do not copy a delivered status into an unfinished assignment.
 This saves a continuation; it does not accept art. Both result destinations must
-follow their operation's retention/no-clobber rules.
+follow their operation's retention/no-clobber rules. Optional `details.caller` follows
+the [bounded caller-result contract](../../../resources/spec/caller-result.md);
+other details stay intact. Omit `--view caller` for the existing receipt.
+
+The export summary identifies the caller-view file with `result_sha256`. Inside
+that file, `path`/`sha256` identify the immutable handoff, while `state_hash` is the
+canonical production identity. A locator's `sha256` always identifies the complete
+handoff file, not a digest of the selected JSON member. For example:
+
+```powershell
+$Caller = Get-Content (Join-Path $Project "work/handoff-caller-01.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+$ResumeLocator = $Caller.resume_ref
+pixl source $ResumeLocator.path --root $Project --expect $ResumeLocator.sha256 --start $ResumeLocator.start --end $ResumeLocator.end --budget $ResumeLocator.bytes
+```
+
+Follow `details_ref` the same way. The source response preserves physical member
+text, including a possible trailing comma; `json_pointer` identifies its meaning.
+For structured parsing, open the complete immutable file under its returned hash
+and select that pointer, rather than assuming a member slice is standalone JSON.
+If `resume_inline` is false, retrieve the entire referenced resume before acting.
+For a larger section, use smaller line ranges under the same full-file SHA.
+A referenced `production.delivery_ref` points to `/resume/delivery` within its
+containing resume range; a copied manifest's creation status does not replace
+current acceptance. The returned `refresh.operation` and `refresh.arguments` name
+the focused read to perform before following an old snapshot after changes.
 
 ## Keep the three locations distinct
 
@@ -87,6 +112,13 @@ use it as `--root`. Keep consumer and bundled-source locators distinct.
 
 ## Recover from the actual error
 
+CLI/MCP operation diagnostics retain `error` and `detail`, adding `category`,
+`recovery` and safe `identity` context. Recovery contains `action` and `detail`,
+with an existing read `operation` and exact `arguments` when enough context is
+available. Otherwise follow the explanation without inventing missing arguments.
+These are recovery instructions, not automatic retries or provider authorization.
+Agent-authored `caller.issues` are separate observations, not runtime diagnoses.
+
 - `stale_write`: reread the correct domain, reconcile the intended change, then
   retry according to the operation. PLAR save needs its file hash; production
   writes need canonical state. A fresh hash does not authorize changed semantics.
@@ -94,7 +126,28 @@ use it as `--root`. Keep consumer and bundled-source locators distinct.
   do not substitute the top-level PLAR file hash for production state.
 - `path_escape`: the diagnostic names the declared root. Use its relative path for
   the rejected argument. Do not switch roots to an ancestor merely to admit it.
+- `caller_result_input` / `caller_result_size`: correct the bounded caller block
+  or move detailed observations into retained reports. No new handoff was saved.
+- `caller_artifact_stale` / `caller_artifact_unavailable`: inspect the declared file,
+  restore its exact expected bytes or reconcile the authored result before saving.
+  Do not substitute a new hash merely to hide a changed or missing deliverable.
 - `result_exists`: choose a fresh export name; retain earlier evidence.
 - `result_saved:false`: inspect `operation_result` and current state. Publication
   may already have succeeded; recover using the same operation ID/payload rather
-  than treating the export failure as permission to repeat generation.
+  than treating the export failure as permission to repeat generation. Its
+  `unavailable_observation` recovery uses `inspect_retained_result`: retain the
+  returned operation result, check current state and retry only the export.
+
+`uncertain_remote_result` requires actual saved `job_state: "unknown"` context.
+Prepared, submitted, running or terminal retained work is not automatically an
+uncertain submission; `retained_work` directs attention to the existing attempt.
+Use the returned `pixl_jobs`, focused `pixl_plar_read` or `pixl_validate` read when
+provided. Observe or reconcile the originating provider attempt before deciding
+on another request; a missing identifier alone proves neither submission nor
+non-submission.
+
+`input_schema` is invalid authoring. `platform_tool` refers to the dated local
+catalog and stays unclassified with current-declaration guidance; it does not
+prove a live capability is missing. `unknown_tool` can identify a missing operation
+on the addressed local surface. Preserve `unclassified` when the runtime cannot
+make a supported narrower diagnosis.

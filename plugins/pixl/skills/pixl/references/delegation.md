@@ -70,7 +70,11 @@ Before adopting a proposed production contract, use the [request and criteria ha
 
 ## Specialist → caller at completion
 
-Return a compact structured result (JSON or equivalent named fields):
+Return a compact structured result (JSON or equivalent named fields). For a
+PLAR-bound assignment, use the [caller view](../../../resources/spec/caller-result.md)
+of the existing handoff operation so production identities and continuation come
+from saved state. Direct briefs and planning-only work can use the fields below
+without manufacturing PLAR or production records:
 
 - `status`: `delivered`, `partial`, `needs_input`, or `blocked`, judged against this assignment.
 - `asset_id` and `requirements_hash` when PLAR supplied them; direct-brief tasks identify their brief.
@@ -92,11 +96,13 @@ For a PLAR-bound result, reread the selected asset after the last state change, 
 use `pixl_plar_handoff` with its `asset_id`, `requirements_hash`,
 `production.continuation.state_hash` as `expect`, and your `details` object. The
 selected read's top-level `hash` identifies the PLAR file, not production state.
-CLI: `plar handoff DETAILS_JSON --asset ID
---requirements HASH --expect STATE_HASH --root PROJECT`. The operation saves the
+CLI: `plar handoff DETAILS_JSON --path QUEUE --asset ID
+--requirements HASH --expect STATE_HASH --view caller --root PROJECT`. The operation saves the
 complete derived continuation and immediate `next` unchanged in an immutable file.
-Return that file's path/hash as `handoff`; the caller opens it and compares its state
-identity with fresh focused PLAR. Do not copy selected fields into a rewritten resume.
+Return the caller view and its exact handoff locator; the caller opens the retained
+file and compares its state identity with fresh focused PLAR. Omitting `--view caller`
+keeps the existing receipt response. The view does not add acceptance or alter the
+saved handoff. Do not copy selected fields into a rewritten resume.
 Older handoffs remain readable; their original bytes are not migrated or relabelled.
 Before returning a reviewed open task, check its current nominee and workflow
 requirements. Saved verdicts on an unselected candidate do not describe the
@@ -110,6 +116,58 @@ caller actions with evidence in `details.caller_actions`, and subsequent goals i
 runtime still derives `review_delivery`; it does not replace that derived action.
 The snapshot records both facts without inventing a new acceptance event. The runtime
 does not decide whether your artistic judgment or assignment-status claim is correct.
+
+Use optional `details.caller` for the bounded ordinary return: summary, artifact
+and report locators, issues and integration findings, following its closed
+[contract](../../../resources/spec/caller-result.md). Retain complete observations
+in the other details fields and referenced files. Each declared file reference
+contains exactly `path`, `sha256` and `role`; the runtime verifies its current
+confined file bytes before publishing. These checks do not verify the role or
+judgment you supplied. The caller view distinguishes
+these authored claims from derived task, acceptance and continuation facts.
+A missing integration observation stays unreported; an accepted candidate does
+not manufacture an assignment-status or integration claim. Without `details.caller`,
+`caller.present` is false and the full details remain retrievable; legacy prose is
+not automatically summarized.
+
+For example, only when the assigned destination inspection remains unperformed:
+
+```json
+{
+  "status": "partial",
+  "caller": {
+    "summary": "Candidate bytes are retained; required destination inspection remains unperformed.",
+    "integration": {
+      "status": "not_performed",
+      "summary": "No destination observation has been made for this assignment."
+    },
+    "issues": [
+      {
+        "category": "unfinished_work",
+        "summary": "The assigned destination check has not run.",
+        "recovery": "Run the assigned destination check, retain its actual evidence and refresh the handoff."
+      }
+    ]
+  }
+}
+```
+
+Use actual findings and omit inapplicable fields. Summary/recovery text is bounded
+to 600 characters; artifact, report, issue and integration-evidence arrays each
+hold at most 12 entries, and the complete caller block at most 8192 compact UTF-8
+JSON bytes. Move detail to linked files instead of truncating obligations.
+Integration status is `pass`, `fail`, `unavailable`, `not_performed` or
+`not_in_scope`; omission is not one of those observations.
+
+Follow the returned full-handoff, details and resume locators for exact retrieval.
+Read `resume_inline`: the unchanged `resume` is present up to 4096 compact UTF-8
+JSON bytes; otherwise `resume_ref` retrieves it in full. It is never rewritten or
+truncated. `details_ref` and `resume_ref` identify physical source ranges and JSON
+pointers in the same immutable handoff. Use its `path`/`sha256` for the full file.
+These facts describe the captured selection; use the returned `refresh` read
+after source or state changes, and reconcile the current identities. Read that full resume before acting on its jobs or
+recovery instructions. Keep routine responses useful without pasting the complete
+criteria audit, request report or tool transcript into the return.
 
 On a cold resume, read the saved handoff and current focused PLAR. Changed state or
 requirements require a fresh snapshot; matching hashes preserve the original job and

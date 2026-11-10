@@ -13,11 +13,14 @@ and the OS exit is unknown. Original failures and additive recovery remain visib
 [Current contract checks](../evidence/artistic-revision/20261109/contracts-review-02/RESULT.json)
 remain separate from provider execution. [NF-03 readiness/QOL-06 setup](../evidence/readiness/README.md)
 now has three fresh local install proofs, Codex complete setup at 19/19 and missing
-registration at 16/16 independent checks. Both fresh Claude attempts remain
-authentication-blocked before model/child work; their 3/3 preparation checks are
-not behavioral passes. Original grades and the MCP-envelope grader correction
-remain preserved. The product [TODO](../TODO.md) takes QOL-10 compact caller results
-with supporting SC-08 next; authenticated Claude qualification and M1/M2 remain open.
+registration at 16/16 independent checks. [Authenticated Claude follow-ups](../evidence/readiness/20261110/RESULT.json)
+pass 18/18 clean and 16/16 with plugin loading omitted. Earlier authentication
+blocks and both hosts' grader corrections remain preserved; preparation alone
+is not behavioral acceptance. [QOL-10 compact results and SC-08 recovery](../evidence/caller-result/README.md)
+now have a scoped 28/28 Codex outcome. The additional Claude trial retains partial
+artifacts after HTTP 429 and timeout, with no final caller report. The product
+[TODO](../TODO.md) takes CF-06 next while preserving that continuation/reliability
+exit; broader production and M1/M2 remain open.
 
 **Historical controlled milestone, 2026-11-05:** [PX-EVAL-004](delegated-asset-request.spec.md)
 tests the official PixelLab integration through a delegated generation request in

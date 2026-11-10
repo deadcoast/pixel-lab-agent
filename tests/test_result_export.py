@@ -59,6 +59,9 @@ class ResultExportTests(unittest.TestCase):
             opened.side_effect = lambda path, *a, **kw: (_ for _ in ()).throw(OSError("export unavailable")) if str(path).endswith("snapshot.json") and a and a[0] == "xb" else real_open(path, *a, **kw)
             result = service.call("pixl_family_snapshot", self.args(), self.root)
         self.assertFalse(result["result_saved"])
+        self.assertEqual(result["category"], "unavailable_observation")
+        self.assertEqual(result["recovery"]["action"], "inspect_retained_result")
+        self.assertIn("Do not replay", result["recovery"]["detail"])
         self.assertEqual(result["operation_result"]["hash"], self.expected())
         self.assertIn("package", store.load(self.folder).records)
 

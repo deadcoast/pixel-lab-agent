@@ -1,0 +1,62 @@
+{
+  "observed_at": "2026-11-10T08:53:32.373895+00:00",
+  "status": "pass",
+  "tests": {
+    "passed": 22,
+    "new": 4
+  },
+  "checks": {
+    "tests": {
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_readiness_case"
+      ],
+      "returncode": 0,
+      "log": "tests.log"
+    },
+    "ruff": {
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "evaluations/grade_readiness.py",
+        "tests/test_readiness_case.py"
+      ],
+      "returncode": 0,
+      "log": "ruff.log"
+    },
+    "mypy": {
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "-m",
+        "mypy",
+        "--explicit-package-bases",
+        "--follow-imports=silent",
+        "evaluations/grade_readiness.py",
+        "tests/test_readiness_case.py"
+      ],
+      "returncode": 0,
+      "log": "mypy.log"
+    }
+  },
+  "source_hashes": {
+    "evaluations/grade_readiness.py": "c7b09b399626e1c3f468d68fca9170635492394fcc5e08f824533d34dfa9cea0",
+    "tests/test_readiness_case.py": "f66fa195c8bca3c226468c7853dcaef12e05bc3b5ff2c50920a613e7beae30e0"
+  },
+  "change": "Bind selected-child successful numbered Read and Skill operational-body injection; do not require host-omitted skill frontmatter or accept assistant quotations.",
+  "prior_check_failures": [
+    {
+      "command": "mypy evaluations/grade_readiness.py tests/test_readiness_case.py",
+      "reason": "Duplicate namespace module discovery; explicit package bases required."
+    },
+    {
+      "command": "mypy --explicit-package-bases evaluations/grade_readiness.py tests/test_readiness_case.py",
+      "reason": "Eight existing imported grader findings plus two new heterogeneous-dictionary inference findings; new dictionary annotation fixed. Final focused check silences imported-module diagnostics."
+    }
+  ],
+  "scope": "Grader correction and focused tests over unchanged retained native evidence. No native run or runtime change."
+}

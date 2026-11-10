@@ -238,7 +238,12 @@ class JobOperationTests(unittest.TestCase):
         self.assertNotIn("dispatch_request", cold)
         before = self.expected()
         failed = self.mcp("pixl_job_dispatch", self.mutation(), error=True)
-        self.assertNotIn("structuredContent", failed)
+        diagnostic = failed["structuredContent"]
+        self.assertEqual(diagnostic["category"], "uncertain_remote_result")
+        self.assertEqual(diagnostic["identity"]["job_id"], "job")
+        self.assertEqual(diagnostic["identity"]["state_hash"], before)
+        self.assertEqual(diagnostic["recovery"]["operation"], "pixl_jobs")
+        self.assertNotIn("dispatch_request", diagnostic)
         self.assertEqual(self.expected(), before)
         self.mcp(
             "pixl_job_observe",

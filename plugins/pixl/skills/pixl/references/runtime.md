@@ -32,6 +32,7 @@ Read the bundled specification before producing UDL. The runtime's actual CLI he
 | Save observation | `job-observe STORE JOB STATE EVIDENCE_JSON --remote-id ID --expect HASH --root ROOT` | One retained caller-supplied observation; no submission or polling |
 | Import candidate | `job-import STORE JOB OUTPUT CANDIDATE PATH EVIDENCE_JSON --expect HASH --root ROOT` | Retained local byte snapshot linked to F and J; no automatic acceptance |
 | Recover jobs | `jobs FILE --root ROOT` | Exact saved requests, histories, drift and next actions; never a fresh dispatch grant |
+| Caller result | `plar handoff DETAILS_JSON --path QUEUE --asset ID --requirements HASH --expect HASH --view caller --root ROOT` | Saves the existing immutable handoff and returns a concise view separating authored claims from derived production facts, with exact full retrievals |
 | Legacy prepare | `prepare TOOL ARGUMENTS_JSON --schema INPUT_SCHEMA_JSON` | Stateless local request validation; no saved project intent |
 | Legacy observe | `job JOURNAL_JSON STATE --remote-id ID --evidence RECEIPT_JSON` | Stateless returned journal; no checked project publication |
 | Method proofs | `poc --out DIRECTORY` | Executed bounded reference checks and artifact hashes |
@@ -79,6 +80,26 @@ hash rather than claiming it is the exact earlier response after state changed.
 
 Use `pixl_plar_read` / `pixl_plar_save` for the consumer project's requirements queue; [PLAR](../../plar/SKILL.md) defines the semantic inventory operation. Use `pixl_commit` with inline `document` for a complete next-revision JSON plan when available. It accepts the same JSON shape as `pixl_encode` and runs the same state validation, without requiring a temporary wire file. Supply exactly one of `document` or `candidate`, along with `store` and the current `expect` hash. CLI equivalent: `commit STORE PLAN.json --json --expect HASH --root PROJECT`.
 
+## Compact caller result
+
+Use `plar handoff --view caller` / `pixl_plar_handoff` with `view: "caller"`
+for the ordinary PLAR-bound return. The [caller-result contract](../../../resources/spec/caller-result.md)
+defines the optional closed `details.caller` summary and exact output fields.
+Existing details remain in the immutable handoff; omitting the view keeps the
+existing receipt. Read selected requirements and the canonical production hash
+from the same fresh focused PLAR result before saving.
+
+Assignment status, integration findings and issue descriptions are authored claims.
+Task state, selected candidates, current delivery facts and continuation are derived.
+The view retains the default receipt fields plus `assignment`, `caller`,
+`production`, `details_ref`, `resume_ref` and `refresh`. A complete resume up to
+4096 compact UTF-8 JSON bytes is inline; otherwise `resume_inline` is false and
+`resume_ref` references it without truncation. Delivery larger than 2048 compact
+JSON bytes is likewise referenced as a whole through `production.delivery_ref`.
+The top-level `path`/`sha256` always identify the complete immutable handoff. Retrieve the
+complete resume before following its operations. Neither this view nor a successful
+export certifies artistic judgment, provider execution or destination acceptance.
+
 ## Direct result files
 
 Context, request-review, review-context, candidate-review, family, family-snapshot
@@ -87,4 +108,25 @@ consumer root and fresh relative path. The tool returns a compact path/hash/size
 summary and writes the full result (JSON, or CLI full wire context as PX text).
 On `result_saved:false`, inspect the returned `operation_result` and current state:
 publication may have succeeded even though file export failed. Default output and
-existing operation recovery rules remain unchanged.
+existing operation recovery rules remain unchanged. With `--view caller`, the
+saved export contains the full caller view, and its export receipt preserves the
+caller fields alongside `result_path`, `result_sha256` and the save status.
+
+## Structured operation diagnostics
+
+CLI and MCP retain the original `error` code and `detail`, and add `category`,
+`recovery: {action, detail, operation?, arguments?}` and safe identity context.
+The recovery operation is an existing read such as `pixl_plar_read`, `pixl_jobs`
+or `pixl_validate` when its exact arguments are known; otherwise guidance stays
+in prose. No diagnostic executes a retry or permits automatic resubmission.
+
+Categories distinguish invalid authoring, stale local state, missing local
+capability, uncertain remote result, unavailable observation, retained work and
+unclassified failures. Only actual runtime context showing an unknown job supports
+`uncertain_remote_result`; prepared work is not evidence of an uncertain remote
+submission. A dated catalog mismatch does not establish live tool absence.
+Follow [the concrete recovery examples](identities-and-paths.md#recover-from-the-actual-error)
+and preserve the original code, affected identity and retained work. An export
+failure after publication is `unavailable_observation`, with
+`recovery.action: "inspect_retained_result"`; inspect the retained operation
+result/current state and retry only the export, without replaying the operation.

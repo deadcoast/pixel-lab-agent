@@ -207,6 +207,7 @@ def parser():
                 "--since", help="Compare the queue with a retained PLAR hash."
             )
         elif action == "handoff":
+            action_parser.add_argument("--view", choices=("receipt", "caller"), default="receipt", help="Return the receipt or a bounded caller result with exact continuation references.")
             action_parser.add_argument("--result-path", help="Save exact result under a fresh project-relative path.")
             action_parser.add_argument("details", metavar="DETAILS_JSON")
             action_parser.add_argument("--asset", dest="asset_id", required=True)
@@ -457,7 +458,7 @@ def main(argv=None):
                     args["since"] = a.since
             elif a.plar_action == "handoff":
                 args.update(asset_id=a.asset_id, requirements_hash=a.requirements_hash,
-                            expect=a.expect, details=service.read_json(a.details))
+                            expect=a.expect, details=service.read_json(a.details), view=a.view)
             elif a.plar_action == "prepare":
                 args.update(
                     asset_id=a.asset_id,
@@ -549,11 +550,13 @@ def main(argv=None):
             else 0
         )
     except (PixlError, OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+        from .diagnostics import error_result
+
         if isinstance(error, PixlError):
             error = service.operation_error(operation, error)
         print(
             json.dumps(
-                {"error": getattr(error, "code", "operation"), "detail": str(error)}
+                error_result(operation, error, vars(a))
             ),
             file=sys.stderr,
         )

@@ -1,0 +1,95 @@
+{
+  "same_snapshot": true,
+  "snapshot": {
+    "path": ".pixl/handoffs/6c45def9a1fe7ea8efeeb3b7257c752feef595b42bc9e13b80430c7cc4aa9c06.json",
+    "sha256": "6c45def9a1fe7ea8efeeb3b7257c752feef595b42bc9e13b80430c7cc4aa9c06"
+  },
+  "exact_source_slices": {
+    "details": {
+      "exact_slice": true,
+      "trailing_member_comma": true,
+      "bytes": 19616
+    },
+    "resume": {
+      "exact_slice": true,
+      "trailing_member_comma": true,
+      "bytes": 2069
+    }
+  },
+  "unchanged_retained_observations": true,
+  "declared_file_hashes_match": true,
+  "returned_identities_match": true,
+  "unknown_job_unchanged": true,
+  "diagnostics": {
+    "invalid_authoring": {
+      "identity": {
+        "asset_id": "queue.working",
+        "expect": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+        "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+        "path": "authoring-plar.txt"
+      },
+      "recovery": {
+        "action": "correct_input",
+        "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+      },
+      "error": "caller_result_input"
+    },
+    "stale_local_state": {
+      "identity": {
+        "asset_id": "queue.working",
+        "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+        "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+        "path": "authoring-plar.txt"
+      },
+      "recovery": {
+        "action": "reread_and_reconcile",
+        "detail": "Reread the relevant identity, compare the intended change and preserve prior evidence. A new hash alone does not authorize changed semantics.",
+        "operation": "pixl_plar_read",
+        "arguments": {
+          "path": "authoring-plar.txt",
+          "asset_id": "queue.working"
+        }
+      },
+      "error": "handoff_stale"
+    },
+    "unavailable_observation": {
+      "identity": {
+        "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+        "path": "work/compact-caller/intentionally-missing.txt"
+      },
+      "recovery": {
+        "action": "restore_observation",
+        "detail": "Restore access to the named local file or retain its unavailable status. Missing observation is not a failed or passing artistic check; do not repeat remote work to repair a read."
+      },
+      "error": "operation"
+    },
+    "uncertain_remote_result": {
+      "identity": {
+        "job_id": "member.job",
+        "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+        "store": ".pixl",
+        "task_id": "member.task",
+        "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+        "job_state": "unknown"
+      },
+      "recovery": {
+        "action": "reconcile_existing_job",
+        "detail": "Read the retained job and reconcile the same attempt on its originating connection. Do not dispatch or submit another request.",
+        "operation": "pixl_jobs",
+        "arguments": {
+          "path": ".pixl/state.px"
+        }
+      },
+      "error": "job_history"
+    },
+    "missing_capability": {
+      "identity": {},
+      "recovery": {
+        "action": "inspect_tool_inventory",
+        "detail": "Inspect this local server's current tools/list and select a supported operation. This does not establish official provider availability."
+      },
+      "error": "unknown_tool"
+    }
+  },
+  "preservation_scope": "Only new evaluation files and immutable public handoff were written. No exhaustive pre-run filesystem manifest was captured; identity checks and retained-file checks are scoped evidence."
+}

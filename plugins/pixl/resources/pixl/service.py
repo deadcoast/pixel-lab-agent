@@ -66,7 +66,7 @@ def operation_error(operation, error):
     hint = ("expect is the current PLAR file SHA-256 from plar read.hash (or new for first save)"
             if operation == "plar_save" else
             "expect is the current canonical production state hash from validate.hash or review-context.state_hash; not a PLAR, requirements, binding or exported-file hash")
-    return error if hint in error.detail else PixlError(error.code, f"{error.detail}; {hint}")
+    return error if hint in error.detail else PixlError(error.code, f"{error.detail}; {hint}", context=error.context)
 
 
 def result_destination(root, relative):
@@ -92,14 +92,20 @@ def save_result(result, root, relative, data=None):
     except (OSError, PixlError) as error:
         return {"result_saved": False, "result_path": relative,
                 "result_error": str(error), "operation_result": result,
+                "category": "unavailable_observation",
+                "recovery": {"action": "inspect_retained_result", "detail": "The operation already returned; retain operation_result and check current state before retrying only the export. Do not replay the operation."},
                 **({"wire_result": data.decode("utf-8")} if data is not None else {})}
+    # A caller view is already bounded; exporting it must not discard its continuation.
+    retained = (dict(result) if isinstance(result, dict) and result.get("view") == "caller" else
+                {key: result[key] for key in ("state_hash", "hash", "revision", "review", "candidate", "task_status", "reused_review", "status", "pass") if key in result}
+                if isinstance(result, dict) else {})
+    domains = {key: domain for key, domain in result.get("hash_domains", {}).items()
+               if key in retained} if isinstance(result, dict) else {}
     return {"result_saved": True, "result_path": relative,
             "result_sha256": hashlib.sha256(encoded).hexdigest(), "result_bytes": len(encoded),
             "media_type": "text/plain" if data is not None else "application/json",
-            "hash_domains": {"result_sha256": "file_sha256", **({key: domain for key, domain in result.get("hash_domains", {}).items()
-                            if key in ("hash", "state_hash")} if isinstance(result, dict) else {})},
-            **({key: result[key] for key in ("state_hash", "hash", "revision", "review", "candidate", "task_status", "reused_review", "status", "pass")
-                if key in result} if isinstance(result, dict) else {})}
+            **retained,
+            "hash_domains": {**domains, "result_sha256": "file_sha256"}}
 
 
 def resource_root():
@@ -576,7 +582,7 @@ def _call(name, args, root):
     if name == "pixl_plar_handoff":
         from .handoff import save
 
-        return save(root, args["asset_id"], args["requirements_hash"], args["expect"], args["details"], args.get("path", "plar.txt"))
+        return save(root, args["asset_id"], args["requirements_hash"], args["expect"], args["details"], args.get("path", "plar.txt"), args.get("view", "receipt"))
     if name == "pixl_request_review":
         from .request_review import report
 

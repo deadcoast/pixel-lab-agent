@@ -8,14 +8,20 @@ from . import graph, plar, store
 from .codec import PixlError
 
 
-def save(root, asset_id, requirements_hash, expect, details, path="plar.txt"):
+def save(root, asset_id, requirements_hash, expect, details, path="plar.txt", view="receipt"):
     root = Path(root).resolve()
+    if view not in ("receipt", "caller"):
+        raise PixlError("caller_result_input", "handoff view must be receipt or caller")
     if not isinstance(details, dict) or details.get("status") not in (
         "delivered", "partial", "needs_input", "blocked"
     ):
         raise PixlError("handoff_details", "details needs the agent's assignment status")
     if {"resume", "next", "asset_id", "requirements_hash", "version"} & details.keys():
         raise PixlError("handoff_details", "Derived fields belong to the snapshot; use caller_actions and future_work for commentary")
+    if view == "caller":
+        from . import caller_result
+
+        caller = caller_result.prepare(root, details)
     selected = plar.read(root, path, asset_id)
     if selected["requirements_hash"] != requirements_hash:
         raise PixlError("handoff_stale", "Selected requirements changed or wrong identity supplied; requirements_hash must match plar read.requirements_hash; reread the asset")
@@ -41,15 +47,8 @@ def save(root, asset_id, requirements_hash, expect, details, path="plar.txt"):
     }
     data = (json.dumps(document, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n").encode("utf-8")
     digest = sha256(data).hexdigest()
-    folder = graph.confined(root, ".pixl/handoffs")
-    with store.lock(folder):
-        target = graph.confined(root, f".pixl/handoffs/{digest}.json")
-        if target.exists():
-            if target.read_bytes() != data:
-                raise PixlError("handoff_corrupt", "Retained snapshot bytes changed")
-        else:
-            store._atomic(target, data)
-    return {
+    target = graph.confined(root, f".pixl/handoffs/{digest}.json")
+    receipt = {
         "path": target.relative_to(root).as_posix(),
         "sha256": digest,
         "asset_id": asset_id,
@@ -58,3 +57,14 @@ def save(root, asset_id, requirements_hash, expect, details, path="plar.txt"):
         "next": document["next"],
         "scope": document["scope"],
     }
+    # Finish validation/presentation before publishing any new handoff bytes.
+    result = caller_result.project(receipt, document, selected, data, caller) if view == "caller" else receipt
+    folder = graph.confined(root, ".pixl/handoffs")
+    with store.lock(folder):
+        target = graph.confined(root, f".pixl/handoffs/{digest}.json")
+        if target.exists():
+            if target.read_bytes() != data:
+                raise PixlError("handoff_corrupt", "Retained snapshot bytes changed")
+        else:
+            store._atomic(target, data)
+    return result

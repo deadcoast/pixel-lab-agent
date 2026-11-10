@@ -158,6 +158,16 @@ def run_plar_probe(cli, root):
             or handoff_document["resume"] != packet["production"]["continuation"]
             or handoff_document["next"] != packet["production"]["next_action"]):
         raise RuntimeError("installed handoff lost the exact continuation")
+    caller = cli(["plar", "handoff", str(root / "probe/handoff-details.json"),
+                  "--root", str(root), "--asset", "queue.working",
+                  "--requirements", packet["requirements_hash"], "--expect", packet["production"]["continuation"]["state_hash"],
+                  "--view", "caller", "--result-path", "probe/caller-result.json"])
+    saved_caller = json.loads((root / caller["result_path"]).read_bytes())
+    if (caller["path"] != handoff["path"] or caller["sha256"] != handoff["sha256"]
+            or caller["assignment"]["status"] != "partial" or caller["caller"]["present"]
+            or caller["resume_ref"]["sha256"] != handoff["sha256"]
+            or caller["next"] != handoff["next"] or saved_caller["resume_ref"] != caller["resume_ref"]):
+        raise RuntimeError("installed caller view/export lost immutable receipt or continuation")
     write("probe/preparation.json", prepared)
     document = json.loads((root / "plar.txt").read_text(encoding="utf-8"))
     working = next(r for r in document["assets"] if r["id"] == "queue.working")
@@ -374,6 +384,7 @@ def run_plar_probe(cli, root):
             "exact source excerpts for independent caller comparison without automatic consistency",
             "provider-bound pending prerequisite in resumable handoff",
             "immutable exact handoff preserves continuation and expert details",
+            "compact caller view and export preserve exact immutable continuation",
             "populated production/evidence links survive unrelated scoped refresh",
             "prepared state unchanged by unrelated allocation update",
             "unchanged preparation resumes without duplicate",

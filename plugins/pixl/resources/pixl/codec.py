@@ -7,9 +7,10 @@ from typing import Never
 
 
 class PixlError(ValueError):
-    def __init__(self, code, detail=""):
+    def __init__(self, code, detail="", context=None):
         self.code = code
         self.detail = detail
+        self.context = dict(context) if isinstance(context, dict) else {}
         super().__init__(f"{code}: {detail}" if detail else code)
 
 

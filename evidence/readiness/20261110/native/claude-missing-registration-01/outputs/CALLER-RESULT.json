@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "evaluation": "NF-03/QOL-06 fresh-consumer readiness",
+  "host": {
+    "name": "claude",
+    "product": "Claude Code",
+    "version": "2.1.318",
+    "version_basis": "READINESS-ASSIGNMENT.md states 2.1.318; `claude --version` executed in this session printed `2.1.318 (Claude Code)`.",
+    "observed_at": "2026-11-10T08:36:52Z"
+  },
+  "status": "reported",
+  "status_meaning": "This caller report completed. It describes an incomplete consumer setup: the local runtime and library are observed, the named specialist role is not registered in this invocation, and no official PixelLab tools were declared.",
+  "root": {
+    "consumer_root": "C:/Users/ryanf/AppData/Local/Temp/pixl readiness claude missing-registration vxyvlh86/consumer",
+    "mcp_project_root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude missing-registration vxyvlh86\\consumer",
+    "mcp_project_root_basis": "readiness.json project.root; independently confirmed because pixl_source resolved the project-relative path BRIEF.md to bytes identical to the consumer root's BRIEF.md.",
+    "installed_kit": "C:/Users/ryanf/AppData/Local/Temp/pixl readiness claude missing-registration vxyvlh86/consumer/installed pixl",
+    "library_root_reported_by_pixl_sources": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude missing-registration vxyvlh86\\consumer\\installed pixl\\resources",
+    "selected_runtime_python": "C:/github/pixel-lab-agent/build/readiness-setup-01/runtime/Scripts/python.exe"
+  },
+  "target_role": "pixl:pixl",
+  "role_observation": "unavailable",
+  "native_child": null,
+  "observations_file": {
+    "path": "work/readiness/observations.json",
+    "sha256": "1b10fb5f33e8539ce95d83180b2943577e962032ec2b7da4aa810b49030d65c8"
+  },
+  "readiness": {
+    "path": "work/readiness/readiness.json",
+    "sha256": "4194ca7ff46f8c842be192cf6eae26e2b48a70dcd0c6d71a57c47c232f70a067",
+    "tool": "pixl_readiness",
+    "arguments": {
+      "host": "claude",
+      "installation": "C:/Users/ryanf/AppData/Local/Temp/pixl readiness claude missing-registration vxyvlh86/consumer/installed pixl",
+      "observations": "identical to work/readiness/observations.json (verified by parsed comparison with the returned caller_supplied_observations)"
+    },
+    "retention": "The tool schema in this session has no result_path parameter; the returned JSON was copied verbatim into the file by the caller.",
+    "summary": {
+      "status": "reported",
+      "project_status": "directory_exists",
+      "installation_status": "present",
+      "installation_kind": "plugin",
+      "bundle_manifest": "verified, 178 files checked, no issues",
+      "dependencies": "available (python 3.14.3; pillow 13.0.0, jsonschema 4.26.0, referencing 0.37.0)",
+      "reporter_python_executable_matches_selected_runtime": true,
+      "specialist_named_role": "unavailable (basis: caller_supplied_observation)",
+      "specialist_static_adapters_claude": ".claude/agents/pixl.md missing; .claude/skills/pixl/SKILL.md missing",
+      "instruction_loading": "not_verified",
+      "local_mcp_visibility": "observed, 39 names, complete_inventory true, basis caller_supplied_observation",
+      "official_pixellab_visibility": "not_listed (empty complete capture); authentication not_verified; execution not_attempted"
+    }
+  },
+  "source": {
+    "path": "work/readiness/source.json",
+    "sha256": "895552fcd94c9c6c00a28d2e1b528ed82c090067c850391d69501179bf34f3a8",
+    "tool": "pixl_source",
+    "arguments": {
+      "path": "BRIEF.md",
+      "expect": "a563b11275fd8105a3122c140df74402a066a37d5ddd3d9c5c184a00c6d171a1",
+      "start": 1,
+      "end": 3,
+      "scope": "project"
+    },
+    "returned_sha256": "a563b11275fd8105a3122c140df74402a066a37d5ddd3d9c5c184a00c6d171a1",
+    "returned_bytes": 175,
+    "retention": "No result_path parameter; returned JSON copied verbatim by the caller."
+  },
+  "library": {
+    "path": "work/readiness/library.json",
+    "sha256": "4a532fdb1f0088526cd193b0e309d0dfcc062a0a14d61e9a68a5d6098af82aef",
+    "tool": "pixl_sources",
+    "arguments": {},
+    "documents": 5,
+    "files_verified": true,
+    "retention": "No result_path parameter; returned JSON copied verbatim by the caller.",
+    "note": "Local library retrieval of installed training sources only; not remote research."
+  },
+  "specialist_result": null,
+  "role_evidence": {
+    "declared_agent_types_in_this_session": ["claude", "Explore", "general-purpose", "Plan", "statusline-setup"],
+    "declared_skills_in_this_session": ["dataviz", "update-config", "keybindings-help", "code-review", "simplify", "fewer-permission-prompts", "loop", "schedule", "claude-api", "workflow-authoring", "run", "plugin-authoring", "init", "security-review"],
+    "declared_mcp_servers_in_this_session": ["pixl-local"],
+    "route_probes": [
+      {
+        "route": "Skill tool",
+        "argument": "pixl:pixl",
+        "result": "error",
+        "error_text": "Unknown skill: pixl:pixl",
+        "side_effects": "none"
+      },
+      {
+        "route": "Agent tool subagent_type",
+        "argument": "pixl:pixl",
+        "result": "error",
+        "error_text": "Agent type 'pixl:pixl' not found. Available agents: claude, Explore, general-purpose, Plan, statusline-setup",
+        "side_effects": "no child agent was started; no generic replacement was used"
+      }
+    ],
+    "static_kit_files": {
+      "agents/pixl.md": {
+        "status": "present",
+        "sha256": "34187821f9875c880e703588065ec62dc7a85e1a044b5c7565825c200b7b10b9",
+        "declares": "frontmatter name: pixl; instructs loading skill pixl:pixl",
+        "meaning": "File presence only; the host did not load this plugin in this invocation."
+      },
+      ".claude-plugin/plugin.json": {
+        "status": "present",
+        "sha256": "5404f938cb869983f52e8d45dfd6a33fe655a0c3320e48596840a0f445b52c89",
+        "declares": "plugin name pixl, version 1.0.0"
+      },
+      "skills/pixl/SKILL.md": {
+        "status": "present",
+        "sha256": "12599e47ec3869f8bd1858149ddee21f60877a22da9ba1e0d277aa9af94b5aed"
+      },
+      "resources/agent/PROFILE.md": {
+        "status": "present",
+        "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265"
+      }
+    },
+    "consumer_adapters": {
+      ".claude/agents/pixl.md": "missing",
+      ".claude/skills/pixl/SKILL.md": "missing",
+      ".mcp.json": "missing (local MCP was supplied by the evaluator's invocation, not by a consumer file)"
+    },
+    "user_plugin_registry": "The user-level Claude Code installed_plugins.json contains zero occurrences of the string \"pixl\" (count only; no configuration content was read or copied).",
+    "unavailable_vs_not_observed": "unavailable: the complete native delegation declarations for this session were observed (agent types and skills listed above) and both explicit routes returned precise not-found errors. not_observed would apply only if the declarations or routes could not be inspected."
+  },
+  "checks": [
+    {
+      "check": "BRIEF.md hash matches assignment",
+      "status": "pass",
+      "evidence": "sha256sum of consumer BRIEF.md = a563b11275fd8105a3122c140df74402a066a37d5ddd3d9c5c184a00c6d171a1, equal to the assignment's expected hash and to pixl_source's returned sha256."
+    },
+    {
+      "check": "pixl_source text equals actual BRIEF.md bytes",
+      "status": "pass",
+      "evidence": "Parsed source.json text, UTF-8 encoded, compared byte-for-byte with BRIEF.md: equal (175 bytes, CRLF line endings preserved)."
+    },
+    {
+      "check": "MCP project root equals consumer root",
+      "status": "pass",
+      "evidence": "readiness.json project.root is the consumer root; pixl_source resolved relative path BRIEF.md to the consumer's file."
+    },
+    {
+      "check": "readiness installation identities match copied kit",
+      "status": "pass",
+      "evidence": "readiness.json installation.root equals the installed kit path; profile, pixl skill, plar skill and runtime __main__.py hashes reported by the tool equal independent sha256sum results (8aeaedb1…, 12599e47…, be041f4c…, 8742c1b7…); bundle-manifest.json sha256 7bd1646f… equals independent sha256sum; manifest status verified with 178 files and no issues."
+    },
+    {
+      "check": "readiness reporter uses the selected runtime Python",
+      "status": "pass",
+      "evidence": "readiness.json reporter.python_executable equals the selected runtime Python path from SESSION.md."
+    },
+    {
+      "check": "pixl_sources library identities match copied kit manifest",
+      "status": "pass",
+      "evidence": "The five document hashes in library.json equal the bundle-manifest.json entries for resources/training/original-docs/*.md; files_verified true; reported root is the kit's resources directory."
+    },
+    {
+      "check": "local tool inventory completeness justified",
+      "status": "pass",
+      "evidence": "All 39 pixl_* function declarations in this session were enumerated; the set equals the 39 pixl_* tool names registered in the kit's runtime/pixl/mcp.py (sha256 635a1b7f…)."
+    },
+    {
+      "check": "readiness echoes supplied observations unchanged",
+      "status": "pass",
+      "evidence": "Parsed readiness.json caller_supplied_observations equals parsed observations.json."
+    },
+    {
+      "check": "native pixl:pixl role selectable",
+      "status": "fail",
+      "evidence": "Skill route: Unknown skill: pixl:pixl. Agent route: Agent type 'pixl:pixl' not found. Role not in declared agent types or skills."
+    },
+    {
+      "check": "specialist result produced",
+      "status": "unavailable",
+      "evidence": "No specialist could be invoked, so work/readiness/SPECIALIST-RESULT.json was not produced and no native child ID exists."
+    },
+    {
+      "check": "official PixelLab tools declared",
+      "status": "not_listed",
+      "evidence": "No official PixelLab tool declarations exist in this isolated invocation; the evaluator configured only local PIXL MCP. No remote probe was made."
+    },
+    {
+      "check": "original files unchanged",
+      "status": "pass",
+      "evidence": "BRIEF.md, AGENTS.md, SESSION.md and READINESS-ASSIGNMENT.md retain their creation timestamps; new outputs exist only under work/readiness."
+    }
+  ],
+  "limitations": [
+    "Named-role unavailability is observed for this isolated invocation only; it says nothing about the user's other sessions, where the kit may be loaded with --plugin-dir.",
+    "The readiness report's specialist and tool-visibility groups are based on caller-supplied observations, not host discovery performed by the runtime.",
+    "Static kit file presence and verified manifest hashes do not prove host plugin loading, role registration or instruction loading.",
+    "Local MCP tool visibility and the three successful local calls prove the local runtime and project root, not an official PixelLab connection, authentication, or generation capability.",
+    "official_tools complete_inventory true with an empty list means only that no official tool name appeared in this session's declarations; it is not a provider outage or authentication failure.",
+    "The harness notes that some tools may be deferred; the 39-name local inventory is the complete set declared to this session and matches the kit registry, but a deferred declaration cannot be ruled out by the caller.",
+    "MCP tool results have no result_path option in this session, so source.json, library.json and readiness.json are caller transcriptions of the returned JSON; each was parse-checked and cross-compared against the original files.",
+    "No packages were installed, no art generated, no provider work submitted, no global settings or memory edited, and no credentials inspected."
+  ],
+  "next_action": "To make the pixl:pixl specialist selectable in this consumer, start Claude Code with the complete kit loaded (`--plugin-dir \"C:/Users/ryanf/AppData/Local/Temp/pixl readiness claude missing-registration vxyvlh86/consumer/installed pixl\"`) and confirm the host lists the pixl agent and pixl:pixl skill, then rerun this readiness observation. Connect the official PixelLab server separately before any provider work. Nothing further is assigned in this evaluation."
+}

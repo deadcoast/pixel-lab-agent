@@ -13,6 +13,7 @@ from unittest.mock import patch
 from evaluations import readiness_case as case
 from evaluations.grade_readiness import (
     claude_child_paths,
+    claude_loading_proof,
     codex_role_proof,
     declared_tools,
     generic_substitutions,
@@ -24,6 +25,69 @@ from evaluations.grade_readiness import (
     startup_discovery,
 )
 from evaluations.host_trials import sha, write_json
+
+
+class ClaudeLoadingProofTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.kit = Path(temporary.name)
+        for path, text in {"skills/pixl/SKILL.md": "---\nname: pixl\n---\n# Skill\nOperational rule.\n",
+                           "resources/agent/PROFILE.md": "# Profile\nRole instruction.\n"}.items():
+            target = self.kit / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8")
+
+    def journal(self):
+        return [
+            {"type": "assistant", "line": 1, "message": {"content": [{"type": "tool_use", "id": "skill", "name": "Skill", "input": {"skill": "pixl:pixl"}}]}},
+            {"type": "user", "line": 2, "message": {"content": [{"type": "tool_result", "tool_use_id": "skill", "content": "Launching skill"}]},
+             "toolUseResult": {"success": True, "commandName": "pixl:pixl"}},
+            {"type": "user", "line": 3, "isMeta": True, "sourceToolUseID": "skill", "message": {"content": [{"type": "text",
+             "text": f"Base directory for this skill: {(self.kit / 'skills/pixl').as_posix()}\n\n# Skill\nOperational rule.\n"}]}},
+            {"type": "assistant", "line": 4, "message": {"content": [{"type": "tool_use", "id": "profile", "name": "Read",
+             "input": {"file_path": str(self.kit / "resources/agent/PROFILE.md")}}]}},
+            {"type": "user", "line": 5, "message": {"content": [{"type": "tool_result", "tool_use_id": "profile", "content": "1\t# Profile\r\n2\tRole instruction.\r\n"}]}},
+        ]
+
+    def test_successful_skill_body_and_numbered_profile_read_are_bound(self):
+        proof = claude_loading_proof([self.journal()], self.kit)
+        self.assertTrue(all(row["loaded"] for row in proof.values()))
+        skill = proof["skills/pixl/SKILL.md"]["evidence"][0]
+        self.assertEqual(skill["mechanism"], "operational_skill_body_loaded")
+        self.assertFalse(skill["frontmatter_returned"])
+        self.assertEqual(skill["source_line"], 3)
+        self.assertEqual(proof["resources/agent/PROFILE.md"]["evidence"][0]["result_line"], 5)
+
+    def test_unbound_injection_and_assistant_quotation_are_not_loading(self):
+        journal = self.journal()
+        journal[2]["sourceToolUseID"] = "unrelated"
+        journal[4]["message"]["content"][0]["tool_use_id"] = "unrelated"
+        journal.append({"type": "assistant", "message": {"content": [{"type": "text", "text": "# Profile\nRole instruction.\n# Skill\nOperational rule."}]}})
+        self.assertFalse(any(row["loaded"] for row in claude_loading_proof([journal], self.kit).values()))
+
+    def test_failed_tools_cannot_qualify_matching_injected_text(self):
+        journal = self.journal()
+        for index in (1, 4):
+            journal[index]["message"]["content"][0]["is_error"] = True
+        self.assertFalse(any(row["loaded"] for row in claude_loading_proof([journal], self.kit).values()))
+
+    def test_partial_body_wrong_path_or_missing_numbered_line_is_not_complete(self):
+        for change in ("partial_skill", "wrong_base", "wrong_read_path", "missing_line", "wrong_number"):
+            journal = self.journal()
+            if change == "partial_skill":
+                journal[2]["message"]["content"][0]["text"] = journal[2]["message"]["content"][0]["text"].replace("Operational rule.", "")
+            elif change == "wrong_base":
+                journal[2]["message"]["content"][0]["text"] = journal[2]["message"]["content"][0]["text"].replace("skills/pixl", "skills/other")
+            elif change == "wrong_read_path":
+                journal[3]["message"]["content"][0]["input"]["file_path"] = str(self.kit / "other.md")
+            elif change == "missing_line":
+                journal[4]["message"]["content"][0]["content"] = "1\t# Profile\n"
+            else:
+                journal[4]["message"]["content"][0]["content"] = "1\t# Profile\n3\tRole instruction.\n"
+            path = "skills/pixl/SKILL.md" if change in ("partial_skill", "wrong_base") else "resources/agent/PROFILE.md"
+            with self.subTest(change=change):
+                self.assertFalse(claude_loading_proof([journal], self.kit)[path]["loaded"])
 
 
 class ReadinessNativeProofTests(unittest.TestCase):

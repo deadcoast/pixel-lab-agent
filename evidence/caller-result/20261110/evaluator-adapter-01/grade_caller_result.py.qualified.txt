@@ -1,0 +1,370 @@
+"""Independent compact-result, parent follow-through and rejected-error evidence checks."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import tomllib
+from pathlib import Path
+
+from evaluations.caller_result_case import KIT, UNKNOWN, WORK
+from evaluations.grade_named_codex_role import rows, strings
+from evaluations.grade_readiness import (
+    claude_loading_proof,
+    codex_role_proof,
+    expanded_objects,
+    reference,
+    semantic_result,
+)
+from evaluations.host_trials import inventory, write_json
+
+CATEGORIES = {"invalid_authoring", "stale_local_state", "missing_capability", "uncertain_remote_result", "unavailable_observation"}
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def mcp_calls(journals: list[list[dict]]) -> list[dict]:
+    calls, uses = [], {}
+    for journal in journals:
+        for row in journal:
+            payload = row.get("payload", {})
+            item = payload.get("item", row.get("item", {}))
+            if item.get("type") in ("McpToolCall", "mcp_tool_call") and item.get("status") in ("completed", "succeeded", "failed"):
+                calls.append({"tool": item.get("tool"), "server": item.get("server"), "arguments": item.get("arguments", {}),
+                              "result": item.get("result"), "call_id": item.get("id"), "file": row.get("file"), "line": row.get("line")})
+            message = row.get("message", {})
+            content = message.get("content", []) if isinstance(message, dict) else []
+            for block in content if isinstance(content, list) else []:
+                if not isinstance(block, dict):
+                    continue
+                match = re.fullmatch(r"mcp__(.+?)__(.+)", block.get("name", ""))
+                if block.get("type") == "tool_use" and match:
+                    uses[block["id"]] = {"server": match[1], "tool": match[2], "arguments": block.get("input", {}),
+                                         "call_id": block["id"], "file": row.get("file"), "line": row.get("line")}
+                if block.get("type") == "tool_result" and block.get("tool_use_id") in uses:
+                    calls.append({**uses[block["tool_use_id"]], "result": block.get("content")})
+    return calls
+
+
+def mcp_attempts(journals: list[list[dict]]) -> list[dict]:
+    attempted = []
+    for journal in journals:
+        for row in journal:
+            item = row.get("payload", {}).get("item", row.get("item", {}))
+            if item.get("type") in ("McpToolCall", "mcp_tool_call"):
+                attempted.append({"tool": item.get("tool"), "server": item.get("server"), "arguments": item.get("arguments", {}),
+                                  "call_id": item.get("id"), "file": row.get("file"), "line": row.get("line")})
+            for block in row.get("message", {}).get("content", []) if isinstance(row.get("message"), dict) else []:
+                if not isinstance(block, dict):
+                    continue
+                match = re.fullmatch(r"mcp__(.+?)__(.+)", block.get("name", ""))
+                if block.get("type") == "tool_use" and match:
+                    attempted.append({"server": match[1], "tool": match[2], "arguments": block.get("input", {}),
+                                      "call_id": block.get("id"), "file": row.get("file"), "line": row.get("line")})
+    return attempted
+
+
+def prohibited_attempts(journals: list[list[dict]]) -> list[dict]:
+    terminal = mcp_calls(journals)
+    mutation_tools = {"pixl_init", "pixl_intake", "pixl_plar_save", "pixl_plar_prepare", "pixl_inspection_prepare", "pixl_retain_library",
+                      "pixl_commit", "pixl_production_plan", "pixl_stage_prepare", "pixl_job_prepare", "pixl_job_observe",
+                      "pixl_job_import", "pixl_candidate_review", "pixl_task_complete", "pixl_family_snapshot", "pixl_inspection_review"}
+    illegal = []
+    for attempt in mcp_attempts(journals):
+        rejected_unknown = bool(attempt["call_id"]) and any(
+            all(call[k] == attempt[k] for k in ("file", "call_id", "server", "tool", "arguments"))
+            and any(o.get("category") == "uncertain_remote_result" for o in expanded_objects(call["result"]))
+            for call in terminal)
+        if (attempt["tool"] in mutation_tools or str(attempt["server"]).replace("-", "_") not in ("pixl_local", "pixl_unknown")
+                or attempt["tool"] == "pixl_job_dispatch" and not rejected_unknown):
+            illegal.append(attempt)
+    return illegal
+
+
+def matching_calls(calls: list[dict], tool: str, saved: dict, arguments: dict | None = None,
+                   server: str = "pixl_local") -> list[dict]:
+    result = []
+    for call in calls:
+        if call["tool"] != tool or str(call["server"]).replace("-", "_") != server:
+            continue
+        if arguments is not None and any(call["arguments"].get(k, "receipt" if k == "view" and tool == "pixl_plar_handoff" else None) != v for k, v in arguments.items()):
+            continue
+        if any(obj == saved for obj in expanded_objects(call["result"])):
+            result.append({k: call[k] for k in ("file", "line", "tool", "server", "arguments")})
+    return result
+
+
+def child_identity(value):
+    """A caller can preserve the native canonical identity in a typed object."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict) and value.get("agent_type") in ("pixl", "pixl:pixl"):
+        return value.get("canonical_task", value.get("agent_id"))
+    return None
+
+
+def refresh_proofs(calls: list[dict], saved: dict, arguments: dict) -> list[dict]:
+    full = matching_calls(calls, "pixl_plar_read", saved, arguments)
+    if full:
+        return [{**p, "native_result_scope": "complete_returned_result"} for p in full]
+    result = []
+    for call in calls:
+        if (call["tool"] != "pixl_plar_read" or str(call["server"]).replace("-", "_") != "pixl_local"
+                or any(call["arguments"].get(k) != v for k, v in arguments.items())):
+            continue
+        for text in strings(call["result"]):
+            # Codex's retained MCP event can truncate the middle of a large
+            # response. Parse the one intact trailing production member and
+            # its actual enclosing suffix; never treat the caller file as the
+            # missing native body or accept a loose hash substring.
+            if not re.search(r"…\d+ chars truncated…", text):
+                continue
+            members = list(re.finditer(r'(?<!\\)"continuation"\s*:\s*', text))
+            if len(members) != 1:
+                continue
+            try:
+                tail = json.loads('{"structuredContent":{"production":{' + text[members[0].start():])
+            except ValueError:
+                continue
+            content = tail.get("structuredContent", {})
+            domains = content.get("hash_domains", {})
+            observed = content.get("production", {}).get("continuation")
+            if (tail.get("isError") is False and observed == saved.get("production", {}).get("continuation")
+                    and isinstance(observed, dict) and observed.get("requirements_hash") == saved.get("requirements_hash")
+                    and domains.get("production.continuation.state_hash") == "canonical_state_sha256"
+                    and domains.get("requirements_hash") == "selected_requirements_sha256"):
+                result.append({**{k: call[k] for k in ("file", "line", "tool", "server", "arguments")},
+                    "native_result_scope": "complete production.continuation and hash_domains suffix only",
+                    "native_full_result_truncated": True,
+                    "unverified_native_body": "The middle of the full returned PLAR body is absent from this event; saved full caller file is separate evidence."})
+    return result
+
+
+def bind_exports(calls: list[dict], root: Path) -> list[dict]:
+    """An export summary proves only the exact bytes returned at its named path."""
+    bound = []
+    for call in calls:
+        result = call["result"]
+        for value in expanded_objects(result):
+            path, digest = value.get("result_path"), value.get("result_sha256")
+            if not path or not digest or call["arguments"].get("result_path") != path:
+                continue
+            try:
+                exported = read(reference(root, {"path": path, "sha256": digest}))
+            except (OSError, ValueError, TypeError):
+                continue
+            result = [result, exported]
+            break
+        bound.append({**call, "result": result})
+    return bound
+
+
+def source_locator_errors(root: Path, locator: dict, saved: dict) -> list[str]:
+    try:
+        path = reference(root, locator)
+        expected = "".join(path.read_bytes().decode("utf-8-sig").splitlines(keepends=True)[locator["start"] - 1:locator["end"]])
+        if saved.get("sha256") != locator["sha256"] or saved.get("text") != expected:
+            return ["Source result does not preserve exact immutable section bytes"]
+        if saved.get("start") != locator["start"] or saved.get("end") != locator["end"]:
+            return ["Source result has different physical line bounds"]
+        if len(expected.encode()) != locator["bytes"]:
+            return ["Locator byte count differs from the actual slice"]
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return [str(error)]
+    return []
+
+
+def error_object(saved: dict) -> dict:
+    return next((o for o in expanded_objects(saved) if "category" in o and "error" in o and "recovery" in o), {})
+
+
+def command_proofs(parent: list[dict], command_name: str, returned: dict) -> list[dict]:
+    """Correlate direct local protocol stdout with actual completed host commands."""
+    result = []
+    for row in parent:
+        payload = row.get("payload", {})
+        item = payload.get("item", {})
+        if (payload.get("type") == "item_completed" and item.get("type") == "CommandExecution"
+                and item.get("exit_code") == 0 and command_name in str(item.get("command"))
+                and any(o == returned for o in expanded_objects(item.get("aggregated_output", "")))):
+            result.append({"file": row.get("file"), "line": row.get("line")})
+    # Claude's Bash result is paired with its actual tool_use request.
+    uses = {}
+    for row in parent:
+        for block in row.get("message", {}).get("content", []) if isinstance(row.get("message"), dict) else []:
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use" and block.get("name") == "Bash" and command_name in block.get("input", {}).get("command", ""):
+                uses[block["id"]] = row
+            if (block.get("type") == "tool_result" and block.get("tool_use_id") in uses and not block.get("is_error")
+                    and any(o == returned for o in expanded_objects(block.get("content", "")))):
+                result.append({"file": row.get("file"), "line": row.get("line")})
+    return result
+
+
+def _grade(attempt: Path) -> dict:
+    attempt = attempt.resolve()
+    launch, identity, continuation = (read(attempt / n) for n in ("launch.json", "identity.json", "continuation.json"))
+    root = Path(launch["cwd"])
+    caller = read(root / WORK / "CALLER-RESULT.json")
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+    all_journals = [rows(p) for p in sorted(attempt.glob("native-*.jsonl"))]
+    all_journals += [rows(p) for p in sorted((attempt / "native-transcripts").glob("*.jsonl"))]
+    stdout = rows(attempt / "stdout.jsonl")
+    if launch["host"] == "codex":
+        parent = next((j for j in all_journals if j and j[0].get("type") == "session_meta"
+                       and j[0].get("payload", {}).get("id") == continuation["session_id"]), [])
+        role = tomllib.loads((root / ".codex/agents/pixl.toml").read_text(encoding="utf-8"))["developer_instructions"]
+        proof = codex_role_proof(all_journals, continuation["session_id"], child_identity(caller.get("native_child")), role)
+        child_ids = {c["id"] for c in proof["selected_children"]}
+        child_journals = [j for j in all_journals if j and j[0].get("payload", {}).get("id") in child_ids]
+        check("actual_named_child_loaded_and_completed", proof["loaded"] and proof["completed"],
+              {k: v for k, v in proof.items() if k != "child_text"})
+    else:
+        parent = [r for r in stdout if not r.get("parent_tool_use_id") and not r.get("agent_id")]
+        children = continuation.get("children", [])
+        child_journals = [j for j in all_journals if j and Path(j[0]["file"]).stem.removeprefix("agent-") == child_identity(caller.get("native_child"))]
+        check("actual_named_child_completed", any(c.get("id") == child_identity(caller.get("native_child")) and c.get("role") == "pixl:pixl" for c in children)
+              and any(c.get("tool") == "Agent" and c.get("role") == "pixl:pixl" and c.get("result_line")
+                      and not c.get("is_error") for c in continuation.get("calls", [])), children)
+        loading = claude_loading_proof(child_journals, root / KIT)
+        check("selected_claude_child_loaded_current_skill_and_profile", all(p["loaded"] for p in loading.values()), loading)
+    calls = bind_exports(mcp_calls([parent]), root)
+    child_calls = bind_exports(mcp_calls(child_journals), root)
+    values = {}
+    for name in ("compact", "receipt", "parent_receipt", "details_read", "resume_read", "refresh", "unknown_recovery", "stale_recovery", "specialist_result"):
+        values[name] = semantic_result(read(reference(root, caller[name])))
+    compact, receipt, parent_receipt = (values[k] for k in ("compact", "receipt", "parent_receipt"))
+    snapshot_path = reference(root, compact)
+    snapshot = read(snapshot_path)
+    handoff_args = {"asset_id": compact["asset_id"], "path": snapshot["selection"]["path"],
+                    "requirements_hash": compact["requirements_hash"], "expect": compact["state_hash"], "details": snapshot["details"]}
+    check("selected_child_created_both_actual_public_views", bool(matching_calls(child_calls, "pixl_plar_handoff", compact, {**handoff_args, "view": "caller"}))
+          and bool(matching_calls(child_calls, "pixl_plar_handoff", receipt, {**handoff_args, "view": "receipt"})))
+    specialist = values["specialist_result"]
+    check("specialist_result_binds_actual_child_and_artifacts", specialist.get("native_child") == caller.get("native_child")
+          and specialist.get("compact") == caller["compact"] and specialist.get("receipt") == caller["receipt"]
+          and reference(root, specialist["detailed_report"]).is_file())
+    same = all(r.get("path") == compact["path"] and r.get("sha256") == compact["sha256"] for r in (receipt, parent_receipt))
+    check("same_immutable_snapshot_in_all_three_views", same, {"path": compact["path"], "sha256": compact["sha256"]})
+    check("retained_detailed_observations_exact", snapshot["details"].get("retained_specialist_observations")
+          == read(root / "work/artistic-revision/SPECIALIST-RESULT.json"))
+    authored = compact.get("caller", {})
+    authored_refs = [*authored.get("artifacts", []), *authored.get("reports", []), *authored.get("integration", {}).get("evidence", [])]
+    check("compact_contains_useful_verified_files_issues_and_integration_scope", authored.get("present") is True
+          and authored.get("basis") == "agent_authored" and bool(authored.get("summary"))
+          and bool(authored.get("artifacts")) and bool(authored.get("reports"))
+          and bool(authored.get("integration", {}).get("summary"))
+          and any(i.get("category") == "uncertain_remote_result" for i in authored.get("issues", []))
+          and all(set(r) == {"path", "sha256", "role"} and reference(root, r).is_file() for r in authored_refs))
+    size = len(json.dumps(compact, ensure_ascii=False, separators=(",", ":")).encode())
+    check("bounded_return_smaller_than_its_full_snapshot", size < snapshot_path.stat().st_size
+          and (root / WORK / "CALLER-RESULT.json").stat().st_size <= 8192,
+          {"compact_utf8_bytes": size, "full_same_snapshot_bytes": snapshot_path.stat().st_size,
+           "caller_report_bytes": (root / WORK / "CALLER-RESULT.json").stat().st_size})
+    check("authored_partial_does_not_override_delivered_production", compact.get("assignment") == {"status": "partial", "basis": "agent_authored"}
+          and compact["next"] == snapshot["next"] == "delivered"
+          and compact["production"].get("delivery_complete") is True
+          and compact["production"].get("criteria", {}).get("unresolved") == 0
+          and caller.get("assignment_status") == "partial" and caller.get("production_next") == "delivered")
+    check("exact_resume_and_state_identities", compact["state_hash"] == snapshot["resume"]["state_hash"]
+          and compact["requirements_hash"] == snapshot["requirements_hash"]
+          and compact["asset_id"] == snapshot["asset_id"] and compact["store"] == snapshot["resume"]["store"]
+          and (not compact["resume_inline"] or compact.get("resume") == snapshot["resume"]))
+    for name, field in (("details_read", "details_ref"), ("resume_read", "resume_ref")):
+        locator = compact[field]
+        errors = source_locator_errors(root, locator, values[name])
+        if (locator.get("path"), locator.get("sha256"), locator.get("json_pointer")) != (compact["path"], compact["sha256"], "/" + field.removesuffix("_ref")):
+            errors.append("Locator is not the named section of the same immutable handoff")
+        args = {"path": locator["path"], "expect": locator["sha256"], "start": locator["start"], "end": locator["end"]}
+        proofs = matching_calls(calls, "pixl_source", values[name], args)
+        check("parent_retrieved_" + field + "_through_exact_locator", not errors and bool(proofs), {"errors": errors, "native": proofs})
+    refreshed = values["refresh"]
+    refresh = refresh_proofs(calls, refreshed, compact["refresh"]["arguments"])
+    check("parent_executed_returned_refresh", compact["refresh"]["operation"] == "pixl_plar_read" and bool(refresh), refresh)
+    check("fresh_identities_and_delivery_match_snapshot", refreshed["requirements_hash"] == compact["requirements_hash"]
+          and refreshed["production"]["continuation"] == snapshot["resume"])
+    production = refreshed["production"]
+    criteria = [q for output in production["outputs"] for q in output.get("requirements", [])]
+    check("compact_production_counts_match_actual_current_selection", compact["production"]["task"] == production["task"]
+          and compact["production"]["task_state"] == production["task_state"]
+          and compact["production"]["criteria"]["total"] == len(criteria)
+          and compact["production"]["criteria"]["unresolved"] == sum(q["status"] != "pass" for q in criteria)
+          and compact["production"]["jobs"]["total"] == len(production.get("jobs", [])))
+    arguments = {"asset_id": compact["asset_id"], "path": snapshot["selection"]["path"], "requirements_hash": compact["requirements_hash"],
+                 "expect": compact["state_hash"], "details": snapshot["details"], "view": "receipt"}
+    parent_saves = matching_calls(calls, "pixl_plar_handoff", parent_receipt, arguments)
+    check("parent_safely_continued_with_returned_guards", bool(parent_saves), parent_saves)
+    errors = caller.get("errors", {})
+    check("all_five_observed_error_categories_returned", set(errors) == CATEGORIES, sorted(errors))
+    failed_call_lines = []
+    for category in sorted(CATEGORIES):
+        saved = read(reference(root, errors[category]))
+        observed = error_object(saved)
+        passed = observed.get("category") == category and bool(observed.get("error")) and bool(observed.get("detail")) and bool(observed.get("recovery"))
+        if category == "missing_capability":
+            protocol = rows(root / WORK / "missing-capability-protocol.jsonl")
+            returned = next((r for r in protocol if r.get("id") == 2), {})
+            native = command_proofs(parent, "missing_capability_probe.py", {k: v for k, v in returned.items() if k not in ("file", "line")})
+            passed = passed and error_object(returned) == observed and bool(native)
+            evidence = {"error": observed, "native": native}
+        else:
+            tool = {"invalid_authoring": "pixl_plar_handoff", "stale_local_state": "pixl_plar_handoff",
+                    "uncertain_remote_result": "pixl_job_dispatch", "unavailable_observation": "pixl_source"}[category]
+            server = "pixl_unknown" if category == "uncertain_remote_result" else "pixl_local"
+            native = matching_calls(calls, tool, observed, server=server)
+            passed = passed and bool(native)
+            failed_call_lines += [r["line"] for r in native]
+            evidence = {"error": observed, "native": native}
+        check("parent_observed_" + category, passed, evidence)
+    unknown_error = error_object(read(reference(root, errors["uncertain_remote_result"])))
+    recovery = unknown_error["recovery"]
+    check("unknown_job_actual_identity_preserved_and_read", unknown_error.get("identity", {}).get("job_id") == "member.job"
+          and unknown_error.get("identity", {}).get("job_state") == "unknown"
+          and caller.get("unknown_job_id") == "member.job" and caller.get("unknown_job_state") == "unknown"
+          and bool(matching_calls(calls, recovery["operation"], values["unknown_recovery"], recovery["arguments"], "pixl_unknown")))
+    stale_error = error_object(read(reference(root, errors["stale_local_state"])))
+    recovery = stale_error["recovery"]
+    stale_reads = refresh_proofs(calls, values["stale_recovery"], recovery["arguments"]) if recovery["operation"] == "pixl_plar_read" else []
+    check("parent_followed_stale_recovery_before_guarded_continuation", bool(stale_reads) and bool(parent_saves)
+          and max(p["line"] for p in parent_saves) > max([p["line"] for p in stale_reads] + failed_call_lines))
+    illegal = prohibited_attempts(all_journals + [stdout])
+    check("no_provider_or_acceptance_mutation_observed", not illegal, [{k: c[k] for k in ("file", "line", "tool", "server")} for c in illegal])
+    current = inventory(root, ("__pycache__",))
+    drift = [p for p, digest in identity["inputs"].items() if current.get(p) != digest]
+    unexpected = [p for p in current if p not in identity["inputs"] and not p.startswith((WORK + "/", ".pixl/handoffs/"))]
+    check("all_prior_inputs_and_both_production_histories_preserved", not drift and not unexpected, {"changed": drift, "unexpected": unexpected})
+    new_handoffs = {p for p in current if p not in identity["inputs"] and p.startswith(".pixl/handoffs/")}
+    check("only_the_returned_immutable_handoff_added", new_handoffs <= {compact["path"]}, sorted(new_handoffs))
+    check("controlled_unknown_fixture_unchanged", inventory(root / UNKNOWN, ("__pycache__",)) == identity["unknown_files"])
+    check("native_attempt_completed", continuation.get("status") == "finished" and continuation.get("returncode") == 0
+          and continuation.get("interruption_reason") is None)
+    return {"version": 1, "status": "pass" if all(c["pass"] for c in checks) else "fail", "checks": checks,
+            "passed": sum(c["pass"] for c in checks), "total": len(checks),
+            "scope": "One compact caller continuation and actual rejected local operations. Controlled unknown job is fictional and remains unresolved. No new provider, artistic or renderer acceptance."}
+
+
+def grade(attempt: Path) -> dict:
+    try:
+        return _grade(attempt)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        return {"version": 1, "status": "fail", "passed": 0, "total": 1,
+                "checks": [{"check": "required_evidence_readable", "pass": False, "evidence": f"{type(error).__name__}: {error}"}]}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempt", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    if args.output.exists():
+        raise ValueError("Preserve prior grades; use a fresh output")
+    result = grade(args.attempt)
+    write_json(args.output, result)
+    print(json.dumps({k: result[k] for k in ("status", "passed", "total")}))
+    raise SystemExit(result["status"] != "pass")

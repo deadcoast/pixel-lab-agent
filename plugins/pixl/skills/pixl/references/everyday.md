@@ -136,10 +136,16 @@ Nominate/complete only after the applicable criteria pass. Follow
 
 Reread the selected queue before returning. Save the expert summary, useful file
 locators, provenance, findings, limits and caller actions through `plar handoff` /
-`pixl_plar_handoff`. Its two inputs come from the same fresh focused PLAR read:
+`pixl_plar_handoff`. Choose CLI `--view caller` or MCP `view: "caller"` for the
+[compact caller result](../../../resources/spec/caller-result.md); omitting it
+keeps the existing receipt. Put the bounded ordinary summary in `details.caller`,
+and retain the full observations in other details fields and referenced reports. Its two inputs come from the same fresh focused PLAR read:
 `requirements_hash` and `production.continuation.state_hash` for `expect`.
-The queue's top-level `hash` is only for queue saves. Return the retained handoff's
-path and file SHA-256, plus the actual deliverables and any remaining decisions.
+The queue's top-level `hash` is only for queue saves. Return the caller view with
+its exact handoff locator, actual deliverables and remaining decisions. Assignment
+status and integration findings remain your claims; current production facts and
+the immediate next action come from the runtime. Detailed checks remain exactly
+retrievable, and a referenced resume must be read in full before acting.
 The next agent rereads current state rather than blindly executing an old snapshot.
 
 The stop condition is the assignment's useful delivered outcome or a precise

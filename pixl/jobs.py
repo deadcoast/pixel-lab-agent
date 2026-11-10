@@ -253,6 +253,8 @@ def _pending(doc, task_id, outputs, except_id=None, root=None):
             raise PixlError(
                 "job_pending",
                 f"{record.id}: reconcile the existing attempt before another request",
+                context={"job_id": record.id, "task_id": fields["tk"].id,
+                         "job_state": fields["si"].value, "state_hash": codec.digest(doc)},
             )
 
 
@@ -604,14 +606,22 @@ def dispatch(folder, expected, job_id, root=None):
     task_id = previous["intent"]["context"]["task"]
     reasons = _blockers(doc, task_id, root, dispatching=True, folder=folder)
     _require(not reasons, "job_blocked", "; ".join(reasons))
-    journal = job_history.append(
-        previous,
-        "dispatch",
-        {
-            "origin": "local_dispatch_claim",
-            "meaning": "Saved before host submission; no remote execution.",
-        },
-    )
+    try:
+        journal = job_history.append(
+            previous,
+            "dispatch",
+            {
+                "origin": "local_dispatch_claim",
+                "meaning": "Saved before host submission; no remote execution.",
+            },
+        )
+    except PixlError as error:
+        if previous["state"] != "prepared":
+            raise PixlError(error.code, error.detail, context={
+                "job_id": job_id, "task_id": task_id, "job_state": previous["state"],
+                "state_hash": codec.digest(doc), "store": folder.relative_to(root).as_posix(),
+            }) from error
+        raise
     result = _save(folder, root, doc, journal, expected)
     result["dispatch_request"] = copy.deepcopy(journal["intent"]["request"])
     return result
