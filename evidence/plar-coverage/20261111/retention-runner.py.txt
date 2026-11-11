@@ -1,0 +1,39 @@
+"""Capture completed consumer outputs with the final retention implementation."""
+import json
+import shutil
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(root))
+from evaluations.host_trials import inventory, write_json
+from evaluations.native_trial_records import reference
+from evaluations.plar_coverage_case import retain
+
+base = root / "evidence/plar-coverage/20261111/native"
+runner = base.parent / "retention-runner.py.txt"
+with runner.open("xb") as stream:
+    stream.write(Path(__file__).read_bytes())
+for host, launch_attempt, destination in (
+    ("codex-01", base / "codex-01", root / "build/cf06-retention-codex"),
+    ("claude-01", base / "claude-01-resume", base / "claude-01-resume/final-capture"),
+):
+    original = base / host
+    record = json.loads((launch_attempt / "continuation.json").read_bytes())
+    if record["status"] != "finished":
+        raise ValueError("Wait for native completion before freezing outputs")
+    destination.mkdir(parents=True, exist_ok=False)
+    shutil.copyfile(launch_attempt / "launch.json", destination / "launch.json")
+    inputs = json.loads((original / "identity.json").read_bytes())["inputs"]
+    write_json(destination / "identity.json", {"inputs": inputs, "purpose": "Final retention replay using original prepared input identities", "baseline_identity": reference(original / "identity.json"), "native_record": reference(launch_attempt / "continuation.json")})
+    retain(destination)
+    captured = inventory(destination)
+    previous = inventory(original)
+    names = [p for p in captured if p.startswith(("outputs/", "plar-history/")) or p in ("final-plar.txt", "preservation.json")]
+    comparison = {p: captured[p] == previous.get(p) for p in names if p in previous}
+    receipt = {"runner": reference(root / "evaluations/plar_coverage_case.py"), "capture_script": reference(runner), "baseline": reference(original / "identity.json"), "native_completion": reference(launch_attempt / "continuation.json"), "captured": {p: captured[p] for p in names}, "comparison_with_previous_capture": comparison, "scope": "Retained final native artifacts with current no-clobber/path-preserving code. Original partial capture and native logs unchanged."}
+    target = launch_attempt / "retention-recheck.json"
+    with target.open("x", encoding="utf-8") as stream:
+        json.dump(receipt, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"host": host, "files": len(names), "changed_previous": [p for p, same in comparison.items() if not same], "receipt": str(target)}))

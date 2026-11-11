@@ -1,0 +1,237 @@
+"""Native allocation refresh over a retained consumer and an explicit source frontier."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+from evaluations import readiness_case
+from evaluations.caller_result_case import copy_preserved
+from evaluations.host_trials import inventory, sha, write_json
+from evaluations.native_trial_records import reference
+from evaluations.request_review_trials import ROOT, run
+
+WORK = "work/plar-coverage"
+KIT = readiness_case.KIT
+SOURCE = ROOT / "evidence/plar-allocation/20261108/local-probe"
+UNINSPECTED = "uninspected/renderer-view.mjs"
+ASSETS = ("queue.start", "queue.working", "queue.ready", "queue.retry")
+SHORTCUT = '''import { statusCell } from "./queue-view.ts";
+export function startShortcut() {
+  return statusCell("idle");
+}
+'''
+ENTRY = '''import { startShortcut } from "./start-shortcut.mjs";
+export function shortcutEntry() {
+  return startShortcut();
+}
+console.log(JSON.stringify(shortcutEntry()));
+'''
+
+
+def prepare(destination: Path, host: str, python: Path, *, package: Path | None = None,
+            consumer: Path | None = None, source: Path = SOURCE) -> Path:
+    """Copy existing state; introduce a declared consumer, never repair old drift."""
+    source = source.resolve()
+    if not (source / "plar.txt").is_file() or not (source / ".pixl/assets/queue.working/state.px").is_file():
+        raise ValueError("The retained populated allocation is required")
+    node = shutil.which("node")
+    if node is None:
+        raise ValueError("Node is required for the local consumer reachability observation")
+    consumer = readiness_case.prepare(destination, host, "clean", python, package=package, consumer=consumer)
+    destination, python = destination.resolve(), python.resolve()
+    original = copy_preserved(source, consumer)
+    kit = consumer / KIT
+    baseline_bytes = (consumer / "plar.txt").read_bytes()
+    baseline = json.loads(baseline_bytes)
+    (destination / "baseline-plar.txt").write_bytes(baseline_bytes)
+
+    def public_read(asset=None):
+        command = [str(python), "-B", str(kit / "scripts/pixl.py"), "plar", "read", "--root", str(consumer)]
+        if asset:
+            command.extend(["--asset", asset])
+        result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", check=False, timeout=30)
+        if result.returncode:
+            raise ValueError("Baseline public PLAR read failed: " + result.stderr)
+        return json.loads(result.stdout)
+
+    queue = public_read()
+    selections = {asset: public_read(asset) for asset in ASSETS}
+    write_json(destination / "baseline-queue.json", queue)
+    write_json(destination / "baseline-selections.json", selections)
+    for name, text in {"src/start-shortcut.mjs": SHORTCUT, "src/shortcut-entry.mjs": ENTRY}.items():
+        target = consumer / name
+        with target.open("x", encoding="utf-8", newline="\n") as stream:
+            stream.write(text)
+    target = consumer / UNINSPECTED
+    target.parent.mkdir(parents=True)
+    shutil.copyfile(ROOT / "examples/plar-project/renderer/view.mjs", target)
+    scope = '''# Current source overview
+
+This is a scoped CF-06 development fixture built from the retained allocation consumer.
+The original brief, source, art, production state, old README and history are unchanged.
+That history includes a pre-existing changed binding for src/queue-view.ts and an
+outstanding controlled job. Do not restamp that source or resolve the job in this assignment.
+
+Inspect BRIEF.md, src/queue.ts and src/queue-view.ts, including both statusCell and
+compactStatus plus the dynamic accountBadge registry lookup. Inspect assets/start.svg.
+The three PNG destinations named by statusVisuals are still absent; do not produce them.
+
+The newly added executable entrypoint is src/shortcut-entry.mjs. Follow its local
+import to src/start-shortcut.mjs, then the existing source it calls. Discover its
+visual role and update the existing allocation accordingly; do not duplicate reusable art.
+
+uninspected/renderer-view.mjs is a present copy of the existing example renderer.
+It is deliberately outside this assignment's inspection boundary. Do not open,
+search, execute or claim to inspect its contents. Metadata and hash observations are
+allowed without displaying the contents; a hash is not inspection. File presence is known; its behavior
+and rendered output are uninspected. The remote account badge registry is separately
+unavailable and outside the local asset request. This overview is not exhaustive coverage.
+'''
+    (consumer / "SOURCE-MAP.md").write_text(scope, encoding="utf-8")
+    command = [node, str(consumer / "src/shortcut-entry.mjs")]
+    observed = subprocess.run(command, cwd=consumer, capture_output=True, text=True, encoding="utf-8", check=False, timeout=20)
+    write_json(destination / "entrypoint-observation.json", {
+        "command": command, "returncode": observed.returncode, "stdout": observed.stdout, "stderr": observed.stderr,
+        "node_version": subprocess.check_output([node, "--version"], text=True, encoding="utf-8").strip(),
+        "scope": "Local descriptor reachability, not a browser render, image inspection or integration acceptance.",
+    })
+    if observed.returncode or json.loads(observed.stdout) != {"label": "Start", "path": "assets/start.svg", "frames": 1}:
+        raise ValueError("The added entrypoint did not reuse the existing Start descriptor")
+    (consumer / WORK).mkdir(parents=True)
+    role = "pixl" if host == "codex" else "pixl:pixl"
+    guidance = f'''This is the explicit CF-06 allocation/update evaluation, not art production.
+Consumer root: {consumer.as_posix()}. Kit: {kit.as_posix()}. Runtime: {python.as_posix()}.
+Read ALLOCATION-ASSIGNMENT.md and SOURCE-MAP.md. Use one native {role} specialist.
+Preserve existing source/art/production/history. Only plar.txt and new files under {WORK}
+may change; public plar save may add immutable PLAR history. No provider calls,
+generation, job/state/review/acceptance operations, configuration changes or memory edits.
+Do not inspect {UNINSPECTED}; it is deliberately out of scope, not missing.
+'''
+    assignment = f'''# Discover the added consumer and refresh allocation
+
+The existing plar.txt has populated production/evidence and a historical source drift.
+Your assignment is allocation and independent caller consumption only. Do not fix,
+cancel, observe or recreate historical production. No new art or production state is needed.
+
+Delegate to the actual named {role} role with this root, installed PLAR skill location,
+scope and prior decisions; do not substitute a generic child. The specialist must load
+{(kit / 'skills/plar/SKILL.md').as_posix()} and its format reference as appropriate.
+Use the configured local MCP for pixl_source, pixl_plar_read and pixl_plar_save.
+Capture complete actual tool results to files, preserving MCP envelopes if returned;
+do not manually transcribe or invent runtime reports. Small narrative artifacts are yours to author.
+
+Specialist:
+1. Save the actual initial queue read as {WORK}/initial-read.json. Inspect the overview,
+   brief, original view/backend, existing SVG and both new imported consumer modules.
+   Use pixl_source with actual current hashes and exact line bounds for these source reads;
+   inspect each complete small source file (split exact ranges are acceptable).
+   catalog/file tools can discover those hashes. The saved view binding is already stale:
+   use its observed hash for reading and retain that historical drift explicitly.
+2. Trace backend events/states through shared and added functions to actual asset paths.
+   Attach the new consumer to its existing visual role. Preserve existing IDs and meaning;
+   do not turn each usage into a new image or invent style rejection rules.
+3. Write {WORK}/final-document.json and save the complete refreshed allocation through
+   pixl_plar_save with the initial file hash. Save its actual return as {WORK}/update-save.json.
+   Keep every original non-target row, production/evidence field, bound source hash and
+   prior requirement unchanged. Add only relevant source/consumer/observation bindings for
+   the newly discovered usage. Existing source drift is not a reason to update all hashes.
+4. Write {WORK}/coverage.json as {{rows:[{{id,classification,inspection,consumers:[{{path,symbol,state?}}],file?:{{path,sha256?}},limitation}}],limits:[]}}.
+   classification is existing/reused/missing/dynamic/uninspected; inspection is
+   inspected/not_inspected/unavailable. Include existing art, its added reuse, each
+   absent PNG, the dynamic accountBadge consumer and the present uninspected renderer.
+   Missing-file entries omit sha256. Distinguish source inspection, local presence,
+   unavailable remote contents, uninspected surfaces and actual visual/runtime observations.
+5. Write {WORK}/source-map.json as {{files:[{{path,sha256,inspection,symbols:[]}}],
+   mappings:[{{state,asset_id,consumers:[{{path,symbol}}],transition?:{{path,symbol,input}}}}],limits:[]}}.
+   Mark the renderer not_inspected; a file hash alone cannot establish inspection.
+   Cover idle/running/succeeded/failed and their actual backend/view/added consumer mappings.
+6. Return {WORK}/SPECIALIST-RESULT.json with exact path/sha256 refs named initial_read,
+   update_save, final_document, coverage, source_map, plus scope/limits/next_action.
+
+Parent:
+Independently inspect both new source modules with pixl_source, consume the specialist's
+results and call pixl_plar_read with since equal to the initial file hash. Save the actual
+return as {WORK}/parent-refresh.json. Obtain actual focused reads of all four asset IDs
+and save each under {WORK}. Verify the newly mapped role changed while unrelated
+selected identities, rows and production/evidence stayed unchanged. Report pre-existing
+source drift separately from the added-consumer declaration; conservative file impact
+is not an order to regenerate assets. Confirm the old PLAR bytes remain in history.
+No plar handoff or new production graph is needed for this allocation-only result.
+
+Write {WORK}/CALLER-RESULT.json with native_child (canonical path/ID or explicit
+{{agent_type,canonical_task,fork_turns}}), refs coverage, source_map, initial_read,
+update_save, parent_refresh, specialist_result, parent_selections (asset ID -> path/sha256),
+plus scope/limits/next_action. Keep the ordinary result concise; retain detailed observations
+and public reports in their files. A source allocation does not establish rendered/artistic acceptance.
+'''
+    for name in ("AGENTS.md", "SESSION.md"):
+        (consumer / name).write_text(guidance, encoding="utf-8")
+    (consumer / "ALLOCATION-ASSIGNMENT.md").write_text(assignment, encoding="utf-8")
+    (destination / "prompt.txt").write_text(guidance + "\nComplete ALLOCATION-ASSIGNMENT.md.\n", encoding="utf-8")
+    launch = json.loads((destination / "launch.json").read_bytes())
+    launch.update(case="plar-coverage", artifact_roots=[WORK])
+    write_json(destination / "launch.json", launch)
+    identity = json.loads((destination / "identity.json").read_bytes())
+    identity.update(case="plar-coverage", inputs=inventory(consumer, ("__pycache__",)),
+                    original_inputs=original, source_consumer=str(source),
+                    baseline_document=baseline, baseline_selections=selections,
+                    baseline_changes=queue["changes"], baseline_hash=sha(destination / "baseline-plar.txt"),
+                    fixture={"changed_asset": "queue.start", "unaffected_assets": list(ASSETS[1:]),
+                             "new_consumers": [{"path": "src/start-shortcut.mjs", "symbol": "startShortcut", "state": "idle"},
+                                               {"path": "src/shortcut-entry.mjs", "symbol": "shortcutEntry", "state": "idle"}],
+                             "uninspected": [UNINSPECTED], "existing_path": "assets/start.svg",
+                             "missing_paths": ["assets/working.png", "assets/ready.png", "assets/retry.png"]},
+                    brief=reference(consumer / "BRIEF.md"), runner=reference(Path(__file__)))
+    write_json(destination / "identity.json", identity)
+    (destination / "runner.py.txt").rename(destination / "setup-runner.py.txt")
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+    return consumer
+
+
+def retain(destination: Path) -> None:
+    if (destination / "preservation.json").exists():
+        raise ValueError("Preserve prior retention; use a separate continuation record")
+    launch, identity = (json.loads((destination / name).read_bytes()) for name in ("launch.json", "identity.json"))
+    root = Path(launch["cwd"])
+    if (root / WORK).exists():
+        shutil.copytree(root / WORK, destination / "outputs")
+    current = inventory(root, ("__pycache__",))
+    added = {p: digest for p, digest in current.items() if p not in identity["inputs"]}
+    if (root / "plar.txt").is_file():
+        shutil.copyfile(root / "plar.txt", destination / "final-plar.txt")
+    for name in added:
+        if name.startswith(".pixl/plar-history/"):
+            target = destination / "plar-history" / Path(name).name
+            target.parent.mkdir(exist_ok=True)
+            shutil.copyfile(root / name, target)
+    write_json(destination / "preservation.json", {"changed": [p for p, digest in identity["inputs"].items()
+        if current.get(p) != digest], "added": added})
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="action", required=True)
+    prep = sub.add_parser("prepare")
+    prep.add_argument("destination", type=Path)
+    prep.add_argument("--host", choices=("codex", "claude"), required=True)
+    prep.add_argument("--python", type=Path, default=readiness_case.DEFAULT_PYTHON)
+    prep.add_argument("--package", type=Path)
+    prep.add_argument("--consumer", type=Path)
+    execute = sub.add_parser("run")
+    execute.add_argument("destination", type=Path)
+    execute.add_argument("--timeout", type=float, default=600)
+    args = parser.parse_args()
+    if args.action == "prepare":
+        consumer = prepare(args.destination, args.host, args.python, package=args.package, consumer=args.consumer)
+        print(json.dumps({"consumer": str(consumer), "launched": False}))
+    else:
+        run(args.destination.resolve(), timeout=args.timeout)
+        retain(args.destination.resolve())
+
+
+if __name__ == "__main__":
+    main()

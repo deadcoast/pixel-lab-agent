@@ -8,7 +8,7 @@ Top-level fields:
 | --- | --- |
 | version | `1` |
 | project | `name` and concise `brief`; no absolute installation paths |
-| coverage | Arrays `included`, `excluded`, `unresolved`; explicit scan boundary and blind spots |
+| coverage | Arrays `included`, `excluded`, `unresolved`; authored scan boundary and blind spots, not proof of reading, viewing or execution |
 | sources | Stable `id`, project-relative `path`, optional `sha256`; saves bind existing files without a hash |
 | assets | Stable rows described below; an empty list is valid when the inspected scope requires no production art |
 
@@ -16,7 +16,7 @@ Each asset has `id`, `kind`, `purpose`, `status`, `consumers`, `existing`, `requ
 
 - `consumers`: `{source, symbol, usage}`; source is an ID from the sources table. Symbol and usage explain the binding, not merely a filename.
 - `references`: `{source, role, instructions}`; source is a bound source ID. Role is `style`, `identity`, `pose`, `layout`, `palette`, `mask` or `motion`. Instructions say what to preserve. These are optional for text-only briefs; a filename mentioned in a requirement is not provider image transport.
-- `existing`: `{path, role}`; role explains reusable/placeholder/reference or other current use. Missing paths are reported, not rejected.
+- `existing`: `{path, role}`; role explains reusable/placeholder/reference or other current use. Missing paths are reported, not rejected. A present path is not a source binding or proof that its bytes were inspected. Use a source/reference binding when that visual input must contribute to the selected contract, and retain file-hash observations for exact byte-preservation claims.
 - `requirements`: `{property, value, authority, sources, reason}`. Value is JSON; authority is `requirement`, `observation`, `proposal`, or `unknown`. Sources is an array of source IDs. An empty array is useful for an explicit unsourced proposal/unknown; support adopted requirements with addressable evidence.
 - `delivery`: `{path, checks}`; exact destination (file or package path) and applicable mechanical, visual and consumer/import checks.
 - `depends_on`: other asset IDs; cycles and dangling IDs are rejected.
@@ -24,7 +24,7 @@ Each asset has `id`, `kind`, `purpose`, `status`, `consumers`, `existing`, `requ
 - `evidence`: `{path, note}` links to retained results. Source-bind evidence that must remain byte-identical.
 - `status`: `todo`, `in_progress`, `review`, `integrated`, or `deferred`. Status is authored by the host. File existence does not prove integration or quality.
 
-All paths are relative to the consumer root and use forward slashes. Source hashes detect local drift; they do not prove the interpretation of the source. The reader reports changed/missing/unbound sources and missing files. It does not restamp changed sources, guess readiness, contact PixelLab or certify artistic quality. Refresh a hash only after re-reading and reconciling the dependent claims. Focused reads include the full transitive dependency rows and their issues, so a caller does not lose the style baseline or an unresolved source when delegating a dependent asset.
+All paths are relative to the consumer root and use forward slashes. Source hashes detect local drift; they do not prove the interpretation of the source. Coverage should distinguish present-but-uninspected files, unavailable sources and inspected code whose runtime or visual behavior remains unobserved; retain the corresponding read, visual or execution evidence separately. The reader reports changed/missing/unbound sources and missing files. It does not restamp changed sources, guess readiness, contact PixelLab or certify artistic quality. Refresh a hash only after re-reading and reconciling the dependent claims. Focused reads include the full transitive dependency rows and their issues, so a caller does not lose the style baseline or an unresolved source when delegating a dependent asset.
 
 ## MCP
 
@@ -63,7 +63,7 @@ This additive version-1 extension keeps existing documents valid. Use a runtime 
 
 Queue reads include `changes`: tracked source drift, direct and transitively affected asset IDs, and unaffected IDs. Pass `since` (CLI `--since`) with a retained prior PLAR byte hash to compare declarations as well. Saves return this comparison against the replaced version. Queue progress fields (`status`, `next`, `evidence`, `production`) are not requirement changes. Coverage changes are reported separately. History bytes are hash-checked before comparison. Use `since` on the whole queue, then select an affected asset; focused reads include `dependency_issues`.
 
-This is conservative file/dependency impact, not a semantic code scanner. Re-read changed code and look for new states, consumers or dynamic paths. A shared source edit can affect several rows for review without requiring all their requirements or assets to change. Do not merely refresh hashes. Keep stable roles/IDs on destination moves; retain superseded work as deferred where applicable.
+This is conservative file/dependency impact, not a semantic code scanner. Re-read changed code and look for new states, consumers or dynamic paths. A shared source edit can affect several rows for review without requiring all their requirements or assets to change. Do not merely refresh hashes or clear pre-existing drift outside the reconciled claims. Preserve those stored bindings and report the remaining drift. Stable asset IDs and unchanged authored requirements are distinct from an unchanged requirements hash: the latter also requires an unchanged relevant source/dependency identity. Keep stable roles/IDs on destination moves; retain superseded work as deferred where applicable.
 
 [First-candidate preparation](prepare.md) consumes a focused selection and the exact reviewed request/criteria artifacts, removing handwritten PX2 setup from that path.
 

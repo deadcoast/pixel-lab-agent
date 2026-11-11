@@ -11,6 +11,7 @@ from pathlib import Path
 from evaluations.grade_named_codex_role import (
     normalized,
     objects,
+    own_rows,
     rows,
     strings,
     trace_facts,
@@ -134,12 +135,14 @@ def completed_command_text(journal: list[dict]) -> str:
                      and r["payload"]["item"].get("exit_code") == 0)
 
 
-def codex_role_proof(journals: list[list[dict]], parent: str, selected: str | None, role_text: str) -> dict:
+def codex_role_proof(journals: list[list[dict]], parent: str, selected: str | None, role_text: str,
+                     *, require_isolated: bool = True) -> dict:
     facts = trace_facts(journals, parent, role_text or "__unconfigured_role__")
     parent_rows = facts["journals"].get(parent, [])
     bound = []
     for call in facts["calls"]:
-        if call["tool"] != "spawn_agent" or call["requested_role"] != "pixl" or call["fork_turns"] != "none":
+        if (call["tool"] != "spawn_agent" or call["requested_role"] != "pixl"
+                or require_isolated and call["fork_turns"] != "none"):
             continue
         for row in parent_rows:
             payload = row.get("payload", {})
@@ -169,9 +172,11 @@ def codex_role_proof(journals: list[list[dict]], parent: str, selected: str | No
                     actual = block.get("text", "")
                     if role_text and actual.replace("\r\n", "\n") == role_text.replace("\r\n", "\n"):
                         matches.append({"file": row.get("file"), "line": row.get("line"), "child": child["id"]})
-            if payload.get("type") == "task_complete":
+        own = journal if require_isolated else own_rows(journal, parent, cold=True)
+        for row in own:
+            if row.get("payload", {}).get("type") == "task_complete":
                 completions.append({"file": row.get("file"), "line": row.get("line")})
-        text = completed_command_text(journal)
+        text = completed_command_text(own)
     return {"loaded": len(bound) == 1 and bool(matches), "completed": bool(completions), "child_text": text,
             "children": facts["children"], "selected_children": bound, "instruction_matches": matches,
             "completion_events": completions, "calls": facts["calls"]}

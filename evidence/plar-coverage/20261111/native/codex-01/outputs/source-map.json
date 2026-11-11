@@ -1,0 +1,174 @@
+{
+  "files": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "4e9cd8c992197e9aef7c3590d42d8938a8a256357a56e5cc4c942d536480910b",
+      "inspection": "inspected",
+      "symbols": []
+    },
+    {
+      "path": "SOURCE-MAP.md",
+      "sha256": "ae4315421275ea00168b397747907b70f6be48bb3785daa9207dd7b0be229965",
+      "inspection": "inspected",
+      "symbols": []
+    },
+    {
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "inspection": "inspected",
+      "symbols": [
+        "svg",
+        "path"
+      ]
+    },
+    {
+      "path": "src/queue-view.ts",
+      "sha256": "cae042c781cc930a834fc8989a24752bebab5fee5f486af417f14556b90785f6",
+      "inspection": "inspected",
+      "symbols": [
+        "statusVisuals",
+        "display",
+        "statusCell",
+        "compactStatus",
+        "accountBadge"
+      ]
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "ddc00f9c72c5887fd4e90d663504d9764fdbfe0f0940ad35685a2b9743dc1987",
+      "inspection": "inspected",
+      "symbols": [
+        "QueueState",
+        "stateAfter"
+      ]
+    },
+    {
+      "path": "src/shortcut-entry.mjs",
+      "sha256": "256cad560c4842941cb3da8842b269c67605d16f998659b48e0d7283a274aeb7",
+      "inspection": "inspected",
+      "symbols": [
+        "shortcutEntry"
+      ]
+    },
+    {
+      "path": "src/start-shortcut.mjs",
+      "sha256": "fe7b70f04c52c8fc77730e4b1bb9f0405de505946f06c47772581e5816bed1b8",
+      "inspection": "inspected",
+      "symbols": [
+        "startShortcut"
+      ]
+    },
+    {
+      "path": "uninspected/renderer-view.mjs",
+      "sha256": "73029b1cdb35bbc452de9a6b420a3e05b638000cf13580964ebdc4f375535a78",
+      "inspection": "not_inspected",
+      "symbols": []
+    }
+  ],
+  "mappings": [
+    {
+      "state": "idle",
+      "asset_id": "queue.start",
+      "consumers": [
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusVisuals.idle"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusCell"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "compactStatus"
+        },
+        {
+          "path": "src/start-shortcut.mjs",
+          "symbol": "startShortcut"
+        },
+        {
+          "path": "src/shortcut-entry.mjs",
+          "symbol": "shortcutEntry"
+        }
+      ]
+    },
+    {
+      "state": "running",
+      "asset_id": "queue.working",
+      "consumers": [
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusVisuals.running"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusCell"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "compactStatus"
+        }
+      ],
+      "transition": {
+        "path": "src/queue.ts",
+        "symbol": "stateAfter",
+        "input": "started"
+      }
+    },
+    {
+      "state": "succeeded",
+      "asset_id": "queue.ready",
+      "consumers": [
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusVisuals.succeeded"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusCell"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "compactStatus"
+        }
+      ],
+      "transition": {
+        "path": "src/queue.ts",
+        "symbol": "stateAfter",
+        "input": "ok"
+      }
+    },
+    {
+      "state": "failed",
+      "asset_id": "queue.retry",
+      "consumers": [
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusVisuals.failed"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "statusCell"
+        },
+        {
+          "path": "src/queue-view.ts",
+          "symbol": "compactStatus"
+        }
+      ],
+      "transition": {
+        "path": "src/queue.ts",
+        "symbol": "stateAfter",
+        "input": "error"
+      }
+    }
+  ],
+  "limits": [
+    "Source inspection only; no renderer execution, rendered visual inspection, animation playback or artistic acceptance.",
+    "Remote account badge registry contents unavailable; accountBadge source inspected, registry not inspected.",
+    "uninspected/renderer-view.mjs deliberately not inspected; hash/presence metadata is not inspection.",
+    "Pre-existing src/queue-view.ts stored hash dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375 retained; observed hash cae042c781cc930a834fc8989a24752bebab5fee5f486af417f14556b90785f6. Conservative file impact is not a regeneration order.",
+    "idle is a declared QueueState and explicit startShortcut input; stateAfter does not produce idle.",
+    "stateAfter: started -> running -> assets/working.png; ok -> succeeded -> assets/ready.png; error -> failed -> assets/retry.png; both statusCell and compactStatus select shared statusVisuals.",
+    "shortcutEntry imports startShortcut, which imports statusCell from queue-view.ts; idle selects assets/start.svg."
+  ]
+}

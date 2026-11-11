@@ -1,0 +1,115 @@
+{
+  "schema": "pixl.development-semantic-review.v1",
+  "reviewed_at": "2026-11-11T20:20:58.491165+00:00",
+  "case": "CF-06",
+  "host": "codex",
+  "reviewer": {
+    "kind": "development_assistant",
+    "canonical_task": "/root/plar_coverage",
+    "relationship": "Independent read-only review of the native caller and specialist outputs; reviewer did not produce the native allocation."
+  },
+  "status": "no_substantive_issue_found",
+  "scope": "Source-level semantic review of retained baseline/final allocation, captured complete source reads, coverage/source map, caller/specialist narratives and caller preservation observations. This is a development-assistant review, not human or artistic acceptance.",
+  "reviewed_artifacts": [
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/baseline-plar.txt",
+      "sha256": "dab4107f3e3a2f6a423d4b59b2f07e99f9cb99534705d4cbb25296f15e5cde6f"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/final-plar.txt",
+      "sha256": "06b5cbaa32748e5114e6a53dcef755426cb4acb4c26e155ffa7023565f3153a0"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/preservation.json",
+      "sha256": "7438975a240dfb19c62a38a53e5ebbdd5ba3d87b70acf18c163139d447abf0d2"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/coverage.json",
+      "sha256": "f14687fc105c9142564145c8f18d521d98a828deb85e2c5c9e867a08d3ccedb0"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/source-map.json",
+      "sha256": "805356fdfae489cbe890b98911a3994bdc2b354ee5a6e1dce408a7fe0d14d8d6"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/CALLER-RESULT.json",
+      "sha256": "1950d25e8ceaa1cafa6cee0938dca5c4289d1fdf0127d3c9e99f9886016009b3"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/SPECIALIST-RESULT.json",
+      "sha256": "8c62c32afa9666199472e080b989fdef19e2a058023032bacb32c94dc6019c13"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/parent-verification.json",
+      "sha256": "542ed02aa670a13948fb9b97ea4da3e99f246c69d1934480a15f02392c408d83"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-0.json",
+      "sha256": "7def251ca837143860fae48b52fa2cb9027da54800092ebd2759e50ce34b1c43"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-1.json",
+      "sha256": "4c19169559b8df2af5760509724a6c0d44c3b0bccd9f405f3e27073549636e72"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-2.json",
+      "sha256": "b7312ff0c5de238bc6ca368147e18d79d3d10bed4574f85d7ad407a8ec708c1b"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-3.json",
+      "sha256": "c42a9c17398f7b94d27c6ca0439aea1b4fb7b127680ff4d40475bc0c2f3067b9"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-4.json",
+      "sha256": "68f03a25dd4eb375c657ac69091f1057a2ef0b601dcee450b71c2fe38766e7be"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-5.json",
+      "sha256": "2ee53dfc11db57ab31eb775063e9745c479c5731da287817a051730233c258be"
+    },
+    {
+      "path": "evidence/plar-coverage/20261111/native/codex-01/outputs/specialist-source-6.json",
+      "sha256": "a0043d2c71771c1ba22d920c6f38ca9d9961a5e16e9ee8fcfa79664c9c51a308"
+    }
+  ],
+  "observed_findings": [
+    {
+      "id": "existing_role_reuse",
+      "result": "supported",
+      "observation": "shortcutEntry imports and calls startShortcut; startShortcut calls statusCell(\"idle\"); statusVisuals.idle resolves to assets/start.svg. The final allocation adds both consumers to queue.start and does not create another asset role."
+    },
+    {
+      "id": "state_and_function_mapping",
+      "result": "supported",
+      "observation": "The source map correctly traces started -> running -> Working, ok -> succeeded -> Ready, and error -> failed -> Retry through stateAfter and the shared statusVisuals mapping. It includes statusCell and compactStatus and explicitly notes that stateAfter does not produce idle."
+    },
+    {
+      "id": "requirements_and_preservation",
+      "result": "supported",
+      "observation": "Baseline/final comparison shows only coverage, two new source bindings, and the Start consumer/observation additions. All original source declarations and requirements remain unchanged. The new added_consumer entry is explicitly an observation of the inspected call chain, not an invented style or production requirement. Unrelated asset rows, production and evidence fields are unchanged."
+    },
+    {
+      "id": "historical_drift",
+      "result": "supported",
+      "observation": "The old queue-view stored hash remains intact while reports identify its current observed hash and retained drift. The caller distinguishes conservative shared-file impact from the changed Start requirements identity and does not treat impact as a regeneration order."
+    },
+    {
+      "id": "coverage_boundaries",
+      "result": "supported",
+      "observation": "The reports distinguish existing SVG source, its added reuse, three absent PNG destinations, the inspected accountBadge lookup with unavailable registry contents, and the present renderer deliberately marked not_inspected. The renderer has no inferred symbols, consumers or behavior claims."
+    },
+    {
+      "id": "claims_and_acceptance",
+      "result": "supported",
+      "observation": "The specialist and caller limit their claims to allocation and source inspection. They do not claim rendered inspection, animation playback, visual quality, target-engine acceptance or artistic acceptance. The native specialist claim of no runtime execution is scoped to its work; fixture preparation has a separate descriptor-reachability observation."
+    }
+  ],
+  "actionable_issues": [],
+  "limits": [
+    "Reviewed retained source text and tool-result artifacts; did not rerun the native trial or independently audit every native tool event.",
+    "Mechanical provenance, exact byte/hash verification and host qualification belong to the separate grader receipts; this review does not replace those checks.",
+    "No renderer contents were inspected for this review, and no remote account registry contents were available.",
+    "No image rendering, visual inspection, artistic judgment, target-engine integration or human acceptance was performed.",
+    "This bounded CF-06 observation does not establish exhaustive project coverage, broad host reliability, or M1/M2 acceptance."
+  ]
+}

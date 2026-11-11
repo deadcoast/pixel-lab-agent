@@ -43,7 +43,14 @@ gains an opt-in bounded view and exact full retrievals, while diagnostics retain
 original errors and offer scoped recovery. The additional Claude trial retains
 partial artifacts after HTTP 429 and timeout; its final caller report is missing,
 so the persisted-parent continuation/reliability exit remains open.
-M1/M2 remain open; no new audit is started.
+M1/M2 remain open; no new audit is started. CF-06 now has [bounded new-consumer
+discovery and selective allocation outcomes](../evidence/plar-coverage/README.md):
+Codex passes 37/37 and Claude passes 38/38 after same-parent continuation. Narrow
+guidance clarifies present-but-uninspected sources, authored coverage, shared-role
+reuse and preservation of pre-existing drift. Original grading failures and the
+Claude timeout remain retained, alongside semantic and observation limits. The
+child completed before timeout; only its parent resumed across processes. CF-07
+is next, supported by NF-06; broader M3 acceptance is unchanged.
 The Codex initial partial result and guided continuation remain distinct. Current
 native findings also identify broad historical source ranges and a stale optional
 consumer role adapter; these feed existing locator/context and M2 work rather than
@@ -191,6 +198,6 @@ There are **50 actionable findings**, ten in each requested category. Each stabl
 
 ## Next steps and document handoff
 
-Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) preserves unfinished acceptance and execution/results. Native continuation, named-role qualification and [CF-03/TM-04](../evidence/artistic-revision/README.md) retain their exact scoped outcomes and original failed attempts. NF-03/QOL-06 now add local readiness, fresh installation proofs and scoped clean/incomplete setup outcomes in both hosts, preserving earlier authentication blocks and grader corrections. QOL-10/SC-08 now has a bounded Codex caller outcome; retain the incomplete Claude continuation exit when quota permits. Take CF-06 allocation/update coverage as the next ready group, with CF-07/NF-06 following their dependencies; actual results remain in linked evidence. M1/M2 stay open; earlier implementation is retained rather than restarted.
+Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) preserves unfinished acceptance and execution/results. Native continuation, named-role qualification and [CF-03/TM-04](../evidence/artistic-revision/README.md) retain their exact scoped outcomes and original failed attempts. NF-03/QOL-06 now add local readiness, fresh installation proofs and scoped clean/incomplete setup outcomes in both hosts, preserving earlier authentication blocks and grader corrections. QOL-10/SC-08 now has a bounded Codex caller outcome; retain the incomplete Claude continuation exit when quota permits. CF-06 now passes its bounded allocation/update outcome against retained consumers in both hosts; take CF-07 next with NF-06 observation support and its dependencies. Actual results, original failures and limits remain in linked evidence. M1/M2 stay open; earlier implementation is retained rather than restarted.
 
 Update evidence links or a narrowly changed finding within this cycle when work reveals new facts. Do not rerun a full IDENTIFY because an increment or TODO slice ended. Once all required PLAN exits are satisfied and remaining proposals have explicit dispositions, preserve this cycle and run the next IDENTIFY workflow.

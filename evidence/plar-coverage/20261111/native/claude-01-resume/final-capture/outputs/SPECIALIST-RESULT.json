@@ -1,0 +1,63 @@
+{
+  "role": "pixl:pixl specialist (PLAR skill loaded) - CF-06 allocation/update evaluation",
+  "scope": "Source allocation only. Discovered the added executable consumer (src/shortcut-entry.mjs -> src/start-shortcut.mjs -> statusCell(\"idle\") -> statusVisuals.idle -> assets/start.svg) and attached it to the existing queue.start row via pixl_plar_save. No art production, no provider call, no job/state/review/acceptance/handoff operation, no configuration or memory edit. Only plar.txt (via pixl_plar_save) and new files under work/plar-coverage/ changed.",
+  "plar": {
+    "initial_hash": "dab4107f3e3a2f6a423d4b59b2f07e99f9cb99534705d4cbb25296f15e5cde6f",
+    "saved_hash": "a91015866549f0f39176e8d6f544aa68823094e1b592edf920ba4bb871e3a21d",
+    "save_expect_used": "dab4107f3e3a2f6a423d4b59b2f07e99f9cb99534705d4cbb25296f15e5cde6f",
+    "save_result": "success on first attempt; final-document.json is byte-identical to the saved plar.txt",
+    "history_retained": ".pixl/plar-history/dab4107f3e3a2f6a423d4b59b2f07e99f9cb99534705d4cbb25296f15e5cde6f.json (observed by directory listing only)",
+    "changes": {
+      "sources_added": [
+        {"id": "start-shortcut", "path": "src/start-shortcut.mjs", "sha256": "fe7b70f04c52c8fc77730e4b1bb9f0405de505946f06c47772581e5816bed1b8"},
+        {"id": "shortcut-entry", "path": "src/shortcut-entry.mjs", "sha256": "256cad560c4842941cb3da8842b269c67605d16f998659b48e0d7283a274aeb7"}
+      ],
+      "queue.start": {
+        "consumers_appended": ["start-shortcut/startShortcut", "shortcut-entry/shortcutEntry"],
+        "requirements_appended": ["reuse (authority observation, sources start-shortcut + shortcut-entry)"],
+        "unchanged": ["id", "kind", "purpose", "status deferred", "existing", "preserve requirement", "delivery", "depends_on", "questions", "next", "evidence"]
+      },
+      "coverage": {
+        "included_appended": 2,
+        "unresolved_appended": 1,
+        "excluded_changed": false,
+        "existing_entries_reworded_or_reordered": false
+      },
+      "unchanged_rows": ["queue.working", "queue.ready", "queue.retry"],
+      "unchanged_bindings": ["brief", "view (stale dc768023... deliberately retained)", "backend", "retry-note"]
+    }
+  },
+  "refs": {
+    "initial_read": {"path": "work/plar-coverage/initial-read.json", "sha256": "3d9fe5eca1d3d2d0a9199307fbcf070b4c9fc3fdb3acf0ef4ef172751a26fb81"},
+    "update_save": {"path": "work/plar-coverage/update-save.json", "sha256": "be93c53b859893489c30c13fcec408b75f492057f6460d5d9c372dbad6aa6a9b"},
+    "final_document": {"path": "work/plar-coverage/final-document.json", "sha256": "a91015866549f0f39176e8d6f544aa68823094e1b592edf920ba4bb871e3a21d"},
+    "coverage": {"path": "work/plar-coverage/coverage.json", "sha256": "5cace8893f1e2ba436ea4cb516fd1b668909509248608093d34b217f472fed36"},
+    "source_map": {"path": "work/plar-coverage/source-map.json", "sha256": "30640efcd45a9866f5f1493bf855aa159ce34021c658e4c33b35b5ea6e3b27b4"}
+  },
+  "source_reads": [
+    {"path": "work/plar-coverage/source-reads/BRIEF.md.json", "sha256": "8c739a0125949a2cad112f0ab087a24b78143819a16c15124984b5e2a2f25d50", "source": "BRIEF.md", "lines": "1-5", "source_sha256": "4e9cd8c992197e9aef7c3590d42d8938a8a256357a56e5cc4c942d536480910b"},
+    {"path": "work/plar-coverage/source-reads/queue.ts.json", "sha256": "9af3bf97c0ca9128fa339b83cf579d8b12cf2bd0bf6d51d324d403f9f05248b8", "source": "src/queue.ts", "lines": "1-4", "source_sha256": "ddc00f9c72c5887fd4e90d663504d9764fdbfe0f0940ad35685a2b9743dc1987"},
+    {"path": "work/plar-coverage/source-reads/queue-view.ts.json", "sha256": "2c46c3fb384731f94f34901e843ea8fa00f6fcbfd9b60a1765b43633c3eb55fd", "source": "src/queue-view.ts", "lines": "1-15", "source_sha256": "cae042c781cc930a834fc8989a24752bebab5fee5f486af417f14556b90785f6"},
+    {"path": "work/plar-coverage/source-reads/start.svg.json", "sha256": "6f89795e73a5d2478846742bf033fa2c210e606b2018a748c09eb729b3542a3a", "source": "assets/start.svg", "lines": "1-1", "source_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"},
+    {"path": "work/plar-coverage/source-reads/shortcut-entry.mjs.json", "sha256": "d18f2216c111b2ed5ffc7022a4bebe203f6cf9bdad55f5fec452ff8cba867ce7", "source": "src/shortcut-entry.mjs", "lines": "1-5", "source_sha256": "256cad560c4842941cb3da8842b269c67605d16f998659b48e0d7283a274aeb7"},
+    {"path": "work/plar-coverage/source-reads/start-shortcut.mjs.json", "sha256": "409fe259561eee94f9c2ca309f30c7616c8ac5404a8bce72faf908414f7df076", "source": "src/start-shortcut.mjs", "lines": "1-4", "source_sha256": "fe7b70f04c52c8fc77730e4b1bb9f0405de505946f06c47772581e5816bed1b8"}
+  ],
+  "uninspected": {
+    "path": "uninspected/renderer-view.mjs",
+    "bytes": 9574,
+    "sha256": "73029b1cdb35bbc452de9a6b420a3e05b638000cf13580964ebdc4f375535a78",
+    "classification": "uninspected",
+    "inspection": "not_inspected",
+    "note": "Size and sha256 re-verified with stat/sha256sum, which do not display contents. Not opened, read, searched, cataloged or executed. A hash is metadata, not inspection."
+  },
+  "limits": [
+    "A source allocation does not establish rendered or artistic acceptance; nothing was rendered, executed, displayed or visually judged.",
+    "Pre-existing drift retained: source id 'view' stays bound to dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375 while src/queue-view.ts hashes cae042c781cc930a834fc8989a24752bebab5fee5f486af417f14556b90785f6; tied to an outstanding controlled job on queue.working and deliberately not restamped. The post-save read still reports 'source view: changed' on all four rows for that reason; this is separate from the added-consumer declaration.",
+    "The post-save changes report lists changed_sources [shortcut-entry, start-shortcut, view] against baseline dab4107f...: the first two are newly bound (not drift); view is the retained historical drift. Conservative file impact marks all four rows affected; only queue.start's declaration actually changed. This is not an order to regenerate assets.",
+    "assets/working.png, assets/ready.png, assets/retry.png remain absent and were not produced.",
+    "accountBadge remains a dynamic lookup against a server registry unavailable locally; still excluded/unresolved, no asset row.",
+    "Historical production state (.pixl/, probe/, queue.working production/evidence) was not modified, observed, cancelled or recreated.",
+    "coverage.json, source-map.json, final-document.json and this file are specialist-authored narratives; initial-read.json, update-save.json and source-reads/*.json are verbatim captures of actual MCP tool returns (no MCP envelope beyond the JSON payload was returned to capture)."
+  ],
+  "next_action": "Parent: independently re-read both new modules with pixl_source, call pixl_plar_read with since=dab4107f3e3a2f6a423d4b59b2f07e99f9cb99534705d4cbb25296f15e5cde6f, take focused reads of all four asset IDs, and verify only queue.start's requirements identity changed while queue.working/ready/retry rows, production and evidence stayed unchanged. No handoff or production is needed."
+}

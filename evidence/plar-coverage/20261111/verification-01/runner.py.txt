@@ -1,0 +1,46 @@
+"""Retain one focused verification run without rebuilding unrelated evidence."""
+import hashlib
+import json
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[1]
+destination = root / "evidence/plar-coverage/20261111/verification-01"
+destination.mkdir(parents=True, exist_ok=False)
+modules = [
+    "tests.test_plar_coverage_case", "tests.test_plar_coverage_grade",
+    "tests.test_readiness_case", "tests.test_plar", "tests.test_plar_prepare",
+    "tests.test_plar_workflow", "tests.test_public_guidance", "tests.test_packaging",
+]
+paths = sorted({*root.glob("pixl/*.py"), *root.glob("pixl/*.json"),
+                *root.glob("evaluations/*.py"),
+                *(root / (m.replace(".", "/") + ".py") for m in modules),
+                root / "scripts/build_plugin.py",
+                root / "plugins/pixl/skills/plar/SKILL.md",
+                root / "plugins/pixl/skills/plar/references/format.md",
+                root / "plugins/pixl/bundle-manifest.json"})
+def identity():
+    return {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+before = identity()
+steps = [
+    ("tests", [sys.executable, "-B", "-m", "unittest", *modules]),
+    ("ruff", [sys.executable, "-m", "ruff", "check", "evaluations/plar_coverage_case.py", "evaluations/grade_plar_coverage.py", "evaluations/grade_readiness.py", "tests/test_plar_coverage_case.py", "tests/test_plar_coverage_grade.py"]),
+    ("mypy", [sys.executable, "-m", "mypy", "--explicit-package-bases", "--follow-imports=silent", "evaluations/plar_coverage_case.py", "evaluations/grade_plar_coverage.py", "evaluations/grade_readiness.py"]),
+]
+result = {"started_at": datetime.now(timezone.utc).isoformat(), "scope": "Focused CF-06 evaluation, allocation, role-proof and copied-package regression checks; earlier full-suite evidence is unchanged.", "inputs": before, "steps": []}
+for name, command in steps:
+    observed = subprocess.run(command, cwd=root, capture_output=True, timeout=300)
+    log = destination / (name + ".log")
+    log.write_bytes(observed.stdout + observed.stderr)
+    row = {"name": name, "command": command, "returncode": observed.returncode, "log": log.name, "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
+    result["steps"].append(row)
+    print(json.dumps(row), flush=True)
+result["changed_inputs"] = [p for p, digest in before.items() if identity()[p] != digest]
+result["status"] = "pass" if not result["changed_inputs"] and all(s["returncode"] == 0 for s in result["steps"]) else "fail"
+result["finished_at"] = datetime.now(timezone.utc).isoformat()
+(destination / "result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+(destination / "runner.py.txt").write_bytes(Path(__file__).read_bytes())
+print(json.dumps({"status": result["status"], "result": str(destination / "result.json")}))
+sys.exit(result["status"] != "pass")

@@ -1,0 +1,86 @@
+{
+  "rows": [
+    {
+      "id": "queue.start",
+      "classification": "existing",
+      "inspection": "inspected",
+      "consumers": [
+        { "path": "src/queue-view.ts", "symbol": "statusVisuals.idle", "state": "idle" },
+        { "path": "src/queue-view.ts", "symbol": "statusCell", "state": "idle" },
+        { "path": "src/queue-view.ts", "symbol": "compactStatus", "state": "idle" }
+      ],
+      "file": { "path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3" },
+      "limitation": "Existing vector present locally and its 133-byte source text read via pixl_source (16x16 viewBox, single #70b9ed triangle path). Source inspection only: not rendered, not displayed on the dark panel, no runtime execution; preserve status deferred, unchanged."
+    },
+    {
+      "id": "queue.start",
+      "classification": "reused",
+      "inspection": "inspected",
+      "consumers": [
+        { "path": "src/start-shortcut.mjs", "symbol": "startShortcut", "state": "idle" },
+        { "path": "src/shortcut-entry.mjs", "symbol": "shortcutEntry", "state": "idle" }
+      ],
+      "file": { "path": "assets/start.svg", "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3" },
+      "limitation": "Added reuse of the existing Start visual role traced by complete pixl_source reads of both new modules (startShortcut returns statusCell(\"idle\"); shortcutEntry wraps it and console.logs the descriptor at module load). Attached to the existing queue.start row; no new asset row, no new art. The modules were not executed; the logged output was not observed."
+    },
+    {
+      "id": "queue.working",
+      "classification": "missing",
+      "inspection": "inspected",
+      "consumers": [
+        { "path": "src/queue-view.ts", "symbol": "statusCell", "state": "running" },
+        { "path": "src/queue-view.ts", "symbol": "compactStatus", "state": "running" }
+      ],
+      "file": { "path": "assets/working.png" },
+      "limitation": "Destination declared by statusVisuals.running is absent locally (assets/ lists only start.svg). Consumer source inspected; no file bytes exist to inspect, no rendering. Row has retained production/evidence links and a pre-existing outstanding controlled job; not produced, touched or observed in this allocation."
+    },
+    {
+      "id": "queue.ready",
+      "classification": "missing",
+      "inspection": "inspected",
+      "consumers": [
+        { "path": "src/queue-view.ts", "symbol": "statusCell", "state": "succeeded" },
+        { "path": "src/queue-view.ts", "symbol": "compactStatus", "state": "succeeded" }
+      ],
+      "file": { "path": "assets/ready.png" },
+      "limitation": "Destination declared by statusVisuals.succeeded is absent locally. Consumer source inspected; no file bytes exist to inspect, no rendering. Not produced in this allocation."
+    },
+    {
+      "id": "queue.retry",
+      "classification": "missing",
+      "inspection": "inspected",
+      "consumers": [
+        { "path": "src/queue-view.ts", "symbol": "statusCell", "state": "failed" },
+        { "path": "src/queue-view.ts", "symbol": "compactStatus", "state": "failed" }
+      ],
+      "file": { "path": "assets/retry.png" },
+      "limitation": "Destination declared by statusVisuals.failed is absent locally. Consumer source inspected; no file bytes exist to inspect, no rendering. Not produced in this allocation."
+    },
+    {
+      "id": "account-badge",
+      "classification": "dynamic",
+      "inspection": "unavailable",
+      "consumers": [
+        { "path": "src/queue-view.ts", "symbol": "accountBadge" }
+      ],
+      "limitation": "accountBadge(registry, account) is a dynamic lookup registry[account] against a server-provided registry that is not present in this checkout. The consumer source was inspected; the remote registry contents are unavailable locally and were not fetched. Remains excluded/unresolved in plar.txt coverage; no PLAR asset row."
+    },
+    {
+      "id": "renderer-view",
+      "classification": "uninspected",
+      "inspection": "not_inspected",
+      "consumers": [],
+      "file": { "path": "uninspected/renderer-view.mjs", "sha256": "73029b1cdb35bbc452de9a6b420a3e05b638000cf13580964ebdc4f375535a78" },
+      "limitation": "Present locally (9574 bytes) and deliberately outside this assignment's inspection boundary. Only size and sha256 were measured with a hash command that does not display contents; the file was not opened, read, searched, cataloged or executed. Its consumers, behavior and rendered output are unknown. A hash is metadata, not inspection."
+    }
+  ],
+  "limits": [
+    "Source inspection: BRIEF.md, src/queue.ts, src/queue-view.ts, assets/start.svg, src/shortcut-entry.mjs and src/start-shortcut.mjs were each read completely via pixl_source with exact line bounds against their current hashes; results retained under work/plar-coverage/source-reads/.",
+    "Local presence: assets/start.svg present; assets/working.png, assets/ready.png, assets/retry.png absent; uninspected/renderer-view.mjs present (metadata only).",
+    "Unavailable remote contents: the account badge registry is server-provided and not present locally; nothing was fetched.",
+    "Uninspected surfaces: uninspected/renderer-view.mjs contents, behavior and rendered output; any loader/renderer behavior for the PNG sheets.",
+    "Visual/runtime observation: none. No module was executed, no console output captured, no UI rendered, no image displayed or judged at native or 3x scale. This allocation establishes source mapping only, not rendered or artistic acceptance.",
+    "Pre-existing drift: plar.txt binds source 'view' (src/queue-view.ts) to dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375 while the file hashes cae042c781cc930a834fc8989a24752bebab5fee5f486af417f14556b90785f6. This drift predates the assignment, is tied to an outstanding controlled job and was deliberately retained (not restamped). It is separate from the added-consumer declaration.",
+    "Historical production state (.pixl/, probe/, queue.working production links and evidence) was neither modified nor observed beyond what the queue read reports."
+  ]
+}

@@ -1,0 +1,434 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Queue UI",
+    "brief": "Pixel-art queue states integrated with existing backend behavior; preserve Start."
+  },
+  "coverage": {
+    "included": [
+      "src/queue-view.ts status visuals and two consumers",
+      "src/queue.ts backend state transitions",
+      "BRIEF.md",
+      "assets/start.svg",
+      "src/shortcut-entry.mjs shortcutEntry imports startShortcut; src/start-shortcut.mjs reuses statusCell(idle)"
+    ],
+    "excluded": [
+      "Backend functions with no visual consumer",
+      "Server-provided account badges"
+    ],
+    "unresolved": [
+      "The remote account badge registry is not present; this local inventory does not enumerate it.",
+      "uninspected/renderer-view.mjs is present but deliberately not inspected; no rendered output or runtime behavior observed.",
+      "Pre-existing view binding drift remains retained; allocation of added Start consumer does not restamp historical sources."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "4e9cd8c992197e9aef7c3590d42d8938a8a256357a56e5cc4c942d536480910b"
+    },
+    {
+      "id": "view",
+      "path": "src/queue-view.ts",
+      "sha256": "dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375"
+    },
+    {
+      "id": "backend",
+      "path": "src/queue.ts",
+      "sha256": "ddc00f9c72c5887fd4e90d663504d9764fdbfe0f0940ad35685a2b9743dc1987"
+    },
+    {
+      "id": "retry-note",
+      "path": "probe/retry-note.json",
+      "sha256": "72c2d3bac23640c2ad2c7f51be394ce092603c9bc1fc2a71e40d00d166b8b201"
+    },
+    {
+      "id": "shortcut-entry",
+      "path": "src/shortcut-entry.mjs",
+      "sha256": "256cad560c4842941cb3da8842b269c67605d16f998659b48e0d7283a274aeb7"
+    },
+    {
+      "id": "start-shortcut",
+      "path": "src/start-shortcut.mjs",
+      "sha256": "fe7b70f04c52c8fc77730e4b1bb9f0405de505946f06c47772581e5816bed1b8"
+    }
+  ],
+  "assets": [
+    {
+      "id": "queue.working",
+      "kind": "animation",
+      "purpose": "Communicate an active queue job",
+      "status": "in_progress",
+      "consumers": [
+        {
+          "source": "view",
+          "symbol": "statusCell",
+          "usage": "working visual selected from shared statusVisuals backend-state mapping"
+        },
+        {
+          "source": "view",
+          "symbol": "compactStatus",
+          "usage": "working visual selected from shared statusVisuals backend-state mapping"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "raster_size",
+          "value": [
+            64,
+            16
+          ],
+          "authority": "proposal",
+          "sources": [
+            "view",
+            "brief"
+          ],
+          "reason": "Assumes tightly packed 16px frames with no gutters; confirm the target loader before integration."
+        },
+        {
+          "property": "state",
+          "value": "running",
+          "authority": "requirement",
+          "sources": [
+            "backend",
+            "view"
+          ],
+          "reason": "Keep backend state and visual meaning aligned."
+        },
+        {
+          "property": "style",
+          "value": "Coherent pixel art; cool blue accent; transparent background; no fixed palette",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserve the requested style without inventing a palette restriction."
+        },
+        {
+          "property": "display",
+          "value": {
+            "scale": 3,
+            "filter": "nearest",
+            "background": "#172336"
+          },
+          "authority": "requirement",
+          "sources": [
+            "view"
+          ],
+          "reason": "Review native size and the consumer's actual display scale."
+        },
+        {
+          "property": "style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "A representative proposal must be inspected before expanding the family."
+        },
+        {
+          "property": "animation",
+          "value": {
+            "frames": 4,
+            "layout": "horizontal",
+            "frame_ms": 100
+          },
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "view"
+          ],
+          "reason": "Timing and layout match the UI."
+        }
+      ],
+      "delivery": {
+        "path": "assets/working.png",
+        "checks": [
+          "Verify file and canvas dimensions against the consumer.",
+          "Inspect native-size readability and state meaning.",
+          "Render in statusCell and compactStatus on the dark panel."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Choose and inspect the representative style sample.",
+        "Confirm tightly packed horizontal frames with the target renderer/loader."
+      ],
+      "next": "Continue the prepared request",
+      "evidence": [
+        {
+          "path": "probe/preparation.json",
+          "note": "Actual local preparation receipt; no provider or image acceptance"
+        }
+      ],
+      "production": {
+        "store": ".pixl/assets/queue.working",
+        "task": "task",
+        "output": "output.working"
+      }
+    },
+    {
+      "id": "queue.ready",
+      "kind": "ui-icon",
+      "purpose": "Communicate completed work",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "view",
+          "symbol": "statusCell",
+          "usage": "ready visual selected from shared statusVisuals backend-state mapping"
+        },
+        {
+          "source": "view",
+          "symbol": "compactStatus",
+          "usage": "ready visual selected from shared statusVisuals backend-state mapping"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "raster_size",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "view",
+            "brief"
+          ],
+          "reason": "16px cells; the working sheet has four horizontal frames."
+        },
+        {
+          "property": "state",
+          "value": "succeeded",
+          "authority": "requirement",
+          "sources": [
+            "backend",
+            "view"
+          ],
+          "reason": "Keep backend state and visual meaning aligned."
+        },
+        {
+          "property": "style",
+          "value": "Coherent pixel art; cool blue accent; transparent background; no fixed palette",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserve the requested style without inventing a palette restriction."
+        },
+        {
+          "property": "display",
+          "value": {
+            "scale": 3,
+            "filter": "nearest",
+            "background": "#172336"
+          },
+          "authority": "requirement",
+          "sources": [
+            "view"
+          ],
+          "reason": "Review native size and the consumer's actual display scale."
+        },
+        {
+          "property": "style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "A representative proposal must be inspected before expanding the family."
+        }
+      ],
+      "delivery": {
+        "path": "assets/ready.png",
+        "checks": [
+          "Verify file and canvas dimensions against the consumer.",
+          "Inspect native-size readability and state meaning.",
+          "Render in statusCell and compactStatus on the dark panel."
+        ]
+      },
+      "depends_on": [
+        "queue.working"
+      ],
+      "questions": [
+        "Choose and inspect the representative style sample."
+      ],
+      "next": "Use the inspected working sample as a style reference and create this state.",
+      "evidence": []
+    },
+    {
+      "id": "queue.retry",
+      "kind": "ui-icon",
+      "purpose": "Offer recovery after a failed job",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "view",
+          "symbol": "statusCell",
+          "usage": "retry visual selected from shared statusVisuals backend-state mapping"
+        },
+        {
+          "source": "view",
+          "symbol": "compactStatus",
+          "usage": "retry visual selected from shared statusVisuals backend-state mapping"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "raster_size",
+          "value": [
+            16,
+            16
+          ],
+          "authority": "requirement",
+          "sources": [
+            "view",
+            "brief"
+          ],
+          "reason": "16px cells; the working sheet has four horizontal frames."
+        },
+        {
+          "property": "state",
+          "value": "failed",
+          "authority": "requirement",
+          "sources": [
+            "backend",
+            "view"
+          ],
+          "reason": "Keep backend state and visual meaning aligned."
+        },
+        {
+          "property": "style",
+          "value": "Coherent pixel art; cool blue accent; transparent background; no fixed palette",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Preserve the requested style without inventing a palette restriction."
+        },
+        {
+          "property": "display",
+          "value": {
+            "scale": 3,
+            "filter": "nearest",
+            "background": "#172336"
+          },
+          "authority": "requirement",
+          "sources": [
+            "view"
+          ],
+          "reason": "Review native size and the consumer's actual display scale."
+        },
+        {
+          "property": "style_reference",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "A representative proposal must be inspected before expanding the family."
+        },
+        {
+          "property": "readability",
+          "value": "Distinguishable from other states without color alone",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Error and retry must remain legible."
+        },
+        {
+          "property": "inspection_note",
+          "value": "Review retry in its existing failure role",
+          "authority": "observation",
+          "sources": [
+            "retry-note"
+          ],
+          "reason": "Synthetic scoped update for allocation isolation."
+        }
+      ],
+      "delivery": {
+        "path": "assets/retry.png",
+        "checks": [
+          "Verify file and canvas dimensions against the consumer.",
+          "Inspect native-size readability and state meaning.",
+          "Render in statusCell and compactStatus on the dark panel."
+        ]
+      },
+      "depends_on": [
+        "queue.working"
+      ],
+      "questions": [
+        "Choose and inspect the representative style sample."
+      ],
+      "next": "Use the inspected working sample as a style reference and create this state.",
+      "evidence": []
+    },
+    {
+      "id": "queue.start",
+      "kind": "vector-control",
+      "purpose": "Start an idle queue",
+      "status": "deferred",
+      "consumers": [
+        {
+          "source": "view",
+          "symbol": "statusVisuals.idle",
+          "usage": "Existing Start control"
+        },
+        {
+          "source": "shortcut-entry",
+          "symbol": "shortcutEntry",
+          "usage": "Imports and calls startShortcut; reuses the existing idle Start visual assets/start.svg."
+        },
+        {
+          "source": "start-shortcut",
+          "symbol": "startShortcut",
+          "usage": "Calls statusCell(\"idle\") through src/queue-view.ts statusVisuals.idle; reuses assets/start.svg."
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/start.svg",
+          "role": "Existing intentional vector control; preserve"
+        }
+      ],
+      "requirements": [
+        {
+          "property": "preserve",
+          "value": true,
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The requester explicitly keeps this control."
+        },
+        {
+          "property": "added_consumer",
+          "value": "shortcutEntry -> startShortcut -> statusCell(\"idle\") -> statusVisuals.idle -> assets/start.svg",
+          "authority": "observation",
+          "sources": [
+            "shortcut-entry",
+            "start-shortcut",
+            "view"
+          ],
+          "reason": "Inspected added modules reuse the existing Start role; no new image, style rule, or production change."
+        }
+      ],
+      "delivery": {
+        "path": "assets/start.svg",
+        "checks": [
+          "Confirm this existing control remains intact during integration."
+        ]
+      },
+      "depends_on": [],
+      "questions": [],
+      "next": "Preserve the existing vector; no replacement asset requested.",
+      "evidence": []
+    }
+  ]
+}
