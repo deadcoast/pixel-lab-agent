@@ -1,0 +1,364 @@
+"""Independent TM-07 native execution proofs; no artistic acceptance inference."""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import tomllib
+import zipfile
+from pathlib import Path
+
+from evaluations.consumer_execution_case import (
+    CANDIDATE,
+    CONFIG,
+    KIT,
+    STATE,
+    WORK,
+    historical_target,
+)
+from evaluations.grade_artistic_revision import confined
+from evaluations.grade_caller_result import mcp_attempts
+from evaluations.grade_integration_change import (
+    bundle_errors,
+    complete_file_proof,
+    image_views,
+    native_identity,
+    operation_proof,
+)
+from evaluations.grade_named_codex_role import own_rows, rows
+from evaluations.grade_plar_coverage import claude_completion, native_read_proof
+from evaluations.grade_readiness import (
+    claude_loading_proof,
+    codex_role_proof,
+    reference,
+    semantic_result,
+)
+from evaluations.host_trials import inventory, sha
+from evaluations.request_review_trials import ROOT
+from pixl import candidate_review, codec, service, store
+
+PROFILE_FILES = {"capture.mjs", "server.mjs", "view.mjs", "index.html", "check.py", "observation.py"}
+PHASES = ("normal-start", "reduced", "normal-restored", "initially-reduced")
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def selected_identity(value, host: str):
+    """Accept the host's task_name spelling without weakening raw role binding."""
+    if host == "codex" and isinstance(value, dict) and "task_name" in value:
+        selected = value["task_name"]
+        roles = {value[key] for key in ("agent_type", "subagent_type", "role") if key in value}
+        aliases = ("canonical_task", "canonical_path", "agent_id", "id")
+        if (not isinstance(selected, str) or not selected.startswith("/root/") or roles != {"pixl"}
+                or any(value[key] != selected for key in aliases if key in value)
+                or value.get("fork_turns", "none") != "none"):
+            return None
+        return selected
+    return native_identity(value, host)
+
+
+def report_reference(value: dict, wrapper: str) -> dict:
+    """Read an observed annotated reference without accepting conflicting aliases."""
+    nested = value.get(wrapper)
+    if nested is None:
+        if not {"path", "sha256"} <= value.keys():
+            raise ValueError("Report lacks an exact artifact reference")
+        return value
+    if not isinstance(nested, dict) or not {"path", "sha256"} <= nested.keys():
+        raise ValueError("Report wrapper lacks an exact artifact reference")
+    if any(value[key] != nested[key] for key in ("path", "sha256") if key in value):
+        raise ValueError("Conflicting flat and wrapped artifact references")
+    return nested
+
+
+def report_fields(value: dict) -> dict:
+    return {**value, "operation_result": report_reference(value["operation_result"], "reference"),
+            "execution_report": report_reference(value["execution_report"], "result")}
+
+
+def reported_unchanged(value, independently_unchanged: bool, state_hash: str | None = None) -> bool:
+    """A richer preservation report still requires independently unchanged bytes."""
+    if not independently_unchanged:
+        return False
+    if value is True:
+        return True
+    if (not isinstance(value, dict) or value.get("changed", False) is not False
+            or value.get("unchanged", True) is not True
+            or value.get("verified", True) is not True
+            or any(value[key] != [] for key in ("changes", "differences", "added_outside_reports") if key in value)):
+        return False
+    # Validate every supplied recognized field before choosing a positive layout.
+    # A second "unchanged" alias must never hide contradictory state or results.
+    results, state = value.get("results", {}), value.get("canonical_state", {})
+    if not isinstance(results, dict) or not isinstance(state, dict):
+        return False
+    zero_counters = {"baseline_sha256sum_c_returncode", "kit_sha256sum_c_returncode", "missing_baseline_files",
+                     "files_newer_than_baseline_outside_work_consumer_execution", "file_set_drift", "kit_file_set_drift"}
+    if (any(type(results[key]) is not int or results[key] != 0 for key in zero_counters if key in results)
+            or results.get("kit_pycache_present_after", False) is not False
+            or any(value.get(key, False) is not False for key in ("state_changed_reported", "state_written_reported"))
+            or any(state.get(key, False) is not False for key in ("state_changed_reported_by_operation", "state_written_reported_by_operation"))
+            or "state_hash_after" in value and (state_hash is None or value["state_hash_after"] != state_hash)
+            or "state_hash" in state and (state_hash is None or state["state_hash"] != state_hash)):
+        return False
+    for before, after in (("before_count", "after_count"), ("baseline_count", "current_count")):
+        if (any(type(value[key]) is not int or value[key] < 0 for key in (before, after) if key in value)
+                or before in value and after in value and value[before] != value[after]):
+            return False
+    if value.get("unchanged") is True:
+        return True
+    if value.get("verified") is not True or state_hash is None:
+        return False
+    if "canonical_state" in value:
+        flags_match = ({"state_hash", "state_changed_reported_by_operation", "state_written_reported_by_operation"} <= state.keys()
+                       and "kit_pycache_present_after" in results)
+        zero_fields = ("file_set_drift", "kit_file_set_drift", "files_newer_than_baseline_outside_work_consumer_execution")
+    else:
+        flags_match = {"state_hash_after", "state_changed_reported", "state_written_reported"} <= value.keys()
+        zero_fields = ("baseline_sha256sum_c_returncode", "kit_sha256sum_c_returncode", "missing_baseline_files",
+                       "files_newer_than_baseline_outside_work_consumer_execution")
+    return flags_match and set(zero_fields) <= results.keys()
+
+
+def summary(facts: dict) -> dict:
+    """Independently project raw checker counts into the operation's compact form."""
+    return {**{key: facts[key] for key in ("pixel_checks", "source_checks", "clock_checks")},
+            "phases": {name: {"status": phase["status"], "sample_count": phase["sample_count"],
+                "counts": {cell: {"distinct_frames": len(count["frames"]),
+                    **{key: count[key] for key in ("transitions", "wraps", "skips")}}
+                           for cell, count in phase["counts"].items()}}
+                       for name, phase in facts["phases"].items()}}
+
+
+def phase_errors(capture: dict, checked: dict) -> list[str]:
+    """Verify requested coverage and actual media-switch identities independently."""
+    errors = []
+    phases = capture["phases"]
+    if tuple(phase["name"] for phase in phases) != PHASES:
+        return ["Missing or reordered required phases"]
+    if not (phases[0]["sessionId"] == phases[1]["sessionId"] == phases[2]["sessionId"] != phases[3]["sessionId"]):
+        errors.append("Media changes did not preserve one page and a separate startup page")
+    expected_cells = {consumer + "@" + str(scale) for consumer in ("statusCell", "compactStatus") for scale in CONFIG["scales"]}
+    for phase in phases:
+        name = phase["name"]
+        fact = checked["facts"]["phases"][name]
+        reduced = name in ("reduced", "initially-reduced")
+        switches = [] if name in ("normal-start", "initially-reduced") else [("normal", "reduced")]
+        if name == "normal-restored":
+            switches.append(("reduced", "normal"))
+        if (phase["status"] != "observed" or fact["status"] != "observed"
+                or phase["motion"] != ("reduced" if reduced else "normal")
+                or [(event["from"], event["to"]) for event in phase["preferenceEvents"]] != switches
+                or fact["switches"] != len(switches) or fact["reconciliations"] != len(switches)):
+            errors.append("Unobserved preference change/reconciliation: " + name)
+        if phase["initialMotion"] != ("reduced" if name == "initially-reduced" else "normal"):
+            errors.append("Initial preference not applied before page startup: " + name)
+        if set(fact["counts"]) != expected_cells:
+            errors.append("Missing actual consumer/scale coverage: " + name)
+        for cell, count in fact["counts"].items():
+            if reduced:
+                if count["transitions"] or count["wraps"] or len(count["frames"]) != 1:
+                    errors.append("Held consumer changed frames: " + name + "/" + cell)
+            elif (count["wraps"] < CONFIG["observed_wraps"] or count["skips"]
+                  or len(count["frames"]) != phase["frameCount"]):
+                errors.append("Actual consecutive frame coverage/wraps incomplete: " + name + "/" + cell)
+    return errors
+
+
+def viewing_coverage(capture: dict, observed: set[str], named: set[str]) -> dict:
+    """Combined phase screenshots can cover the checked consumer/scale canvases.
+
+    The frozen renderer and independent checker bind the screenshots to a page
+    containing the actual still/live inventories. This does not claim measured
+    screenshot element rectangles. Standalone cells are an alternative for scale
+    coverage, not mandatory duplicate image views.
+    """
+    required_cells = {(consumer, scale) for consumer in ("statusCell", "compactStatus") for scale in CONFIG["scales"]}
+    screenshots = capture["screenshots"]
+    screenshot_hashes = {item["sha256"] for item in screenshots}
+    phases = capture["phases"]
+    stills = [view for view in capture["views"] if view["state"] == "running"]
+    still_coverage = (len(stills) == len(required_cells)
+                      and {(view["consumer"], view["scale"]) for view in stills} == required_cells
+                      and all(view.get("geometryMatches") is True and view.get("image", {}).get("sha256") for view in stills))
+    live_coverage = (tuple(phase["name"] for phase in phases) == PHASES
+                     and all(phase.get("samples") and all(
+                         len(sample["cells"]) == len(required_cells)
+                         and {(cell["consumer"], cell["scale"]) for cell in sample["cells"]} == required_cells
+                         and all(cell.get("geometryMatches") is True and cell.get("image", {}).get("sha256")
+                                 for cell in sample["cells"])
+                         for sample in phase["samples"]) for phase in phases))
+    screenshot_coverage = still_coverage and live_coverage
+    still_hashes = {view["image"]["sha256"] for view in stills if view.get("image", {}).get("sha256")}
+    standalone_coverage = still_coverage and still_hashes <= observed and still_hashes <= named
+    screenshots_viewed = (len(screenshots) == len(PHASES) and {item["phase"] for item in screenshots} == set(PHASES)
+                          and screenshot_hashes <= observed and screenshot_hashes <= named)
+    return {"pass": bool(screenshots_viewed and (screenshot_coverage or standalone_coverage)),
+            "required_phase_screenshot_hashes": sorted(screenshot_hashes),
+            "combined_screenshot_consumer_scale_coverage": bool(screenshot_coverage),
+            "standalone_consumer_scale_coverage": bool(standalone_coverage),
+            "scope": "Actually viewed phase screenshots with frozen-renderer and checked canvas inventories; no element-rectangle measurement or artistic acceptance."}
+
+
+def frozen_recheck(root: Path, identity: dict, result: dict) -> tuple[dict, dict, Path]:
+    """Execute the retained checker only after binding its entire shipped closure."""
+    artifacts = result["artifacts"]
+    capture_path = reference(root, artifacts["capture/capture.json"])
+    out = capture_path.parent.parent
+    provenance = read(reference(root, artifacts["renderer-sources.json"]))
+    if len(provenance) != len(PROFILE_FILES) or {Path(item["copy"]).name for item in provenance} != PROFILE_FILES:
+        raise ValueError("Incomplete or duplicate frozen renderer closure")
+    for item in provenance:
+        name = Path(item["copy"]).name
+        relative = "resources/examples/consumer-execution/queue-motion/" + name
+        resource = (root / KIT / relative).resolve()
+        copied = reference(root, {"path": item["copy"], "sha256": item["sha256"]})
+        if (Path(item["resource"]).resolve() != resource or copied != out / "renderer" / name
+                or sha(resource) != item["sha256"] or identity["package_files"].get(relative) != item["sha256"]):
+            raise ValueError("Renderer differs from exact frozen installed kit: " + name)
+    spec = importlib.util.spec_from_file_location("tm07_frozen_checker", out / "renderer/check.py")
+    module = importlib.util.module_from_spec(spec)
+    # The grader must not add bytecode files to retained execution evidence.
+    exec(compile((out / "renderer/check.py").read_bytes(), str(out / "renderer/check.py"), "exec"), module.__dict__)  # noqa: S102 - Entire frozen renderer closure is hash-verified above.
+    checked = module.check(root, capture_path.parent, renderer=out / "renderer")
+    return checked, read(capture_path), out
+
+
+def artifact_checks(root: Path, identity: dict, result: dict) -> tuple[list[dict], dict, Path]:
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+    current = inventory(root, ("__pycache__",))
+    drift = [name for name, digest in identity["inputs"].items() if current.get(name) != digest]
+    additions = [name for name in current if name not in identity["inputs"] and not name.startswith(WORK + "/")]
+    check("exact_initial_inputs_and_only_assigned_additions", not drift and not additions,
+          {"changed_or_missing": drift, "unexpected_additions": additions})
+    historical = identity["restoration"]["files"]
+    changed = [name for name, digest in historical.items() if current.get(historical_target(name)) != digest]
+    check("exact_historical_source_art_state_and_inactive_host_bytes", not changed, changed)
+    check("all_production_records_and_prior_history_unchanged", inventory(root / ".pixl") == identity["baseline_production"])
+    check("frozen_installed_bundle_preserved", inventory(root / KIT, ("__pycache__",)) == identity["package_files"])
+    check("fresh_external_consumer", not root.is_relative_to(ROOT) and not ROOT.is_relative_to(root))
+    doc = store.load(root / Path(STATE).parent)
+    context = candidate_review.context(doc, root, CANDIDATE)
+    check("operation_matches_current_candidate_and_bindings", all(result.get(key) == context[key]
+          for key in ("candidate", "state_hash", "binding_hash")) and result.get("manifest") == context["candidate_file"])
+    check("complete_execution_is_not_acceptance", result.get("status") == "complete" and result.get("renderer_executed") is True
+          and result.get("files_verified") is True and result.get("cleanup", {}).get("complete") is True
+          and all(result.get(key) is False for key in ("state_changed", "state_written", "automatic_acceptance")))
+    for item in result["artifacts"].values():
+        reference(root, item)
+    raw = read(confined(root, result["result_path"]))
+    check("public_result_equals_retained_operation_result", result in (raw, service.describe_result("consumer_execute", raw)))
+    checked, capture, out = frozen_recheck(root, identity, result)
+    check("exact_requested_modules_scales_and_observation_bounds", read(out / "config.json") == CONFIG == capture["config"])
+    recorded = read(reference(root, result["artifacts"]["check.json"]))
+    check("frozen_checker_independently_reproduces_all_pixel_source_clock_counts", checked == recorded and checked.get("pass") is True,
+          {"facts": checked.get("facts"), "failures": checked.get("failures")})
+    check("compact_operation_counts_equal_recounted_evidence", result.get("check_summary") == summary(checked["facts"]))
+    errors = phase_errors(capture, checked)
+    check("both_consumer_scales_actual_wraps_and_same_page_preference_changes", not errors, errors)
+    imported = read(confined(root, result["import_result"]))
+    observation = read(reference(root, result["artifacts"]["observation.json"]))
+    errors = bundle_errors(root, observation, imported, context)
+    check("all_package_source_destination_and_retained_bundle_bytes_verified", not errors, errors)
+    check("operation_returns_exact_imported_observation_and_bundle", result["bundle"] == imported["bundle"]
+          and result["observation"] == imported["observation"])
+    receipts = [{**phase, "record": read(confined(root, phase["receipt"]))} for phase in result["phases"]]
+    check("all_recorded_process_phases_completed", bool(receipts) and all(item["status"] == item["record"]["status"] == "complete"
+          and item["returncode"] == item["record"]["returncode"] == 0 for item in receipts),
+          [{"phase": item["phase"], "status": item["status"]} for item in receipts])
+    return checks, capture, out
+
+
+def _grade(attempt: Path) -> dict:
+    launch, identity, continuation = (read(attempt / name) for name in ("launch.json", "identity.json", "continuation.json"))
+    root = Path(launch["cwd"]).resolve()
+    caller = report_fields(read(root / WORK / "CALLER-RESULT.json"))
+    specialist = report_fields(read(reference(root, caller["specialist_result"])))
+    result_path = reference(root, specialist["operation_result"])
+    result = semantic_result(read(result_path))
+    checks, capture, out = artifact_checks(root, identity, result)
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+    journals = [rows(path) for path in sorted(attempt.glob("native-*.jsonl"))]
+    journals += [rows(path) for path in sorted((attempt / "native-transcripts").glob("*.jsonl"))]
+    stdout = rows(attempt / "stdout.jsonl")
+    selected = selected_identity(caller.get("native_child"), launch["host"])
+    if launch["host"] == "codex":
+        parent = next((journal for journal in journals if journal and journal[0].get("payload", {}).get("id") == continuation["session_id"]), [])
+        role = tomllib.loads((root / ".codex/agents/pixl.toml").read_text(encoding="utf-8"))["developer_instructions"]
+        proof = codex_role_proof(journals, continuation["session_id"], selected, role)
+        child_ids = {child["id"] for child in proof["selected_children"]}
+        children = [[journal[0], *own_rows(journal, continuation["session_id"], cold=True)]
+                    for journal in journals if journal and journal[0].get("payload", {}).get("id") in child_ids]
+        check("actual_named_isolated_child_completed", proof["loaded"] and proof["completed"],
+              {key: value for key, value in proof.items() if key != "child_text"})
+        loading = {name: {"loaded": bool(complete_file_proof(children, root / KIT / name))}
+                   for name in ("skills/pixl/SKILL.md", "resources/agent/PROFILE.md")}
+    else:
+        parent = [row for row in stdout if not row.get("parent_tool_use_id") and not row.get("agent_id")]
+        children = [journal for journal in journals if journal and Path(journal[0]["file"]).stem.removeprefix("agent-") == selected]
+        proof = claude_completion(parent, selected)
+        check("actual_named_child_completed", bool(proof) and any(child.get("id", child.get("agent_id")) == selected
+              and child.get("role") == "pixl:pixl" for child in continuation.get("children", [])), proof)
+        loading = claude_loading_proof(children, root / KIT)
+    check("child_loaded_common_profile_and_skill", all(value["loaded"] for value in loading.values()), loading)
+    workflow = root / KIT / "skills/pixl/references/consumer-execution.md"
+    workflow_proof = complete_file_proof(children, workflow) or native_read_proof(children, workflow)
+    check("child_loaded_consumer_execution_workflow_reference", bool(workflow_proof), workflow_proof)
+    proof = operation_proof(children, root, "pixl_consumer_execute", specialist["operation_result"])
+    check("selected_child_invoked_public_operation_with_bound_result", bool(proof), proof)
+    check("caller_consumed_exact_operation_report_and_counts", reference(root, caller["operation_result"]) == result_path
+          and bool(complete_file_proof([parent], result_path) or native_read_proof([parent], result_path)))
+    preservation_checks = {"exact_initial_inputs_and_only_assigned_additions", "exact_historical_source_art_state_and_inactive_host_bytes",
+                           "all_production_records_and_prior_history_unchanged"}
+    independently_unchanged = all(item["pass"] for item in checks if item["check"] in preservation_checks)
+    for actor, actor_journals, report in (("child", children, specialist), ("caller", [parent], caller)):
+        views = image_views(actor_journals, root)
+        named = {sha(reference(root, item)) for item in report["viewed_images"]}
+        coverage = viewing_coverage(capture, set(views), named)
+        check(actor + "_actually_viewed_both_scales_and_all_phase_screenshots", coverage["pass"],
+              {**coverage, "observed": views})
+        check(actor + "_reports_execution_only_without_acceptance", reported_unchanged(report.get("production_unchanged"), independently_unchanged, result["state_hash"])
+              and report.get("acceptance_created") is False and bool(report.get("limitations")) and bool(report.get("next_action")))
+        report_path = reference(root, report["execution_report"])
+        check(actor + "_names_exact_operation_report", report_path == out / "result.json")
+    prohibited = [call for call in mcp_attempts(journals + [stdout]) if str(call["server"]).replace("-", "_") != "pixl_local"]
+    check("no_recorded_remote_provider_tool_attempt", not prohibited, prohibited)
+    check("native_attempt_completed", continuation.get("status") == "finished" and continuation.get("returncode") == 0
+          and continuation.get("interruption_reason") is None)
+    return {"version": 1, "status": "pass" if all(item["pass"] for item in checks) else "fail",
+            "passed": sum(item["pass"] for item in checks), "total": len(checks), "checks": checks,
+            "scope": "Exact retained CF-03 source/art/state; fresh reusable isolated consumer execution and native read/image proofs only. No new artistic acceptance, provider art, general host reliability or M1/M2/broader M3 closure."}
+
+
+def grade(attempt: Path) -> dict:
+    try:
+        return _grade(attempt.resolve())
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, codec.PixlError, zipfile.BadZipFile) as error:
+        return {"version": 1, "status": "fail", "passed": 0, "total": 1,
+                "checks": [{"check": "required_evidence_readable", "pass": False,
+                            "evidence": f"{type(error).__name__}: {error}"}]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempt", type=Path)
+    parser.add_argument("--out", "--output", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Preserve earlier grades; choose a fresh output")
+    result = grade(args.attempt)
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    return result["status"] != "pass"
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

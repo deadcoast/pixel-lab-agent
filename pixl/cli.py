@@ -95,6 +95,14 @@ def parser():
     q.add_argument("report", metavar="REPORT_JSON")
     q.add_argument("--out", dest="destination_dir", required=True)
     q.add_argument("--root", required=True)
+    q = sub.add_parser("consumer-execute", help="Run the shipped isolated consumer profile on exact delivered files; retain observations without acceptance.")
+    q.add_argument("path")
+    q.add_argument("candidate")
+    q.add_argument("config", metavar="CONFIG_JSON")
+    q.add_argument("--out", dest="execution_dir", required=True)
+    q.add_argument("--root", required=True)
+    q.add_argument("--node", help="Node executable path or command name; defaults to discovered Node.")
+    q.add_argument("--browser", help="Chromium executable path; defaults to the profile's local discovery.")
     q = sub.add_parser("inspection", help="Read retained candidate views and reviews.")
     q.add_argument("path")
     q.add_argument("packet", nargs="?")
@@ -282,7 +290,7 @@ def parser():
     q.add_argument("--out", required=True)
     q = sub.add_parser("mcp")
     q.add_argument("--root", required=True)
-    for command in ("context", "request-review", "review-context", "candidate-review", "family", "family-snapshot", "destination-import"):
+    for command in ("context", "request-review", "review-context", "candidate-review", "family", "family-snapshot", "destination-import", "consumer-execute"):
         sub.choices[command].add_argument("--result-path", help="Save exact result under a fresh project-relative path; requires --root.")
     for command, command_parser in sub.choices.items():
         for action in command_parser._actions:
@@ -377,6 +385,12 @@ def main(argv=None):
             state_path = Path(a.path).resolve().relative_to(Path(a.root).resolve())
             output = service.call("pixl_destination_import", {"path": state_path.as_posix(), "candidate_id": a.candidate,
                                   "report_path": a.report, "out": a.destination_dir}, a.root)
+        elif cmd == "consumer-execute":
+            state_path = Path(a.path).resolve().relative_to(Path(a.root).resolve())
+            output = service.call("pixl_consumer_execute", {"path": state_path.as_posix(), "candidate_id": a.candidate,
+                                  "config": service.read_json(a.config), "out": a.execution_dir,
+                                  **({"node": a.node} if a.node else {}),
+                                  **({"browser": a.browser} if a.browser else {})}, a.root)
         elif cmd == "inspection":
             output = service.inspection_report(a.path, a.root, a.packet)
         elif cmd == "inspection-prepare":
@@ -556,7 +570,8 @@ def main(argv=None):
         return (
             1
             if isinstance(output, dict)
-            and (output.get("pass") is False or output.get("status") == "fail" or output.get("result_saved") is False)
+            and (output.get("pass") is False or output.get("status") == "fail" or output.get("result_saved") is False
+                 or (cmd == "consumer-execute" and output.get("status") != "complete"))
             else 0
         )
     except (PixlError, OSError, ValueError, KeyError, TypeError, RuntimeError) as error:

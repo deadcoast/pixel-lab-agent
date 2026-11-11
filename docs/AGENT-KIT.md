@@ -160,6 +160,13 @@ then choose record, nominate or complete. The operation retains evidence and han
 recoverable lifecycle publication through the same CLI/MCP implementation. Prepared
 inspection packets keep their own view-coverage contract.
 
+For a consumer implementing the shipped queue-motion profile, use
+[`consumer-execute` / `pixl_consumer_execute`](../spec/consumer-execution.md) for
+isolated capture, independent pixel/clock checks and exact-package evidence import.
+Read [the execution workflow](../plugins/pixl/skills/pixl/references/consumer-execution.md)
+for explicit configuration, optional local prerequisites and retained failure recovery.
+The operation does not publish state or create acceptance.
+
 For successor authoring, use `context --view authoring` to read explicitly linked
 caller choices and the index of other intake choices. Use `request-review --view
 changes --plan NEW --against-plan OLD --root ROOT` for structural changes and

@@ -104,6 +104,8 @@ def _verify(summary, run, stage):
         "training/source-inventory.json",
         "knowledge/pixel-art.json",
         *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/plar-project/renderer").iterdir()) if p.is_file()),
+        *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/consumer-execution").rglob("*")) if p.is_file() and "__pycache__" not in p.parts),
+        "spec/consumer-execution.md",
         *(row["path"] for row in inventory["documents"]),
     ):
         summary["checked_input_hashes"][name] = file_hash(ROOT / name)

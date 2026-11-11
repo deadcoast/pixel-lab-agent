@@ -102,8 +102,8 @@ export certifies artistic judgment, provider execution or destination acceptance
 
 ## Direct result files
 
-Context, request-review, review-context, candidate-review, family, family-snapshot
-and PLAR handoff accept CLI `--result-path` / MCP `result_path`. Supply an explicit
+Context, request-review, review-context, candidate-review, family, family-snapshot,
+destination-import, consumer-execute and PLAR handoff accept CLI `--result-path` / MCP `result_path`. Supply an explicit
 consumer root and fresh relative path. The tool returns a compact path/hash/size
 summary and writes the full result (JSON, or CLI full wire context as PX text).
 On `result_saved:false`, inspect the returned `operation_result` and current state:

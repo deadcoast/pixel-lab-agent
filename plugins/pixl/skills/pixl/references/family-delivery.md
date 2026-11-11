@@ -118,6 +118,8 @@ Published manifest candidates and their constituent X identities are immutable. 
 For collective and destination judgments, prefer `pixl_review_context` followed by
 `pixl_candidate_review` on the saved manifest candidate, using the
 [candidate/family review contract](../../../resources/spec/candidate-review.md).
+For a matching queue consumer, use the shipped [isolated execution operation](consumer-execution.md)
+to capture, check and import its exact delivered files in one invocation.
 When the project runner can supply a structured report, use
 `destination-import STATE CANDIDATE REPORT_JSON --out FRESH_DIR --root ROOT`
 (or `pixl_destination_import`) with the

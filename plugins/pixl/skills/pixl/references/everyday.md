@@ -112,7 +112,10 @@ Read `review-context` / `pixl_review_context` for the exact candidate, current
 criteria, binding hash and canonical state hash. Inspect the real file at native
 and appropriate enlarged scales, measure its applicable constraints, and exercise
 its actual consumer. Animation needs temporal viewing; tiles need neighborhoods.
-Keep those observations separate from the mechanical measurements.
+Keep those observations separate from the mechanical measurements. For a matching
+queue consumer, [isolated consumer execution](consumer-execution.md) runs the
+shipped capture/check/import path and retains actual motion and preference-switch
+coverage without changing production state.
 
 Use [candidate-review](../../../resources/spec/candidate-review.md) with an ordinary
 observation JSON: reviewer, actual observation time, evidence files, explicit

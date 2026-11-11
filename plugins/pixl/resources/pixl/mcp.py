@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator, ValidationError
 
 from .candidate_review import OBSERVATION_SCHEMA
 from .codec import PixlError
+from .consumer_execution import CONFIG_SCHEMA as CONSUMER_EXECUTION_SCHEMA
 from .diagnostics import error_result
 from .readiness import OBSERVATIONS_SCHEMA
 from .service import RESULT_EXPORT_TOOLS, call, parse_json
@@ -48,6 +49,12 @@ TOOLS = [
         "Validate a supplied destination report against the current family candidate and exact package/source/output bytes. Export its complete evidence bundle and PNG previews to a fresh directory. Does not execute a renderer, attest viewing, publish verdicts or change production state; use candidate-review for explicit judgments.",
         schema({"path": STR, "candidate_id": STR, "report_path": STR, "out": STR},
                ["path", "candidate_id", "report_path", "out"]),
+    ),
+    (
+        "pixl_consumer_execute",
+        "Execute the fixed shipped queue-motion consumer profile in an isolated local browser using exact family member bytes. Retain source identities, actual frame/wrap and preference-switch observations, checks, partial failures and NF06 evidence. Requires local Node/Chromium; no installation, provider action, source rewrite, verdict or artistic acceptance. Isolation is not an OS security sandbox.",
+        schema({"path": STR, "candidate_id": STR, "config": CONSUMER_EXECUTION_SCHEMA, "out": STR,
+                "node": STR, "browser": STR}, ["path", "candidate_id", "config", "out"]),
     ),
     (
         "pixl_production_plan",

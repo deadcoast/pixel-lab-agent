@@ -1,0 +1,1448 @@
+{
+  "version": 1,
+  "assignment": "CONSUMER-EXECUTION.md specialist steps 1-3 (TM-07 isolated consumer execution evaluation; fresh execution observation only)",
+  "specialist": {
+    "role": "pixl:pixl named specialist",
+    "host": "claude",
+    "model": "claude-fable-5-1",
+    "loaded": [
+      "installed pixl/skills/pixl/SKILL.md (via pixl:pixl skill)",
+      "installed pixl/resources/agent/PROFILE.md",
+      "installed pixl/skills/pixl/references/consumer-execution.md",
+      "CONSUMER-EXECUTION.md",
+      "work/consumer-execution-inputs/config.json",
+      "work/consumer-execution-inputs/review-context.json"
+    ]
+  },
+  "operation_route": {
+    "route": "MCP tool pixl_consumer_execute on the pixl-local server (backed by the installed kit runtime per the readiness report); CLI consumer-execute --help inspected first for the public schema",
+    "arguments": {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "candidate_id": "artistic2.delivery.candidate",
+      "config": {
+        "version": 1,
+        "profile": "queue-motion-v1",
+        "modules": {
+          "state": "src/queue.ts",
+          "view": "src/queue-view-artistic.ts"
+        },
+        "destinations": {
+          "r.22e90a2a03fe453a.output.ready": "assets/ready-confirmed.png",
+          "artistic-02.working.output": "assets/working.png",
+          "artistic-02.retry.output": "assets/error-retry.png",
+          "artistic-02.paused.output": "assets/paused.png"
+        },
+        "scales": [
+          1,
+          3
+        ],
+        "observed_wraps": 2,
+        "phase_timeout_ms": 10000,
+        "hold_ms": 500,
+        "timeout_seconds": 90
+      },
+      "out": "work/consumer-execution/execution-01",
+      "node": "C:/nvm4w/nodejs/node.exe",
+      "result_path": "work/consumer-execution/execution-result.json",
+      "browser": "not passed (profile local discovery)"
+    },
+    "config_identical_to_inputs_config_json": true,
+    "tool_return": {
+      "result_saved": true,
+      "result_sha256": "5d1430e06011fee464d7459bb0699aa5a50df9e3f952dd1b1c4f7a70df2e6e45",
+      "result_bytes": 9034,
+      "status": "complete",
+      "state_hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64"
+    },
+    "attempts": [
+      {
+        "directory": "work/consumer-execution/execution-01",
+        "status": "complete",
+        "retry": false
+      }
+    ]
+  },
+  "operation_result": {
+    "reference": {
+      "path": "work/consumer-execution/execution-result.json",
+      "sha256": "5d1430e06011fee464d7459bb0699aa5a50df9e3f952dd1b1c4f7a70df2e6e45",
+      "bytes": 9034
+    },
+    "status": "complete",
+    "started_at": "2026-11-11T22:56:35.288700+00:00",
+    "ended_at": "2026-11-11T22:56:57.589258+00:00",
+    "identities": {
+      "candidate": "artistic2.delivery.candidate",
+      "profile": "queue-motion-v1",
+      "state_hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+      "binding_hash": "6c6c9aa9d30e12b4840a993fb28ff87a25552fc0308f62d8ed78a0d57b81ebb6",
+      "manifest": {
+        "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/manifest.json",
+        "sha256": "1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211"
+      },
+      "bundle": {
+        "path": "work/consumer-execution/execution-01/import/627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0.zip",
+        "sha256": "627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0",
+        "bytes": 402820
+      },
+      "observation": {
+        "path": "work/consumer-execution/execution-01/import/627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0.zip",
+        "sha256": "627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0",
+        "mode": "live",
+        "note": "Supplied destination observations with exact package, source and output snapshots; reviewer must judge their scope."
+      },
+      "hash_domains": {
+        "state_hash": "canonical_state_sha256",
+        "binding_hash": "candidate_bindings_sha256"
+      }
+    },
+    "identities_match_review_context": true,
+    "phases": [
+      {
+        "phase": "node-version",
+        "status": "complete",
+        "returncode": 0,
+        "receipt": "work/consumer-execution/execution-01/execution/node-version.json"
+      },
+      {
+        "phase": "node-capabilities",
+        "status": "complete",
+        "returncode": 0,
+        "receipt": "work/consumer-execution/execution-01/execution/node-capabilities.json"
+      },
+      {
+        "phase": "capture",
+        "status": "complete",
+        "returncode": 0,
+        "receipt": "work/consumer-execution/execution-01/execution/capture.json"
+      },
+      {
+        "phase": "check",
+        "status": "complete",
+        "returncode": 0,
+        "receipt": "work/consumer-execution/execution-01/execution/check.json"
+      },
+      {
+        "phase": "observation",
+        "status": "complete",
+        "returncode": 0,
+        "receipt": "work/consumer-execution/execution-01/execution/observation.json"
+      }
+    ],
+    "counts": {
+      "phases": {
+        "normal-start": {
+          "status": "observed",
+          "sample_count": 9,
+          "counts": {
+            "compactStatus@3": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "statusCell@3": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "compactStatus@1": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "statusCell@1": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            }
+          }
+        },
+        "reduced": {
+          "status": "observed",
+          "sample_count": 10,
+          "counts": {
+            "compactStatus@3": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "statusCell@3": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "compactStatus@1": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "statusCell@1": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            }
+          }
+        },
+        "normal-restored": {
+          "status": "observed",
+          "sample_count": 9,
+          "counts": {
+            "compactStatus@3": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "statusCell@3": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "compactStatus@1": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            },
+            "statusCell@1": {
+              "distinct_frames": 4,
+              "transitions": 8,
+              "wraps": 2,
+              "skips": 0
+            }
+          }
+        },
+        "initially-reduced": {
+          "status": "observed",
+          "sample_count": 10,
+          "counts": {
+            "compactStatus@3": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "statusCell@3": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "compactStatus@1": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            },
+            "statusCell@1": {
+              "distinct_frames": 1,
+              "transitions": 0,
+              "wraps": 0,
+              "skips": 0
+            }
+          }
+        }
+      },
+      "pixel_checks": 168,
+      "source_checks": 15,
+      "clock_checks": 152
+    },
+    "flags": {
+      "state_changed": false,
+      "state_written": false,
+      "automatic_acceptance": false,
+      "files_verified": true,
+      "renderer_executed": true,
+      "process_started": true,
+      "timeout_scope": "subprocesses"
+    },
+    "cleanup": {
+      "complete": true,
+      "renderer": {
+        "browser_closed": true,
+        "server_closed": true,
+        "profile_removed": true,
+        "errors": [],
+        "complete": true
+      },
+      "process": {
+        "attempted": false,
+        "process_reaped": true,
+        "tree_confirmed": null,
+        "complete": null,
+        "scope": "descendant cleanup requires the fixed renderer receipt"
+      }
+    },
+    "limitations_returned": [
+      "Trusted fixed-profile process isolation and loopback serving are not an OS sandbox.",
+      "timeout_seconds bounds subprocess work; local preflight, retention and bounded cleanup occur around that deadline.",
+      "Captured playback and exact file identities do not establish artistic quality or reviewer acceptance.",
+      "Failed, unavailable and partial attempts are retained; retry with a fresh output directory."
+    ],
+    "artifact_hashes_verified_on_disk": true,
+    "artifact_hash_mismatches": [],
+    "bundle_hash_verified_on_disk": true,
+    "attempt_result_json_vs_export": {
+      "attempt_result": {
+        "path": "work/consumer-execution/execution-01/result.json",
+        "sha256": "249cf86e80d1cf1eb5b4d667aa9e56ff72c81bf85460ed25c253bbe4a91da946",
+        "bytes": 8917
+      },
+      "differing_keys": [],
+      "keys_only_in_export": [
+        "hash_domains"
+      ],
+      "note": "The exported return value equals the retained attempt result.json plus the hash_domains field."
+    }
+  },
+  "execution_report": {
+    "result": {
+      "path": "work/consumer-execution/execution-01/result.json",
+      "sha256": "249cf86e80d1cf1eb5b4d667aa9e56ff72c81bf85460ed25c253bbe4a91da946",
+      "bytes": 8917
+    },
+    "linked": {
+      "check.json": {
+        "path": "work/consumer-execution/execution-01/check.json",
+        "sha256": "468936928bfb3b0d82bcd6b56f7d5340dedd067517f5ecc6d491c00f20c73efa",
+        "bytes": 5177
+      },
+      "observation.json": {
+        "path": "work/consumer-execution/execution-01/observation.json",
+        "sha256": "5c9aecfe8f4186b713d179685f2364d2465b167bc9315d06eea4d61eb790a69e",
+        "bytes": 139336
+      },
+      "import/result.json": {
+        "path": "work/consumer-execution/execution-01/import/result.json",
+        "sha256": "666bb77039867a9c596919ab7f93038542b00cb3fadb95ba95c72e07b81a6b12",
+        "bytes": 220811
+      },
+      "import/bundle.zip": {
+        "path": "work/consumer-execution/execution-01/import/627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0.zip",
+        "sha256": "627215a23f644107b10287ad1def71db410bdb8e5066a2bedb85a78e6948dfd0",
+        "bytes": 402820
+      },
+      "capture/capture.json": {
+        "path": "work/consumer-execution/execution-01/capture/capture.json",
+        "sha256": "b58e0def8be75b88138d7a3fe47cdc7ee9cadbda19c9f4c1805443541daba601",
+        "bytes": 461614
+      },
+      "capture/execution.json": {
+        "path": "work/consumer-execution/execution-01/capture/execution.json",
+        "sha256": "409f9853657f7ec6e4624ddab1df96746ac26d87a3c1f8a40783dea49161e783",
+        "bytes": 664
+      },
+      "capture/launch.json": {
+        "path": "work/consumer-execution/execution-01/capture/launch.json",
+        "sha256": "340c752efbbc3cf196472fd7279afb56cdb5ce6cc912bf96068d6dba18e6b5bb",
+        "bytes": 1796
+      },
+      "capture/browser-process.json": {
+        "path": "work/consumer-execution/execution-01/capture/browser-process.json",
+        "sha256": "8acd716c4f652a9a1ee2b50904da446f5be968db79df732400e9193b6cf75eac",
+        "bytes": 587
+      },
+      "capture/capture-commands.json": {
+        "path": "work/consumer-execution/execution-01/capture/capture-commands.json",
+        "sha256": "56b283bbc86009edff75533a0b1851a1fe9e77de8faa1ab8a4b4e43980e93223",
+        "bytes": 8054
+      },
+      "execution/executables.json": {
+        "path": "work/consumer-execution/execution-01/execution/executables.json",
+        "sha256": "8ae5fc0dc3afce619a68dffbf093b9efc7dcc934ad811db782ca424f41cee007",
+        "bytes": 409
+      },
+      "execution/node-version.json": {
+        "path": "work/consumer-execution/execution-01/execution/node-version.json",
+        "sha256": "f146b2747a574b92da9745d84c13d470a7c6cc2969d41a0b314e0fa38640062b",
+        "bytes": 708
+      },
+      "execution/node-capabilities.json": {
+        "path": "work/consumer-execution/execution-01/execution/node-capabilities.json",
+        "sha256": "226801664adbf04c53264df64cf04e4899e500a6ad90129625504cbd78f36804",
+        "bytes": 973
+      },
+      "execution/capture.json": {
+        "path": "work/consumer-execution/execution-01/execution/capture.json",
+        "sha256": "9a49f9ed234631fdfdb7dae59634e4587a9cd0759dda280cc81872347ff16986",
+        "bytes": 1263
+      },
+      "execution/check.json": {
+        "path": "work/consumer-execution/execution-01/execution/check.json",
+        "sha256": "c66f80cef22a819aaec3164fa031d4a44c75cadf56a703e4a5d6e258f112eabd",
+        "bytes": 1282
+      },
+      "execution/observation.json": {
+        "path": "work/consumer-execution/execution-01/execution/observation.json",
+        "sha256": "310e249f9c36a29d13bf941966098f92be74029f6f2b42a1ea590183b7271968",
+        "bytes": 1821
+      },
+      "config.json": {
+        "path": "work/consumer-execution/execution-01/config.json",
+        "sha256": "2b09179b83dc36a479c98864d2efc92b1721563d0f6f654ebd824c70336ba8a8",
+        "bytes": 529
+      },
+      "review-context.json": {
+        "path": "work/consumer-execution/execution-01/review-context.json",
+        "sha256": "05ff26cb11223c3d852023de1a7851b8d328dead5ec39345359ef6a555964235",
+        "bytes": 7733
+      },
+      "destinations.json": {
+        "path": "work/consumer-execution/execution-01/destinations.json",
+        "sha256": "e3b14b0a17f2b6326daecf32c119b99f913b35ca3ca145c5a70d08ac2609d92a",
+        "bytes": 232
+      },
+      "inputs.json": {
+        "path": "work/consumer-execution/execution-01/inputs.json",
+        "sha256": "dfdb920c0be70d7c9adbf8c5fafcec10dc728081a822e05935a4a5a36e5e0163",
+        "bytes": 1441
+      },
+      "renderer-sources.json": {
+        "path": "work/consumer-execution/execution-01/renderer-sources.json",
+        "sha256": "8879e0695c423e12ad6535f428ed47040aac09dae1fccce7c7f80582448be4e0",
+        "bytes": 2111
+      }
+    },
+    "check": {
+      "status": "pass",
+      "pass": true,
+      "capture_sha256": "b58e0def8be75b88138d7a3fe47cdc7ee9cadbda19c9f4c1805443541daba601",
+      "failures": [],
+      "limitations": [
+        "view statusCell/idle/1: source decoded in browser; independent pixel comparison supports PNG only",
+        "view statusCell/idle/3: source decoded in browser; independent pixel comparison supports PNG only",
+        "view compactStatus/idle/1: source decoded in browser; independent pixel comparison supports PNG only",
+        "view compactStatus/idle/3: source decoded in browser; independent pixel comparison supports PNG only",
+        "PNG/source/clock observations are not artistic judgment or target-engine acceptance."
+      ],
+      "pixel_checks": 168,
+      "source_checks": 15,
+      "clock_checks": 152,
+      "phase_raf_counts": {
+        "normal-start": 49,
+        "reduced": 33,
+        "normal-restored": 49,
+        "initially-reduced": 33
+      },
+      "phase_switches": {
+        "normal-start": {
+          "switches": 0,
+          "reconciliations": 0
+        },
+        "reduced": {
+          "switches": 1,
+          "reconciliations": 1
+        },
+        "normal-restored": {
+          "switches": 2,
+          "reconciliations": 2
+        },
+        "initially-reduced": {
+          "switches": 0,
+          "reconciliations": 0
+        }
+      }
+    },
+    "import_nf06": {
+      "renderer_executed": false,
+      "files_verified": true,
+      "automatic_acceptance": false,
+      "state_changed": false,
+      "files_count": 477,
+      "previews_count": 468,
+      "consumer_sources": [
+        {
+          "path": "assets/error-retry.png",
+          "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+        },
+        {
+          "path": "assets/paused.png",
+          "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92"
+        },
+        {
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+        },
+        {
+          "path": "assets/start.svg",
+          "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3"
+        },
+        {
+          "path": "assets/working.png",
+          "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc"
+        },
+        {
+          "path": "src/queue-view-artistic.ts",
+          "sha256": "468b1a11616fdfe8272972eb2216325551e766f56fd3ecf6fc5ca55de7b321c7"
+        },
+        {
+          "path": "src/queue.ts",
+          "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08"
+        }
+      ],
+      "destinations": [
+        {
+          "candidate": "ready.retained",
+          "output": "r.22e90a2a03fe453a.output.ready",
+          "path": "assets/ready-confirmed.png",
+          "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+        },
+        {
+          "candidate": "artistic2.working.candidate",
+          "output": "artistic-02.working.output",
+          "path": "assets/working.png",
+          "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc"
+        },
+        {
+          "candidate": "artistic2.retry.candidate",
+          "output": "artistic-02.retry.output",
+          "path": "assets/error-retry.png",
+          "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+        },
+        {
+          "candidate": "artistic2.paused.candidate",
+          "output": "artistic-02.paused.output",
+          "path": "assets/paused.png",
+          "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92"
+        }
+      ],
+      "report": {
+        "path": "work/consumer-execution/execution-01/observation.json",
+        "sha256": "5c9aecfe8f4186b713d179685f2364d2465b167bc9315d06eea4d61eb790a69e"
+      },
+      "limitations": [
+        "Validation establishes supplied-report consistency and retained bytes, not execution, viewing or reviewer identity.",
+        "No artistic verdict, nomination or task completion is created; use explicit candidate-review after actual review.",
+        "Motion/viewport values remain supplied observations; no universal scale, timing or playback-quality rule is applied."
+      ],
+      "supplied_observation_limitations": [
+        "Fixed queue-motion-v1 fixture observations; artistic quality and target-engine acceptance remain separate.",
+        "Phase, preference and scale appear in motion.mode; complete paint clocks, counts, transitions and switch/reconciliation records remain in raw capture.json.",
+        "The bridge reads retained browser evidence; it does not grant acceptance or infer unobserved capability."
+      ],
+      "note": "renderer_executed:false here is the NF-06 import's own truthful flag (import executes nothing); the outer operation receipt records renderer_executed:true for the capture subprocess."
+    },
+    "executables": {
+      "node_requested": "C:/nvm4w/nodejs/node.exe",
+      "node_recorded": {
+        "path": "C:\\Users\\ryanf\\AppData\\Local\\nvm\\v25.8.1\\node.exe",
+        "sha256": "8ccfc9b16942fd1f4154e160a249805dd88eb0d253b789aa669b91cf0ade6e57"
+      },
+      "node_version": "v25.8.1",
+      "python": {
+        "path": "C:\\github\\pixel-lab-agent\\build\\readiness-setup-01\\runtime\\Scripts\\python.exe",
+        "version": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]"
+      },
+      "browser_argument": null,
+      "browser_launched": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "browser_version": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/157.0.8103.39",
+        "revision": "@9a31f0acec1854d44e49a73fbf8017598151a583",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "jsVersion": "15.7.112.23"
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 1000,
+        "device_scale_factor": 1
+      },
+      "note": "The nvm4w path resolved to the nvm-managed v25.8.1 executable; Chrome was selected by the profile's local discovery (not passed by me)."
+    },
+    "capture_summary": {
+      "views": 20,
+      "phases": [
+        {
+          "name": "normal-start",
+          "motion": "normal",
+          "initialMotion": "normal",
+          "sessionId": "26e1fd1e-bcc0-4463-a18d-351caa66c0f2",
+          "status": "observed",
+          "frameCount": 4,
+          "frameMs": 100,
+          "rafCount": 49,
+          "samples": 9,
+          "reason": "Observed consecutive frames and requested last-to-first wraps in every consumer/scale",
+          "errors": []
+        },
+        {
+          "name": "reduced",
+          "motion": "reduced",
+          "initialMotion": "normal",
+          "sessionId": "26e1fd1e-bcc0-4463-a18d-351caa66c0f2",
+          "status": "observed",
+          "frameCount": 4,
+          "frameMs": 100,
+          "rafCount": 33,
+          "samples": 10,
+          "reason": "Observed source-held frame throughout the requested reduced-motion window",
+          "errors": []
+        },
+        {
+          "name": "normal-restored",
+          "motion": "normal",
+          "initialMotion": "normal",
+          "sessionId": "26e1fd1e-bcc0-4463-a18d-351caa66c0f2",
+          "status": "observed",
+          "frameCount": 4,
+          "frameMs": 100,
+          "rafCount": 49,
+          "samples": 9,
+          "reason": "Observed consecutive frames and requested last-to-first wraps in every consumer/scale",
+          "errors": []
+        },
+        {
+          "name": "initially-reduced",
+          "motion": "reduced",
+          "initialMotion": "reduced",
+          "sessionId": "2b432602-9966-4dcc-8968-a1a6c5e66028",
+          "status": "observed",
+          "frameCount": 4,
+          "frameMs": 100,
+          "rafCount": 33,
+          "samples": 10,
+          "reason": "Observed source-held frame throughout the requested reduced-motion window",
+          "errors": []
+        }
+      ],
+      "screenshots": [
+        {
+          "phase": "normal-start",
+          "path": "normal-start.png",
+          "sha256": "3b711a5a1bf50a2b2a7d6a710e13b041324f72f227beae57d571bd1931ae2ea4"
+        },
+        {
+          "phase": "reduced",
+          "path": "reduced.png",
+          "sha256": "e8c2200c25d5fb6c6ecce7f9be9f023e6f2b8a81acb890491701d5d415bd4088"
+        },
+        {
+          "phase": "normal-restored",
+          "path": "normal-restored.png",
+          "sha256": "3b711a5a1bf50a2b2a7d6a710e13b041324f72f227beae57d571bd1931ae2ea4"
+        },
+        {
+          "phase": "initially-reduced",
+          "path": "initially-reduced.png",
+          "sha256": "e8c2200c25d5fb6c6ecce7f9be9f023e6f2b8a81acb890491701d5d415bd4088"
+        }
+      ],
+      "display": {
+        "cell": [
+          16,
+          16
+        ],
+        "scale": 3,
+        "filter": "nearest",
+        "frameMs": 100,
+        "background": "#172336"
+      },
+      "errors": [],
+      "served_files": {
+        "renderer/index.html": "6e1f83c3d0db06d67a363201b2d87392ccfa66ac5c6ae08ff29587e7a142adf3",
+        "renderer/view.mjs": "4698fe7d2733944950e3f933e11227d61b89fa345414f251e58865e73a40a050",
+        "consumer/src/queue.ts": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+        "consumer/src/queue-view-artistic.ts": "468b1a11616fdfe8272972eb2216325551e766f56fd3ecf6fc5ca55de7b321c7",
+        "consumer/assets/start.svg": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+        "consumer/assets/working.png": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+        "consumer/assets/paused.png": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+        "consumer/assets/ready-confirmed.png": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+        "consumer/assets/error-retry.png": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+      }
+    }
+  },
+  "viewed_images": [
+    {
+      "path": "work/consumer-execution/execution-01/capture/normal-start.png",
+      "sha256": "3b711a5a1bf50a2b2a7d6a710e13b041324f72f227beae57d571bd1931ae2ea4",
+      "bytes": 25313,
+      "note": "Phase screenshot, normal-start (1280x1000 RGB). Page 'Queue consumer execution': top live row of four Working cells (statusCell 1x, statusCell 3x, compactStatus 1x, compactStatus 3x) shows a Working frame in a different rotation phase from the frame-0 glyph in the 'running' matrix row below; matrix rows idle (Start triangle), running, paused (two bars), succeeded (check), failed (circular Retry arrow) each render at 1x/3x in both consumers on the dark background. Viewed by me with the Read image tool.",
+      "phase": "normal-start",
+      "kind": "screenshot"
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/reduced.png",
+      "sha256": "e8c2200c25d5fb6c6ecce7f9be9f023e6f2b8a81acb890491701d5d415bd4088",
+      "bytes": 25329,
+      "note": "Phase screenshot, reduced (live switch to prefers-reduced-motion on the same page). Top live Working row shows the same held frame-0 glyph as the 'running' matrix row in both consumers at 1x and 3x; all other rows unchanged from normal-start. Viewed with Read.",
+      "phase": "reduced",
+      "kind": "screenshot"
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/normal-restored.png",
+      "sha256": "3b711a5a1bf50a2b2a7d6a710e13b041324f72f227beae57d571bd1931ae2ea4",
+      "bytes": 25313,
+      "note": "Phase screenshot, normal-restored (switched back to normal on the same page). Byte-identical to normal-start.png (same sha256); live row again shows an in-motion Working frame distinct from frame 0. Viewed with Read.",
+      "phase": "normal-restored",
+      "kind": "screenshot"
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/initially-reduced.png",
+      "sha256": "e8c2200c25d5fb6c6ecce7f9be9f023e6f2b8a81acb890491701d5d415bd4088",
+      "bytes": 25329,
+      "note": "Phase screenshot, initially-reduced (second page launched with reduced motion). Byte-identical to reduced.png; live Working row shows the held frame-0 glyph. Viewed with Read.",
+      "phase": "initially-reduced",
+      "kind": "screenshot"
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00080.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "State-matrix Working still, statusCell @1x (16x16 RGBA, composited on background, frame 0). Cool-blue segmented ring: top horizontal bar, right vertical bar, bottom-left hook cluster; nearest-neighbour 3x shows crisp 3-pixel blocks with no smoothing. Viewed with Read; pixl_asset_check measured 10 visible colours, 0 fractional-alpha pixels, 1 opaque component (run on 00080 and 00081).",
+      "phase": "state-matrix",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00081.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "State-matrix Working still, statusCell @3x (48x48 RGBA, composited on background, frame 0). Cool-blue segmented ring: top horizontal bar, right vertical bar, bottom-left hook cluster; nearest-neighbour 3x shows crisp 3-pixel blocks with no smoothing. Viewed with Read; pixl_asset_check measured 10 visible colours, 0 fractional-alpha pixels, 1 opaque component (run on 00080 and 00081).",
+      "phase": "state-matrix",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00082.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "State-matrix Working still, compactStatus @1x (16x16 RGBA, composited on background, frame 0). Cool-blue segmented ring: top horizontal bar, right vertical bar, bottom-left hook cluster; nearest-neighbour 3x shows crisp 3-pixel blocks with no smoothing. Viewed with Read; pixl_asset_check measured 10 visible colours, 0 fractional-alpha pixels, 1 opaque component (run on 00080 and 00081).",
+      "phase": "state-matrix",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00083.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "State-matrix Working still, compactStatus @3x (48x48 RGBA, composited on background, frame 0). Cool-blue segmented ring: top horizontal bar, right vertical bar, bottom-left hook cluster; nearest-neighbour 3x shows crisp 3-pixel blocks with no smoothing. Viewed with Read; pixl_asset_check measured 10 visible colours, 0 fractional-alpha pixels, 1 opaque component (run on 00080 and 00081).",
+      "phase": "state-matrix",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00000.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-start sample 0, statusCell @1x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00001.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-start sample 0, statusCell @3x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00002.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-start sample 0, compactStatus @1x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00003.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-start sample 0, compactStatus @3x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00004.png",
+      "sha256": "4b8ebc775fb8a89db0f27677dac89fa0bbc1d66b4e9e64e2fc6652310cc7b756",
+      "bytes": 314,
+      "note": "normal-start sample 1, statusCell @1x, operation-recorded frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00005.png",
+      "sha256": "b6397ee46ec093735c2f58ed6c29225a33e981f99a8dab6810dd90446c88345a",
+      "bytes": 472,
+      "note": "normal-start sample 1, statusCell @3x, operation-recorded frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00006.png",
+      "sha256": "4b8ebc775fb8a89db0f27677dac89fa0bbc1d66b4e9e64e2fc6652310cc7b756",
+      "bytes": 314,
+      "note": "normal-start sample 1, compactStatus @1x, operation-recorded frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00007.png",
+      "sha256": "b6397ee46ec093735c2f58ed6c29225a33e981f99a8dab6810dd90446c88345a",
+      "bytes": 472,
+      "note": "normal-start sample 1, compactStatus @3x, operation-recorded frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00008.png",
+      "sha256": "fe05ecfdddb467bfd9a2bcaceae02408f8e07d2ad8f7fa816a2f288fec53fa03",
+      "bytes": 316,
+      "note": "normal-start sample 2, statusCell @1x, operation-recorded frame 2: frame 2 (left bar, top-right hook, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 2
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00009.png",
+      "sha256": "5e80286d9b33f4a27be8636c89af15b4d5d72670a339d4f9c03a1d29986f9e3a",
+      "bytes": 491,
+      "note": "normal-start sample 2, statusCell @3x, operation-recorded frame 2: frame 2 (left bar, top-right hook, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 2
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00010.png",
+      "sha256": "fe05ecfdddb467bfd9a2bcaceae02408f8e07d2ad8f7fa816a2f288fec53fa03",
+      "bytes": 316,
+      "note": "normal-start sample 2, compactStatus @1x, operation-recorded frame 2: frame 2 (left bar, top-right hook, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 2
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00011.png",
+      "sha256": "5e80286d9b33f4a27be8636c89af15b4d5d72670a339d4f9c03a1d29986f9e3a",
+      "bytes": 491,
+      "note": "normal-start sample 2, compactStatus @3x, operation-recorded frame 2: frame 2 (left bar, top-right hook, bottom bar). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 2
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00012.png",
+      "sha256": "9dd0cde778217ce4ffb540feb5ff1120674cd6088651b1a9c4a959c96c81ff43",
+      "bytes": 312,
+      "note": "normal-start sample 3, statusCell @1x, operation-recorded frame 3: frame 3 (left bar, top bar, bottom-right hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 3
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00013.png",
+      "sha256": "96995db653d75f0c5ac29e0c61acd7bc1c3329f5af68e483c491607b2843168a",
+      "bytes": 472,
+      "note": "normal-start sample 3, statusCell @3x, operation-recorded frame 3: frame 3 (left bar, top bar, bottom-right hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 3
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00014.png",
+      "sha256": "9dd0cde778217ce4ffb540feb5ff1120674cd6088651b1a9c4a959c96c81ff43",
+      "bytes": 312,
+      "note": "normal-start sample 3, compactStatus @1x, operation-recorded frame 3: frame 3 (left bar, top bar, bottom-right hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 3
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00015.png",
+      "sha256": "96995db653d75f0c5ac29e0c61acd7bc1c3329f5af68e483c491607b2843168a",
+      "bytes": 472,
+      "note": "normal-start sample 3, compactStatus @3x, operation-recorded frame 3: frame 3 (left bar, top bar, bottom-right hook). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 3
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00016.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-start sample 4, statusCell @1x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to sample 0 (frame 0). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00017.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-start sample 4, statusCell @3x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to sample 0 (frame 0). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00018.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-start sample 4, compactStatus @1x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to sample 0 (frame 0). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00019.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-start sample 4, compactStatus @3x, operation-recorded frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to sample 0 (frame 0). Viewed with Read; the frame index is the operation's measurement, not inferred from live playback.",
+      "phase": "normal-start",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00096.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "reduced phase sample 0 (first/last of 10), statusCell @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00097.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "reduced phase sample 0 (first/last of 10), statusCell @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00098.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "reduced phase sample 0 (first/last of 10), compactStatus @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00099.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "reduced phase sample 0 (first/last of 10), compactStatus @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00132.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "reduced phase sample 9 (first/last of 10), statusCell @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00133.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "reduced phase sample 9 (first/last of 10), statusCell @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00134.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "reduced phase sample 9 (first/last of 10), compactStatus @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00135.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "reduced phase sample 9 (first/last of 10), compactStatus @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "reduced",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00220.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-restored sample 0, statusCell @1x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00221.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-restored sample 0, statusCell @3x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00222.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-restored sample 0, compactStatus @1x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00223.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-restored sample 0, compactStatus @3x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00224.png",
+      "sha256": "4b8ebc775fb8a89db0f27677dac89fa0bbc1d66b4e9e64e2fc6652310cc7b756",
+      "bytes": 314,
+      "note": "normal-restored sample 1, statusCell @1x, frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00225.png",
+      "sha256": "b6397ee46ec093735c2f58ed6c29225a33e981f99a8dab6810dd90446c88345a",
+      "bytes": 472,
+      "note": "normal-restored sample 1, statusCell @3x, frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00226.png",
+      "sha256": "4b8ebc775fb8a89db0f27677dac89fa0bbc1d66b4e9e64e2fc6652310cc7b756",
+      "bytes": 314,
+      "note": "normal-restored sample 1, compactStatus @1x, frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00227.png",
+      "sha256": "b6397ee46ec093735c2f58ed6c29225a33e981f99a8dab6810dd90446c88345a",
+      "bytes": 472,
+      "note": "normal-restored sample 1, compactStatus @3x, frame 1: frame 1 (clusters rotated one step clockwise: top-left hook, right bar, bottom bar). Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 1
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00236.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-restored sample 4, statusCell @1x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to frame 0. Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00237.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-restored sample 4, statusCell @3x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to frame 0. Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00238.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "normal-restored sample 4, compactStatus @1x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to frame 0. Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00239.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "normal-restored sample 4, compactStatus @3x, frame 0: frame 0 (top bar / right bar / bottom-left hook). Wrap sample: byte-identical to frame 0. Byte-identical to the corresponding normal-start frame. Viewed with Read.",
+      "phase": "normal-restored",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00364.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "initially-reduced phase sample 0 (first/last of 10, second page), statusCell @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00365.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "initially-reduced phase sample 0 (first/last of 10, second page), statusCell @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00366.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "initially-reduced phase sample 0 (first/last of 10, second page), compactStatus @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00367.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "initially-reduced phase sample 0 (first/last of 10, second page), compactStatus @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00400.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "initially-reduced phase sample 9 (first/last of 10, second page), statusCell @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "statusCell",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00401.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "initially-reduced phase sample 9 (first/last of 10, second page), statusCell @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "statusCell",
+      "scale": 3,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00402.png",
+      "sha256": "e4f2737d26096970b90d65604d573f80c4cc99f5dfa761115b7e8cb7eb2f55d8",
+      "bytes": 321,
+      "note": "initially-reduced phase sample 9 (first/last of 10, second page), compactStatus @1x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "compactStatus",
+      "scale": 1,
+      "frame": 0
+    },
+    {
+      "path": "work/consumer-execution/execution-01/capture/cell-00403.png",
+      "sha256": "ecc4d147161714fa7950dce11b9262e685103e0cb81dc682fa91d18788ddd976",
+      "bytes": 487,
+      "note": "initially-reduced phase sample 9 (first/last of 10, second page), compactStatus @3x: held frame 0, byte-identical to the normal frame-0 still. Viewed with Read.",
+      "phase": "initially-reduced",
+      "consumer": "compactStatus",
+      "scale": 3,
+      "frame": 0
+    }
+  ],
+  "viewed_images_count": 56,
+  "observed_status": "complete",
+  "checks": {
+    "operation_status": "complete",
+    "check_json": {
+      "status": "pass",
+      "failures": 0,
+      "pixel_checks": 168,
+      "source_checks": 15,
+      "clock_checks": 152
+    },
+    "phase_counts": {
+      "normal-start": {
+        "status": "observed",
+        "sample_count": 9,
+        "counts": {
+          "compactStatus@3": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "statusCell@3": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "compactStatus@1": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "statusCell@1": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          }
+        }
+      },
+      "reduced": {
+        "status": "observed",
+        "sample_count": 10,
+        "counts": {
+          "compactStatus@3": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "statusCell@3": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "compactStatus@1": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "statusCell@1": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          }
+        }
+      },
+      "normal-restored": {
+        "status": "observed",
+        "sample_count": 9,
+        "counts": {
+          "compactStatus@3": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "statusCell@3": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "compactStatus@1": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          },
+          "statusCell@1": {
+            "distinct_frames": 4,
+            "transitions": 8,
+            "wraps": 2,
+            "skips": 0
+          }
+        }
+      },
+      "initially-reduced": {
+        "status": "observed",
+        "sample_count": 10,
+        "counts": {
+          "compactStatus@3": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "statusCell@3": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "compactStatus@1": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          },
+          "statusCell@1": {
+            "distinct_frames": 1,
+            "transitions": 0,
+            "wraps": 0,
+            "skips": 0
+          }
+        }
+      }
+    },
+    "per_phase_observed": {
+      "normal-start": true,
+      "reduced": true,
+      "normal-restored": true,
+      "initially-reduced": true
+    },
+    "requested": {
+      "scales": [
+        1,
+        3
+      ],
+      "observed_wraps": 2,
+      "hold_ms": 500,
+      "phase_timeout_ms": 10000,
+      "timeout_seconds": 90
+    },
+    "normal_phases_meet_requested_wraps": true,
+    "reduced_phases_single_frame": true,
+    "cleanup_renderer_complete": true,
+    "cleanup_complete": true
+  },
+  "timing_measured_by_operation": {
+    "frame_ms": 100,
+    "frame_count": 4,
+    "normal_sample_elapsed_ms_statusCell_1x": [
+      15.5,
+      114.2,
+      214.9,
+      313.9,
+      414.0,
+      514.9,
+      614.4,
+      713.5,
+      815.3
+    ],
+    "reduced_sample_elapsed_ms": [
+      16.5,
+      66.5,
+      133.2,
+      200.3,
+      250.5,
+      300.5,
+      366.2,
+      433.5,
+      499.6,
+      550.6
+    ],
+    "note": "Elapsed values and frame indices are the operation's sampled browser observations (rounded here to 0.1 ms; exact values in capture.json / import result). I did not observe live playback; stills cannot show motion."
+  },
+  "visual_findings": [
+    "Measured/mechanical: every sampled Working cell I viewed matches the operation's recorded frame index by byte identity: frame-0 samples, wrap samples and all reduced/initially-reduced samples share sha256 e4f2737d... (1x) / ecc4d147... (3x); frames 1-3 have their own stable hashes across normal-start and normal-restored.",
+    "Visually inspected: the four Working frames read as one segmented ring stepping clockwise; 3x captures are crisp nearest-neighbour blocks with no smoothing; statusCell and compactStatus produce byte-identical cells at each scale.",
+    "Visually inspected: in both reduced screenshots the live Working row shows the frame-0 glyph (the consumer's held cell); in both normal screenshots the live row shows a different rotation phase from the matrix frame 0. This is consistent with the counts but is a single still per phase, not playback evidence.",
+    "No artistic judgment, continuity or distinction verdict is made here; those criteria keep their existing historical verdicts and were not re-reviewed."
+  ],
+  "limitations": [
+    "Stills and sampled counts are browser observations at the operation's sampling points; they are not a video and do not prove every intervening display refresh or subjective smoothness.",
+    "I did not watch live playback; frame indices, wraps and hold observations are the operation's measurements.",
+    "The NF-06 import retains renderer_executed:false because import alone executes nothing; the outer receipt's renderer_executed:true covers the headless Chromium capture subprocess.",
+    "check.json limitation: idle (assets/start.svg) views were decoded in-browser; independent pixel comparison supports PNG only.",
+    "cleanup.process.complete is null (attempted:false, process_reaped:true, scope note: descendant cleanup requires the fixed renderer receipt); renderer cleanup reported complete with browser closed, server closed and profile removed.",
+    "Browser selection came from the profile's local discovery (Google Chrome 157 headless), not an explicit argument; the Playwright Chromium builds were not exercised.",
+    "Side effect corrected: my CLI consumer-execute --help invocation compiled 16 Python bytecode cache files under installed pixl/runtime/pixl/__pycache__/ (created 14:56:25 local, not in the baseline). I deleted those 16 .pyc files and the then-empty __pycache__ directory by literal path, restoring the exact baseline file set; no tracked kit file changed at any point (all 198 kit hashes verified before and after).",
+    "The caller's baseline hash lists do not cover the consumer-root top-level *.md/*.json assignment files (32 files); their modification times all predate the baseline files and I did not write to them, but they were not hash-verified.",
+    "No provider call, art, production edit, review, verdict, nomination, completion or handoff was performed. M1/M2 and broader M3 remain open."
+  ],
+  "production_unchanged": {
+    "verified": true,
+    "method": "sha256sum -c against the caller's baseline lists after the operation and again after removing the bytecode caches; plus a file-set comparison (find vs baseline paths, excluding work/consumer-execution) and an mtime scan for files newer than the baseline lists.",
+    "baseline_files": {
+      "baseline-hashes.sha256": {
+        "path": "work/consumer-execution/baseline-hashes.sha256",
+        "sha256": "c6e275f9b35d556a885ecbb066a661e3aebfd5ea25040a1ad4d2c5adff86d04e",
+        "bytes": 550718,
+        "entries": 4207
+      },
+      "baseline-kit-hashes.sha256": {
+        "path": "work/consumer-execution/baseline-kit-hashes.sha256",
+        "sha256": "24fa15279f7bf91df4cc3677ebaa168bd10f823f0370256f47c7b3c812bf9194",
+        "bytes": 23103,
+        "entries": 198
+      }
+    },
+    "results": {
+      "baseline_sha256sum_c_returncode": 0,
+      "kit_sha256sum_c_returncode": 0,
+      "missing_baseline_files": 0,
+      "files_newer_than_baseline_outside_work_consumer_execution": 0,
+      "extra_files_outside_baseline_coverage": 32,
+      "extra_files_note": "only the top-level assignment *.md/*.json files, which the baseline never listed; none under .pixl, src, assets, renderer*, plar.txt, authoring-plar.txt, installed pixl or prior work/ directories"
+    },
+    "state_hash_after": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+    "state_changed_reported": false,
+    "state_written_reported": false,
+    "files_added": "only under work/consumer-execution (execution-01/, execution-result.json, SPECIALIST-RESULT.json)"
+  },
+  "acceptance_created": false,
+  "next_action": "Caller: independently read execution-result.json and execution-01/result.json, compare the counts/identities/hashes above, view the four phase screenshots and the Working stills, and write CALLER-RESULT.json. No candidate review, verdict, nomination, completion or handoff from this task; next planned work remains NF-08 then CF-10."
+}
