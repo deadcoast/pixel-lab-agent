@@ -1,0 +1,30 @@
+# Exact frozen-kit CLI commands run by the PIXL specialist. python = C:/github/pixel-lab-agent/build/readiness-setup-01/runtime/Scripts/python.exe -I ; kit = installed pixl/scripts/pixl.py ; --root = project root
+plar read --path integration-plar.txt -> initial-read.json (exit 0)
+workflow .pixl/assets/queue.working/state.px -> state-workflow-initial.json (exit 0)
+jobs .pixl/assets/queue.working/state.px -> state-jobs-initial.json (exit 0)
+validate .pixl/assets/queue.working/state.px -> state-validate-initial.json (exit 0, hash 24a52f9d...)
+plar save work/integration-change/plar-document-150.json --path integration-plar.txt --expect 8ddece43... -> allocation-save.json (exit 0, file hash 28657e19...)
+plar read --path integration-plar.txt --asset queue.working -> current-selection.json (exit 0)
+job-dispatch .pixl/assets/queue.working first_request --expect 24a52f9d... -> exit 2; stdout EMPTY; stderr JSON retained verbatim in obsolete-dispatch.stderr.txt and copied byte-for-byte to obsolete-dispatch.json. NO provider call made.
+task-complete .pixl/assets/queue.working task reference.0 --expect 24a52f9d... -> exit 2; stdout EMPTY; stderr JSON retained verbatim in obsolete-completion.stderr.txt and copied byte-for-byte to obsolete-completion.json.
+validate (after refusals) -> state-validate-after-refusals.json (hash unchanged 24a52f9d..., so both refusals occurred before publication)
+job-observe .pixl/assets/queue.working first_request failed work/integration-change/old-abandon-evidence.json --expect 24a52f9d... -> old-abandon.json (exit 0, revision 2, hash 979705c3...)
+plar prepare --path integration-plar.txt --asset queue.working --requirements dc429242... --packet work/integration-change/packet-150.json --connection work/integration-change/connection-150.json --revise --expect 979705c3... -> revised-prepare.json
+job-observe .pixl/assets/queue.working r.5b1bc38638b68ed8.request failed work/integration-change/new-abandon-evidence.json --expect a720d20c... -> new-abandon.json
+commit .pixl/assets/queue.working work/integration-change/candidate-commit-document.json --json --expect 94b73a90... -> candidate-commit.json (appends X r.5b1bc38638b68ed8.candidate.working.retained)
+review-context .pixl/assets/queue.working/state.px r.5b1bc38638b68ed8.candidate.working.retained --result-path work/integration-change/sample-review-context.json
+candidate-review .pixl/assets/queue.working r.5b1bc38638b68ed8.candidate.working.retained sample-review-150 work/integration-change/sample-review-observation.json --expect d104f504... --result-path work/integration-change/sample-review.json
+commit .pixl/assets/queue.working work/integration-change/decision-commit-document.json --json --expect d56114f1... -> decision-commit.json (adds I destination.working, D decision.reuse150, E proof.reuse150)
+production-plan .pixl/assets/queue.working work/integration-change/production-plan-150.json --expect 4cda7487a139f937914a8254742a29333f184fb2bef6641e9009dcd672169c2f -> production-plan-result.json
+family .pixl/assets/queue.working/state.px delivery-150.delivery.output --result-path work/integration-change/family-pre-snapshot.json
+request-review .pixl/assets/queue.working/state.px --plan delivery-150.plan --result-path work/integration-change/plan-request-review.json
+family-snapshot .pixl/assets/queue.working delivery-150.delivery.output delivery-150.package --expect ec989cbd... --result-path work/integration-change/delivery-build.json
+review-context .pixl/assets/queue.working/state.px delivery-150.package --result-path work/integration-change/delivery-context.json
+node renderer-integration/capture.mjs --project ROOT --out work/integration-change/capture-delivery -> stdout capture-report.json
+check.py --project ROOT --capture work/integration-change/capture-delivery -> renderer-check.json
+observation.py ... -> destination-report.json
+destination-import .pixl/assets/queue.working/state.px delivery-150.package work/integration-change/destination-report.json --out work/integration-change/destination-bundle --result-path work/integration-change/destination-import.json
+candidate-review .pixl/assets/queue.working delivery-150.package delivery-review-150 work/integration-change/delivery-review-observation.json --expect dd2970a4... --result-path work/integration-change/delivery-review.json
+family .pixl/assets/queue.working/state.px delivery-150.delivery.output --result-path work/integration-change/acceptance.json
+plar read --path integration-plar.txt --asset queue.working -> final-selection.json
+plar handoff work/integration-change/handoff-details.json --path integration-plar.txt --asset queue.working --requirements dc4292427296bdb382c9b5fcd6a8fc0c7678ad214126654fdf962942223b2968 --expect ad0cfa6d9b512a3a11ace7cdf99dd5613e6ffa5336e95cd436452d6b4785ebb6 --view caller --result-path work/integration-change/handoff.json

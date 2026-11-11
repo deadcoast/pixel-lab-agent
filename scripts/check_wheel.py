@@ -16,6 +16,7 @@ if not __package__:
     sys.path.insert(0, str(ROOT))
 
 from scripts.candidate_review_probe import run_candidate_review_probe
+from scripts.destination_observation_probe import run_destination_observation_probe
 from scripts.family_probe import run_family_probe
 from scripts.plar_probe import run_plar_probe
 from scripts.production_plan_probe import run_production_plan_probe
@@ -342,6 +343,10 @@ def run(log_dir=None):
         copied_review = run_candidate_review_probe(plugin_cli, cwd / "candidate-review-plugin")
         checks.append({"command": "installed candidate/family review", **review})
         checks.append({"command": "copied-plugin candidate/family review", **copied_review})
+        destination = run_destination_observation_probe(cli, cwd / "destination-wheel")
+        copied_destination = run_destination_observation_probe(plugin_cli, cwd / "destination-plugin")
+        checks.append({"command": "installed destination observation import", **destination})
+        checks.append({"command": "copied-plugin destination observation import", **copied_destination})
         shutil.copytree(cwd / "family-fixture", cwd / "plugin-family-authoring")
         authoring = run_production_plan_probe(cli, cwd / "family-fixture")
         copied_authoring = run_production_plan_probe(plugin_cli, cwd / "plugin-family-authoring")

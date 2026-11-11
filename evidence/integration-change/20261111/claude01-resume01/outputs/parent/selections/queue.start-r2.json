@@ -1,0 +1,176 @@
+{
+  "hash": "481450298f204ac146b2f4cd02565a947f8e23a006bae855affa2a477002c555",
+  "project_root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean j9gn621r\\consumer",
+  "path": "integration-plar.txt",
+  "project": {
+    "name": "Queue status UI",
+    "brief": "Fresh prospective CF-07 integration evaluation over retained production art; original allocation and evidence are historical inputs."
+  },
+  "coverage": {
+    "included": [
+      "Original brief, shared source, all five exact art files and source-linked normative clauses retained.",
+      "Fresh prospective allocation and store, not a continuation of ignored original producer state.",
+      "Stable renderer and wrapper established before the controlled Working-only timing change."
+    ],
+    "excluded": [
+      "New art, provider execution, remote account badge registry, and changes to unrelated assets."
+    ],
+    "unresolved": [
+      "Current integration review and acceptance require a fresh capture after the timing amendment."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "binding": "current",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "absolute_path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean j9gn621r\\consumer\\BRIEF.md"
+    },
+    {
+      "id": "queue-state",
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "binding": "current",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "absolute_path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean j9gn621r\\consumer\\src\\queue.ts"
+    },
+    {
+      "id": "queue-view",
+      "path": "src/queue-view.ts",
+      "sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "binding": "current",
+      "observed_sha256": "4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49",
+      "absolute_path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean j9gn621r\\consumer\\src\\queue-view.ts"
+    },
+    {
+      "id": "start-vector",
+      "path": "assets/start.svg",
+      "sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "binding": "current",
+      "observed_sha256": "ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3",
+      "absolute_path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean j9gn621r\\consumer\\assets\\start.svg"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.start",
+      "kind": "existing_vector_control",
+      "purpose": "Retain the existing idle Start control shared by both status consumers.",
+      "status": "deferred",
+      "next": "Preserve exact existing art and allocation; no new production in this evaluation.",
+      "issues": [],
+      "questions": []
+    }
+  ],
+  "dependency_issues": {},
+  "asset": {
+    "id": "queue.start",
+    "kind": "existing_vector_control",
+    "purpose": "Retain the existing idle Start control shared by both status consumers.",
+    "status": "deferred",
+    "consumers": [
+      {
+        "source": "queue-view",
+        "symbol": "statusVisuals.idle",
+        "usage": "Maps idle to the Start image path and frame count."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "statusCell",
+        "usage": "Full status consumer returns the shared idle descriptor."
+      },
+      {
+        "source": "queue-view",
+        "symbol": "compactStatus",
+        "usage": "Compact status consumer returns the same idle descriptor; reuse one asset."
+      },
+      {
+        "source": "queue-state",
+        "symbol": "QueueState",
+        "usage": "The idle state remains valid; stateAfter handles started/ok/error/pause transitions while the Start descriptor remains unchanged."
+      }
+    ],
+    "existing": [
+      {
+        "path": "assets/start.svg",
+        "role": "Exact retained art; historical origin is not current evaluation acceptance."
+      }
+    ],
+    "requirements": [
+      {
+        "property": "preserve_existing",
+        "value": "Keep assets/start.svg unchanged; no replacement production is required.",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "BRIEF explicitly preserves the existing vector Start control."
+      },
+      {
+        "property": "existing_geometry",
+        "value": {
+          "width": 16,
+          "height": 16,
+          "viewBox": "0 0 16 16",
+          "frames": 1
+        },
+        "authority": "observation",
+        "sources": [
+          "start-vector",
+          "queue-view"
+        ],
+        "reason": "The SVG dimensions/viewBox and idle descriptor are consistent with one 16x16 cell."
+      },
+      {
+        "property": "existing_shape_and_fill",
+        "value": {
+          "path": "M4 2L14 8L4 14Z",
+          "fill": "#70b9ed"
+        },
+        "authority": "observation",
+        "sources": [
+          "start-vector"
+        ],
+        "reason": "The source defines a cool blue right-facing triangle without a background element."
+      },
+      {
+        "property": "deferral_reason",
+        "value": "Preserved existing asset; no new Start art is in the requested production scope.",
+        "authority": "observation",
+        "sources": [
+          "brief",
+          "queue-view",
+          "start-vector"
+        ],
+        "reason": "Deferred records deliberate reuse without claiming runtime integration was tested."
+      }
+    ],
+    "delivery": {
+      "path": "assets/start.svg",
+      "checks": [
+        "Keep the original SVG byte hash unchanged.",
+        "When a runnable UI is available, verify idle still resolves to the preserved Start control in both status consumers."
+      ]
+    },
+    "depends_on": [],
+    "questions": [],
+    "next": "Preserve exact existing art and allocation; no new production in this evaluation.",
+    "evidence": []
+  },
+  "dependencies": [],
+  "visual_references": [],
+  "requirements_hash": "0f40d3050d602d35be824fa3febac5576615193a1aba243cada494662edd4bd5",
+  "production": {
+    "store": ".pixl/assets/queue.start",
+    "link_status": "unlinked",
+    "status": "not_started",
+    "next_action": "prepare",
+    "new_request_allowed": true
+  },
+  "hash_domains": {
+    "hash": "file_sha256",
+    "requirements_hash": "selected_requirements_sha256"
+  }
+}

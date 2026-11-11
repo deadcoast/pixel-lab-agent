@@ -44,6 +44,12 @@ TOOLS = [
                ["store", "expect", "candidate_id", "review_id", "observation"]),
     ),
     (
+        "pixl_destination_import",
+        "Validate a supplied destination report against the current family candidate and exact package/source/output bytes. Export its complete evidence bundle and PNG previews to a fresh directory. Does not execute a renderer, attest viewing, publish verdicts or change production state; use candidate-review for explicit judgments.",
+        schema({"path": STR, "candidate_id": STR, "report_path": STR, "out": STR},
+               ["path", "candidate_id", "report_path", "out"]),
+    ),
+    (
         "pixl_production_plan",
         "Author connected sample/production stages and collective delivery from reviewed JSON using existing contracts, baseline and choices. Recover PLAR links on identical retries. No execution or acceptance.",
         schema({"store": STR, "expect": STR, "plan": OBJ}, ["store", "expect", "plan"]),

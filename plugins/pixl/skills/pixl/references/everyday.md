@@ -72,7 +72,9 @@ requirements.
 For an adopted baseline and related stages, use the [connected plan contract](../../../resources/spec/production-plan.md):
 `production-plan` saves the reviewed stages and `stage-prepare` binds the exact
 accepted upstream inputs to a request. These public operations construct the
-records. Reuse accepted existing art when it satisfies the assigned successor;
+records. For a delivery composed of accepted existing outputs, a plan with
+`stages: []` binds those outputs without creating a generation stage. Reuse
+accepted existing art when it satisfies the assigned successor;
 do not mislabel reused bytes as generated under that successor.
 
 For this retained successor, orientation is:

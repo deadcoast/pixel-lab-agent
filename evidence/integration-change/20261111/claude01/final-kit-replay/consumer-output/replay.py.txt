@@ -1,0 +1,278 @@
+"""Local final-kit compatibility replay; no native host or renderer is launched.
+
+Run only after the final verifier/package freeze, from the repository:
+  .venv/Scripts/python.exe evidence/integration-change/20261111/final-kit-replay.py.txt codex01 claude01
+
+The public command uses DEFAULT_PYTHON and a cwd-relative STATE path. Every run
+requires fresh consumer and evidence directories. Failed evidence is preserved.
+"""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
+
+ROOT = Path(__file__).resolve().parents[3]
+ATTEMPTS = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+from evaluations.readiness_case import DEFAULT_PYTHON
+
+
+def require(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def identity(path):
+    data = path.read_bytes()
+    return {"path": str(path), "sha256": digest(data), "bytes": len(data)}
+
+
+def write_bytes(path, data):
+    with path.open("xb") as stream:
+        stream.write(data)
+
+
+def write_json(path, value):
+    write_bytes(path, (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
+
+
+def rooted(root, relative):
+    require(isinstance(relative, str) and relative and "\\" not in relative and ":" not in relative,
+            "Expected a forward-slash consumer-relative path")
+    part = PurePosixPath(relative)
+    require(not part.is_absolute() and ".." not in part.parts and part.as_posix() == relative,
+            "Noncanonical consumer-relative path")
+    target = root / relative
+    require(target.resolve() == target and target != root, "Redirected consumer-relative path")
+    return target
+
+
+def inventory(root):
+    require(root.is_dir(), "Missing inventory directory: " + str(root))
+    result = {}
+    for path in sorted(root.rglob("*")):
+        require(not path.is_symlink() and path.resolve() == path, "Redirected inventory input: " + str(path))
+        if path.is_file():
+            data = path.read_bytes()
+            result[path.relative_to(root).as_posix()] = {"sha256": digest(data), "bytes": len(data)}
+    return result
+
+
+def verify_reference(root, ref):
+    path = rooted(root, ref["path"])
+    data = path.read_bytes()
+    require(digest(data) == ref["sha256"], "Changed exact reference: " + ref["path"])
+    return data
+
+
+def verify_references(root, value, location=""):
+    found = []
+    if isinstance(value, dict):
+        if {"path", "sha256"} <= value.keys():
+            data = verify_reference(root, value)
+            found.append({"field": location, "path": value["path"], "sha256": digest(data), "bytes": len(data)})
+        for key, child in value.items():
+            found.extend(verify_references(root, child, location + "/" + key))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            found.extend(verify_references(root, child, location + "/" + str(index)))
+    return found
+
+
+def verify_final_kit():
+    kit = (ROOT / "plugins/pixl").resolve()
+    manifest = kit / "bundle-manifest.json"
+    data = manifest.read_bytes()
+    value = json.loads(data)
+    require(bool(value["files"]), "Final bundle manifest has no files")
+    for row in value["files"]:
+        content = verify_reference(kit, row)
+        require(len(content) == row["bytes"], "Final bundle member size differs")
+    return {**identity(manifest), "files_verified": len(value["files"])}, data
+
+
+def prepare_attempt(name, label):
+    require(re.fullmatch(r"[A-Za-z0-9_-]+", name) is not None, "Use an attempt directory name")
+    attempt = ATTEMPTS / name
+    launch = json.loads((attempt / "launch.json").read_bytes())
+    baseline = json.loads((attempt / "baseline-prepare.json").read_bytes())
+    consumer = Path(launch["cwd"]).resolve()
+    state = rooted(consumer, baseline["store"] + "/state.px")
+    require(state.is_file(), "Actual finished native consumer state is missing")
+    source = attempt / "outputs/SPECIALIST-RESULT.json"
+    specialist_bytes = source.read_bytes()
+    native_specialist = rooted(consumer, "work/integration-change/SPECIALIST-RESULT.json")
+    require(native_specialist.read_bytes() == specialist_bytes, "Retained/native SPECIALIST-RESULT differs")
+    specialist = json.loads(specialist_bytes)
+    references = verify_references(consumer, specialist)
+    report_ref, import_ref = (specialist[key] for key in ("destination_report", "destination_import"))
+    report_bytes = verify_reference(consumer, report_ref)
+    imported_bytes = verify_reference(consumer, import_ref)
+    report, imported = json.loads(report_bytes), json.loads(imported_bytes)
+    require(imported["candidate"] == report["candidate"], "Original import candidate differs")
+    require(imported["binding_hash"] == report["binding_hash"], "Original import binding differs")
+    require(imported["manifest"] == report["manifest"], "Original import manifest differs")
+    require({key: imported["report"][key] for key in ("path", "sha256")}
+            == {key: report_ref[key] for key in ("path", "sha256")},
+            "Original import did not use the exact named report")
+    verify_reference(consumer, imported["bundle"])
+    verify_reference(consumer, report["manifest"])
+    work_relative = "work/integration-change/" + label
+    work = rooted(consumer, work_relative)
+    evidence = attempt / label
+    require(not work.exists() and not evidence.exists(), "Preserve prior replay; choose a fresh --label")
+    relative_state = Path(os.path.relpath(state, ROOT)).as_posix()
+    require(not Path(relative_state).is_absolute(), "STATE must exercise cwd-relative CLI resolution")
+    require((ROOT / relative_state).resolve() == state, "cwd-relative STATE points elsewhere")
+    return {"attempt": attempt, "consumer": consumer, "state": state, "state_argument": relative_state,
+            "specialist": specialist, "specialist_bytes": specialist_bytes, "references": references,
+            "report": report, "report_ref": report_ref, "report_bytes": report_bytes,
+            "original_import": imported, "original_import_bytes": imported_bytes,
+            "work": work, "work_relative": work_relative, "evidence": evidence,
+            "native_kit": consumer / "installed pixl"}
+
+
+def command(plan, python, report, out, result, tag, timeout):
+    runner = ROOT / "plugins/pixl/scripts/pixl.py"
+    argv = [str(python), "-I", "-B", str(runner), "destination-import", plan["state_argument"],
+            plan["report"]["candidate"], report, "--out", out, "--root", str(plan["consumer"]),
+            "--result-path", result]
+    record = {"argv": argv, "cwd": str(ROOT), "started_at": datetime.now(UTC).isoformat(),
+              "timeout_seconds": timeout, "scope": "Local public CLI import; no renderer or native host execution"}
+    write_json(plan["work"] / (tag + "-command.json"), record)
+    try:
+        completed = subprocess.run(argv, cwd=ROOT, capture_output=True, check=False, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        write_bytes(plan["work"] / (tag + "-stdout.txt"), error.stdout or b"")
+        write_bytes(plan["work"] / (tag + "-stderr.txt"), error.stderr or b"")
+        write_json(plan["work"] / (tag + "-exit.json"), {"timeout": True, "ended_at": datetime.now(UTC).isoformat()})
+        raise
+    write_bytes(plan["work"] / (tag + "-stdout.txt"), completed.stdout)
+    write_bytes(plan["work"] / (tag + "-stderr.txt"), completed.stderr)
+    write_json(plan["work"] / (tag + "-exit.json"),
+               {"returncode": completed.returncode, "ended_at": datetime.now(UTC).isoformat()})
+    return completed
+
+
+def replay(plan, python, kit, kit_bytes, timeout):
+    consumer, work, evidence, relative = (plan[key] for key in ("consumer", "work", "evidence", "work_relative"))
+    evidence.mkdir()
+    work.mkdir()
+    state_before = inventory(consumer / ".pixl")
+    native_kit_before = inventory(plan["native_kit"])
+    write_json(work / "state-before.json", state_before)
+    write_json(work / "native-kit-before.json", native_kit_before)
+    write_json(work / "exact-references.json", plan["references"])
+    write_bytes(work / "original-report.json", plan["report_bytes"])
+    write_bytes(work / "original-import.json", plan["original_import_bytes"])
+    write_bytes(work / "SPECIALIST-RESULT.json", plan["specialist_bytes"])
+    write_bytes(work / "final-kit-manifest.json", kit_bytes)
+    write_bytes(work / "replay.py.txt", Path(__file__).read_bytes())
+    context = {"version": 1, "attempt": str(plan["attempt"]), "consumer": str(consumer),
+               "cwd": str(ROOT), "state_argument": plan["state_argument"],
+               "python": identity(python), "final_kit": kit,
+               "launch": identity(plan["attempt"] / "launch.json"),
+               "baseline_prepare": identity(plan["attempt"] / "baseline-prepare.json"),
+               "specialist_result": identity(plan["attempt"] / "outputs/SPECIALIST-RESULT.json"),
+               "scope": "Final-kit local compatibility reproof only; not new native loading, rendering, viewing or acceptance"}
+    write_json(work / "context.json", context)
+    outcome = {"status": "fail", "attempt": plan["attempt"].name, "checks": []}
+    try:
+        result_path = relative + "/import-result.json"
+        positive = command(plan, python, plan["report_ref"]["path"], relative + "/import", result_path, "positive", timeout)
+        require(positive.returncode == 0, "Final-kit positive import failed; inspect retained stderr")
+        summary = json.loads(positive.stdout)
+        require(summary["result_saved"] is True and summary["result_path"] == result_path,
+                "Positive import did not export its exact result")
+        result_bytes = rooted(consumer, result_path).read_bytes()
+        require(digest(result_bytes) == summary["result_sha256"], "Exported result hash differs")
+        result = json.loads(result_bytes)
+        require(result["candidate"] == plan["report"]["candidate"], "Replay candidate differs")
+        require(result["binding_hash"] == plan["report"]["binding_hash"], "Replay binding differs")
+        require(result["manifest"] == plan["report"]["manifest"], "Replay manifest differs")
+        require(result["files_verified"] is True, "Replay did not verify declared bytes")
+        require(all(result[key] is False for key in ("automatic_acceptance", "renderer_executed", "state_changed")),
+                "Replay crossed its execution/acceptance boundary")
+        bundle = verify_reference(consumer, result["bundle"])
+        original_bundle = plan["original_import"]["bundle"]
+        require(digest(bundle) == original_bundle["sha256"], "Final-kit ZIP differs from native import")
+        require(inventory(consumer / ".pixl") == state_before, "Positive import changed production bytes")
+        outcome["checks"].extend(["cwd-relative STATE resolves from repository cwd", "exact native report and manifest",
+                                  "same deterministic ZIP SHA-256 as native import", "no execution or acceptance flags",
+                                  "positive import leaves all .pixl bytes unchanged"])
+        outcome["bundle"] = result["bundle"]
+
+        tampered = copy.deepcopy(plan["report"])
+        original_sha = tampered["destinations"][0]["sha256"]
+        tampered["destinations"][0]["sha256"] = "0" * 64 if original_sha != "0" * 64 else "1" * 64
+        tampered_path = relative + "/tampered-report.json"
+        write_json(rooted(consumer, tampered_path), tampered)
+        negative = command(plan, python, tampered_path, relative + "/rejected", relative + "/rejected-result.json",
+                           "negative", timeout)
+        require(negative.returncode == 2, "Tampered destination report did not fail through public CLI")
+        refusal = json.loads(negative.stderr)
+        require(refusal["error"] == "destination_binding", "Negative command failed for an unrelated reason")
+        require(not rooted(consumer, relative + "/rejected").exists(), "Negative import created output")
+        require(not rooted(consumer, relative + "/rejected-result.json").exists(), "Negative import exported a success result")
+        require(inventory(consumer / ".pixl") == state_before, "Negative import changed production bytes")
+        require(verify_references(consumer, plan["specialist"]) == plan["references"], "Original native references changed")
+        require(inventory(plan["native_kit"]) == native_kit_before, "Original native kit files changed")
+        current_kit, _ = verify_final_kit()
+        require(current_kit == kit, "Final kit changed during compatibility replay")
+        outcome["checks"].extend(["tampered destination SHA rejected with destination_binding",
+                                  "negative import creates no output and leaves .pixl unchanged",
+                                  "native exact references and installed kit preserved", "final bundle identity remains frozen"])
+        outcome["status"] = "pass"
+    except (OSError, RuntimeError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        outcome["error"] = type(error).__name__ + ": " + str(error)
+    finally:
+        after = inventory(consumer / ".pixl")
+        native_after = inventory(plan["native_kit"])
+        outcome.update(state_unchanged=after == state_before, native_kit_unchanged=native_after == native_kit_before,
+                       final_kit=kit, scope=context["scope"])
+        write_json(work / "state-after.json", after)
+        write_json(work / "native-kit-after.json", native_after)
+        write_json(work / "replay-result.json", outcome)
+        shutil.copytree(work, evidence / "consumer-output")
+        copied = inventory(evidence / "consumer-output")
+        require(copied == inventory(work), "Replay evidence copy differs")
+        write_json(evidence / "retention.json", {"source": str(work), "files": copied, "status": outcome["status"],
+                   "scope": context["scope"], "preserved_original_attempt": True})
+    return outcome
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempts", nargs="*", default=["codex01", "claude01"])
+    parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON)
+    parser.add_argument("--label", default="final-kit-replay")
+    parser.add_argument("--timeout", type=int, default=120)
+    args = parser.parse_args()
+    require(re.fullmatch(r"final-kit-replay(?:-[A-Za-z0-9_-]+)?", args.label) is not None,
+            "Use final-kit-replay or a fresh final-kit-replay-SUFFIX label")
+    require(args.timeout > 0 and args.python.is_file(), "Missing selected Python or invalid timeout")
+    kit, kit_bytes = verify_final_kit()
+    plans = [prepare_attempt(name, args.label) for name in args.attempts]
+    require(len({str(plan["attempt"]) for plan in plans}) == len(plans), "Duplicate attempts are not allowed")
+    results = [replay(plan, args.python.resolve(), kit, kit_bytes, args.timeout) for plan in plans]
+    print(json.dumps({"scope": "Local final-kit compatibility only; native evidence remains historical",
+                      "results": results}, indent=2))
+    return 0 if all(result["status"] == "pass" for result in results) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

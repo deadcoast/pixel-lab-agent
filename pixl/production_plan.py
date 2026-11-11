@@ -54,7 +54,7 @@ SCHEMA = _object(
         "knowledge": REFS,
         "stages": {
             "type": "array",
-            "minItems": 1,
+            "minItems": 0,
             "items": _object(
                 {
                     "id": ID,

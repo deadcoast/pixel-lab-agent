@@ -1,0 +1,251 @@
+{
+  "format": 2,
+  "revision": 11,
+  "hash": "ec989cbd1eadda374d0f34da0b8ea1591c5b6c899f6b2d45465a7af6d5359c1a",
+  "files_verified": true,
+  "families": [
+    {
+      "output": "delivery-150.delivery.output",
+      "task": "delivery-150.delivery.task",
+      "state": "open",
+      "baseline": {
+        "candidate": "r.5b1bc38638b68ed8.candidate.working.retained",
+        "output": "r.5b1bc38638b68ed8.output.working",
+        "task": "r.5b1bc38638b68ed8.task",
+        "eligible": true,
+        "reasons": [],
+        "requirements": [
+          {
+            "id": "r.5b1bc38638b68ed8.criterion.working.canvas",
+            "name": "canvas",
+            "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+            "domain": "mechanical",
+            "mode": "local",
+            "status": "pass",
+            "verdict": "sample-review-150.verdict.0",
+            "reason": "Fresh local measurement: exact retained 64x16 transparent sheet with four horizontal 16x16 frames, alpha only 0/255, bytes sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc unchanged.",
+            "reviewer": "actor",
+            "evidence": [
+              "sample-review-150.evidence.0"
+            ]
+          },
+          {
+            "id": "r.5b1bc38638b68ed8.criterion.working.activity",
+            "name": "activity",
+            "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "pass",
+            "verdict": "sample-review-150.verdict.1",
+            "reason": "Fresh visual inspection at native 1x (browser cells and screenshot) and enlarged 3x/8x/12x nearest on #172336: cool-blue three-arc broken ring with four distinct rotation phases reads as ongoing activity, never as a check or terminal pose; transparent compositing is clean; the treatment (stepped clusters, cool-blue accent, slight highlight) is coherent with the adopted Ready baseline; in colour and in grayscale it stays distinct from Ready (check), Retry (solid ring + arrowhead) and Paused (bars).",
+            "reviewer": "actor",
+            "evidence": [
+              "sample-review-150.evidence.1"
+            ]
+          },
+          {
+            "id": "r.5b1bc38638b68ed8.criterion.working.integration",
+            "name": "integration",
+            "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+            "domain": "engine",
+            "mode": "live",
+            "status": "pass",
+            "verdict": "sample-review-150.verdict.2",
+            "reason": "Actual renderer-integration browser execution of the real modules: both statusCell and compactStatus painted the exact served sheet with nearest filtering on the dark panel, looping frames 0-3 at the authorized 150 ms (600 ms cycle) observed live at 3x across three wraps, and 1x/3x stills verified; check.py passed with zero failures. 1x live playback was not performed (only 1x boundary samples).",
+            "reviewer": "actor",
+            "evidence": [
+              "sample-review-150.evidence.2"
+            ]
+          }
+        ]
+      },
+      "destinations": [
+        {
+          "id": "r.5b1bc38638b68ed8.destination.working",
+          "project": "project",
+          "key": "destination.working.150",
+          "status": "confirmed",
+          "value": {
+            "background": "#172336",
+            "cell": [
+              16,
+              16
+            ],
+            "consumers": [
+              "statusCell",
+              "compactStatus"
+            ],
+            "cycle_ms": 600,
+            "frame_ms": 150,
+            "frames": 4,
+            "layout": "horizontal",
+            "module": "src/queue-view-integration.ts",
+            "path": "assets/working.png",
+            "renderer": "renderer-integration",
+            "sampling": "nearest",
+            "scale": 3,
+            "timing_module": "src/working-timing.ts"
+          },
+          "sources": [
+            "r.5b1bc38638b68ed8.source.2",
+            "r.5b1bc38638b68ed8.source.9",
+            "r.5b1bc38638b68ed8.source.4",
+            "r.5b1bc38638b68ed8.source.1"
+          ],
+          "rationale": "Confirmed destination: the existing path used by statusVisuals.running for both statusCell and compactStatus, with display.frameMs supplied by src/working-timing.ts (150) through the stable wrapper, as instructed by the retained WORKING-TIMING-AMENDMENT.md; no path move or new art."
+        }
+      ],
+      "members": [
+        {
+          "output": "r.5b1bc38638b68ed8.output.working",
+          "task": "r.5b1bc38638b68ed8.task",
+          "state": "done",
+          "candidate": "r.5b1bc38638b68ed8.candidate.working.retained",
+          "accepted": true,
+          "reasons": [],
+          "requirements": [
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.canvas",
+              "name": "canvas",
+              "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.0",
+              "reason": "Fresh local measurement: exact retained 64x16 transparent sheet with four horizontal 16x16 frames, alpha only 0/255, bytes sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc unchanged.",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.0"
+              ]
+            },
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.activity",
+              "name": "activity",
+              "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.1",
+              "reason": "Fresh visual inspection at native 1x (browser cells and screenshot) and enlarged 3x/8x/12x nearest on #172336: cool-blue three-arc broken ring with four distinct rotation phases reads as ongoing activity, never as a check or terminal pose; transparent compositing is clean; the treatment (stepped clusters, cool-blue accent, slight highlight) is coherent with the adopted Ready baseline; in colour and in grayscale it stays distinct from Ready (check), Retry (solid ring + arrowhead) and Paused (bars).",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.1"
+              ]
+            },
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.integration",
+              "name": "integration",
+              "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.2",
+              "reason": "Actual renderer-integration browser execution of the real modules: both statusCell and compactStatus painted the exact served sheet with nearest filtering on the dark panel, looping frames 0-3 at the authorized 150 ms (600 ms cycle) observed live at 3x across three wraps, and 1x/3x stills verified; check.py passed with zero failures. 1x live playback was not performed (only 1x boundary samples).",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.2"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "r.5b1bc38638b68ed8.candidate.working.retained",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.canvas",
+                  "name": "canvas",
+                  "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.0",
+                  "reason": "Fresh local measurement: exact retained 64x16 transparent sheet with four horizontal 16x16 frames, alpha only 0/255, bytes sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc unchanged.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.0"
+                  ]
+                },
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.activity",
+                  "name": "activity",
+                  "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.1",
+                  "reason": "Fresh visual inspection at native 1x (browser cells and screenshot) and enlarged 3x/8x/12x nearest on #172336: cool-blue three-arc broken ring with four distinct rotation phases reads as ongoing activity, never as a check or terminal pose; transparent compositing is clean; the treatment (stepped clusters, cool-blue accent, slight highlight) is coherent with the adopted Ready baseline; in colour and in grayscale it stays distinct from Ready (check), Retry (solid ring + arrowhead) and Paused (bars).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.1"
+                  ]
+                },
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.integration",
+                  "name": "integration",
+                  "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+                  "domain": "engine",
+                  "mode": "live",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.2",
+                  "reason": "Actual renderer-integration browser execution of the real modules: both statusCell and compactStatus painted the exact served sheet with nearest filtering on the dark panel, looping frames 0-3 at the authorized 150 ms (600 ms cycle) observed live at 3x across three wraps, and 1x/3x stills verified; check.py passed with zero failures. 1x live playback was not performed (only 1x boundary samples).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.2"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "candidate": null,
+      "requirements": [
+        {
+          "id": "delivery-150.delivery.q.bytes",
+          "name": "bytes",
+          "check": "The package member copied for r.5b1bc38638b68ed8.output.working is byte-identical to the served destination assets/working.png (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc) and to the fixture exact_art hash; all four other original art files remain unchanged.",
+          "domain": "mechanical",
+          "mode": "local",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "delivery-150.delivery.q.continuity",
+          "name": "continuity",
+          "check": "In the actual destination screenshot and the 1x/3x consumer cells, the delivered Working sheet keeps the reviewed cool-blue stepped-cluster treatment of the adopted Ready baseline, stays distinguishable from Ready, Retry and Paused without relying on colour alone, and its four frames read as one coherent rotating activity sequence rather than a success or terminal pose.",
+          "domain": "continuity",
+          "mode": "visual",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        },
+        {
+          "id": "delivery-150.delivery.q.destination",
+          "name": "destination",
+          "check": "A fresh renderer-integration browser capture shows both statusCell and compactStatus painting the served assets/working.png with nearest filtering and transparent compositing on #172336, looping frames 0-3 at display.frameMs 150 (600 ms cycle, wrap observed at least twice) at the consumer 3x scale, with 1x/3x stills verified by check.py; 1x live playback remains unperformed and is not claimed.",
+          "domain": "engine",
+          "mode": "live",
+          "status": "unperformed",
+          "verdict": null,
+          "reason": null,
+          "reviewer": null,
+          "evidence": []
+        }
+      ],
+      "candidates": [],
+      "blockers": [],
+      "snapshot_blockers": [],
+      "pending_jobs": [],
+      "snapshots": []
+    }
+  ],
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

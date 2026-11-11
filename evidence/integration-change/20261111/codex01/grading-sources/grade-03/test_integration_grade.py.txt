@@ -1,0 +1,177 @@
+"""Evidence tampering must not become native integration qualification."""
+
+import copy
+import hashlib
+import io
+import json
+import unittest
+import zipfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+from evaluations.grade_integration_change import (
+    audited_helper_proof,
+    bundle_errors,
+    capture_errors,
+    direct_cli,
+    fields,
+    grade,
+    image_views,
+    motion_errors,
+    operation_proof,
+)
+from pixl import candidate_review, destination_observation
+from tests.test_destination_observation import observation_fixture
+
+
+class IntegrationGradeTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+
+    def write(self, name, value):
+        target = self.root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(value), encoding="utf-8")
+        return {"path": name, "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
+
+    def test_exact_import_retention_and_rehashed_incomplete_archive(self):
+        doc, report = observation_fixture(self.root)
+        imported = destination_observation.import_observation(doc, self.root, "package", "capture/observation.json", "imported")
+        context = candidate_review.context(doc, self.root, "package")
+        self.assertEqual(bundle_errors(self.root, report, imported, context), [])
+        path = self.root / imported["bundle"]["path"]
+        with zipfile.ZipFile(path) as archive:
+            entries = {n: archive.read(n) for n in archive.namelist()}
+        index = json.loads(entries["index.json"])
+        lost = index["files"].pop()
+        del entries[lost["archive_path"]]
+        entries["index.json"] = json.dumps(index).encode()
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, "w") as archive:
+            for name, content in entries.items():
+                archive.writestr(name, content)
+        path.write_bytes(data.getvalue())
+        imported["bundle"]["sha256"] = hashlib.sha256(data.getvalue()).hexdigest()
+        imported["observation"]["sha256"] = imported["bundle"]["sha256"]
+        self.assertIn("Incomplete or duplicate transitive archive membership", bundle_errors(self.root, report, imported, context))
+
+    def test_package_swap_and_changed_capture_rejected_even_with_success_flags(self):
+        doc, report = observation_fixture(self.root)
+        imported = destination_observation.import_observation(doc, self.root, "package", "capture/observation.json", "imported")
+        context = candidate_review.context(doc, self.root, "package")
+        other = copy.deepcopy(context)
+        other["candidate"] = "different.package"
+        self.assertIn("Different candidate, manifest or current review bindings", bundle_errors(self.root, report, imported, other))
+        (self.root / report["files"][0]["path"]).write_bytes(b"changed")
+        with self.assertRaises(ValueError):
+            bundle_errors(self.root, report, imported, context)
+
+    def test_controlled_timeline_is_not_live_playback_or_two_consumers(self):
+        report = {"views": [{"consumer": c, "state": "running", "scale": s, "member_outputs": ["working"]}
+                            for c in ("statusCell", "compactStatus") for s in (1, 3)],
+                  "motion": [{"consumer": c, "state": "running", "mode": "requestAnimationFrame playback", "status": "observed",
+                              "frame_ms": 150, "frame_count": 4,
+                              "samples": [{"elapsed_ms": i * 150, "frame": i % 4} for i in range(13)]}
+                             for c in ("statusCell", "compactStatus")]}
+        self.assertEqual(motion_errors(report), [])
+        report["motion"][0]["mode"] = "controlled elapsed-time boundary samples"
+        self.assertIn("No unique actual callback playback: statusCell", motion_errors(report))
+        report["motion"][0]["mode"] = "requestAnimationFrame playback"
+        report["motion"][1]["samples"][3]["frame"] = 0
+        self.assertIn("150ms live consecutive four-frame loops not observed: compactStatus", motion_errors(report))
+
+    def test_real_mcp_output_required_and_export_hash_bound(self):
+        saved = {"candidate": "package", "files_verified": True}
+        ref = self.write("work/import.json", saved)
+        call = {"payload": {"item": {"type": "McpToolCall", "server": "pixl_local", "tool": "pixl_destination_import",
+            "status": "completed", "arguments": {"result_path": ref["path"]},
+            "result": {"isError": False, "structuredContent": {"result_path": ref["path"], "result_sha256": ref["sha256"]}}}}}
+        self.assertTrue(operation_proof([[call]], self.root, "pixl_destination_import", ref))
+        call["payload"]["item"]["result"]["structuredContent"]["result_sha256"] = "0" * 64
+        self.assertFalse(operation_proof([[call]], self.root, "pixl_destination_import", ref))
+        narrative = {"message": {"role": "assistant", "content": [{"type": "text", "text": json.dumps(saved)}]}}
+        self.assertFalse(operation_proof([[narrative]], self.root, "pixl_destination_import", ref))
+
+    def test_quoted_command_claim_and_other_kit_program_not_public_execution(self):
+        command = '& "C:/runtime/python.exe" "C:/consumer/installed-kit/scripts/pixl.py" destination-import state package report --out work'
+        self.assertTrue(direct_cli(command, "destination-import"))
+        self.assertFalse(direct_cli("echo '" + command + "'", "destination-import"))
+        self.assertFalse(direct_cli(command.replace("/scripts/pixl.py", "/fake.py"), "destination-import"))
+        ref = self.write("work/result.json", {"candidate": "package"})
+        row = {"payload": {"item": {"type": "CommandExecution", "exit_code": 0,
+                                    "command": command, "aggregated_output": json.dumps({"candidate": "package"})}}}
+        self.assertTrue(operation_proof([[row]], self.root, "pixl_destination_import", ref))
+        row["payload"]["item"]["command"] = "echo '" + command + "'"
+        self.assertFalse(operation_proof([[row]], self.root, "pixl_destination_import", ref))
+
+    def test_image_path_claim_or_failed_read_cannot_establish_viewing(self):
+        image = self.root / "image.png"
+        image.write_bytes(b"image fixture")
+        request = {"message": {"content": [{"type": "tool_use", "id": "r", "name": "Read", "input": {"file_path": str(image)}}]}}
+        result = {"message": {"content": [{"type": "tool_result", "tool_use_id": "r", "is_error": True,
+                                           "content": [{"type": "image"}]}]}}
+        self.assertEqual(image_views([[request, result]], self.root), {})
+        result["message"]["content"][0]["is_error"] = False
+        self.assertIn(hashlib.sha256(image.read_bytes()).hexdigest(), image_views([[request, result]], self.root))
+        self.assertEqual(image_views([[{"payload": {"type": "message", "content": [{"type": "text", "text": str(image)}]}}]], self.root), {})
+
+    def test_helper_receipt_requires_preexecution_native_source_binding(self):
+        helper = self.root / "work/integration-change/operations.py"
+        helper.parent.mkdir(parents=True)
+        body = "def op(name, *args): pass\nop('result.json', 'destination-import')\n"
+        helper.write_text(body, encoding="utf-8")
+        digest = hashlib.sha256(helper.read_bytes()).hexdigest()
+        ref = self.write("work/integration-change/result.json", {"candidate": "package"})
+        stderr = helper.parent / "result.json.stderr"
+        stderr.write_bytes(b"")
+        self.write("work/integration-change/result.json.execution.json", {
+            "command": ["C:/python.exe", str(self.root / "installed pixl/scripts/pixl.py"), "destination-import"],
+            "exit_code": 0, "stdout_sha256": ref["sha256"], "stderr_sha256": hashlib.sha256(b"").hexdigest(),
+            "helper_sha256": digest})
+        execution = {"file": "native.jsonl", "line": 20, "payload": {"item": {
+            "type": "CommandExecution", "exit_code": 0, "command": 'python "' + str(helper) + '"', "aggregated_output": ""}}}
+        source = {"file": "native.jsonl", "line": 10, "payload": {"item": {
+            "type": "CommandExecution", "exit_code": 0, "command": "Get-Content '" + str(helper) + "'", "aggregated_output": body}}}
+        with patch("evaluations.grade_integration_change.AUDITED_HELPERS", {digest: "operations.py"}):
+            self.assertFalse(audited_helper_proof([[execution]], self.root, "destination-import", ref, True))
+            self.assertTrue(audited_helper_proof([[source, execution]], self.root, "destination-import", ref, True))
+            source["line"] = 30
+            self.assertFalse(audited_helper_proof([[execution, source]], self.root, "destination-import", ref, True))
+            source["line"] = 10
+            helper.write_text(body + "# replaced after execution", encoding="utf-8")
+            self.assertFalse(audited_helper_proof([[source, execution]], self.root, "destination-import", ref, True))
+
+    def test_structured_motion_cannot_replace_raw_capture_clock(self):
+        capture_path = self.root / "capture/render.json"
+        self.write("capture/launch.json", {"browser": "browser.exe", "args": ["--headless"]})
+        raw = {"observed_at": "2026-01-01T00:00:00+00:00", "browser_version": {"product": "Browser/1"},
+               "viewport": {"width": 10, "height": 10}, "devicePixelRatio": 1, "views": [], "served_files": {},
+               "playback": {"status": "observed", "frameMs": 150, "frameCount": 4,
+                            "samples": [{"elapsed": 0, "cells": [{"consumer": "statusCell", "frame": 0,
+                                                                   "image": {"path": "frame.png", "sha256": "a" * 64}}]}]}}
+        raw_ref = self.write("capture/render.json", raw)
+        report = {"observed_at": raw["observed_at"], "renderer": {"command": ["browser.exe", "--headless"],
+                    "runtime": {"name": "browser", "version": "Browser/1"}, "files": []},
+                  "viewport": {"width": 10, "height": 10, "device_scale_factor": 1}, "views": [],
+                  "consumer_sources": [], "destinations": [],
+                  "files": [{"id": "raw", **raw_ref, "role": "data"},
+                            {"id": "frame", "path": "capture/frame.png", "sha256": "a" * 64, "role": "image"}],
+                  "motion": [{"consumer": "statusCell", "mode": "requestAnimationFrame playback", "status": "observed",
+                              "frame_ms": 150, "frame_count": 4, "samples": [{"elapsed_ms": 0, "frame": 0, "output_id": "frame"}]}]}
+        self.assertEqual(capture_errors(self.root, report, raw, capture_path), [])
+        report["motion"][0]["samples"][0]["elapsed_ms"] = 150
+        self.assertIn("Structured live sample differs from actual painted frame", capture_errors(self.root, report, raw, capture_path))
+
+    def test_missing_receipts_fail_and_contradictory_refs_rejected(self):
+        result = grade(self.root)
+        self.assertEqual(result["status"], "fail")
+        self.assertEqual(result["passed"], 0)
+        with self.assertRaises(ValueError):
+            fields({"capture_report": 1, "refs": {"capture_report": 2}})
+
+
+if __name__ == "__main__":
+    unittest.main()

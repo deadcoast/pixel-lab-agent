@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "delivery-150",
+  "project": "project",
+  "actor": "actor",
+  "baseline": "r.5b1bc38638b68ed8.candidate.working.retained",
+  "decisions": [
+    "r.5b1bc38638b68ed8.decision.reuse150"
+  ],
+  "knowledge": [],
+  "stages": [],
+  "delivery": {
+    "name": "Deliver the exact retained Working sheet at 150 ms to both queue consumers",
+    "members": [
+      "r.5b1bc38638b68ed8.output.working"
+    ],
+    "destinations": [
+      "r.5b1bc38638b68ed8.destination.working"
+    ],
+    "criteria": [
+      {
+        "id": "bytes",
+        "domain": "mechanical",
+        "mode": "local",
+        "check": "The package member copied for r.5b1bc38638b68ed8.output.working is byte-identical to the served destination assets/working.png (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc) and to the fixture exact_art hash; all four other original art files remain unchanged.",
+        "sources": [
+          "r.5b1bc38638b68ed8.source.2",
+          "r.5b1bc38638b68ed8.source.1"
+        ]
+      },
+      {
+        "id": "continuity",
+        "domain": "continuity",
+        "mode": "visual",
+        "check": "In the actual destination screenshot and the 1x/3x consumer cells, the delivered Working sheet keeps the reviewed cool-blue stepped-cluster treatment of the adopted Ready baseline, stays distinguishable from Ready, Retry and Paused without relying on colour alone, and its four frames read as one coherent rotating activity sequence rather than a success or terminal pose.",
+        "sources": [
+          "r.5b1bc38638b68ed8.source.6",
+          "r.5b1bc38638b68ed8.source.14",
+          "r.5b1bc38638b68ed8.source.1"
+        ]
+      },
+      {
+        "id": "destination",
+        "domain": "engine",
+        "mode": "live",
+        "check": "A fresh renderer-integration browser capture shows both statusCell and compactStatus painting the served assets/working.png with nearest filtering and transparent compositing on #172336, looping frames 0-3 at display.frameMs 150 (600 ms cycle, wrap observed at least twice) at the consumer 3x scale, with 1x/3x stills verified by check.py; 1x live playback remains unperformed and is not claimed.",
+        "sources": [
+          "r.5b1bc38638b68ed8.source.2",
+          "r.5b1bc38638b68ed8.source.9",
+          "r.5b1bc38638b68ed8.source.4",
+          "r.5b1bc38638b68ed8.source.13"
+        ]
+      }
+    ]
+  }
+}

@@ -48,7 +48,10 @@ For a new family or staged seed → animation/edit workflow, prefer the
 [connected authoring operation](../../../resources/spec/production-plan.md).
 `production-plan` / `pixl_production_plan` takes reviewed stages, existing contracts,
 baseline, adoption and destination choices, then writes the dependency graph and
-explicit PLAR links. It leaves all work open. Once inputs are accepted,
+explicit PLAR links. For delivery of already accepted outputs, use `stages: []`
+and name their existing output IDs as delivery members. The baseline and ordinary
+family requirements still apply; authoring does not accept the package or invent
+a provider request. It leaves all work open. Once inputs are accepted,
 `stage-prepare` / `pixl_stage_prepare` binds their exact bytes and the reviewed
 official request before the normal durable-job workflow. Use the returned IDs;
 do not reproduce the same wiring manually. Existing linked generations and unusual
@@ -115,6 +118,22 @@ Published manifest candidates and their constituent X identities are immutable. 
 For collective and destination judgments, prefer `pixl_review_context` followed by
 `pixl_candidate_review` on the saved manifest candidate, using the
 [candidate/family review contract](../../../resources/spec/candidate-review.md).
+When the project runner can supply a structured report, use
+`destination-import STATE CANDIDATE REPORT_JSON --out FRESH_DIR --root ROOT`
+(or `pixl_destination_import`) with the
+[destination observation contract](../../../resources/spec/destination-observation.md).
+Export the candidate's current review context first. The report identifies that
+exact manifest and binding, destination bytes, renderer and consumer sources,
+viewport, views, actual motion samples and all output files. The import verifies
+and retains those declared bytes in a bounded ZIP with PNG previews; it neither
+runs the renderer nor attests that anyone viewed the result. An incompatible
+package, changed file or stale binding is a refusal, not a passing observation.
+
+Open the relevant retained previews and actual playback evidence. Use the returned
+`observation` entry (the complete bundle) in candidate-review, adding the specific
+viewed previews as needed. Keep unavailable motion and runner limitations explicit;
+report consistency alone cannot supply artistic or destination acceptance.
+
 Bind actual viewed files and renderer reports to their hashes, state each literal
 criterion's judgment and limitations, and explicitly choose record, nominate or
 complete. The operation handles evidence bindings and lifecycle publication; it

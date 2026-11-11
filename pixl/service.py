@@ -10,7 +10,7 @@ from .codec import PixlError
 
 RESULT_EXPORT_TOOLS = {
     "pixl_context", "pixl_request_review", "pixl_review_context", "pixl_candidate_review",
-    "pixl_family", "pixl_family_snapshot", "pixl_plar_handoff",
+    "pixl_family", "pixl_family_snapshot", "pixl_plar_handoff", "pixl_destination_import",
 }
 
 
@@ -33,7 +33,7 @@ def describe_result(operation, result):
         fields.update({"hash": "file_sha256", "production.continuation.state_hash": "canonical_state_sha256"})
     if operation in {"plar_read", "plar_save", "plar_prepare", "plar_handoff"}:
         fields["requirements_hash"] = "selected_requirements_sha256"
-    if operation in {"review_context", "candidate_review", "plar_handoff"}:
+    if operation in {"review_context", "candidate_review", "plar_handoff", "destination_import"}:
         fields["state_hash"] = "canonical_state_sha256"
     if operation in {"review_context", "candidate_review"}:
         fields.update({"binding_hash": "candidate_bindings_sha256", "review_sha256": "file_sha256",
@@ -46,6 +46,9 @@ def describe_result(operation, result):
                        "before.plan.sha256": "file_sha256", "after.plan.sha256": "file_sha256",
                        "packet.sha256": "file_sha256", "request.sha256": "file_sha256",
                        "criteria.sha256": "file_sha256", "request.intent_sha256": "provider_intent_sha256"})
+    if operation == "destination_import":
+        fields.update({"binding_hash": "candidate_bindings_sha256", "bundle.sha256": "file_sha256",
+                       "manifest.sha256": "file_sha256"})
     if operation in {"source", "plar_handoff", "asset_check"}:
         fields["sha256"] = "file_sha256"
     labels = dict(result.get("hash_domains", {}))
@@ -479,6 +482,11 @@ def _call(name, args, root):
         from . import candidate_review
 
         return candidate_review.submit(path("store"), args["expect"], args["candidate_id"], args["review_id"], args["observation"], root)
+    if name == "pixl_destination_import":
+        from . import destination_observation
+
+        return destination_observation.import_observation(load_document(path("path")), root,
+                                                         args["candidate_id"], args["report_path"], args["out"])
     if name == "pixl_inspection":
         return inspection_report(path("path"), root, args.get("packet_id"))
     if name == "pixl_inspection_prepare":

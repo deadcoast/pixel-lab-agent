@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "scope": "Revised 150 ms Working timing integration over the exact retained Working sheet; controlled local preparation only, no provider execution or acceptance.",
+  "outputs": [
+    {
+      "id": "working",
+      "name": "Working timing integration (150 ms)",
+      "kind": "animation",
+      "contract": {
+        "size": [
+          64,
+          16
+        ],
+        "palette": [],
+        "view": "ui",
+        "sampling": "nearest",
+        "alpha": "full",
+        "intent": "Reuse the exact four-frame Working sheet (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc); 150 ms per frame, looping, 600 ms cycle; activity distinct from success, retry and paused."
+      },
+      "criteria": [
+        {
+          "id": "canvas",
+          "domain": "mechanical",
+          "mode": "local",
+          "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+          "basis": "Preserved source-defined geometry/transparency constraints and the explicit Working timing amendment (no new art).",
+          "scope": "This exact Working candidate in the retained queue consumer.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Asset brief and current updates"
+            },
+            {
+              "path": "WORKING-TIMING-AMENDMENT.md",
+              "locator": "Current Working timing authority: 150 ms per frame, four frames, looping, 600 ms cycle"
+            },
+            {
+              "path": "src/working-timing.ts",
+              "locator": "frameMs = 150"
+            },
+            {
+              "path": "src/queue-view-integration.ts",
+              "locator": "display = { ...originalDisplay, frameMs }"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals, statusCell, compactStatus and display"
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "domain": "visual",
+          "mode": "visual",
+          "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+          "basis": "Preserved brief requirements (readability at 1x/3x, transparent background, cool blue accent, activity not success, non-color distinctions) and the adopted Ready style baseline.",
+          "scope": "This exact Working candidate in the retained queue consumer.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Asset brief and current updates"
+            },
+            {
+              "path": "WORKING-TIMING-AMENDMENT.md",
+              "locator": "Current Working timing authority: 150 ms per frame, four frames, looping, 600 ms cycle"
+            },
+            {
+              "path": "src/working-timing.ts",
+              "locator": "frameMs = 150"
+            },
+            {
+              "path": "src/queue-view-integration.ts",
+              "locator": "display = { ...originalDisplay, frameMs }"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals, statusCell, compactStatus and display"
+            }
+          ]
+        },
+        {
+          "id": "integration",
+          "domain": "engine",
+          "mode": "live",
+          "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+          "basis": "Explicit Working timing amendment and the stable integration wrapper driving both original consumers.",
+          "scope": "This exact Working candidate in the retained queue consumer.",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Asset brief and current updates"
+            },
+            {
+              "path": "WORKING-TIMING-AMENDMENT.md",
+              "locator": "Current Working timing authority: 150 ms per frame, four frames, looping, 600 ms cycle"
+            },
+            {
+              "path": "src/working-timing.ts",
+              "locator": "frameMs = 150"
+            },
+            {
+              "path": "src/queue-view-integration.ts",
+              "locator": "display = { ...originalDisplay, frameMs }"
+            },
+            {
+              "path": "src/queue-view.ts",
+              "locator": "statusVisuals, statusCell, compactStatus and display"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

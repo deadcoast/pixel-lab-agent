@@ -50,7 +50,26 @@ guidance clarifies present-but-uninspected sources, authored coverage, shared-ro
 reuse and preservation of pre-existing drift. Original grading failures and the
 Claude timeout remain retained, alongside semantic and observation limits. The
 child completed before timeout; only its parent resumed across processes. CF-07
-is next, supported by NF-06; broader M3 acceptance is unchanged.
+and supporting NF-06 now have [bounded changed-requirement integration outcomes](../evidence/integration-change/README.md).
+The exact tracked source/art and original `plar.txt` are retained; a fresh
+`integration-plar.txt` and public 100 ms intent/store precede the 150 ms change.
+Ignored historical producer state is not reconstructed, and historical reviews
+confer no current acceptance. Guarded reuse/fresh review, delivery-only authoring,
+both actual renderers, structured observation retention and caller handoff pass:
+Codex 50/50 and Claude 51/51, each with 406 nested renderer assertions. Claude's
+parent consumes its completed child's result after the retained original timeout;
+the child was not resumed across processes. All grader defects and exact sources
+remain separate from native corrections, with direct native bytes, audited helper
+writes and limited CLI exit/dataflow checks preserving their distinct scopes.
+Final full verification passes 848 tests plus one Windows privilege skip,
+39 reference checks and fresh distribution probes. Both actual consumers pass
+nine final-kit compatibility checks each, separately from native loading/rendering
+or acceptance. The final CLI/spec correction and verifier-rebuilt proof/resources
+retain distinct native/final-kit identities and archived previous bytes; the
+native-frozen profile/shared skill are unchanged. Actual 3× live playback remains
+separate from controlled 1× timing; 1× live playback, continuous video and new
+provider art are not claimed. The bounded slice is complete; TM-07 is next,
+followed by NF-08 and CF-10. M1/M2, broader M3/PX-PLAR and quality/reliability remain open.
 The Codex initial partial result and guided continuation remain distinct. Current
 native findings also identify broad historical source ranges and a stale optional
 consumer role adapter; these feed existing locator/context and M2 work rather than
@@ -198,6 +217,6 @@ There are **50 actionable findings**, ten in each requested category. Each stabl
 
 ## Next steps and document handoff
 
-Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) preserves unfinished acceptance and execution/results. Native continuation, named-role qualification and [CF-03/TM-04](../evidence/artistic-revision/README.md) retain their exact scoped outcomes and original failed attempts. NF-03/QOL-06 now add local readiness, fresh installation proofs and scoped clean/incomplete setup outcomes in both hosts, preserving earlier authentication blocks and grader corrections. QOL-10/SC-08 now has a bounded Codex caller outcome; retain the incomplete Claude continuation exit when quota permits. CF-06 now passes its bounded allocation/update outcome against retained consumers in both hosts; take CF-07 next with NF-06 observation support and its dependencies. Actual results, original failures and limits remain in linked evidence. M1/M2 stay open; earlier implementation is retained rather than restarted.
+Use [PLAN](../PLAN.md) for outcome order and dependencies, then [SHELVED](../SHELVED.md) for the next ready finding group. The active [TODO](../TODO.md) preserves unfinished acceptance and execution/results. Native continuation, named-role qualification and [CF-03/TM-04](../evidence/artistic-revision/README.md) retain their exact scoped outcomes and original failed attempts. NF-03/QOL-06 now add local readiness, fresh installation proofs and scoped clean/incomplete setup outcomes in both hosts, preserving earlier authentication blocks and grader corrections. QOL-10/SC-08 now has a bounded Codex caller outcome; retain the incomplete Claude continuation exit when quota permits. CF-06 now passes its bounded allocation/update outcome against retained consumers in both hosts; CF-07 with NF-06 observation support now completes [bounded reused-art integration](../evidence/integration-change/README.md), including both-host outcomes, full verification and separate final-kit replays. Its fresh prospective store boundary and retained failures remain explicit. Take TM-07 next, followed by NF-08 and CF-10. Actual results, original failures and limits remain in linked evidence. M1/M2 stay open; earlier implementation is retained rather than restarted.
 
 Update evidence links or a narrowly changed finding within this cycle when work reveals new facts. Do not rerun a full IDENTIFY because an increment or TODO slice ended. Once all required PLAN exits are satisfied and remaining proposals have explicit dispositions, preserve this cycle and run the next IDENTIFY workflow.

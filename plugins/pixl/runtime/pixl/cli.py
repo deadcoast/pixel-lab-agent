@@ -89,6 +89,12 @@ def parser():
     q.add_argument("observation", metavar="REVIEW_JSON")
     q.add_argument("--expect", required=True)
     q.add_argument("--root", required=True)
+    q = sub.add_parser("destination-import", help="Validate and retain a supplied renderer report for exact family bytes, without acceptance.")
+    q.add_argument("path")
+    q.add_argument("candidate")
+    q.add_argument("report", metavar="REPORT_JSON")
+    q.add_argument("--out", dest="destination_dir", required=True)
+    q.add_argument("--root", required=True)
     q = sub.add_parser("inspection", help="Read retained candidate views and reviews.")
     q.add_argument("path")
     q.add_argument("packet", nargs="?")
@@ -276,7 +282,7 @@ def parser():
     q.add_argument("--out", required=True)
     q = sub.add_parser("mcp")
     q.add_argument("--root", required=True)
-    for command in ("context", "request-review", "review-context", "candidate-review", "family", "family-snapshot"):
+    for command in ("context", "request-review", "review-context", "candidate-review", "family", "family-snapshot", "destination-import"):
         sub.choices[command].add_argument("--result-path", help="Save exact result under a fresh project-relative path; requires --root.")
     for command, command_parser in sub.choices.items():
         for action in command_parser._actions:
@@ -367,6 +373,10 @@ def main(argv=None):
             from . import candidate_review
 
             output = candidate_review.submit(a.store, a.expect, a.candidate, a.review, service.read_json(a.observation), a.root)
+        elif cmd == "destination-import":
+            state_path = Path(a.path).resolve().relative_to(Path(a.root).resolve())
+            output = service.call("pixl_destination_import", {"path": state_path.as_posix(), "candidate_id": a.candidate,
+                                  "report_path": a.report, "out": a.destination_dir}, a.root)
         elif cmd == "inspection":
             output = service.inspection_report(a.path, a.root, a.packet)
         elif cmd == "inspection-prepare":

@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from pixl import codec, jobs, plar, production_plan, service, store
-from pixl.codec import PixlError, Ref, Symbol
+from pixl import codec, delivery, jobs, lifecycle, plar, production_plan, service, store
+from pixl.codec import PixlError, Record, Ref, Symbol
 from tests.family_support import family
 from tests.test_plar_prepare import seed
 
@@ -159,6 +159,106 @@ class ProductionPlanTests(unittest.TestCase):
             with self.assertRaises(PixlError):
                 self.prepare(value)
             self.assertEqual(self.expected(), before)
+
+    def test_delivery_only_plan_reuses_accepted_sample_without_new_production(self):
+        value = plan()
+        value["stages"] = []
+        value["delivery"]["members"] = ["output"]
+        before = self.current()
+        result = self.author(value)
+        doc = self.current()
+        self.assertEqual(result["stages"], {})
+        self.assertEqual(result["allocation"], [])
+        self.assertFalse(result["accepted"])
+        self.assertFalse(result["remote_executed"])
+        self.assertEqual(set(doc.records) - set(before.records), {
+            "next.plan", "next.delivery.task", "next.delivery.output",
+            "next.delivery.q.shape",
+        })
+        for ident, record in before.records.items():
+            self.assertEqual(record, doc.records[ident])
+        self.assertEqual(doc.records["next.delivery.task"].fields["dp"], [Ref("task")])
+        self.assertEqual(doc.records["next.delivery.output"].fields["mb"], [Ref("output")])
+        retained = self.expected()
+        self.assertTrue(self.author(value)["already_authored"])
+        self.assertEqual(self.expected(), retained)
+        with self.assertRaises(PixlError):
+            self.prepare()
+        self.assertEqual(self.expected(), retained)
+        result = delivery.snapshot(
+            self.folder, retained, "next.delivery.output", "next.package", self.root
+        )
+        self.assertFalse(result["accepted"])
+        doc = self.current()
+        self.assertEqual(doc.records["next.package"].fields["xs"], [Ref("sample"), Ref("sample")])
+        self.assertEqual(doc.records["next.delivery.task"].fields["st"], Symbol("open"))
+        self.assertEqual(doc.records["next.delivery.task"].fields["ca"], [])
+        self.assertFalse(any(record.kind == "J" for record in doc.records.values()))
+
+    def test_delivery_only_invalid_family_preserves_state(self):
+        for change in ("empty", "missing", "candidate", "baseline", "destination", "continuity", "decision"):
+            with self.subTest(change=change):
+                value = plan()
+                value["stages"] = []
+                value["delivery"]["members"] = ["output"]
+                if change in {"empty", "missing", "candidate"}:
+                    value["delivery"]["members"] = {
+                        "empty": [], "missing": ["motion"], "candidate": ["sample"]
+                    }[change]
+                elif change == "baseline":
+                    value["baseline"] = "member"
+                elif change == "destination":
+                    value["delivery"]["destinations"] = []
+                elif change == "continuity":
+                    value["delivery"]["criteria"][0]["domain"] = "visual"
+                else:
+                    value["decisions"] = ["missing.decision"]
+                before = self.expected()
+                with self.assertRaises(PixlError):
+                    self.author(value)
+                self.assertEqual(self.expected(), before)
+
+    def test_delivery_only_unaccepted_baseline_still_blocks_activation_and_snapshot(self):
+        doc = self.current()
+        original = doc.records["sample"]
+        doc.records["unaccepted"] = Record("unaccepted", "X", dict(original.fields))
+        doc.revision += 1
+        store.commit(self.folder, doc, self.expected(), self.root)
+        value = plan()
+        value["stages"] = []
+        value["baseline"] = "unaccepted"
+        value["delivery"]["members"] = ["output"]
+        self.author(value)
+        before = self.expected()
+        self.assertTrue(any("family_baseline" in reason for reason in
+                            lifecycle.blockers(self.current(), "next.delivery.task")))
+        with self.assertRaisesRegex(PixlError, "family_baseline"):
+            delivery.snapshot(self.folder, before, "next.delivery.output", "next.package", self.root)
+        self.assertEqual(self.expected(), before)
+        for state in ("active", "done"):
+            doc = self.current()
+            doc.records["next.delivery.task"].fields["st"] = Symbol(state)
+            doc.revision += 1
+            with self.assertRaises(PixlError):
+                store.commit(self.folder, doc, before, self.root)
+            self.assertEqual(self.expected(), before)
+
+    def test_delivery_only_snapshot_preserves_pending_job_gate(self):
+        value = plan()
+        value["stages"] = []
+        value["delivery"]["members"] = ["output"]
+        self.author(value)
+        doc = self.current()
+        doc.records["pending"] = Record("pending", "J", {
+            "tk": Ref("task"), "tl": "synthetic", "ah": "a" * 64,
+            "si": Symbol("unknown"), "ri": "", "ev": [],
+        })
+        doc.revision += 1
+        store.commit(self.folder, doc, self.expected(), self.root)
+        before = self.expected()
+        with self.assertRaisesRegex(PixlError, "family_job"):
+            delivery.snapshot(self.folder, before, "next.delivery.output", "next.package", self.root)
+        self.assertEqual(self.expected(), before)
 
     def test_interrupted_input_binding_recovers_same_job(self):
         self.author()

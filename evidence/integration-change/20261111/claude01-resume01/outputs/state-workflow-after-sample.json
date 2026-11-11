@@ -1,0 +1,279 @@
+{
+  "intake": [
+    {
+      "id": "choice.working",
+      "project": "project",
+      "key": "candidate.working",
+      "status": "proposed",
+      "value": {
+        "alpha": "full",
+        "intent": "Reuse exact four-frame Working sheet; 100 ms per frame, looping; activity distinct from success and paused.",
+        "palette": [],
+        "sampling": "nearest",
+        "size": [
+          64,
+          16
+        ],
+        "view": "ui"
+      },
+      "sources": [
+        "source.0",
+        "source.1",
+        "source.2",
+        "source.3",
+        "source.4",
+        "source.5",
+        "source.6",
+        "source.7",
+        "source.8",
+        "source.9",
+        "source.10",
+        "source.11",
+        "source.12",
+        "source.13",
+        "source.14",
+        "source.15"
+      ],
+      "rationale": "Concrete candidate interpretation for the reviewed scope; source requirements retain their original authority in the selected PLAR and packet."
+    },
+    {
+      "id": "r.5b1bc38638b68ed8.choice.working",
+      "project": "project",
+      "key": "r.5b1bc38638b68ed8.candidate.working",
+      "status": "proposed",
+      "value": {
+        "alpha": "full",
+        "intent": "Reuse the exact four-frame Working sheet (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc); 150 ms per frame, looping, 600 ms cycle; activity distinct from success, retry and paused.",
+        "palette": [],
+        "sampling": "nearest",
+        "size": [
+          64,
+          16
+        ],
+        "view": "ui"
+      },
+      "sources": [
+        "r.5b1bc38638b68ed8.source.0",
+        "r.5b1bc38638b68ed8.source.1",
+        "r.5b1bc38638b68ed8.source.2",
+        "r.5b1bc38638b68ed8.source.3",
+        "r.5b1bc38638b68ed8.source.4",
+        "r.5b1bc38638b68ed8.source.5",
+        "r.5b1bc38638b68ed8.source.6",
+        "r.5b1bc38638b68ed8.source.7",
+        "r.5b1bc38638b68ed8.source.8",
+        "r.5b1bc38638b68ed8.source.9",
+        "r.5b1bc38638b68ed8.source.10",
+        "r.5b1bc38638b68ed8.source.11",
+        "r.5b1bc38638b68ed8.source.12",
+        "r.5b1bc38638b68ed8.source.13",
+        "r.5b1bc38638b68ed8.source.14",
+        "r.5b1bc38638b68ed8.source.15"
+      ],
+      "rationale": "Concrete candidate interpretation for the reviewed scope; source requirements retain their original authority in the selected PLAR and packet."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "r.5b1bc38638b68ed8.task",
+      "project": "project",
+      "phase": "sample",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "r.5b1bc38638b68ed8.output.working",
+          "name": "Working timing integration (150 ms)",
+          "candidate": "r.5b1bc38638b68ed8.candidate.working.retained",
+          "requirements": [
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.canvas",
+              "name": "canvas",
+              "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.0",
+              "reason": "Fresh local measurement: exact retained 64x16 transparent sheet with four horizontal 16x16 frames, alpha only 0/255, bytes sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc unchanged.",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.0"
+              ]
+            },
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.activity",
+              "name": "activity",
+              "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.1",
+              "reason": "Fresh visual inspection at native 1x (browser cells and screenshot) and enlarged 3x/8x/12x nearest on #172336: cool-blue three-arc broken ring with four distinct rotation phases reads as ongoing activity, never as a check or terminal pose; transparent compositing is clean; the treatment (stepped clusters, cool-blue accent, slight highlight) is coherent with the adopted Ready baseline; in colour and in grayscale it stays distinct from Ready (check), Retry (solid ring + arrowhead) and Paused (bars).",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.1"
+              ]
+            },
+            {
+              "id": "r.5b1bc38638b68ed8.criterion.working.integration",
+              "name": "integration",
+              "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "pass",
+              "verdict": "sample-review-150.verdict.2",
+              "reason": "Actual renderer-integration browser execution of the real modules: both statusCell and compactStatus painted the exact served sheet with nearest filtering on the dark panel, looping frames 0-3 at the authorized 150 ms (600 ms cycle) observed live at 3x across three wraps, and 1x/3x stills verified; check.py passed with zero failures. 1x live playback was not performed (only 1x boundary samples).",
+              "reviewer": "actor",
+              "evidence": [
+                "sample-review-150.evidence.2"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "r.5b1bc38638b68ed8.candidate.working.retained",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.canvas",
+                  "name": "canvas",
+                  "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; art bytes unchanged (sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.0",
+                  "reason": "Fresh local measurement: exact retained 64x16 transparent sheet with four horizontal 16x16 frames, alpha only 0/255, bytes sha256 cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc unchanged.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.0"
+                  ]
+                },
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.activity",
+                  "name": "activity",
+                  "check": "Readable cool-blue activity at 1x and 3x nearest on the #172336 dark panel; each frame and the sequence communicate ongoing work without a success-like pose; distinct from Ready, Retry and Paused without relying on color alone; scoped coherent treatment with the retained Ready reference.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.1",
+                  "reason": "Fresh visual inspection at native 1x (browser cells and screenshot) and enlarged 3x/8x/12x nearest on #172336: cool-blue three-arc broken ring with four distinct rotation phases reads as ongoing activity, never as a check or terminal pose; transparent compositing is clean; the treatment (stepped clusters, cool-blue accent, slight highlight) is coherent with the adopted Ready baseline; in colour and in grayscale it stays distinct from Ready (check), Retry (solid ring + arrowhead) and Paused (bars).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.1"
+                  ]
+                },
+                {
+                  "id": "r.5b1bc38638b68ed8.criterion.working.integration",
+                  "name": "integration",
+                  "check": "Observe the exact Working sheet in both actual consumers (statusCell and compactStatus) with four looping frames at the current authorized 150 ms each (600 ms cycle), nearest filtering and transparent compositing on the dark panel; live loop playback observed at the consumer's 3x scale, stills at 1x and 3x; 1x live playback remains unperformed.",
+                  "domain": "engine",
+                  "mode": "live",
+                  "status": "pass",
+                  "verdict": "sample-review-150.verdict.2",
+                  "reason": "Actual renderer-integration browser execution of the real modules: both statusCell and compactStatus painted the exact served sheet with nearest filtering on the dark panel, looping frames 0-3 at the authorized 150 ms (600 ms cycle) observed live at 3x across three wraps, and 1x/3x stills verified; check.py passed with zero failures. 1x live playback was not performed (only 1x boundary samples).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "sample-review-150.evidence.2"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "selection_bindings": [
+        {
+          "input": "r.5b1bc38638b68ed8.selection",
+          "snapshot": ".pixl/assets/queue.working/plans/5b1bc38638b68ed8ce8396d1bd6416a9404d44a2de30100681e9a8f91e1c5d58.json",
+          "asset_id": "queue.working",
+          "binding": "pixl.plar.selection/1",
+          "plar_path": "integration-plar.txt",
+          "requirements_hash": "dc4292427296bdb382c9b5fcd6a8fc0c7678ad214126654fdf962942223b2968",
+          "current_requirements_hash": "dc4292427296bdb382c9b5fcd6a8fc0c7678ad214126654fdf962942223b2968",
+          "selected_for_asset": true,
+          "linked_task": "r.5b1bc38638b68ed8.task",
+          "linked_store": ".pixl/assets/queue.working",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "plar_selection: task: current consumer requirements differ or are unavailable; retain the old review and compare a revised contract"
+      ],
+      "outputs": [
+        {
+          "id": "output.working",
+          "name": "Working timing integration",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "criterion.working.canvas",
+              "name": "canvas",
+              "check": "Exact retained transparent 64x16 sheet, four horizontal 16x16 frames; unchanged art bytes.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "criterion.working.activity",
+              "name": "activity",
+              "check": "Readable cool-blue activity at 1x and 3x nearest on the dark panel; distinct from success, retry and paused; scoped coherent treatment with retained Ready reference.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "criterion.working.integration",
+              "name": "integration",
+              "check": "Observe the exact Working sheet in both actual consumers with four looping frames at current authorized 100 ms each, nearest filtering and transparent compositing.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": [
+        {
+          "input": "selection",
+          "snapshot": ".pixl/assets/queue.working/plans/089b5e8f5fee113cf548c40eb13e123d9a1cfdd15c93b2cbc69c9e8a30e9593a.json",
+          "asset_id": "queue.working",
+          "binding": "pixl.plar.selection/1",
+          "plar_path": "integration-plar.txt",
+          "requirements_hash": "12cb410ef6f24ed585755beede2c470eb2d3b32574596b11457394c6c0a68eee",
+          "current_requirements_hash": "dc4292427296bdb382c9b5fcd6a8fc0c7678ad214126654fdf962942223b2968",
+          "selected_for_asset": false,
+          "linked_task": "r.5b1bc38638b68ed8.task",
+          "linked_store": ".pixl/assets/queue.working",
+          "status": "changed"
+        }
+      ]
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 9,
+  "hash": "d56114f18f402cd68a2c8896b29bf7705f877d28e156c2aafcaec5a11ae2c74c",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

@@ -70,7 +70,7 @@ class QueueRendererTests(unittest.TestCase):
         for name, data in before.items():
             self.assertEqual((project / name).read_bytes(), data)
         self.assertEqual((destination / "provider-state.json").read_bytes(), (predecessor / "provider-state.json").read_bytes())
-        self.assertEqual({p.name for p in (project / "renderer").iterdir()}, {"server.mjs", "capture.mjs", "view.mjs", "index.html", "check.py"})
+        self.assertEqual({p.name for p in (project / "renderer").iterdir()}, {"server.mjs", "capture.mjs", "view.mjs", "index.html", "check.py", "observation.py"})
         self.assertTrue((project / "RENDER-STAGE.md").is_file())
 
     def test_renderer_recheck_keeps_old_implementation_and_result(self):

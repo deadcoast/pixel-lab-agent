@@ -60,6 +60,46 @@ MCP: `pixl_production_plan(store, expect, plan)`. The JSON object has:
 - `delivery`: `name`, ordered `members` (existing F IDs or stage short IDs),
   `destinations` I IDs and separate collective `criteria`, including continuity.
 
+`stages: []` authors delivery around existing outputs without creating a new
+production stage or provider job. For example, deliver an accepted sample as the
+family's only member using its existing X as `baseline` and its existing F as the
+member:
+
+```json
+{
+  "version": 1,
+  "id": "sample-delivery",
+  "project": "project",
+  "actor": "artist",
+  "baseline": "sample.accepted",
+  "decisions": ["method.adopted"],
+  "knowledge": ["method"],
+  "stages": [],
+  "delivery": {
+    "name": "Deliver the accepted sample",
+    "members": ["sample.output"],
+    "destinations": ["destination"],
+    "criteria": [{
+      "id": "continuity",
+      "check": "The delivered sample preserves the reviewed project treatment",
+      "domain": "continuity",
+      "mode": "visual",
+      "sources": ["brief"]
+    }]
+  }
+}
+```
+
+These IDs must refer to the project's actual existing records. Delivery still
+requires a nonempty family, destination choices and collective criteria. Existing
+members must satisfy the same baseline/project rules as a staged plan. The result
+has an empty `stages` map and `allocation` list, and retains the plan marker, delivery
+task/output and criteria. Identical retries reuse them. Open authoring still allows
+an unaccepted baseline; activation, completion and `family-snapshot` retain their
+existing eligibility and pending-work checks. Snapshotting an accepted sample as
+the sole member records that exact X as both baseline and selected member and
+leaves the delivery unaccepted until its separate collective review.
+
 No dimensions, palette, alpha policy, adoption, provider controls or destination
 confirmation are inferred. Establish those existing project records through the
 normal reviewed operations. Open plans may have outstanding adoption or baseline
