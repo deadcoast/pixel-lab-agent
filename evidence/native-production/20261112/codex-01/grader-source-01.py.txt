@@ -1,0 +1,553 @@
+"""Independent CF-10 trace, byte, review and caller-consumption checks.
+
+Native tool events establish execution; local journals alone do not. This grader
+does not infer artistic quality from provider success or renderer checks. A
+separate evidence-bound maintainer review is required for that judgment.
+"""
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import re
+import tomllib
+from datetime import datetime
+from pathlib import Path
+
+from PIL import Image
+
+from evaluations.grade_consumer_execution import selected_identity
+from evaluations.grade_integration_change import (
+    commands,
+    complete_file_proof,
+    direct_cli,
+    image_views,
+    leading_objects,
+    operation_proof,
+)
+from evaluations.grade_named_codex_role import (
+    normalized,
+    objects,
+    own_rows,
+    rows,
+    strings,
+)
+from evaluations.grade_plar_coverage import claude_completion, native_read_proof
+from evaluations.grade_readiness import (
+    claude_loading_proof,
+    codex_role_proof,
+    expanded_objects,
+    reference,
+    semantic_result,
+)
+from evaluations.host_trials import inventory, sha
+from evaluations.native_production_case import INPUTS, KIT, PLAR, WORK
+from pixl import candidate_review, codec, graph, jobs, plar, store
+
+DESTINATIONS = {
+    "queue-ready": {"assets/ready-confirmed.png"},
+    "robot-directions": {f"assets/robot/{direction}.png" for direction in ("south", "east", "north", "west")},
+}
+ASSETS = {"queue-ready": "queue.ready", "robot-directions": "robot.directions"}
+ID_KEYS = {"id", "job_id", "image_id", "character_id", "object_id", "request_id", "remote_id", "asset_id", "generation_id"}
+MUTATING = re.compile(r"^(?:create_(?:image|character|object|[18]_direction|ui_asset)|edit_(?:image|animation)|inpaint_image|animate_(?:image|character|object)|image_to_pixelart|remove_background|correct_pixelart|reduce_colors|unzoom_image|pixelart_workbench|expand_object_to_8_directions)")
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def report_fields(value):
+    """Allow a reference grouping without imposing another case's report fields."""
+    refs = value.get("refs", {})
+    if not isinstance(refs, dict) or any(key in value and value[key] != item for key, item in refs.items()):
+        raise ValueError("Conflicting report/reference fields")
+    return {**value, **refs}
+
+
+def stamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        result = datetime.fromisoformat(value)
+        return result.timestamp() if result.tzinfo is not None else None
+    except ValueError:
+        return None
+
+
+def tool_calls(journals):
+    """Paired successful/failed native calls, including their request position."""
+    result, seen = [], set()
+    for journal in journals:
+        uses, starts = {}, {}
+        for row in journal:
+            payload = row.get("payload", {})
+            item = payload.get("item", row.get("item", {}))
+            if item.get("type") in ("McpToolCall", "mcp_tool_call"):
+                ident = item.get("id", item.get("call_id"))
+                starts.setdefault(ident, row)
+                if item.get("status") not in ("completed", "succeeded", "failed") or (row.get("file"), ident) in seen:
+                    continue
+                seen.add((row.get("file"), ident))
+                response = item.get("result", {})
+                start = starts[ident]
+                result.append({"tool": item.get("tool"), "server": item.get("server"), "arguments": item.get("arguments", {}),
+                               "result": response, "success": item.get("status") != "failed" and isinstance(response, dict) and response.get("isError") is False,
+                               "file": row.get("file"), "line": row.get("line"), "start_line": start.get("line"),
+                               "timestamp": start.get("timestamp", start.get("time")), "result_timestamp": row.get("timestamp", row.get("time")), "call_id": ident})
+            blocks = row.get("message", {}).get("content", []) if isinstance(row.get("message"), dict) else []
+            for block in blocks if isinstance(blocks, list) else []:
+                if not isinstance(block, dict):
+                    continue
+                name = block.get("name", "")
+                if row.get("type") == "assistant" and block.get("type") == "tool_use" and name.startswith("mcp__"):
+                    pieces = name.split("__", 2)
+                    if len(pieces) == 3:
+                        uses[block["id"]] = (row, pieces[1], pieces[2], block.get("input", {}))
+                if row.get("type") == "user" and block.get("type") == "tool_result" and block.get("tool_use_id") in uses:
+                    start, server, tool, arguments = uses[block["tool_use_id"]]
+                    if (row.get("file"), block["tool_use_id"]) in seen:
+                        continue
+                    seen.add((row.get("file"), block["tool_use_id"]))
+                    response = block.get("content", [])
+                    result.append({"tool": tool, "server": server, "arguments": arguments, "result": response,
+                                   "success": not block.get("is_error", False) and not any(value.get("isError") is True for value in expanded_objects(response)),
+                                   "file": row.get("file"), "line": row.get("line"), "start_line": start.get("line"),
+                                   "timestamp": start.get("timestamp"), "result_timestamp": row.get("timestamp"), "call_id": block["tool_use_id"]})
+    return result
+
+
+def before(proof, call, journals):
+    """Prefer native timestamps; same-file line order works when clocks are absent."""
+    if proof.get("file") == call.get("file"):
+        return type(proof.get("line")) is int and proof["line"] < call.get("start_line", call["line"])
+    event = next((row for journal in journals for row in journal if row.get("file") == proof.get("file") and row.get("line") == proof.get("line")), {})
+    earlier, later = stamp(event.get("timestamp", event.get("time"))), stamp(call.get("timestamp"))
+    return earlier is not None and later is not None and earlier < later
+
+
+def identifiers(value):
+    return {entry[key] for entry in expanded_objects(value) for key in ID_KEYS if isinstance(entry.get(key), str) and entry[key]}
+
+
+def response_roots(value):
+    """Only complete MCP/JSON return values, never coincidentally shared subobjects."""
+    if isinstance(value, dict):
+        if isinstance(value.get("structuredContent"), dict):
+            yield value["structuredContent"]
+        if isinstance(value.get("content"), list):
+            yield from response_roots(value["content"])
+        elif value.get("type") == "text" and isinstance(value.get("text"), str):
+            yield from response_roots(value["text"])
+        else:
+            yield value
+    elif isinstance(value, list):
+        for item in value:
+            yield from response_roots(item)
+    elif isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            if not isinstance(parsed, str):
+                yield from response_roots(parsed)
+        except ValueError:
+            pass
+
+
+def response_matches(saved, observed):
+    left, right = list(response_roots(saved)), list(response_roots(observed))
+    return any(value and value in right for value in left if isinstance(value, dict) and (set(value) - {"isError", "success"}))
+
+
+def simulated(journal):
+    request = journal["intent"]["request"]
+    evidence = [request.get("authorization", {}).get("evidence", {}), request.get("discovery", {}).get("evidence", {}), *[event["evidence"] for event in journal["events"]]]
+    return any(value.get(key) is True for group in evidence for value in objects(group) for key in ("simulated", "provider_simulated", "fixture")) or bool(re.search(r"fixture|mock|controlled|test", request["provider"], re.IGNORECASE))
+
+
+def dispatch_proof(journals, journal, remote_call):
+    expected = journal["intent"]
+    def matches(value):
+        job = value.get("job", {})
+        return isinstance(job, dict) and job.get("id") == expected["job"] and job.get("intent_sha256") == journal["intent_sha256"] and job.get("state") == "unknown" and job.get("events") == journal["events"][:1]
+    proofs = []
+    for call in tool_calls(journals):
+        if (call["server"] in ("pixl_local", "pixl-local") and call["tool"] == "pixl_job_dispatch" and call["success"]
+                and any(matches(value) for value in expanded_objects(call["result"])) and before(call, remote_call, journals)):
+            proofs.append({key: call[key] for key in ("file", "line", "tool", "call_id")})
+    for command in commands(journals):
+        if (command["exit_code"] == 0 and direct_cli(command["command"], "job dispatch")
+                and any(matches(value) for value in leading_objects(command["output"])) and before(command, remote_call, journals)):
+            proofs.append({key: command[key] for key in ("file", "line")})
+    return proofs
+
+
+def job_proof(journal, native, journals):
+    request = journal["intent"]["request"]
+    candidates = [call for call in native if call["server"] == "pixellab" and call["success"] and call["tool"] == request["tool"]
+                  and call["arguments"] == request["arguments"] and journal.get("remote_id") in identifiers(call["result"])]
+    proof, errors = [], []
+    if simulated(journal):
+        errors.append("Simulated/local fixture evidence cannot establish official generation")
+    if not journal["events"] or journal["events"][0]["event"] != "dispatch":
+        errors.append("Missing first durable dispatch claim")
+    for call in candidates:
+        dispatch = dispatch_proof(journals, journal, call)
+        dispatch_time = stamp(journal["events"][0]["recorded_at"]) if journal["events"] else None
+        at = stamp(call["timestamp"])
+        if dispatch and dispatch_time is not None and (at is None or dispatch_time <= at):
+            proof.append({"native": {key: call[key] for key in ("file", "line", "start_line", "tool", "call_id")}, "dispatch": dispatch})
+    if not proof:
+        errors.append("No exact successful official call with native pre-dispatch proof")
+    return {"pass": not errors, "job": journal["intent"]["job"], "remote_id": journal.get("remote_id"), "proof": proof, "errors": errors}
+
+
+def file_refs(value):
+    return [entry for entry in objects(value) if isinstance(entry.get("path"), str) and isinstance(entry.get("sha256"), str)]
+
+
+def named_ref(report, key, root):
+    value = report.get(key)
+    if key == "handoff_ref" and isinstance(value, dict) and "caller_view" in value:
+        value = value["caller_view"]
+    values = file_refs(value)
+    if len(values) != 1:
+        raise ValueError("Expected one exact file reference for " + key)
+    reference(root, values[0])
+    return values[0]
+
+
+def read_proof(journals, path):
+    return complete_file_proof(journals, path) or native_read_proof(journals, path)
+
+
+def response_bindings(root, operations, journals, native):
+    """Authenticate authored response/argument files against the real call return."""
+    results = []
+    by_job = {journal["intent"]["job"]: journal for journal in journals if journal.get("remote_id")}
+    for job_id, journal in by_job.items():
+        reports = [item for item in objects(operations) if item.get("job") == job_id or item.get("job_id") == job_id]
+        matches = []
+        for item in reports:
+            try:
+                arguments = read(reference(root, named_ref(item, "arguments_ref", root)))
+                response = read(reference(root, named_ref(item, "response_ref", root)))
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+            request = journal["intent"]["request"]
+            args_match = (arguments == request["arguments"] or arguments.get("arguments") == request["arguments"]
+                          or arguments.get("dispatch_request", {}).get("arguments") == request["arguments"])
+            for call in native:
+                if (args_match and call["server"] == "pixellab" and call["success"] and call["tool"] == request["tool"]
+                        and call["arguments"] == request["arguments"] and journal["remote_id"] in identifiers(call["result"])
+                        and response_matches(response, call["result"])):
+                    matches.append({"file": call["file"], "line": call["line"], "arguments_ref": item["arguments_ref"], "response_ref": item["response_ref"]})
+        results.append({"job": job_id, "pass": bool(matches), "proof": matches})
+    return results
+
+
+def retrieval_proofs(journals, root, document, native):
+    """Bind public imports to exact source bytes and observed provider-download calls.
+
+Literal shell downloads are supported. Arbitrary helper programs require separate
+source/dataflow auditing; merely naming urllib or a URL in prose is not evidence.
+"""
+    urls = {match for call in native if call["server"] == "pixellab" and call["success"] for value in strings(call["result"])
+            for match in re.findall(r'https://[^\s"<>\\]+', value)}
+    local = [call for call in tool_calls(journals) if call["server"] in ("pixl_local", "pixl-local") and call["tool"] == "pixl_job_import" and call["success"]]
+    executions = commands(journals)
+    results = []
+    for call in local:
+        args = call["arguments"]
+        ident, name = args.get("candidate_id"), args.get("path")
+        candidate = document.records.get(ident)
+        if not candidate or not isinstance(name, str):
+            continue
+        path = graph.confined(root, name)
+        exact = path.is_file() and sha(path) == candidate.fields.get("dg")
+        downloads = []
+        for command in executions:
+            text = command["command"].strip()
+            literal = re.match(r"^(?:&\s*)?(?:curl(?:\.exe)?|wget|Invoke-WebRequest)\s+", text, re.IGNORECASE)
+            if (exact and command["exit_code"] == 0 and literal and any(url in text for url in urls)
+                    and (str(path).replace("\\", "/") in text.replace("\\", "/") or name in text.replace("\\", "/"))
+                    and before(command, call, journals)):
+                downloads.append({"file": command["file"], "line": command["line"]})
+        results.append({"candidate": ident, "path": name, "sha256": candidate.fields.get("dg"), "pass": exact and bool(downloads),
+                        "import": {"file": call["file"], "line": call["line"]}, "downloads": downloads,
+                        "limit": "Unrecognized helper downloads remain unproven until independently source/dataflow audited."})
+    return results
+
+
+def criteria_coverage(comparison, document, criterion_ids):
+    """Exact literals or record identities; semantic authority remains human/model review."""
+    text = "\n".join(normalized(value) for value in [*strings(comparison), *[key for item in objects(comparison) for key in item]])
+    missing = []
+    for ident in criterion_ids:
+        criterion = document.records[ident]
+        if ident not in text or not (normalized(criterion.fields["ck"]) in text or codec.record_hash(criterion) in text):
+            missing.append(ident)
+    return {"pass": bool(criterion_ids) and not missing, "criteria": sorted(criterion_ids), "missing": sorted(missing),
+            "scope": "Complete identity/literal coverage only; independent review must judge interpretation and authority."}
+
+
+def delivered_errors(root, case, delivered):
+    refs = file_refs(delivered)
+    assigned = [item for item in refs if item["path"] in DESTINATIONS[case]]
+    errors = []
+    if {item["path"] for item in assigned} != DESTINATIONS[case] or len(assigned) != len(DESTINATIONS[case]):
+        return ["Delivered files do not cover the exact assigned destinations once"]
+    for item in refs:
+        path = reference(root, item)
+        if item["path"] not in DESTINATIONS[case]:
+            continue
+        with Image.open(path) as image:
+            size = (16, 16) if case == "queue-ready" else (32, 32)
+            if image.format != "PNG" or image.size != size or image.mode != "RGBA":
+                errors.append("Incorrect RGBA PNG dimensions: " + item["path"])
+            alpha = image.convert("RGBA").getchannel("A").getextrema()
+            if alpha[0] != 0 or alpha[1] == 0:
+                errors.append("Missing visible transparent pixels: " + item["path"])
+    if case == "robot-directions" and sha(root / "assets/robot/south.png") != sha(root / "assets/robot-base.png"):
+        errors.append("Original south bytes were changed")
+    if case == "queue-ready" and sha(root / "assets/ready-confirmed.png") == sha(root / INPUTS / "original-ready.png"):
+        errors.append("Controlled Ready fixture was merely copied as new production")
+    return errors
+
+
+def review_errors(root, review, case, state_ref, comparison_ref, delivered):
+    errors = []
+    if review.get("case") != case or review.get("state_ref") != state_ref or review.get("comparison_ref") != comparison_ref:
+        errors.append("Independent review binds different case/state/comparison bytes")
+    wanted = {(item["path"], item["sha256"]) for item in file_refs(delivered) if item["path"] in DESTINATIONS[case]}
+    actual = {(item["path"], item["sha256"]) for item in file_refs(review.get("delivered_files")) if item["path"] in DESTINATIONS[case]}
+    if actual != wanted or not actual:
+        errors.append("Independent review does not bind every delivered file")
+    for key in ("criteria_authority_pass", "art_pass", "destination_visual_pass"):
+        if review.get(key) is not True:
+            errors.append("Independent review does not pass " + key)
+    inspected = file_refs(review.get("inspected_images"))
+    if not review.get("rationale") or not inspected:
+        errors.append("Independent review lacks rationale or inspected image identities")
+    if not {digest for name, digest in wanted} <= {item["sha256"] for item in inspected} or not any(Path(item["path"]).name == "destination.png" for item in inspected):
+        errors.append("Independent review must inspect delivered pixels and the actual destination")
+    for item in [*file_refs(review.get("inspected_images")), state_ref, comparison_ref, *file_refs(delivered)]:
+        reference(root, item)
+    return errors
+
+
+def _native(attempt, root, launch, continuation, caller):
+    journals = [rows(path) for path in sorted(attempt.glob("native-*.jsonl"))]
+    journals += [rows(path) for path in sorted((attempt / "native-transcripts").glob("*.jsonl"))]
+    stdout = rows(attempt / "stdout.jsonl") if (attempt / "stdout.jsonl").exists() else []
+    selected = selected_identity(caller.get("native_child"), launch["host"])
+    if selected is None:
+        children = [child for child in continuation.get("children", []) if child.get("role") == ("pixl" if launch["host"] == "codex" else "pixl:pixl")]
+        if len(children) == 1:
+            selected = children[0].get("id", children[0].get("agent_id"))
+    if launch["host"] == "codex":
+        session = continuation.get("session_id")
+        parent = next((journal for journal in journals if journal and journal[0].get("payload", {}).get("id") == session), [])
+        role = tomllib.loads((root / ".codex/agents/pixl.toml").read_text(encoding="utf-8"))["developer_instructions"]
+        proof = codex_role_proof(journals, session, selected, role)
+        child_ids = {child["id"] for child in proof["selected_children"]}
+        children = [[journal[0], *own_rows(journal, session, cold=True)] for journal in journals if journal and journal[0].get("payload", {}).get("id") in child_ids]
+        loading = {name: {"loaded": bool(read_proof(children, root / KIT / name))} for name in ("skills/pixl/SKILL.md", "resources/agent/PROFILE.md")}
+        named = proof["loaded"] and proof["completed"]
+        proof = {key: value for key, value in proof.items() if key != "child_text"}
+    else:
+        parent = [row for row in stdout if not row.get("parent_tool_use_id") and not row.get("agent_id")]
+        children = [journal for journal in journals if journal and Path(journal[0]["file"]).stem.removeprefix("agent-") == selected]
+        proof = claude_completion(parent, selected)
+        named = bool(proof) and any(child.get("id", child.get("agent_id")) == selected and child.get("role") == "pixl:pixl" for child in continuation.get("children", []))
+        loading = claude_loading_proof(children, root / KIT)
+    return {"journals": journals + [stdout], "parent": [parent], "children": children, "named": named,
+            "named_proof": proof, "loading": loading, "selected": selected}
+
+
+def grade(attempt: Path, *, review: Path | None = None):
+    attempt = Path(attempt).resolve()
+    checks = []
+    def add(name, passed, evidence=None, pending=False):
+        checks.append({"check": name, "pass": bool(passed), "status": "pass" if passed else "pending" if pending else "fail", "evidence": evidence})
+    def guarded(name, function):
+        try:
+            return function()
+        except (OSError, ValueError, KeyError, TypeError, AttributeError, codec.PixlError) as error:
+            add(name, False, f"{type(error).__name__}: {error}", pending=isinstance(error, FileNotFoundError))
+            return None
+    initial = guarded("attempt_inputs_readable", lambda: (read(attempt / "launch.json"), read(attempt / "identity.json")))
+    if initial is None:
+        return result(checks)
+    launch, identity = initial
+    root, case = Path(launch["cwd"]).resolve(), identity["case"]
+    continuation = read(attempt / "continuation.json") if (attempt / "continuation.json").exists() else {}
+    caller = guarded("caller_result_retained", lambda: report_fields(read(root / WORK / "CALLER-RESULT.json"))) or {}
+    specialist = guarded("specialist_result_retained", lambda: report_fields(read(root / WORK / "SPECIALIST-RESULT.json"))) or {}
+
+    current = inventory(root, ("__pycache__",))
+    changed = [name for name, digest in identity["inputs"].items() if current.get(name) != digest and name not in identity["authorized_changes"]]
+    added = [name for name in current if name not in identity["inputs"] and not name.startswith(tuple(identity["authorized_new_prefixes"]))]
+    add("original_inputs_preserved_and_only_authorized_writes", not changed and not added, {"changed": changed, "unexpected_new": added})
+    add("official_native_connection_configured", launch.get("official_provider", {}).get("endpoint") == "https://api.pixellab.ai/mcp" and identity.get("isolation", {}).get("official_provider_configured") is True)
+    trace = guarded("native_trace_readable", lambda: _native(attempt, root, launch, continuation, caller))
+    if trace is None:
+        return result(checks)
+    children, parent, all_rows = trace["children"], trace["parent"], trace["journals"]
+    add("actual_named_specialist_loaded_and_completed", trace["named"], trace["named_proof"], pending=not continuation)
+    add("child_loaded_shared_skill_and_profile", bool(trace["loading"]) and all(value["loaded"] for value in trace["loading"].values()), trace["loading"])
+    native = tool_calls(children)
+    production_calls = [call for call in native if call["server"] == "pixellab" and MUTATING.match(call["tool"] or "")]
+    add("actual_successful_official_production_call", any(call["success"] for call in production_calls), [{key: call[key] for key in ("file", "line", "tool", "success")} for call in production_calls])
+    folder = root / ".pixl/assets" / ASSETS[case]
+    document = guarded("rooted_production_state_valid", lambda: store.load(folder))
+    if document is None:
+        return result(checks)
+    valid = guarded("rooted_production_graph_valid", lambda: graph.validate(document, root))
+    del valid
+    state_ref = {"path": (folder / "state.px").relative_to(root).as_posix(), "sha256": sha(folder / "state.px")}
+    journal_values = guarded("durable_job_histories_valid", lambda: [jobs._get(document, item.id, root) for item in document.records.values() if item.kind == "J" and "jr" in item.fields]) or []
+    proofs = [job_proof(journal, native, children) for journal in journal_values if journal.get("remote_id")]
+    add("every_recorded_provider_job_has_exact_native_and_pre_dispatch_proof", bool(proofs) and all(proof["pass"] for proof in proofs), proofs)
+    responses = response_bindings(root, specialist.get("provider_operations", []), journal_values, native)
+    add("retained_arguments_and_responses_match_actual_provider_returns", bool(responses) and all(item["pass"] for item in responses), responses)
+    bound = {(proof["native"]["file"], proof["native"]["line"]) for row in proofs for proof in row["proof"]}
+    unbound = [{key: call[key] for key in ("file", "line", "tool", "success")} for call in production_calls if call["success"] and (call["file"], call["line"]) not in bound]
+    add("no_successful_untracked_official_production", bool(production_calls) and not unbound, unbound)
+
+    comparison_ref = guarded("comparison_reference_valid", lambda: named_ref(specialist, "comparison_ref", root))
+    if comparison_ref:
+        comparison_path = reference(root, comparison_ref)
+        comparison = read(comparison_path)
+        qids = {name for journal in journal_values for name in journal["intent"]["context"]["bindings"] if document.records[name].kind == "Q"}
+        coverage = criteria_coverage(comparison, document, qids)
+        add("caller_comparison_covers_all_dispatch_criteria", coverage["pass"], coverage)
+        caller_reads = read_proof(parent, comparison_path)
+        child_reads = read_proof(children, comparison_path)
+        paid = [call for call in production_calls if call["tool"] != "pixelart_workbench"]
+        add("both_actors_consumed_exact_comparison_before_paid_dispatch", bool(paid) and all(any(before(proof, call, all_rows) for proof in caller_reads) and any(before(proof, call, all_rows) for proof in child_reads) for call in paid), {"caller": caller_reads, "child": child_reads})
+        originals = [root / "BRIEF.md", root / ("src/queue-view.ts" if case == "queue-ready" else "src/robot.ts")]
+        source_proofs = {path.relative_to(root).as_posix(): read_proof(parent, path) for path in originals}
+        add("caller_read_original_sources_before_paid_dispatch", bool(paid) and all(any(before(proof, call, all_rows) for proof in value) for value in source_proofs.values() for call in paid), source_proofs)
+
+    delivered = specialist.get("delivered_files", [])
+    errors = guarded("delivered_artifacts_readable", lambda: delivered_errors(root, case, delivered))
+    add("exact_complete_delivered_artifacts", errors == [], errors)
+    candidate_ids, candidate_by_path = [], {}
+    for item in file_refs(delivered):
+        if item["path"] not in DESTINATIONS[case]:
+            continue
+        candidates = [record for record in document.records.values() if record.kind == "X" and "of" in record.fields and record.fields.get("dg") == item["sha256"]]
+        if candidates:
+            candidate_by_path[item["path"]] = [candidate.id for candidate in candidates]
+            candidate_ids.extend(candidate.id for candidate in candidates)
+    add("delivered_bytes_bind_saved_candidates", set(candidate_by_path) == DESTINATIONS[case], candidate_by_path)
+    imported = {event["artifact"]["id"] for journal in journal_values for event in journal["events"] if event["event"] == "imported"}
+    new_paths = DESTINATIONS[case] - ({"assets/robot/south.png"} if case == "robot-directions" else set())
+    add("every_new_delivered_member_has_provider_import", all(set(candidate_by_path.get(path, [])) & imported for path in new_paths), {"imports": sorted(imported), "new_members": sorted(new_paths)})
+    retrievals = retrieval_proofs(children, root, document, native)
+    retrieved = {item["candidate"] for item in retrievals if item["pass"]}
+    add("new_delivered_bytes_have_native_download_and_public_import_proof", all(set(candidate_by_path.get(path, [])) & retrieved for path in new_paths), retrievals)
+    review_proofs = []
+    for item in file_refs(specialist.get("review_refs", [])):
+        review_proofs.extend(operation_proof(children, root, "pixl_candidate_review", item))
+    add("child_performed_public_candidate_or_family_review", bool(review_proofs), review_proofs)
+    selected = guarded("current_plar_selection_readable", lambda: plar.read(root, PLAR, ASSETS[case]))
+    if selected:
+        production = selected.get("production", {})
+        add("current_assignment_delivered_without_pending_jobs", production.get("selection_current") is True and production.get("next_action") == "delivered" and not production.get("pending_jobs"), production.get("continuation"))
+        contexts = guarded("current_candidate_reviews_readable", lambda: [candidate_review.context(document, root, ident) for ident in sorted(set(candidate_ids))]) or []
+        add("each_delivered_member_has_current_explicit_acceptance", bool(contexts) and all(any(context["candidate"] in ids and context["nominated"] and context["current_acceptance"]["all_required_pass"] and context["current_acceptance"]["task_complete"] for context in contexts) for ids in candidate_by_path.values()), [{"candidate": context["candidate"], "acceptance": context["current_acceptance"]} for context in contexts])
+        handoff_ref = guarded("handoff_reference_valid", lambda: named_ref(specialist, "handoff_ref", root))
+        if handoff_ref:
+            handoff = semantic_result(read(reference(root, handoff_ref)))
+            snapshots = [value for value in expanded_objects(handoff) if value.get("asset_id") == ASSETS[case] and value.get("requirements_hash") == selected["requirements_hash"]]
+            add("handoff_matches_current_production", any(value.get("state_hash", value.get("resume", {}).get("state_hash")) == production.get("hash") and value.get("next", value.get("next_action")) == "delivered" for value in snapshots))
+            proof = operation_proof(children, root, "pixl_plar_handoff", handoff_ref)
+            add("child_created_public_handoff", bool(proof), proof)
+            proof = read_proof(parent, reference(root, handoff_ref))
+            add("caller_consumed_exact_current_handoff", bool(proof), proof)
+
+    renderer = guarded("actual_renderer_rechecked", lambda: renderer_check(root, identity, specialist, case))
+    if renderer:
+        add("independent_renderer_mechanical_checks_pass", renderer["checked"].get("status") == "pass", renderer["checked"])
+        add("saved_renderer_check_matches_fresh_check", renderer["saved"] == renderer["checked"], {"report": renderer["report_ref"], "check": renderer["check_ref"]})
+        reference_image = root / (f"{INPUTS}/original-ready.png" if case == "queue-ready" else "assets/robot-base.png")
+        required_images = {sha(reference_image), *[item["sha256"] for item in file_refs(delivered)], renderer["screenshot_sha256"]}
+        for actor, journals, report in (("child", children, specialist), ("caller", parent, caller)):
+            views = image_views(journals, root)
+            declared = {item["sha256"] for item in file_refs(report.get("viewed_images"))}
+            add(actor + "_actually_viewed_reference_delivered_art_and_destination", required_images <= set(views) and required_images <= declared, {"observed": views, "missing_observed": sorted(required_images - set(views)), "missing_declared": sorted(required_images - declared)})
+            cells = renderer["cells"]
+            scale_coverage = {scale: any(cell["scale"] == scale and cell["sha256"] in views for cell in cells) for scale in (1, 3)}
+            add(actor + "_viewed_actual_native_and_enlarged_cells", all(scale_coverage.values()), scale_coverage)
+
+    for actor, journals, report in (("child", children, specialist), ("caller", parent, caller)):
+        operation_rows = report.get("provider_operations", [])
+        operation_ids = {value for row in objects(operation_rows) for key, value in row.items() if key in ID_KEYS | {"actual_id"} and isinstance(value, str)}
+        remote_ids = {journal["remote_id"] for journal in journal_values if journal.get("remote_id")}
+        add(actor + "_reports_actual_provider_ids_and_limitations", bool(remote_ids) and remote_ids <= operation_ids and bool(report.get("limitations")) and bool(report.get("next_action")), {"expected_ids": sorted(remote_ids), "reported_ids": sorted(operation_ids)})
+    if caller:
+        wanted = {(item["path"], item["sha256"]) for item in file_refs(delivered) if item["path"] in DESTINATIONS[case]}
+        actual = {(item["path"], item["sha256"]) for item in file_refs(caller.get("delivered_files")) if item["path"] in DESTINATIONS[case]}
+        add("caller_consumed_exact_complete_deliverable", bool(wanted) and actual == wanted and caller.get("status") == "delivered" and bool(caller.get("independent_checks")))
+        specialist_path = root / WORK / "SPECIALIST-RESULT.json"
+        add("caller_read_exact_specialist_report", bool(read_proof(parent, specialist_path)), read_proof(parent, specialist_path))
+    add("native_process_completed", continuation.get("status") == "finished" and continuation.get("returncode") == 0 and continuation.get("interruption_reason") is None, {key: continuation.get(key) for key in ("status", "returncode", "interruption_reason")}, pending=not continuation)
+    if review and comparison_ref:
+        errors = guarded("independent_visual_review_readable", lambda: review_errors(root, read(review), case, state_ref, comparison_ref, delivered))
+        add("independent_art_and_source_authority_review", errors == [], {"receipt": str(review), "errors": errors})
+    else:
+        add("independent_art_and_source_authority_review", False, "Supply a separate evidence-bound maintainer review; machine checks do not judge art or source interpretation.", pending=True)
+    return result(checks)
+
+
+def renderer_check(root, identity, specialist, case):
+    renderer = root / "renderer-native"
+    if "renderer-native/check.py" not in identity["inputs"]:
+        raise ValueError("Renderer checker lacks a preparation identity")
+    for name, expected in identity["inputs"].items():
+        if name.startswith("renderer-native/") and sha(root / name) != expected:
+            raise ValueError("Prepared renderer changed: " + name)
+    spec = importlib.util.spec_from_file_location("cf10_frozen_renderer", renderer / "check.py")
+    if not spec or not spec.loader:
+        raise ValueError("Missing retained renderer checker")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    report_ref = named_ref(specialist, "renderer_report_ref", root)
+    check_ref = named_ref(specialist, "renderer_check_ref", root)
+    path = reference(root, report_ref)
+    report = read(path)
+    checked = module.check(root, path.parent)
+    screenshot = report["screenshot"]
+    screenshot_path = reference(path.parent, screenshot)
+    cells = [{"scale": view["scale"], "sha256": view["image"]["sha256"]} for view in report["views"] if "image" in view]
+    return {"checked": checked, "saved": read(reference(root, check_ref)), "report_ref": report_ref,
+            "check_ref": check_ref, "screenshot_sha256": sha(screenshot_path), "cells": cells}
+
+
+def result(checks):
+    failed = [item["check"] for item in checks if item["status"] == "fail"]
+    pending = [item["check"] for item in checks if item["status"] == "pending"]
+    return {"version": 1, "status": "fail" if failed else "review_required" if pending else "pass",
+            "passed": sum(item["pass"] for item in checks), "total": len(checks), "checks": checks,
+            "failed": failed, "pending": pending,
+            "scope": "Bounded CF-10 real-provider trace, exact consumer bytes and native caller consumption; independent source/art/destination judgment is separate. No M1/M2/broader M3, general quality or host reliability closure."}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempt", type=Path)
+    parser.add_argument("--review", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    value = grade(args.attempt, review=args.review)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2, allow_nan=False)
+        stream.write("\n")
+    print(json.dumps({"status": value["status"], "passed": value["passed"], "total": value["total"], "path": str(args.out)}))
+    raise SystemExit(0 if value["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()
