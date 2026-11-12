@@ -35,7 +35,7 @@ TOOLS = [
     ),
     (
         "pixl_review_context",
-        "Read exact saved candidate or family criteria, current verdict IDs, semantic binding_hash and canonical state_hash before explicit review. Family creation status is separate from current acceptance.",
+        "Read exact saved candidate or family criteria, member lineage, current verdict IDs, semantic binding_hash and canonical state_hash before explicit review. Lineage evidence and family creation status are separate from current acceptance.",
         schema({"path": STR, "candidate_id": STR}, ["path", "candidate_id"]),
     ),
     (
@@ -208,7 +208,7 @@ TOOLS = [
     ),
     (
         "pixl_family",
-        "Verify retained family files and report baseline, member selection, destination requirements, pending jobs and drift. No acceptance or remote action.",
+        "Verify retained family files and report baseline, member selection and lineage, destination requirements, pending jobs and drift. Lineage describes retained evidence, not authenticated remote execution. No acceptance or remote action.",
         schema({"path": STR, "output": STR}, ["path"]),
     ),
     (

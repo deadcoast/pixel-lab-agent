@@ -12,12 +12,20 @@ from pathlib import Path
 
 from PIL import Image
 
+from evaluations.host_trials import inventory, sha
+from pixl import candidate_review, destination_observation
+from tests.test_destination_observation import observation_fixture
+
 ROOT=Path(__file__).resolve().parents[1]
 RENDERER=ROOT / "examples/consumer-execution/queue-motion"
 SPEC=importlib.util.spec_from_file_location("consumer_motion_check",RENDERER / "check.py")
 assert SPEC and SPEC.loader
 CHECK=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK)
+BRIDGE_SPEC=importlib.util.spec_from_file_location("consumer_motion_observation",RENDERER / "observation.py")
+assert BRIDGE_SPEC and BRIDGE_SPEC.loader
+BRIDGE=importlib.util.module_from_spec(BRIDGE_SPEC)
+BRIDGE_SPEC.loader.exec_module(BRIDGE)
 
 
 def config():
@@ -74,6 +82,93 @@ class ConsumerRendererCountingTests(unittest.TestCase):
             self.assertFalse(receipt["renderer_executed"])
             self.assertTrue(receipt["cleanup"]["complete"])
             self.assertFalse((root / "capture/capture.json").exists())
+
+
+class ConsumerObservationLineageTests(unittest.TestCase):
+    """Real public family context, synthetic retained capture; no browser claim."""
+    def setUp(self):
+        temporary=tempfile.TemporaryDirectory(prefix="consumer lineage bridge ")
+        self.addCleanup(temporary.cleanup)
+        self.root=Path(temporary.name).resolve()
+        self.doc, supplied=observation_fixture(self.root)
+        self.context=candidate_review.context(self.doc,self.root,"package")
+        self.capture=self.root / "capture"
+        self.renderer=self.root / "renderer"
+        shutil.copytree(RENDERER,self.renderer,ignore=shutil.ignore_patterns("__pycache__"))
+        (self.root / "assets").mkdir()
+        (self.root / "src").mkdir()
+        (self.root / "src/view.mjs").write_text("// Synthetic consumer identity; not executed\n",encoding="utf-8")
+        served={"consumer/src/view.mjs":sha(self.root / "src/view.mjs")}
+        mapping={}
+        for index,member in enumerate(self.context["members"]):
+            path=f"assets/member-{index}.png"
+            shutil.copyfile(self.root / member["retained_path"],self.root / path)
+            mapping[member["output"]]=path
+            served["consumer/"+path]=member["sha256"]
+        settings={**config(),"destinations":mapping,"scales":[1]}
+        image={"path":"view.png","sha256":sha(self.capture / "view.png")}
+        member=self.context["members"][0]
+        cells=[{"consumer":consumer,"state":"running","scale":1,"frame":0,"image":image,
+                "descriptor":{"path":mapping[member["output"]]},"asset":{"sha256":member["sha256"]}}
+               for consumer in ("statusCell","compactStatus")]
+        self.raw={"project":str(self.root),"config":settings,"served_files":served,
+                  "renderer_files":{name:sha(self.renderer / name) for name in CHECK.PROFILE_FILES},
+                  "observed_at":supplied["observed_at"],"browser_version":{"product":"SyntheticFixture/1"},
+                  "viewport":supplied["viewport"],"views":cells,
+                  "phases":[{"name":"normal-start","motion":"normal","status":"observed",
+                             "frameCount":2,"frameMs":100,"reason":"Synthetic bridge fixture; no browser executed",
+                             "samples":[{"elapsed":0,"cells":cells}]}]}
+        write_json(self.capture / "capture.json",self.raw)
+        write_json(self.capture / "launch.json",{"project":str(self.root),"config":settings,"browser":"synthetic","args":[]})
+        write_json(self.root / "context.json",self.context)
+        write_json(self.root / "destinations.json",mapping)
+
+    def build(self):
+        return BRIDGE.build(self.root,self.capture,self.root / "context.json",self.renderer,self.root / "destinations.json")
+
+    def test_actual_enriched_context_bridges_imports_without_state_mutation(self):
+        self.assertTrue(all("lineage" in row for row in self.context["members"]))
+        baseline=self.build()
+        enriched=copy.deepcopy(self.context)
+        for member in enriched["members"]:
+            member["lineage"]["limitations"].append("Presentation-only regression annotation")
+        write_json(self.root / "context.json",enriched)
+        before=inventory(self.root)
+        value=self.build()
+        self.assertEqual(inventory(self.root),before)
+        self.assertEqual(value["manifest"],baseline["manifest"])
+        self.assertEqual(value["destinations"],baseline["destinations"])
+        self.assertEqual(value["binding_hash"],baseline["binding_hash"])
+        write_json(self.root / "bridged.json",value)
+        state_before=inventory(self.root / ".pixl")
+        result=destination_observation.import_observation(self.doc,self.root,"package","bridged.json","imported")
+        self.assertEqual(inventory(self.root / ".pixl"),state_before)
+        self.assertFalse(result["renderer_executed"])
+        self.assertFalse(result["automatic_acceptance"])
+
+    def test_lineage_never_masks_manifest_member_identity_or_unknown_fields(self):
+        for field,value in {"output":"other.output","candidate":"other.candidate","path":"files/other.png",
+                            "sha256":"0"*64,"unrecognized_identity":"must not be discarded"}.items():
+            with self.subTest(field=field):
+                changed=copy.deepcopy(self.context)
+                changed["members"][0][field]=value
+                write_json(self.root / "context.json",changed)
+                before=inventory(self.root)
+                with self.assertRaisesRegex(ValueError,"disagree"):
+                    self.build()
+                self.assertEqual(inventory(self.root),before)
+
+    def test_enriched_context_preserves_served_hash_and_renderer_checks(self):
+        member=self.context["members"][0]
+        path=self.root / self.raw["config"]["destinations"][member["output"]]
+        original=path.read_bytes()
+        path.write_bytes(original+b"changed")
+        with self.assertRaisesRegex(ValueError,"changed"):
+            self.build()
+        path.write_bytes(original)
+        (self.renderer / "view.mjs").write_bytes(b"changed renderer")
+        with self.assertRaisesRegex(ValueError,"changed"):
+            self.build()
 
 
 class ConsumerRendererBrowserTests(unittest.TestCase):

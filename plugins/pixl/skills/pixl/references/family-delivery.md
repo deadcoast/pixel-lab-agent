@@ -174,3 +174,26 @@ candidate-review to retain exact result JSON under a fresh consumer-relative pat
 Read the returned file when comparing the immutable snapshot with current
 acceptance. A post-publication export error retains `operation_result`; reconcile
 current state before retrying. Never hand-copy JSON paths from a tool transcript.
+
+## Visible asset lineage
+
+Read the `lineage` next to each delivered member in `family` or `review-context`;
+use the exact candidate IDs for the historical package being discussed. Fresh PLAR
+reads and handoffs also expose nominated candidate and family member lineage.
+Follow the retained job, request and evidence references before describing an
+origin. Separate a generated seed, a provider edit, a deterministic construction,
+and reuse of existing bytes. One asset can involve several of these operations.
+
+Keep the reported evidence limits visible. A validated journal proves local
+retention and consistency of caller observations, not authenticated provider
+execution. A baseline or task input is not automatically a pixel parent, and
+matching hashes establish equal bytes without selecting an ancestor. Missing
+relationships remain unknown. Preserve controlled-fixture provenance even when
+its request names a generation tool. A corrected deterministic Working animation
+must not be described as successful generative animation merely because an earlier
+animation attempt exists in the project.
+
+Lineage does not create acceptance or authorize more generation. Preserve saved
+state, old manifests and prior handoffs while reading it. If the compact caller
+view returns `delivery_ref` or `resume_ref`, resolve the exact saved report and JSON
+pointer before summarizing the delivered members.

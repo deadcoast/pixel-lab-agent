@@ -78,6 +78,8 @@ def _current(doc: Document, candidate_id: str) -> dict[str, Record]:
 
 def context(doc: Document, root: Path, candidate_id: str) -> Json:
     """Resolve exact review inputs and current acceptance without changing state."""
+    from . import asset_lineage
+
     root = Path(root).resolve()
     graph.validate(doc, root)
     candidate, output, task = _target(doc, candidate_id)
@@ -94,6 +96,7 @@ def context(doc: Document, root: Path, candidate_id: str) -> Json:
         "state_hash": codec.digest(doc), "revision": doc.revision,
         "binding_hash": _sha(_json(_bindings(doc, candidate_id))),
         "candidate": candidate_id, "candidate_file": {"path": candidate.fields["ur"], "sha256": candidate.fields["dg"]},
+        "lineage": asset_lineage.describe(doc, root, candidate_id),
         "output": output.id, "task": task.id, "task_status": task.fields["st"].value,
         "nominated": Ref(candidate_id) in task.fields["ca"], "criteria": criteria,
         "current_acceptance": {"all_required_pass": all(q["status"] == "pass" for q in criteria),
@@ -106,7 +109,11 @@ def context(doc: Document, root: Path, candidate_id: str) -> Json:
         result["snapshot_acceptance"] = {"accepted": manifest["acceptance"]["accepted"],
                                          "source_state_hash": manifest["source_state_sha256"],
                                          "created_at": manifest["created_at"]}
-        result["members"] = [{**row, "retained_path": (directory / row["path"]).as_posix()} for row in manifest["files"]]
+        result["members"] = [
+            {**row, "retained_path": (directory / row["path"]).as_posix(),
+             "lineage": asset_lineage.describe(doc, root, row["candidate"])}
+            for row in manifest["files"]
+        ]
     return result
 
 

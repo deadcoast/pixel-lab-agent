@@ -129,6 +129,16 @@ def run_family_probe(invoke, project):
         "collective check fabricated",
     )
 
+    lineage_members = cold["families"][0]["snapshots"][0]["files"]
+    require(
+        all(row["lineage"]["candidate"] == row["candidate"] for row in lineage_members)
+        and all(row["lineage"]["candidate"] == row["candidate"]
+                for row in cold["families"][0]["members"]),
+        "lineage lost exact current or retained candidate identity",
+    )
+    require(manifest_path.read_bytes() == manifest_bytes, "lineage rewrote manifest")
+    checks.append({"command": "family", "check": "derived member lineage preserves exact identities and manifest bytes", "status": "pass"})
+
     task["ca"] = [{"$ref": "portable.package"}]
     task["vr"] = [{"$ref": "portable.engine"}]
     document["records"].append(
@@ -201,6 +211,10 @@ def run_family_probe(invoke, project):
         and len(rows["portable.package"]["files"]) == 2
         and len(rows["portable.revised"]["files"]) == 1,
         "frozen member inventories lost",
+    )
+    require(
+        rows["portable.package"]["files"] == lineage_members,
+        "current membership changed historical member lineage",
     )
     require(
         rows["portable.revised"]["stale"] == [] and final["hash"] == revised["hash"],

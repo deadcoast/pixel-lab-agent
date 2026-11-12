@@ -6,7 +6,7 @@ from .codec import PixlError
 
 def _delivery_status(document, root, folder, asset, output_id, outputs):
     """Report the exact nominated bytes and collective plans, without new verdicts."""
-    from . import delivery
+    from . import asset_lineage, delivery
     from .plar import selection_bindings
 
     output = next(row for row in outputs if row["id"] == output_id)
@@ -22,11 +22,15 @@ def _delivery_status(document, root, folder, asset, output_id, outputs):
         and any(member.id == output_id for member in record.fields.get("mb", []))
     }
     families = []
+    lineage = None
     if related:
         for row in delivery.report(document, root)["families"]:
             if row["output"] not in related:
                 continue
             snapshot = next((s for s in row["snapshots"] if s["candidate"] == row["candidate"]), None)
+            for member in row["members"]:
+                if member["output"] == output_id and member["candidate"] == candidate_id:
+                    lineage = member["lineage"]
             # The baseline may intentionally retain a historical sample contract.
             # Newly produced siblings must still match their explicit live selections.
             member_bindings = [
@@ -45,9 +49,12 @@ def _delivery_status(document, root, folder, asset, output_id, outputs):
             families.append({"output": row["output"], "task": row["task"], "state": row["state"], "candidate": row["candidate"], "accepted": accepted,
                              "member_selection_current": members_current,
                              "manifest": snapshot["manifest"] if snapshot else None,
-                             "manifest_sha256": snapshot["sha256"] if snapshot else None})
+                             "manifest_sha256": snapshot["sha256"] if snapshot else None,
+                             "members": [dict(member) for member in snapshot["files"]] if snapshot else []})
+    if candidate_id is not None and lineage is None:
+        lineage = asset_lineage.describe(document, root, candidate_id)
     return {
-        "destination": asset["delivery"]["path"], "candidate": candidate_id,
+        "destination": asset["delivery"]["path"], "candidate": candidate_id, "lineage": lineage,
         "expected_sha256": expected, "observed_sha256": observed,
         "destination_matches": matching, "families": families,
         "complete": matching and all(row["accepted"] for row in families),

@@ -195,8 +195,17 @@ class CallerResultTests(unittest.TestCase):
             selected = plar.read(fixture.root, asset_id="queue.working")
             return handoff.save(fixture.root, "queue.working", selected["requirements_hash"], selected["production"]["hash"], {"status": "partial"}, view="caller")
 
+        def delivery(result):
+            if result["production"]["delivery_inline"]:
+                return result["production"]["delivery"]
+            reference = result["production"]["delivery_ref"]
+            self.assertEqual(reference["json_pointer"], "/resume/delivery")
+            section = service.source_slice(fixture.root / reference["path"], reference["sha256"],
+                                           reference["start"], reference["end"], reference["bytes"])
+            return json.loads("{" + section["text"].rstrip().removesuffix(",") + "}")["resume"]["delivery"]
+
         unfinished = capture()
-        self.assertTrue(unfinished["production"]["delivery"]["destination_matches"])
+        self.assertTrue(delivery(unfinished)["destination_matches"])
         self.assertFalse(unfinished["production"]["delivery_complete"])
         fixture.finish_family()
         complete = capture()

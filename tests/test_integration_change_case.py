@@ -204,6 +204,36 @@ class ObservationBridgeTests(unittest.TestCase):
         write_json(self.root / "observation.json", value)
         destination_observation.import_observation(self.doc, self.root, "package", "observation.json", "imported")
 
+    def test_member_lineage_is_presentation_only_and_bridge_is_read_only(self):
+        self.assertTrue(all("lineage" in member for member in self.context["members"]))
+        baseline = self.build()
+        enriched = copy.deepcopy(self.context)
+        for member in enriched["members"]:
+            member["lineage"]["limitations"].append("Presentation-only regression annotation")
+        write_json(self.root / "context.json", enriched)
+        before = inventory(self.root)
+        observed = self.build()
+        self.assertEqual(inventory(self.root), before)
+        self.assertEqual(observed["manifest"], baseline["manifest"])
+        self.assertEqual(observed["destinations"], baseline["destinations"])
+        self.assertEqual(observed["binding_hash"], baseline["binding_hash"])
+        context_ref = next(row for row in observed["files"] if row["path"] == "context.json")
+        self.assertEqual(context_ref["sha256"], sha(self.root / "context.json"))
+
+    def test_lineage_does_not_mask_changed_member_identity_or_unknown_fields(self):
+        changes = {"output": "different.output", "candidate": "different.candidate",
+                   "path": "files/other.png", "sha256": "0" * 64,
+                   "unrecognized_identity": "must not be silently discarded"}
+        for field, value in changes.items():
+            with self.subTest(field=field):
+                changed = copy.deepcopy(self.context)
+                changed["members"][0][field] = value
+                write_json(self.root / "context.json", changed)
+                before = inventory(self.root)
+                with self.assertRaisesRegex(ValueError, "disagree"):
+                    self.build()
+                self.assertEqual(inventory(self.root), before)
+
     def test_wrong_destination_changed_renderer_and_wrong_context_fail_without_output(self):
         mapping = json.loads((self.root / "destinations.json").read_bytes())
         altered = copy.deepcopy(mapping)

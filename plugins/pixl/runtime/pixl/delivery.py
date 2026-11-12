@@ -577,6 +577,8 @@ def snapshot(folder, expected, output_id, candidate_id, root=None):
 
 
 def report(doc, root, output_id=None):
+    from . import asset_lineage
+
     _require(
         doc.format == 2, "family_format", "family delivery requires explicit PX2 state"
     )
@@ -594,8 +596,19 @@ def report(doc, root, output_id=None):
         )
     )
     result = []
+    lineage = {}
+
+    def describe_lineage(candidate_id):
+        if candidate_id is None:
+            return None
+        if candidate_id not in lineage:
+            lineage[candidate_id] = asset_lineage.describe(doc, root, candidate_id)
+        return lineage[candidate_id]
+
     for output in outputs:
         row = families.describe(doc, output)
+        for member in row["members"]:
+            member["lineage"] = describe_lineage(member["candidate"])
         snapshots = []
         for artifact in sorted(doc.records.values(), key=lambda r: r.id):
             if artifact.kind != "X" or artifact.fields.get("of") != Ref(output):
@@ -609,7 +622,10 @@ def report(doc, root, output_id=None):
                     "created_at": manifest["created_at"],
                     "source_state_sha256": manifest["source_state_sha256"],
                     "stale": _stale(doc, artifact, manifest),
-                    "files": manifest["files"],
+                    "files": [
+                        {**member, "lineage": describe_lineage(member["candidate"])}
+                        for member in manifest["files"]
+                    ],
                     "retention_is_acceptance": False,
                 }
             )

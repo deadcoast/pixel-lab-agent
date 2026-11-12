@@ -39,3 +39,39 @@ Published manifest X and every X named by its xs are immutable. A revision adds 
 Old packages are checked against their saved members and typed constituents, so changing current F.mb does not erase or make old packages structurally invalid. Reports compare saved semantic bindings and selection to the current plan and report drift. A current pass/fail family V requires both current selection and saved semantic planning identity to match its candidate. Otherwise supersede that verdict, preserve the old candidate and reopen affected work. An unavailable V remains a retained account of why inspection was not performed.
 
 Family reports require a project root and include pending jobs for baseline/member/delivery tasks. Unrooted graph validation can check typed structure and current selection, but cannot read frozen manifest bindings or copied bytes; it does not establish current package validity. Store publication and family reports require rooted checks. Pending prepared/submitted/running/unknown work prevents a fresh snapshot and is routed through the provider recovery skill. A family that lacks confirmed destination or applicable adoption may still retain useful local accepted-member bytes; it cannot use that retention to activate or complete delivery. Continuity inspection, engine execution and human artistic approval remain actual obligations supplied by the task's declared Q and real observations.
+
+## Visible asset lineage
+
+Rooted `family` reports derive `lineage` beside each currently selected member and
+beside each historical snapshot file. `review-context` exposes the same projection
+for its candidate and delivered members. PLAR delivery status carries nominated
+candidate lineage and the nominated family snapshot's members into fresh handoffs.
+These are read-time views of existing artifact and durable-job identities, not new
+PX2 fields or changes to the immutable manifest contract above. Historical reports
+and handoffs keep their original bytes; read current state for a fresh projection.
+
+A retained import binds an exact candidate record to its journal event. The saved
+request and caller-supplied observations describe what was requested or reported;
+local hash and history validation does not authenticate remote execution. A tool
+name, success state, provider ID, style baseline, task input or equal file hash alone
+does not establish pixel ancestry. Family `X.xs` remains a constituent list. Where
+an exact relationship is absent, ambiguous or unavailable, lineage must preserve
+that limit rather than invent an origin. Equal bytes can support byte-equivalence
+without establishing which copy was the source.
+
+The derived view identifies its `candidate` and `sha256`. `artifact.jobs` names
+its direct importing jobs; `jobs` contains bounded supporting job details and their
+recorded `source_requests`. `same_bytes` lists equivalences; `workflow_inputs`
+retains task context. `provenance_status` distinguishes a retained import, equality
+to recorded imported bytes, and an unrecorded origin;
+`remote_verified` stays false. Request operation labels describe saved intent,
+not successful artistic outcomes. Explicit simulation evidence remains visible.
+Nested source requests are bounded and unresolved references retain their locator.
+The exact retained journal is the source for omitted details. Workflow inputs and
+equal-byte candidates are context, not inferred directed ancestry.
+
+Lineage is independent of acceptance. It creates no job, artifact, review, verdict,
+nomination or completion. Derived relationships do not convert a controlled fixture
+into real generation or a deterministic correction into a successful generative
+animation. Larger caller results use the existing exact delivery/resume locators;
+they must not silently omit lineage to fit the inline budget.

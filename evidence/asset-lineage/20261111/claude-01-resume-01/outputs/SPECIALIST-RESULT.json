@@ -1,0 +1,1006 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-12T04:13:32.219975+00:00",
+  "assignment": "ASSET-LINEAGE.md, specialist section (NF-08 read-only retained asset-lineage evaluation)",
+  "role": "pixl:pixl specialist (PIXL profile)",
+  "consumer_root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean nfua343v\\consumer",
+  "resumption": {
+    "resumed_after_host_stop": true,
+    "detail": "The host stopped the session after the ten reads and all evidence inspection were complete but before COMPARISON.json and SPECIALIST-RESULT.json were written (the first write attempt failed in the shell with ENAMETOOLONG before touching disk). On resumption the ten reads were NOT re-run; their saved files were re-hashed and matched the earlier captures exactly (see operations.*.result).",
+    "additional_sources_read_during_resumption": [],
+    "resumption_actions": "Re-hashed every cited file, re-decoded the retained artifact PNGs for the measurements embedded here, ran the read-only CLI validate, and wrote the two reports via a transient generator script work/asset-lineage/_generate_reports.py that is removed after generation."
+  },
+  "fixture": {
+    "path": "work/asset-lineage-inputs/fixture.json",
+    "sha256": "5c9c2693632582ef6dfb3db1e1e945e43b0443e494c6e816885ca9ad782328ec"
+  },
+  "operations": {
+    "original_context": {
+      "tool": "pixl_review_context",
+      "route": "mcp pixl-local with result_path",
+      "arguments": {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "candidate_id": "live.family.candidate",
+        "result_path": "work/asset-lineage/original-context.json"
+      },
+      "result": {
+        "path": "work/asset-lineage/original-context.json",
+        "sha256": "0154cf0ac91448729a74c1898ad831944f95eafa02c0dac9c85d9344d2a08614"
+      },
+      "mcp_receipt": {
+        "state_hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+        "revision": 108,
+        "task_status": "done"
+      }
+    },
+    "reused_context": {
+      "tool": "pixl_review_context",
+      "route": "mcp pixl-local with result_path",
+      "arguments": {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "candidate_id": "artistic2.delivery.candidate",
+        "result_path": "work/asset-lineage/reused-context.json"
+      },
+      "result": {
+        "path": "work/asset-lineage/reused-context.json",
+        "sha256": "864a94a0299ddf656e1f2fdf41a34cd1f676cdcc5eae7ced90fde322daedbc51"
+      },
+      "mcp_receipt": {
+        "state_hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+        "revision": 108,
+        "task_status": "done"
+      }
+    },
+    "original_family": {
+      "tool": "pixl_family",
+      "route": "mcp pixl-local with result_path",
+      "arguments": {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "output": "family.delivery.output",
+        "result_path": "work/asset-lineage/original-family.json"
+      },
+      "result": {
+        "path": "work/asset-lineage/original-family.json",
+        "sha256": "5ab4a455cf3cafd54a229479a45e6a389fcdaf31474891aa71161f2bd1e48cdb"
+      }
+    },
+    "reused_family": {
+      "tool": "pixl_family",
+      "route": "mcp pixl-local with result_path",
+      "arguments": {
+        "path": ".pixl/assets/queue.ready/state.px",
+        "output": "artistic-02.delivery.output",
+        "result_path": "work/asset-lineage/reused-family.json"
+      },
+      "result": {
+        "path": "work/asset-lineage/reused-family.json",
+        "sha256": "a67093abeb9c83af78a0cea25f3a416210fc4629ec93c1c9d333b9ab82ddfcdf"
+      }
+    },
+    "plar_ready": {
+      "tool": "pixl_plar_read",
+      "route": "cli: installed pixl/scripts/pixl.py plar read --root <consumer> --path authoring-plar.txt --asset queue.ready (complete stdout redirected to result path)",
+      "arguments": {
+        "path": "authoring-plar.txt",
+        "asset_id": "queue.ready"
+      },
+      "mcp_attempt": {
+        "arguments_sent": {
+          "path": "authoring-plar.txt",
+          "asset_id": "queue.ready",
+          "result_path": "work/asset-lineage/plar-ready.json"
+        },
+        "error": {
+          "error": "input_schema",
+          "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+          "category": "invalid_authoring",
+          "recovery": {
+            "action": "correct_input",
+            "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+          },
+          "identity": {
+            "asset_id": "queue.ready",
+            "path": "authoring-plar.txt"
+          }
+        },
+        "reason": "The pixl_plar_read schema exposed to this session declares only asset_id, path, since; result_path is not advertised."
+      },
+      "result": {
+        "path": "work/asset-lineage/plar-ready.json",
+        "sha256": "6112c1d45d927cdc0121f9f4f27b1933d050279157da15e727ab153ac4f8aefa"
+      }
+    },
+    "plar_working": {
+      "tool": "pixl_plar_read",
+      "route": "cli: installed pixl/scripts/pixl.py plar read --root <consumer> --path authoring-plar.txt --asset queue.working (complete stdout redirected to result path)",
+      "arguments": {
+        "path": "authoring-plar.txt",
+        "asset_id": "queue.working"
+      },
+      "mcp_attempt": {
+        "arguments_sent": {
+          "path": "authoring-plar.txt",
+          "asset_id": "queue.working",
+          "result_path": "work/asset-lineage/plar-working.json"
+        },
+        "error": {
+          "error": "input_schema",
+          "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+          "category": "invalid_authoring",
+          "recovery": {
+            "action": "correct_input",
+            "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+          },
+          "identity": {
+            "asset_id": "queue.working",
+            "path": "authoring-plar.txt"
+          }
+        },
+        "reason": "The pixl_plar_read schema exposed to this session declares only asset_id, path, since; result_path is not advertised."
+      },
+      "result": {
+        "path": "work/asset-lineage/plar-working.json",
+        "sha256": "c37c15c1866d25c7eb8fed90bdbecbdcef8eaa880e689e6814a12e6d8f94e061"
+      }
+    },
+    "plar_retry": {
+      "tool": "pixl_plar_read",
+      "route": "cli: installed pixl/scripts/pixl.py plar read --root <consumer> --path authoring-plar.txt --asset queue.retry (complete stdout redirected to result path)",
+      "arguments": {
+        "path": "authoring-plar.txt",
+        "asset_id": "queue.retry"
+      },
+      "mcp_attempt": {
+        "arguments_sent": {
+          "path": "authoring-plar.txt",
+          "asset_id": "queue.retry",
+          "result_path": "work/asset-lineage/plar-retry.json"
+        },
+        "error": {
+          "error": "input_schema",
+          "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+          "category": "invalid_authoring",
+          "recovery": {
+            "action": "correct_input",
+            "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+          },
+          "identity": {
+            "asset_id": "queue.retry",
+            "path": "authoring-plar.txt"
+          }
+        },
+        "reason": "The pixl_plar_read schema exposed to this session declares only asset_id, path, since; result_path is not advertised."
+      },
+      "result": {
+        "path": "work/asset-lineage/plar-retry.json",
+        "sha256": "df3915acedc5312fb1dc656537d35f2f706dcc957e6cf53c5e53ce4aa6954522"
+      }
+    },
+    "plar_paused": {
+      "tool": "pixl_plar_read",
+      "route": "cli: installed pixl/scripts/pixl.py plar read --root <consumer> --path authoring-plar.txt --asset queue.paused (complete stdout redirected to result path)",
+      "arguments": {
+        "path": "authoring-plar.txt",
+        "asset_id": "queue.paused"
+      },
+      "mcp_attempt": {
+        "arguments_sent": {
+          "path": "authoring-plar.txt",
+          "asset_id": "queue.paused",
+          "result_path": "work/asset-lineage/plar-paused.json"
+        },
+        "error": {
+          "error": "input_schema",
+          "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+          "category": "invalid_authoring",
+          "recovery": {
+            "action": "correct_input",
+            "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+          },
+          "identity": {
+            "asset_id": "queue.paused",
+            "path": "authoring-plar.txt"
+          }
+        },
+        "reason": "The pixl_plar_read schema exposed to this session declares only asset_id, path, since; result_path is not advertised."
+      },
+      "result": {
+        "path": "work/asset-lineage/plar-paused.json",
+        "sha256": "2f80aea46ebd8d7429abb556b8db738722ca8d64fe14d237c9f2f8af021efc77"
+      }
+    },
+    "working_construction": {
+      "tool": "pixl_source",
+      "route": "cli: installed pixl/scripts/pixl.py source --root <consumer> --expect ... --start ... --end ... --budget ... <path> (complete stdout redirected to result path); the identical MCP pixl_source call was also made (no result_path advertised) and returned the same text, sha256 and bytes",
+      "arguments": {
+        "path": "work/live-family/working-animation-motion-01-construction.json",
+        "expect": "02abcdaf5cb257fc0d1f54791f2e798a06a472e3cdf0527d915cd780dc8f9e94",
+        "start": 1,
+        "end": 17,
+        "budget": 16384,
+        "scope": "project"
+      },
+      "mcp_return_fields_matched": {
+        "sha256": "02abcdaf5cb257fc0d1f54791f2e798a06a472e3cdf0527d915cd780dc8f9e94",
+        "bytes": 531,
+        "start": 1,
+        "end": 17
+      },
+      "result": {
+        "path": "work/asset-lineage/working-construction.json",
+        "sha256": "54fbb98f5d3c7ad29f491834c654903a0e8cacfc0723d37eba7381218d348c6d"
+      }
+    },
+    "ready_fixture": {
+      "tool": "pixl_source",
+      "route": "cli: installed pixl/scripts/pixl.py source --root <consumer> --expect ... --start ... --end ... --budget ... <path> (complete stdout redirected to result path); the identical MCP pixl_source call was also made (no result_path advertised) and returned the same text, sha256 and bytes",
+      "arguments": {
+        "path": ".pixl/assets/queue.ready/jobs/e7cc448003dc41409ef16591c3793a118859d4e9b4e5f44ff18be8ad07783922.json",
+        "expect": "e7cc448003dc41409ef16591c3793a118859d4e9b4e5f44ff18be8ad07783922",
+        "start": 1,
+        "end": 1,
+        "budget": 16384,
+        "scope": "project"
+      },
+      "mcp_return_fields_matched": {
+        "sha256": "e7cc448003dc41409ef16591c3793a118859d4e9b4e5f44ff18be8ad07783922",
+        "bytes": 9812,
+        "start": 1,
+        "end": 1
+      },
+      "result": {
+        "path": "work/asset-lineage/ready-fixture.json",
+        "sha256": "04709476a93d5237744fd75d825d86d4d3584356e9cbfdad5800b486af8b39cf"
+      }
+    }
+  },
+  "read_errors": [
+    {
+      "read": "plar_ready",
+      "tool": "pixl_plar_read",
+      "route": "mcp",
+      "error": {
+        "error": "input_schema",
+        "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+        "category": "invalid_authoring",
+        "recovery": {
+          "action": "correct_input",
+          "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+        },
+        "identity": {
+          "asset_id": "queue.ready",
+          "path": "authoring-plar.txt"
+        }
+      },
+      "recovered_by": "cli plar read stdout capture"
+    },
+    {
+      "read": "plar_working",
+      "tool": "pixl_plar_read",
+      "route": "mcp",
+      "error": {
+        "error": "input_schema",
+        "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+        "category": "invalid_authoring",
+        "recovery": {
+          "action": "correct_input",
+          "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+        },
+        "identity": {
+          "asset_id": "queue.working",
+          "path": "authoring-plar.txt"
+        }
+      },
+      "recovered_by": "cli plar read stdout capture"
+    },
+    {
+      "read": "plar_retry",
+      "tool": "pixl_plar_read",
+      "route": "mcp",
+      "error": {
+        "error": "input_schema",
+        "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+        "category": "invalid_authoring",
+        "recovery": {
+          "action": "correct_input",
+          "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+        },
+        "identity": {
+          "asset_id": "queue.retry",
+          "path": "authoring-plar.txt"
+        }
+      },
+      "recovered_by": "cli plar read stdout capture"
+    },
+    {
+      "read": "plar_paused",
+      "tool": "pixl_plar_read",
+      "route": "mcp",
+      "error": {
+        "error": "input_schema",
+        "detail": "input_schema: arguments violate inputSchema (additionalProperties)",
+        "category": "invalid_authoring",
+        "recovery": {
+          "action": "correct_input",
+          "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+        },
+        "identity": {
+          "asset_id": "queue.paused",
+          "path": "authoring-plar.txt"
+        }
+      },
+      "recovered_by": "cli plar read stdout capture"
+    }
+  ],
+  "comparison": {
+    "path": "work/asset-lineage/COMPARISON.json",
+    "sha256": "3fe5d88262d994face29a1319633ea5ed8c8ec84404b163ed184098e41222a1b"
+  },
+  "inspected_sources": [
+    {
+      "path": "work/asset-lineage-inputs/fixture.json",
+      "sha256": "5c9c2693632582ef6dfb3db1e1e945e43b0443e494c6e816885ca9ad782328ec"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/state.px",
+      "sha256": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+      "note": "PX2 revision 108; canonical state hash 88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64 (canonical_state_sha256 domain, distinct from file sha256)"
+    },
+    {
+      "path": "work/asset-lineage/COMPARISON.json",
+      "sha256": "3fe5d88262d994face29a1319633ea5ed8c8ec84404b163ed184098e41222a1b"
+    },
+    {
+      "path": "work/asset-lineage/original-context.json",
+      "sha256": "0154cf0ac91448729a74c1898ad831944f95eafa02c0dac9c85d9344d2a08614"
+    },
+    {
+      "path": "work/asset-lineage/reused-context.json",
+      "sha256": "864a94a0299ddf656e1f2fdf41a34cd1f676cdcc5eae7ced90fde322daedbc51"
+    },
+    {
+      "path": "work/asset-lineage/original-family.json",
+      "sha256": "5ab4a455cf3cafd54a229479a45e6a389fcdaf31474891aa71161f2bd1e48cdb"
+    },
+    {
+      "path": "work/asset-lineage/reused-family.json",
+      "sha256": "a67093abeb9c83af78a0cea25f3a416210fc4629ec93c1c9d333b9ab82ddfcdf"
+    },
+    {
+      "path": "work/asset-lineage/plar-ready.json",
+      "sha256": "6112c1d45d927cdc0121f9f4f27b1933d050279157da15e727ab153ac4f8aefa"
+    },
+    {
+      "path": "work/asset-lineage/plar-working.json",
+      "sha256": "c37c15c1866d25c7eb8fed90bdbecbdcef8eaa880e689e6814a12e6d8f94e061"
+    },
+    {
+      "path": "work/asset-lineage/plar-retry.json",
+      "sha256": "df3915acedc5312fb1dc656537d35f2f706dcc957e6cf53c5e53ce4aa6954522"
+    },
+    {
+      "path": "work/asset-lineage/plar-paused.json",
+      "sha256": "2f80aea46ebd8d7429abb556b8db738722ca8d64fe14d237c9f2f8af021efc77"
+    },
+    {
+      "path": "work/asset-lineage/working-construction.json",
+      "sha256": "54fbb98f5d3c7ad29f491834c654903a0e8cacfc0723d37eba7381218d348c6d"
+    },
+    {
+      "path": "work/asset-lineage/ready-fixture.json",
+      "sha256": "04709476a93d5237744fd75d825d86d4d3584356e9cbfdad5800b486af8b39cf"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/e7cc448003dc41409ef16591c3793a118859d4e9b4e5f44ff18be8ad07783922.json",
+      "sha256": "e7cc448003dc41409ef16591c3793a118859d4e9b4e5f44ff18be8ad07783922",
+      "note": "r.22e90a2a03fe453a.request; pixellab-test; controlled-create-0002; provider_simulated=true"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/5ba42107ae11f29a06afd9761b418e02767f5734b477c5aa6030cf9c2887743c.json",
+      "sha256": "5ba42107ae11f29a06afd9761b418e02767f5734b477c5aa6030cf9c2887743c",
+      "note": "live.working-seed.job; create_image_pro_flash; remote d2f044ef-a48f-4526-ad0b-f3c373ea16f4"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/bfe185a1a7c1d8001374b117cb903da934ce8cf4820772fc2477d918c0df643a.json",
+      "sha256": "bfe185a1a7c1d8001374b117cb903da934ce8cf4820772fc2477d918c0df643a",
+      "note": "live.working-animation-01.job; animate_image; remote 7fb6c786-322c-4ebd-847e-74f978ddfffa; imported 32615f3d... (rejected alternative)"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/b982e1e81cc34ceef5944159c078afd4d45f7215bd93fc8452782d0f72a60226.json",
+      "sha256": "b982e1e81cc34ceef5944159c078afd4d45f7215bd93fc8452782d0f72a60226",
+      "note": "live.working-animation-repair-01.job; pixelart_workbench edit upload:a266e48d...; 193 patch_pixels; remote 234cbedb-f890-4abb-af76-0032f18b46b5"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/42e54029b82111da019824b279b53fdfb14619720362525d43bec2eb95f72389.json",
+      "sha256": "42e54029b82111da019824b279b53fdfb14619720362525d43bec2eb95f72389",
+      "note": "live.working-animation-motion-01.job; pixelart_workbench edit 234cbedb...; 196 patch_pixels; remote e831a30a-a590-4874-b8c7-1ab04ab071dd"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/f3c4ef548d11058f4103f75c5bed853ca532844892e04d5ed6c7c00dc914f339.json",
+      "sha256": "f3c4ef548d11058f4103f75c5bed853ca532844892e04d5ed6c7c00dc914f339",
+      "note": "live.retry.job; create_image_pro_flash; remote 1eda2891-aaec-4170-b0c4-dcc7ec8fd422"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/4b5399fa7a514375970a792c8ef66a695058551084d087d6a88867fca963a877.json",
+      "sha256": "4b5399fa7a514375970a792c8ef66a695058551084d087d6a88867fca963a877",
+      "note": "live.paused-02.job; create_image_pro_flash no_background=false (magenta key); remote 6bf20949-23a3-46aa-9aa6-a205287e0468"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/833f779f2523cb74bffb9aa6400b4176ea8e00a81ef87c4740fbd2268ef9e387.json",
+      "sha256": "833f779f2523cb74bffb9aa6400b4176ea8e00a81ef87c4740fbd2268ef9e387",
+      "note": "live.paused-cutout-01.job; pixelart_workbench edit job:6bf20949...; 196 patch_pixels; remote 0ac629b8-6d1b-4d64-9997-caf01a911c4a"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/64b95db420e2d4b12c69333f8c74f5e749c4f1c814c7c960c34c472034c645d9.json",
+      "sha256": "64b95db420e2d4b12c69333f8c74f5e749c4f1c814c7c960c34c472034c645d9",
+      "note": "earlier retained state of live.working-animation-01.job"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/7fa4c03a18c14394f8458756688f4a55c69618e59db788b20541bac311c17268.json",
+      "sha256": "7fa4c03a18c14394f8458756688f4a55c69618e59db788b20541bac311c17268",
+      "note": "earlier retained state of live.working-animation-01.job"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/3315be987064815af9a8c4dc3eaf5814db86f76a4da960cb126d6eb8d08b1dc6.json",
+      "sha256": "3315be987064815af9a8c4dc3eaf5814db86f76a4da960cb126d6eb8d08b1dc6",
+      "note": "earlier retained state of live.working-animation-01.job"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/jobs/5ed8ef465a5c7541d3738f682672133d097efd2bc43f380316e9f2b7d7240441.json",
+      "sha256": "5ed8ef465a5c7541d3738f682672133d097efd2bc43f380316e9f2b7d7240441",
+      "note": "earlier retained state of live.working-animation-01.job"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7/manifest.json",
+      "sha256": "78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7",
+      "note": "live.family.candidate manifest; created_at 2026-11-08T12:56:09.430088+00:00"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/manifest.json",
+      "sha256": "1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211",
+      "note": "artistic2.delivery.candidate manifest; created_at 2026-11-10T02:57:58.493377+00:00"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7/files/0000.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7/files/0001.png",
+      "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7/files/0002.png",
+      "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/78d45b4dbeef06f376356e0bcbec8f8a8b09b034f999db7903369f22beaff0f7/files/0003.png",
+      "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/files/0000.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/files/0001.png",
+      "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/files/0002.png",
+      "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/deliveries/1060114444f6c41150cb3914098f920790b29d47458af5c3ab33c43910b3c211/files/0003.png",
+      "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc.png",
+      "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4.png",
+      "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92.png",
+      "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629.png",
+      "sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/16039251a58ae9658f790d8d8846d4d4ed62ae5736bd954948085499b618c95a.png",
+      "sha256": "16039251a58ae9658f790d8d8846d4d4ed62ae5736bd954948085499b618c95a",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/artifacts/bee419d2825c09f582dbb9639882ebf68629cc9205eb2dc4e7c01651ee0802aa.png",
+      "sha256": "bee419d2825c09f582dbb9639882ebf68629cc9205eb2dc4e7c01651ee0802aa",
+      "note": "artifact decoded with Pillow this session"
+    },
+    {
+      "path": "work/live-family/working-animation-motion-01-construction.json",
+      "sha256": "02abcdaf5cb257fc0d1f54791f2e798a06a472e3cdf0527d915cd780dc8f9e94",
+      "note": "fixture source_evidence.working_construction; 1206 lines / 20413 bytes; 196 changes"
+    },
+    {
+      "path": "work/live-family/working-strip-upload.json",
+      "sha256": "b4d6e41e67b3607fe3803a04b530986e29597794aa95b992766996b8d5dea1d8"
+    },
+    {
+      "path": "work/live-family/working-animation-01-assembly.json",
+      "sha256": "82dcafcec00bb1a49be051222f056dda840ca3d8d0b813c343b211ddc5eac1e1"
+    },
+    {
+      "path": "work/live-family/paused-failed-observation.json",
+      "sha256": "cc3bb7042a4da80b143f177f704836266f7c8bd14fdaa1fa6cc49e22d6252f72"
+    },
+    {
+      "path": "work/live-family/HANDOFF-current.json",
+      "sha256": "95ecf1d12c5ec8bedc21a38eba9f705640c59fbaf07ed90dba85da5688c996ab"
+    },
+    {
+      "path": "work/live-family/family-snapshot.json",
+      "sha256": "ea8711ceca5fdd0be5511b9dbbd533624f9b336fed6e5b113a19b7c43fc1a13d"
+    },
+    {
+      "path": "work/live-family/collective-review.json",
+      "sha256": "121b3b9b295498e72d444777d16414726e4e949def522ee5a4aa1ed78a148b8c"
+    },
+    {
+      "path": "work/live-family/working-seed-submitted-response.json",
+      "sha256": "ecb8cded878523ca868a3614ecf73eefbee5b9be9c2fa499d12a39ed55c18ad6",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-seed-succeeded-response.json",
+      "sha256": "2253a2f54399853fdfc986d99890f7a9f86724764b4b31e695a06285119cee0f",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-seed-download.png",
+      "sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-animation-repair-01-succeeded-response.json",
+      "sha256": "7fb1077b8f05251da5340d9b2a2ce932e9bb19249b7f84e21fd78da1a57fe54d",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-animation-repair-01.png",
+      "sha256": "bee419d2825c09f582dbb9639882ebf68629cc9205eb2dc4e7c01651ee0802aa",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-animation-motion-01-succeeded-response.json",
+      "sha256": "bdc4c2d115a719484f14cc2c038f5ecc4743e7e841a73ef24d94559dade19b56",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-animation-motion-01.png",
+      "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/retry-submitted-response.json",
+      "sha256": "5ee3ce0706032de45ab3e79ed8f83858f767eba3972d615c25a4b6ce5b6f0c35",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/retry-succeeded-response.json",
+      "sha256": "125ae38c3a58b0b204710f20147198071a8789eea3c185cd3973b255061461e6",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/retry-download.png",
+      "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-02-submitted-response.json",
+      "sha256": "9e35acd74aa0866aa479e0a0abf8a668a8a23edbe34921c26c85be444428971a",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-02-succeeded-response.json",
+      "sha256": "e4daa2c8e9024619444f9dc449190f6e5fa7f0569c56d9699765f95d6df0c63d",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-02-opaque.png",
+      "sha256": "16039251a58ae9658f790d8d8846d4d4ed62ae5736bd954948085499b618c95a",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-cutout-01-succeeded-response.json",
+      "sha256": "07adc7afedf992ad0c1e745d13436ddfa557e6994a1032bb715947ab7fb0a623",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-cutout-01.png",
+      "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/working-selection.json",
+      "sha256": "f6f07d6a89180a94d14cd8357294f1f70f3128471fddcc3680661cf41de19b69",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/retry-selection.json",
+      "sha256": "16045f21742eb987bd2652460620d910245b36ab6ccc12475f491c097de3bd73",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/live-family/paused-selection.json",
+      "sha256": "32453abbfd29a4f6648eac37b84b23657c8742e00efda43ff7b4df807872fc5d",
+      "note": "hash verified against journal/lineage citation; content not read",
+      "content_read": false
+    },
+    {
+      "path": ".pixl/assets/queue.ready/plans/22e90a2a03fe453ac366e736fdc18f134ac8bfc4083656df4505326f11a528a7.json",
+      "sha256": "b6f9ed78a83dd683385d3a5d111a100d4ead5e240a2741e5d669202339bc1dfa",
+      "note": "workflow input r.22e90a2a03fe453a.selection; hash verified; content not read",
+      "content_read": false
+    },
+    {
+      "path": ".pixl/assets/queue.ready/production-plans/0c4d49a3b5388c4880ef94cc94ea298fe9feea09c41490430050605dcbeb47c3.json",
+      "sha256": "0c4d49a3b5388c4880ef94cc94ea298fe9feea09c41490430050605dcbeb47c3",
+      "note": "artistic-02.plan; hash verified; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/queue.ready-revision/provider-response.json",
+      "sha256": "ed8b4a969011dfa969e850f9db7175cb3558b5d12482fe0a376e1a4adf2ed4d1",
+      "note": "cited by ready fixture journal; hash recorded only; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/queue.ready-revision/submission-comparison.json",
+      "sha256": "8957ed6df6e9adde809b09c29db7959d34762d5e823e9ccfa77ca0c37e689cc6",
+      "note": "cited by ready fixture journal; hash recorded only; content not read",
+      "content_read": false
+    },
+    {
+      "path": "work/artistic-revision/family-snapshot.json",
+      "sha256": "df5bb9936eca046e7516806043ae044ef5cf8b34b44a0640b1f9bc5054ba5dba"
+    },
+    {
+      "path": "work/artistic-revision/retained-failures.json",
+      "sha256": "0beaee68311d74f2ed186b61e5ba1c164b832e34829148a1dfbabf30800b224f"
+    },
+    {
+      "path": "work/artistic-revision/review-context-delivery.json",
+      "sha256": "f720f55c5f915854c5d78a5f901d9731e78e54dd12081aaa383e122596f16293"
+    },
+    {
+      "path": "work/artistic-revision/SPECIALIST-RESULT.json",
+      "sha256": "e65ee7d76927a5ea1226d56565f860fae35fb24767d5a3e6c2034a13a4222a4c"
+    },
+    {
+      "path": "assets/working.png",
+      "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+      "note": "consumer destination; hash equals delivered member"
+    },
+    {
+      "path": "assets/error-retry.png",
+      "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4",
+      "note": "consumer destination; hash equals delivered member"
+    },
+    {
+      "path": "assets/paused.png",
+      "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+      "note": "consumer destination; hash equals delivered member"
+    },
+    {
+      "path": "assets/ready-confirmed.png",
+      "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "note": "consumer destination; hash equals delivered member"
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/01069cda97ceb4b7e9df6ac4c749cde14973b735b6a702ea895c3dc25cf05a9e.px",
+      "sha256": "01069cda97ceb4b7e9df6ac4c749cde14973b735b6a702ea895c3dc25cf05a9e",
+      "note": "first @ready.retained record",
+      "revision": 10
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/f1eb01fd579d65262aa78f1e1c69533f55b36591e663510e4a8c824dbd506591.px",
+      "sha256": "f1eb01fd579d65262aa78f1e1c69533f55b36591e663510e4a8c824dbd506591",
+      "note": "first @live.retry.candidate",
+      "revision": 32
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/8122c6cc5363dae394d2d55ef0d757c52ae74c77432f019ac2293052f58ec429.px",
+      "sha256": "8122c6cc5363dae394d2d55ef0d757c52ae74c77432f019ac2293052f58ec429",
+      "note": "first @live.paused-cutout-01.candidate",
+      "revision": 61
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/fd0af5364d72e1c2e8338db0574782eb1c782a9f70a1524723ccd7d849e640c3.px",
+      "sha256": "fd0af5364d72e1c2e8338db0574782eb1c782a9f70a1524723ccd7d849e640c3",
+      "note": "first @live.working-animation-motion-01.candidate",
+      "revision": 67
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/49a7f5e9db8fb460349db8eef2b8485d0a56368915232f77bbcc98d7cf1348fc.px",
+      "sha256": "49a7f5e9db8fb460349db8eef2b8485d0a56368915232f77bbcc98d7cf1348fc",
+      "note": "first @live.family.candidate",
+      "revision": 80
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/07110fbe5dd6df111c2637ea00acee3a24af0e9614f9e99f4b369e8d9dbc718c.px",
+      "sha256": "07110fbe5dd6df111c2637ea00acee3a24af0e9614f9e99f4b369e8d9dbc718c",
+      "note": "first @artistic.(working|retry|paused).candidate (artistic-01, outside compared families)",
+      "revision": 92
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/35ba34976dab3eadacb780b11655295c1f3fae4b8bb903c7e9e0a737ce2faffa.px",
+      "sha256": "35ba34976dab3eadacb780b11655295c1f3fae4b8bb903c7e9e0a737ce2faffa",
+      "note": "first @artistic2.(working|retry|paused).candidate",
+      "revision": 95
+    },
+    {
+      "path": ".pixl/assets/queue.ready/history/724e3332ae84f76d2a714156e89782fea245d3a5fb5d710805be9f4a5402375c.px",
+      "sha256": "724e3332ae84f76d2a714156e89782fea245d3a5fb5d710805be9f4a5402375c",
+      "note": "first @artistic2.delivery.candidate",
+      "revision": 105
+    },
+    {
+      "path": "installed pixl/skills/pixl/SKILL.md",
+      "sha256": "31f2ccb3294f9ba4adc5eea96cc6f9c25f56182d157d170ddb778006643e3c42"
+    },
+    {
+      "path": "installed pixl/resources/agent/PROFILE.md",
+      "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265"
+    },
+    {
+      "path": "installed pixl/skills/pixl/references/family-delivery.md",
+      "sha256": "145922609e50cf50418499de649c7e41a0e762fb12f784502b2fe742480dc99b"
+    },
+    {
+      "path": "CURRENT-HANDOFF.md",
+      "sha256": "f3ff90cb8ec9b7fede8e14d09eadd59da6b690cb81c8d7c9301853cbba212aaf"
+    }
+  ],
+  "measurements_performed": {
+    "artifact_decode": {
+      "ready": {
+        "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+        "bytes": 210,
+        "size": [
+          16,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 227,
+          "255": 29
+        }
+      },
+      "working": {
+        "sha256": "cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc",
+        "bytes": 673,
+        "size": [
+          64,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 896,
+          "255": 128
+        }
+      },
+      "retry": {
+        "sha256": "0fb0ab5e486df874bb3d5abba70c5301945bc55fefb895f22eff8860c8b7e5e4",
+        "bytes": 329,
+        "size": [
+          16,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 202,
+          "255": 54
+        }
+      },
+      "paused": {
+        "sha256": "80d2b823cf1ad6f255987aebc990c184d4be0600b04c965258dfaa54a4f72d92",
+        "bytes": 546,
+        "size": [
+          16,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 196,
+          "255": 60
+        }
+      },
+      "seed": {
+        "sha256": "21f5baca68958eaa30d89fe9ec216e2b8dfc9e4a941f80b8a19fa0e712939629",
+        "bytes": 214,
+        "size": [
+          16,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 224,
+          "255": 32
+        }
+      },
+      "paused02": {
+        "sha256": "16039251a58ae9658f790d8d8846d4d4ed62ae5736bd954948085499b618c95a",
+        "bytes": 545,
+        "size": [
+          16,
+          16
+        ],
+        "alpha_histogram": {
+          "255": 256
+        }
+      },
+      "repair01": {
+        "sha256": "bee419d2825c09f582dbb9639882ebf68629cc9205eb2dc4e7c01651ee0802aa",
+        "bytes": 507,
+        "size": [
+          64,
+          16
+        ],
+        "alpha_histogram": {
+          "0": 906,
+          "255": 118
+        }
+      }
+    },
+    "working_rotation_check": {
+      "frame0": {
+        "clockwise_degrees": 0,
+        "visible_rgba_equal": true,
+        "full_rgba_equal": false,
+        "alpha_histogram": {
+          "0": 224,
+          "255": 32
+        }
+      },
+      "frame1": {
+        "clockwise_degrees": 90,
+        "visible_rgba_equal": true,
+        "full_rgba_equal": false,
+        "alpha_histogram": {
+          "0": 224,
+          "255": 32
+        }
+      },
+      "frame2": {
+        "clockwise_degrees": 180,
+        "visible_rgba_equal": true,
+        "full_rgba_equal": false,
+        "alpha_histogram": {
+          "0": 224,
+          "255": 32
+        }
+      },
+      "frame3": {
+        "clockwise_degrees": 270,
+        "visible_rgba_equal": true,
+        "full_rgba_equal": false,
+        "alpha_histogram": {
+          "0": 224,
+          "255": 32
+        }
+      }
+    },
+    "paused_cutout_check": {
+      "cutout_opaque_pixels": 60,
+      "cutout_transparent_pixels": 196,
+      "paused02_all_opaque": true,
+      "rgb_equal_where_cutout_alpha_gt_0": true,
+      "paused02_rgb_under_cutout_transparent_sample": [
+        [
+          218,
+          4,
+          229
+        ],
+        [
+          225,
+          2,
+          239
+        ],
+        [
+          229,
+          1,
+          225
+        ],
+        [
+          231,
+          2,
+          232
+        ],
+        [
+          232,
+          1,
+          247
+        ],
+        [
+          235,
+          1,
+          224
+        ]
+      ]
+    }
+  },
+  "production_unchanged": {
+    "claim": true,
+    "state_hash_at_every_read": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+    "revision_at_every_read": 108,
+    "validate_after_work": {
+      "cli": "pixl.py validate .pixl/assets/queue.ready/state.px",
+      "hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+      "revision": 108,
+      "matches": true
+    },
+    "files_modified_outside_work_asset_lineage_since_fixture": [
+      "installed pixl/runtime/pixl/__pycache__/assets.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/asset_lineage.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/catalog.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/cli.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/codec.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/delivery.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/entrypoint.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/families.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/graph.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/jobs.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/job_history.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/lifecycle.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/plar.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/plar_workflow.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/platform.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/readiness.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/retention.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/service.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/sources.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/store.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/__init__.cpython-314.pyc",
+      "installed pixl/runtime/pixl/__pycache__/__main__.cpython-314.pyc"
+    ],
+    "files_scanned": 4463,
+    "note": "Only files under work/asset-lineage were written. Pre-existing caller files there (caller-baseline-hashes.json, caller-original-context.json, caller-reused-context.json, caller_snapshot.py) were not touched."
+  },
+  "new_provider_execution": false,
+  "acceptance_created": false,
+  "mutations": "none (no commit, review, nomination, completion, handoff, settings, install or memory change)",
+  "limitations": [
+    "All provider observations (submitted/succeeded responses, remote IDs, download URLs) are caller-supplied files retained locally; their hashes were verified against the journals but no PixelLab service was contacted and nothing is remotely authenticated.",
+    "Lineage projections are bounded (truncated=true; limits jobs 32, depth 4, same_bytes 16, workflow_inputs 16); family-level (manifest) lineage lists only the Ready job; member detail was taken from pixl_family and PLAR production reads and the cited journals.",
+    "Unresolved references remain unknown: style upload 8be5bdc9-da49-43b7-8ef3-307a81defeba; edit base upload a266e48d-e9e5-43ad-ba45-08a6685ebfd7 (declared 64x16 single frame, no hash).",
+    "Pixel measurements (rotation, cutout) were performed in this session on the retained artifact bytes; they corroborate declared constructions and are not retained verdicts, acceptance, or proof of who executed the edits.",
+    "History revision order and timestamps come from locally retained PX2 revisions and host-clock values; they are consistent with the declared reuse but are not an authenticated timeline.",
+    "The artistic-01 same-byte candidates and their open/abandoned status were noted, not assessed.",
+    "No image was judged for artistic quality or destination behaviour; no criterion verdict is expressed or implied by this comparison.",
+    "pixl_plar_read rejected result_path through MCP (input_schema additionalProperties); those four reads were captured as complete CLI stdout. pixl_source advertises no result_path; the two excerpts were captured as complete CLI stdout and match the MCP returns (same sha256/bytes/text)."
+  ],
+  "next_action": "Caller re-verifies the listed refs and the key_claims against its own caller-*-context reads; no production action follows from this report. Unknown links (uploads 8be5bdc9..., a266e48d...; remote authenticity) remain unknown unless retained evidence is supplied; do not publish any record to resolve them."
+}

@@ -1,0 +1,297 @@
+"""TM-07: fresh native consumers execute the exact retained CF-03 queue family."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import io
+import json
+import shutil
+import subprocess
+import tarfile
+import tempfile
+import zipfile
+from pathlib import Path, PurePosixPath
+
+from evaluations import artistic_revision_case, readiness_case
+from evaluations.host_trials import inventory, sha, write_json
+from evaluations.native_trial_records import reference
+from evaluations.request_review_trials import ROOT, run
+from pixl import candidate_review, codec, delivery, store
+
+WORK = "work/consumer-execution"
+INPUTS = "work/consumer-execution-inputs"
+KIT = readiness_case.KIT
+RETAINED = ROOT / "evidence/artistic-revision/20261109/native/codex-01"
+STATE = ".pixl/assets/queue.ready/state.px"
+CANDIDATE = "artistic2.delivery.candidate"
+CONFIG = {
+    "version": 1,
+    "profile": "queue-motion-v1",
+    "modules": {"state": "src/queue.ts", "view": "src/queue-view-artistic.ts"},
+    "destinations": {
+        "r.22e90a2a03fe453a.output.ready": "assets/ready-confirmed.png",
+        "artistic-02.working.output": "assets/working.png",
+        "artistic-02.retry.output": "assets/error-retry.png",
+        "artistic-02.paused.output": "assets/paused.png",
+    },
+    "scales": [1, 3],
+    "observed_wraps": 2,
+    "phase_timeout_ms": 10000,
+    "hold_ms": 500,
+    "timeout_seconds": 90,
+}
+
+
+def _checked(name: str, data: bytes, expected: dict[str, str]) -> bytes:
+    path = PurePosixPath(name)
+    if path.is_absolute() or ".." in path.parts or "\\" in name or ":" in name:
+        raise ValueError("Historical entry escapes the consumer: " + name)
+    if hashlib.sha256(data).hexdigest() != expected.get(name):
+        raise ValueError("Historical entry changed: " + name)
+    return data
+
+
+def retained_project() -> tuple[dict[str, bytes], dict]:
+    """Reconstruct observed bytes, including the old kit, without making new state.
+
+    The original restoration helper verifies the predecessor archive. CF-03's
+    identity verifies its preparation additions, and the delta verifies its final
+    changes. Historical plugin bytes come from the recorded Git revision and must
+    match every recorded file digest; a nearby revision is never substituted.
+    """
+    identity = json.loads((RETAINED / "identity.json").read_bytes())
+    delta = json.loads((RETAINED / "consumer-delta.json").read_bytes())
+    with tempfile.TemporaryDirectory(prefix="pixl retained cf03 ") as temporary:
+        original_root = Path(temporary) / "original"
+        original = artistic_revision_case.restore_consumer(original_root, artistic_revision_case.ARCHIVE_MANIFEST)
+        files = {name: (original_root / name).read_bytes() for name in original["files"]}
+        baseline = {
+            "state.px": files[STATE],
+            "authoring-plar.txt": files["authoring-plar.txt"],
+            "specialist-proposal.json": files["work/focused-successor/specialist-proposal.json"],
+        }
+        # Recreate only a retained inventory's serialization, never .px records.
+        original_inventory = json.dumps(original["files"], indent=2, ensure_ascii=False) + "\n"
+        inventory_name = "work/artistic-revision-inputs/baseline/original-inputs.json"
+        baseline["original-inputs.json"] = next(
+            (value.encode("utf-8") for value in (original_inventory, original_inventory.replace("\n", "\r\n"))
+             if hashlib.sha256(value.encode("utf-8")).hexdigest() == identity["inputs"][inventory_name]), b"")
+    with zipfile.ZipFile(RETAINED / "consumer-entrypoints.zip") as archive:
+        entrypoints = {name: archive.read(name) for name in archive.namelist()}
+    archived_kit = subprocess.check_output(
+        ["git", "archive", "--format=tar", identity["source_revision"], "plugins/pixl"], cwd=ROOT)
+    with tarfile.open(fileobj=io.BytesIO(archived_kit)) as archive:
+        old_kit = {member.name.removeprefix("plugins/pixl/"): archive.extractfile(member).read()
+                   for member in archive.getmembers() if member.isfile()}
+    for name in identity["inputs"]:
+        if name in entrypoints:
+            data = entrypoints[name]
+        elif name.startswith(".agents/skills/artistic-revision-kit/"):
+            data = old_kit.get(name.removeprefix(".agents/skills/artistic-revision-kit/"), b"")
+        elif name.startswith("work/continuation/"):
+            data = (artistic_revision_case.CONTINUATION / name.removeprefix("work/continuation/")).read_bytes()
+        elif name.startswith("work/artistic-revision-inputs/contracts/"):
+            data = (artistic_revision_case.CONTRACTS / PurePosixPath(name).name).read_bytes()
+        elif name.startswith("work/artistic-revision-inputs/baseline/"):
+            data = baseline.get(PurePosixPath(name).name, b"")
+        else:
+            data = files.get(name, b"")
+        files[name] = _checked(name, data, identity["inputs"])
+    archive_path = RETAINED / "consumer-delta.zip"
+    if sha(archive_path) != delta["archive"]["sha256"]:
+        raise ValueError("Historical delta archive changed")
+    with zipfile.ZipFile(archive_path) as archive:
+        if len(archive.namelist()) != len(delta["files"]) or set(archive.namelist()) != set(delta["files"]):
+            raise ValueError("Historical delta inventory changed")
+        for name in delta["files"]:
+            files[name] = _checked(name, archive.read(name), delta["files"])
+    if delta["removed"]:
+        raise ValueError("This exact CF-03 closure unexpectedly removed original entries")
+    # Verify every source record, including preserved earlier plans, before writing.
+    document = codec.parse(files[STATE])
+    for record in document.records.values():
+        if record.kind == "S":
+            name = record.fields["ur"]
+            _checked(name, files.get(name, b""), {name: record.fields["dg"]})
+    provenance = {
+        "original": original,
+        "preparation_identity": reference(RETAINED / "identity.json"),
+        "delta_inventory": reference(RETAINED / "consumer-delta.json"),
+        "delta_archive": reference(archive_path),
+        "entrypoints_archive": reference(RETAINED / "consumer-entrypoints.zip"),
+        "historical_kit_revision": identity["source_revision"],
+        "historical_kit_files": identity["package_files"],
+        "historical_acceptance_report": reference(RETAINED / "outputs/CALLER-RESULT.json"),
+        "files": {name: hashlib.sha256(data).hexdigest() for name, data in sorted(files.items())},
+        "scope": "Exact observed CF-03 source/art/state restoration; no new production or acceptance.",
+    }
+    return files, provenance
+
+
+def historical_target(name: str) -> str:
+    """Keep old native registration and installed kits outside active discovery."""
+    if name.startswith((".agents/", ".codex/", ".claude/")) or name in ("AGENTS.md", "SESSION.md"):
+        return f"{INPUTS}/historical-host/{name}"
+    return name
+
+
+def prepare(destination: Path, host: str, python: Path, *, package: Path | None = None,
+            consumer: Path | None = None) -> Path:
+    files, provenance = retained_project()
+    consumer = readiness_case.prepare(destination, host, "clean", python, package=package, consumer=consumer)
+    destination, python = destination.resolve(), python.resolve()
+    moves = {}
+    for name, data in files.items():
+        target_name = historical_target(name)
+        target = consumer / target_name
+        if target.exists() and name != "BRIEF.md":
+            raise ValueError("Historical restore collides with current setup: " + target_name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        if target_name != name:
+            moves[name] = {"path": target_name, "sha256": provenance["files"][name]}
+    document = store.load(consumer / Path(STATE).parent)
+    context = candidate_review.context(document, consumer, CANDIDATE)
+    manifest = delivery._manifest(document, document.records[CANDIDATE], consumer)
+    if delivery._stale(document, document.records[CANDIDATE], manifest):
+        raise ValueError("The retained family candidate is no longer current")
+    if {row["output"] for row in context["members"]} != set(CONFIG["destinations"]):
+        raise ValueError("The exact retained family membership changed")
+    for member in context["members"]:
+        if sha(consumer / CONFIG["destinations"][member["output"]]) != member["sha256"]:
+            raise ValueError("A served asset differs from the retained family")
+    (consumer / WORK).mkdir(parents=True)
+    write_json(consumer / INPUTS / "config.json", CONFIG)
+    write_json(consumer / INPUTS / "review-context.json", context)
+    provenance.update(moved_inactive_host_files=moves, omitted_files=[], state=STATE, candidate=CANDIDATE)
+    write_json(consumer / INPUTS / "restoration.json", provenance)
+    guidance, assignment = instructions(consumer, host, python)
+    for name in ("AGENTS.md", "SESSION.md"):
+        (consumer / name).write_text(guidance, encoding="utf-8")
+    (consumer / "CONSUMER-EXECUTION.md").write_text(assignment, encoding="utf-8")
+    (destination / "prompt.txt").write_text(guidance + "\nComplete CONSUMER-EXECUTION.md.\n", encoding="utf-8")
+    launch = json.loads((destination / "launch.json").read_bytes())
+    launch.update(case="consumer-execution", artifact_roots=[WORK])
+    write_json(destination / "launch.json", launch)
+    identity = json.loads((destination / "identity.json").read_bytes())
+    identity.update(case="consumer-execution", inputs=inventory(consumer, ("__pycache__",)),
+                    restoration=provenance, baseline_state=reference(consumer / STATE),
+                    baseline_production=inventory(consumer / ".pixl"),
+                    config=reference(consumer / INPUTS / "config.json"),
+                    brief=reference(consumer / "BRIEF.md"), runner=reference(Path(__file__)))
+    write_json(destination / "identity.json", identity)
+    (destination / "runner.py.txt").rename(destination / "setup-runner.py.txt")
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+    return consumer
+
+
+def instructions(root: Path, host: str, python: Path) -> tuple[str, str]:
+    role = "pixl" if host == "codex" else "pixl:pixl"
+    kit = root / KIT
+    guidance = f'''Explicit TM-07 isolated consumer execution evaluation.
+Root: {root.as_posix()}; current kit: {kit.as_posix()}; Python: {python.as_posix()}.
+Follow CONSUMER-EXECUTION.md using the actual named {role} specialist.
+Historical assignments, host configuration and kits are retained evidence only.
+Keep all original source, art, production state, PLAR, installed kit and history unchanged.
+Add only reports under {WORK}. No provider calls, new art, package installation,
+production edits, reviews/verdicts, acceptance, configuration or memory edits.
+M1/M2 and broader M3 remain open. This is a fresh execution observation only.
+'''
+    assignment = f'''# Execute the retained queue consumer through the reusable operation
+
+The exact CF-03 final family, sources, art and production history have been restored
+from hash-verified durable archives. See {INPUTS}/restoration.json. Old host setup
+is retained inactive there; only the current installed kit is active. Historical
+acceptance remains historical. This task creates no artistic or delivery acceptance.
+
+Invoke one actual named `{role}` specialist (Codex agent_type="pixl", fork_turns="none")
+with this root and whole assignment. Retain its actual child identity. A generic
+substitute is not qualification. The specialist must load the current common skill
+{(kit / 'skills/pixl/SKILL.md').as_posix()}, its shared production profile and the
+consumer-execution workflow reference. Use the current kit's public operation.
+
+Specialist:
+1. Read {INPUTS}/config.json and {INPUTS}/review-context.json. Inspect current tool
+   schema or CLI help. Call pixl_consumer_execute with path="{STATE}",
+   candidate_id="{CANDIDATE}", config equal to the config JSON object,
+   out="{WORK}/execution-01". Optional node/browser paths must name actual local
+   executables. The frozen kit CLI `consumer-execute` is also a public route.
+   Save the complete actual returned JSON to {WORK}/execution-result.json; use
+   result_path when advertised, or retain exact CLI stdout/stderr. Do not manually
+   assemble renderer commands, change config, forge counts, or transcribe results.
+2. Consume the operation's structured status, checks/counts, identities, retained
+   report and cleanup outcome. Inspect actual returned PNGs with an available image
+   tool, including both 1x/3x views and normal/reduced/restored/initially-reduced
+   evidence. Clearly distinguish images actually viewed from timing measured by
+   the operation; do not claim subjective live playback from stills.
+3. Verify state/PLAR/source/art and previous history are unchanged. Write
+   {WORK}/SPECIALIST-RESULT.json with operation_result, execution_report and
+   viewed_images (exact path/sha256 references), observed_status, checks, limitations,
+   production_unchanged, acceptance_created=false and next_action. Missing capability
+   or failure is an honest incomplete result; retain it unchanged. If a real retry
+   is necessary, use a fresh output and record the reason and predecessor.
+
+Caller: wait for the same child, independently read its actual reports and compare
+the saved operation references/counts/hashes and unchanged production state. Inspect
+the complete compact execution-result.json through a successful file read. Inspect
+all four actual phase screenshots and the returned Working still PNGs in both
+consumers at 1x/3x using an image tool; the specialist must inspect these too.
+Do not rerun the operation merely
+to duplicate the specialist's observation. Write {WORK}/CALLER-RESULT.json with
+native_child, specialist_result, operation_result, execution_report, viewed_images,
+independent_checks, production_unchanged, acceptance_created=false, scope, limitations
+and next_action. References are {{"path":"consumer-relative/path","sha256":"actual hash"}}.
+Do not create candidate reviews, verdicts, nomination, completion or handoff.
+Keep M1/M2 and broader M3 open; next planned work is NF-08 then CF-10.
+'''
+    return guidance, assignment
+
+
+def retain(destination: Path) -> None:
+    """Retain observations and all unexpected changes without overwriting a run."""
+    if any((destination / name).exists() for name in ("outputs", "preservation.json", "unexpected-delta.zip")):
+        raise ValueError("Preserve prior retention; use a separate continuation record")
+    launch, identity = (json.loads((destination / name).read_bytes()) for name in ("launch.json", "identity.json"))
+    root = Path(launch["cwd"])
+    if (root / WORK).is_dir():
+        shutil.copytree(root / WORK, destination / "outputs")
+    current = inventory(root, ("__pycache__",))
+    changed = [name for name, digest in identity["inputs"].items() if current.get(name) != digest]
+    unexpected = [name for name in current if name in changed or
+                  name not in identity["inputs"] and not name.startswith(WORK + "/")]
+    if unexpected:
+        with zipfile.ZipFile(destination / "unexpected-delta.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+            for name in unexpected:
+                archive.write(root / name, name)
+    write_json(destination / "preservation.json", {
+        "changed": changed, "removed": [name for name in identity["inputs"] if name not in current],
+        "new": {name: digest for name, digest in current.items() if name not in identity["inputs"]},
+        "production_unchanged": inventory(root / ".pixl") == identity["baseline_production"],
+        "scope": "Observed preservation and outputs; no behavioral or artistic acceptance inferred.",
+    })
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="action", required=True)
+    prep = sub.add_parser("prepare")
+    prep.add_argument("destination", type=Path)
+    prep.add_argument("--host", choices=("codex", "claude"), required=True)
+    prep.add_argument("--python", type=Path, default=readiness_case.DEFAULT_PYTHON)
+    prep.add_argument("--package", type=Path)
+    prep.add_argument("--consumer", type=Path)
+    execute = sub.add_parser("run")
+    execute.add_argument("destination", type=Path)
+    execute.add_argument("--timeout", type=float, default=900)
+    args = parser.parse_args()
+    if args.action == "prepare":
+        consumer = prepare(args.destination, args.host, args.python, package=args.package, consumer=args.consumer)
+        print(json.dumps({"consumer": str(consumer), "launched": False}))
+    else:
+        run(args.destination.resolve(), timeout=args.timeout)
+        retain(args.destination.resolve())
+
+
+if __name__ == "__main__":
+    main()

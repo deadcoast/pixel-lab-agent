@@ -53,7 +53,9 @@ def build(project, capture, context, renderer, destinations):
         raise ValueError("Capture config and explicit destination map disagree")
     manifest_ref=ref(child(project,review["candidate_file"]["path"]),review["candidate_file"]["sha256"])
     manifest=json.loads((project / manifest_ref["path"]).read_bytes())
-    if manifest["candidate"] != review["candidate"] or manifest["files"] != [{k:v for k,v in row.items() if k != "retained_path"} for row in review["members"]]:
+    # Only explicit context presentation fields are excluded. Unknown extras
+    # remain in the comparison so they cannot replace immutable member identity.
+    if manifest["candidate"] != review["candidate"] or manifest["files"] != [{k:v for k,v in row.items() if k not in {"retained_path", "lineage"}} for row in review["members"]]:
         raise ValueError("Review context and exact manifest disagree")
     members={row["output"]:row for row in manifest["files"]}
     if set(mapping) != set(members):

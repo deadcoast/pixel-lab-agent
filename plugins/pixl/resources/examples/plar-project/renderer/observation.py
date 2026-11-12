@@ -46,8 +46,10 @@ def build(project: Path, capture: Path, context: Path, renderer: Path,
         raise ValueError("Capture was produced for a different project")
     manifest_ref = ref(project / review["candidate_file"]["path"], review["candidate_file"]["sha256"])
     manifest = json.loads((project / manifest_ref["path"]).read_bytes())
+    # Review context adds presentation fields; every immutable manifest field
+    # (and any unrecognized extra) must still participate in the exact comparison.
     if manifest["candidate"] != review["candidate"] or manifest["files"] != [
-        {k: v for k, v in row.items() if k != "retained_path"} for row in review["members"]
+        {k: v for k, v in row.items() if k not in {"retained_path", "lineage"}} for row in review["members"]
     ]:
         raise ValueError("Review context and exact candidate manifest disagree")
     members = {row["output"]: row for row in manifest["files"]}

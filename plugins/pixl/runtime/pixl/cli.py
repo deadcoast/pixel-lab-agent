@@ -78,7 +78,7 @@ def parser():
     q = sub.add_parser("workflow")
     q.add_argument("path")
     q.add_argument("--root")
-    q = sub.add_parser("review-context", help="Read exact candidate/family criteria, bindings and current acceptance.")
+    q = sub.add_parser("review-context", help="Read exact candidate/family criteria, lineage, bindings and current acceptance.")
     q.add_argument("path")
     q.add_argument("candidate")
     q.add_argument("--root", required=True)
@@ -127,7 +127,7 @@ def parser():
     q.add_argument("--expect", required=True)
     q.add_argument("--root")
     q = sub.add_parser(
-        "family", help="Read family selection and retained delivery status."
+        "family", help="Read family selection, member lineage and retained delivery status."
     )
     q.add_argument("path")
     q.add_argument("output", nargs="?")
