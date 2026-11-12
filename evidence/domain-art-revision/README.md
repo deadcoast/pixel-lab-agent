@@ -1,29 +1,34 @@
 # CF-09: useful actual-art revision
 
-**Active; actual animation production and revision remain open.** The selected
-[robot-idle assignment](CF-09-ROBOT-IDLE.md) extends the accepted CF-10 East with
-a calm, planted cyan-panel pulse. Preparation preserves the accepted static
-family and gives the new motion its own explicit source authority and destination.
-No new animation or useful artistic correction is claimed yet.
+**Bounded CF-09 actual-animation revision is complete.** The [robot-idle assignment](CF-09-ROBOT-IDLE.md) has a genuine generated failure, exact official correction, independent specialist/caller acceptance and current reusable delivery. Human acceptance is not recorded; M1/M2 and broader M3/M4 remain open.
 
-## Current access condition
+## Actual production and correction
 
-On 2026-11-12, free checks through the existing
-[Codex registration](20261112/access/codex-01/receipt.json) and
-[Claude registration](20261112/access/claude-01/receipt.json) both returned
-`401 Invalid API token` for `get_balance`. Initialization and discovery of 138
-tools succeeded. These are direct read-only probes using those registrations,
-not new native caller/child trials. The current desktop connection also returned
-401 for the specialist's free `search_help` call; that observation is in the
-development conversation, not a separately retained raw provider receipt. A
-[fresh Codex registration recheck](20261112/access/codex-02/receipt.json) at
-21:31 UTC still returns 401; the observed tool inventory is byte-identical.
+The user supplied refreshed credentials. Existing Codex/Claude host registrations and the Windows user environment were updated outside the repository; [both fresh free probes pass](20261112/access/codex-03/receipt.json) ([Claude](20261112/access/claude-02/receipt.json)). The already-open desktop connection retained its old token, so this evaluation used a fresh official MCP connection. The live inventory grew to 153 tools, but the [affected animation schema is unchanged](20261112/production-01/schema-check.json). No credential is retained in evidence.
 
-No paid call, upload, generation or remote edit occurred. No credentials are in
-the evidence. Tool discovery supplies the exact observed `animate_image` schema;
-it does not establish authenticated execution or account entitlement. A credential
-refresh in the user's MCP configuration is needed before official production can
-continue. This is a technical dependency, not a human-acceptance gate.
+The **same prepared request** was dispatched once: job `d7180b0b-c77a-4148-9dcd-0917439df9b5`, one charged generation. The [actual result](20261112/production-01/result-03.json) returned five frames: index 0 is reused input; indices 1–4 are provider returns, with index 4 matching the supplied endpoint. [Exact downloaded identities](20261112/production-01/returned-inventory.json) preserve this distinction.
+
+The [independent raw review](20261112/production-01/specialist-raw-review.json) rejects genuine middle-frame failures: the post/body squash and drift, cyan moves sideways instead of contracting about its center, and frame 2 narrows the contact footprint. The unchanged source was not retroactively called defective. The [raw consumer check](20261112/production-01/raw-check-01.json) passes mechanically, which does not erase those artistic failures.
+
+One [official deterministic workbench edit](20261112/production-01/workbench-edit.json) applies guarded changes to 42/77/14 pixels in frames 1/2/3. It preserves endpoints and every already-correct pixel. Edited image `b13d0eb4-14e7-4b4d-9a0d-712e8fc56625` derives from the inspected actual provider frames. The cyan panel now uses heights 15/11/5/11/15 about the same vertical center; shortened portions remain opaque navy. These extents are a scoped specialist decision, not a universal art rule. The synchronous edit has actual request/response and candidate lineage; no earlier durable job claim was made for that edit and none is backfilled.
+
+The provider exported a 96×64 grid. An initial horizontal-strip assumption [failed before extracting any frame](20261112/production-01/extraction-layout-failure.json); the original download/script remain. The corrected extractor uses the observed three-column grid, verifies all 5,120 RGBA pixels against the guarded request and retains the original endpoint bytes. [Final identities](20261112/production-01/corrected-inventory.json) distinguish official editing from lossless local packaging.
+
+Before and after use the **same** authored `[800,120,160,120,400]` ms timing, `[16,28]` pivot, `[24,34]` anchor and 48×40 viewport. Both [raw](20261112/production-01/raw-capture-01/capture.json) and [corrected](20261112/production-01/corrected-capture-01/capture.json) browser observations record two wraps at 1× and 3×, all five frames and zero skipped transitions. Each independent check passes 42 pixel, 14 source and 388 clock checks. The [final specialist review](20261112/production-01/specialist-final-review.json) passes R1–R7; the [development caller review](20261112/production-01/caller-art-review.json) independently accepts all 22 literal criteria and verifies ten unchanged source/static files. The reviews use actual native/enlarged art and sampled playback plus recorded timing; they do not claim direct continuous human viewing or a new recorded native-host qualification.
+
+## Final delivery and fresh verification
+
+The [public family execution](20261112/production-01/family-execution-01/result.json) passes **42 pixel, 14 source and 387 clock checks**, with two wraps and zero skipped transitions at each scale. All ten final rendered samples match the independently reviewed samples. The [literal family review](20261112/production-01/family-semantic-review.json) checks all 17 member and four collective criteria without weakening the assignment.
+
+The [caller delivery review](20261112/production-01/caller-delivery-review.json) independently rereads current focused PLAR and verifies all 16 handoff artifact/report/evidence references. [Current handoff](20261112/production-01/final-handoff-caller.json): **delivered**, current selection, done collective task and **zero pending jobs**. Canonical state revision **50**, hash `ccdb1ec4e6f053cc55fd6f109ef467933f62cd27205d2cbbcb87a0b64eb941b7`. [Delivery manifest](20261112/production-01/delivery-manifest.json) SHA-256 `63c8d87ec15dab6db7c548a5b6eb3bc4d6090613c5c0302614c948bf2ac47128`. Raw imports/failure verdicts, official edit lineage, accepted successors and historical source authority remain retained.
+
+The [complete consumer archive](20261112/production-01/consumer-final.zip), [inventory](20261112/production-01/consumer-final-inventory.json), [integration summary](20261112/production-01/integration-summary.json) and [fresh audit](20261112/production-01/final-audit.json) preserve a resumable handoff. The audit checks exact pixels/provenance, original sources, before/after execution, failed candidates, artifact references, documentation links, the 50 finding/backlog IDs and credential absence. Runtime/profile/spec inputs match the prior verified source set; the full suite was not rerun for this evidence/documentation continuation. The earlier 1,231-test verification below remains a retained preparation result.
+
+The local wrong-store-path attempt, grid-layout extraction assumption, unsaved reviewer ID and incompatible review-observation type remain recorded. They caused no duplicate generation or fabricated successful review. Their corrected operations are explicit in the consumer archive. One synchronous official edit was retained through honest candidate provenance without retroactively inventing a dispatch claim. The [first audit](20261112/production-01/audit-run-01.json) rejected its own not-yet-written report link; the [corrected run](20261112/production-01/audit-run-02.json) permits only that exact fresh self-reference and passes. Both helper versions and runs remain retained.
+
+## Retained access failures and preparation
+
+Before credential refresh, [Codex](20261112/access/codex-01/receipt.json), [Claude](20261112/access/claude-01/receipt.json) and the [later Codex recheck](20261112/access/codex-02/receipt.json) returned `401 Invalid API token` on free operations. Tool discovery alone did not establish execution. Those failed receipts and the following preparation checkpoint remain historical evidence; they are not the current access state.
 
 ## Assignment and source review
 
@@ -43,7 +48,7 @@ generated-art failures.
 
 The original directional brief remains unchanged. The new addendum owns the
 five-frame sequence, unequal durations, fixed pivot/anchor and 1×/3× consumer.
-The future images remain absent until actual outputs exist. The static-baseline
+At preparation, future image paths stayed absent until actual outputs existed. The static-baseline
 adapter repeats the exact old East for comparison; it is not a failed animation.
 
 The [initial request comparison](20261112/preparation-01/request-review-01.json)
@@ -95,7 +100,7 @@ source identity and the new adapter's timing over unchanged pixels. They do not
 establish motion quality or CF-09 acceptance. Browser, server and temporary
 profile cleanup all completed.
 
-The [full verifier](../verification-runs/20261112T213958.037642Z/result.json)
+The retained pre-production [full verifier](../verification-runs/20261112T213958.037642Z/result.json)
 passes **1,231 tests plus one existing Windows symlink-privilege skip (1,232 run)**,
 all **39 reference checks**, and fresh distribution checks. There are **19 new
 tests** relative to TM-08: four source-preservation preparation checks and fifteen
@@ -118,39 +123,17 @@ They remain untouched; the code, consumer and verification are unaffected.
 
 ## Required A–E review
 
-**A — Improve the operation:** reuse five separate PNG outputs under one public
-task and the existing sprite consumer. Explicit preparation focus fixes the
-observed ordinary revision/resume gap without inventing a delivery output. No
-atlas or new renderer is needed. Keep the prepared request distinct from an actual
-submission and retain exact inputs so access recovery needs no reconstruction.
+**A — Improve the complete operation:** one retained request now reaches actual art, observed failure, exact correction and same-consumer comparison. Explicit preparation focus remains the earlier usability fix. The provider grid-layout mistake and typed review-input failures remain diagnostic evidence; no new runtime behavior was needed for the artistic repair.
 
-**B — Host compatibility:** both existing native-host registrations currently
-fail the free authenticated operation, despite successful tool discovery. No
-new native qualification or general host-reliability result follows. Refresh
-access and use the retained prepared work; do not infer a submitted remote job.
+**B — Codex/Claude compatibility:** fresh free checks pass using both updated host registrations. This actual production used a fresh official MCP transport and an explicit PIXL development specialist, not new recorded Codex/Claude caller trials. Broader host reliability and earlier conformance gaps remain open.
 
-**C — Context and artistic quality:** preserve the accepted robot and choose a
-motion suited to its actual visible construction. Source-linked anchor, timing
-and silhouette methods support inspection decisions; they do not prescribe this
-assignment's geometry or supply an art verdict. The
-[decision-linked review](20261112/preparation-01/art-planning-review.json) names
-the exact retrieved methods/source ranges and rejects an unrelated translated,
-blurred CSS pulse. This is TM-09 planning evidence; output benefit is unverified.
-The old static asset is not
-retroactively defective because the new assignment requests motion.
+**C — Context and artistic quality:** the robot's actual visible construction leads to a panel pulse, not invented anatomy or body breathing. Native/light enlargement and the same actual consumer reveal the original failures and the successor's improvement. The prior [decision-linked planning](20261112/preparation-01/art-planning-review.json) retains source ranges for anchor/timing/silhouette methods; TM-09's broader decision-retrieval qualification remains separate.
 
-**D — Another project's operation:** the prepared consumer contains its actual
-source, exact assets, new authority and executable baseline. Future frame paths
-and production/destination reviews remain open. A working baseline is useful
-preparation, not a complete animation handoff.
+**D — Another project's operation:** the retained consumer preserves historical sources/static directions and now serves the actual corrected full-size frames under its unchanged authored timing and placement. Public family/execution/handoff receipts supply their own final publication evidence; renderer success alone is not art acceptance.
 
-**E — Responsibilities:** the development assignment supplies scope; the explicit
-PIXL evaluation supplies artistic planning; existing public runtime operations
-retain request/state; official PixelLab supplies future provider output; the
-consumer supplies observations; specialist/caller review judges the result.
-Human acceptance stays separately unrecorded.
+**E — Responsibilities:** the assignment owns intent; PIXL judges and authors exact corrections; the official service generates and edits pixels; the runtime preserves state/lineage; the browser supplies actual destination observations; specialist and caller judge their scoped result. Human acceptance is separately unrecorded. Credentials stay in host-local configuration, outside artifacts.
 
-## Continue
+## Retained continuation before credential refresh
 
 After the connection is refreshed, repeat a free access check in a fresh evidence
 directory and compare the affected current tool schema. Reread the prepared
@@ -168,6 +151,10 @@ Compare the original and successor in the same declared destination. If the firs
 result succeeds, retain that success without inventing a defect or claiming the
 repair criterion passed.
 
-CF-09 stays active in [TODO](../../TODO.md), within the current
+At that preparation checkpoint CF-09 stayed active in [TODO](../../TODO.md), within the current
 [PLAN](../../PLAN.md). M1/M2 and broader M3/M4 remain open. Human acceptance is
-separate; no new IDENTIFY cycle or milestone closure follows from preparation.
+separate; no new IDENTIFY cycle or milestone closure followed from preparation.
+
+## Current continuation
+
+CF-09 is bounded complete in [TODO](../../TODO.md). Next eligible is **TM-09 — knowledge retrieval tied to decisions**, from [SHELVED](../../SHELVED.md), using this actual outcome to assess concrete decision support without expanding its authority. Reopen current PLAR/handoff from the final archive when continuing; do not dispatch the old prepared request again. Human acceptance, M1/M2 and broader M3/M4 remain open. Continue the active PLAN; no new IDENTIFY cycle follows this bounded result.

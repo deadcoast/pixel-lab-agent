@@ -1,0 +1,31 @@
+"""Retrieve exact completed CF09 frames and make inspection-only views."""
+import hashlib, json, pathlib, urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
+
+root=pathlib.Path(__file__).resolve().parent
+out=root/'returned'; out.mkdir(exist_ok=False)
+job='d7180b0b-c77a-4148-9dcd-0917439df9b5'
+record=json.loads((root/'result-03.json').read_bytes())
+assert any('status: completed' in c.get('text','') and job in c.get('text','') for c in record['response']['result']['content'])
+def fetch(i):
+    url=f'https://api.pixellab.ai/mcp/images/{job}/download?index={i}'
+    with urllib.request.urlopen(url, timeout=45) as response: data=response.read()
+    p=out/f'east-{i}.png'; p.write_bytes(data)
+    im=Image.open(p); im.load(); assert im.format=='PNG' and im.size==(32,32)
+    return {'index':i,'path':str(p),'url':url,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'origin':'reused input' if i==0 else 'provider generated'}
+with ThreadPoolExecutor(max_workers=5) as pool: files=list(pool.map(fetch,range(5)))
+frames=[Image.open(out/f'east-{i}.png').convert('RGBA') for i in range(5)]
+ref=Image.open(root.parents[3]/'build/cf09-robot-idle-01/consumer/assets/robot/east.png').convert('RGBA')
+for i,im in enumerate(frames):
+    files[i]['rgba_equal_to_input']=im.tobytes()==ref.tobytes()
+    files[i]['changed_pixels_from_input']=sum(a!=b for a,b in zip(im.getdata(),ref.getdata()))
+    files[i]['alpha_mask_changed_pixels']=sum((a[3]>0)!=(b[3]>0) for a,b in zip(im.getdata(),ref.getdata()))
+    files[i]['opaque_bbox']=im.getbbox()
+assert files[0]['rgba_equal_to_input']
+for scale in (1,8):
+    sheet=Image.new('RGBA',(32*5*scale,32*scale),'#e7e7e7')
+    for i,im in enumerate(frames): sheet.alpha_composite(im.resize((32*scale,32*scale),Image.Resampling.NEAREST),(i*32*scale,0))
+    sheet.convert('RGB').save(out/f'inspection-light-{scale}x.png')
+(root/'returned-inventory.json').write_text(json.dumps({'job_id':job,'provider_frame_count':5,'frames':files,'inspection_views_not_deliverables':True},indent=2)+'\n',encoding='utf-8')
+print(json.dumps(files))

@@ -1,0 +1,22 @@
+"""Author guarded official edits; produces arguments, never image outputs."""
+import json, pathlib
+from PIL import Image
+p=pathlib.Path(__file__).resolve().parent
+ref=Image.open(p/'returned/east-0.png').convert('RGBA')
+changes=[]
+rgba=lambda c:'#'+''.join(f'{v:02x}' for v in c)
+for i,lo,hi in [(1,13,23),(2,16,20),(3,13,23)]:
+    source=Image.open(p/f'returned/east-{i}.png').convert('RGBA')
+    pixels=[]
+    for y in range(32):
+        for x in range(32):
+            expected=source.getpixel((x,y)); target=ref.getpixel((x,y))
+            if x==21 and 11<=y<=25 and not lo<=y<=hi: target=(37,53,74,255)
+            if expected!=target: pixels.append([x,y,rgba(expected),rgba(target)])
+    changes.append({'operation':'patch_pixels','layer':'image','frames':[i+1],
+        'reason':f'Observed frame {i} distorts rigid body/post/contact and drifts cyan. Restore exact reference silhouette; keep only centered cyan y{lo}..{hi}, shortened parts opaque navy. Preserve every matching pixel and endpoints.',
+        'pixels':pixels})
+args={'argv':['edit','01e5a451-2b3b-4249-b710-348c267a0ec9','--changes',json.dumps(changes)],'mode':'high',
+    'notes':'Actual native/enlarged frames and same-destination playback samples show middle-frame body/post and cyan drift. Independent PIXL review agrees: edit only failed frames1-3 with guarded 42/77/14-pixel changes, keep0/4 intact. Center panel at y18, 15/11/5/11/15 visible pixels over authored timing. Region inspect confirms #25354a00 transparent guards. This is exact deterministic repair of actual generated frames, not new generation or local invented provider output.'}
+(p/'workbench-edit-args.json').write_text(json.dumps(args,indent=2)+'\n',encoding='utf-8')
+print({'patch_counts':[len(c['pixels']) for c in changes]})

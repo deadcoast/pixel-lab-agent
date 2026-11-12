@@ -1,0 +1,41 @@
+"""Unpack observed 3-column provider grid; independently verify every output pixel."""
+import hashlib,json,pathlib,shutil
+from PIL import Image
+p=pathlib.Path(__file__).resolve().parent
+out=p/'corrected-02';out.mkdir(exist_ok=False)
+sheet_path=p/'corrected/provider-frames.png'
+sheet=Image.open(sheet_path).convert('RGBA');assert sheet.size==(96,64)
+ref=Image.open(p/'returned/east-0.png').convert('RGBA')
+files=[];cells=[]
+for i in range(6):
+    x,y=(i%3)*32,(i//3)*32
+    im=sheet.crop((x,y,x+32,y+32));cells.append(im)
+    if i==5:
+        assert not im.getchannel('A').getbbox(), 'Trailing cell is only padding'
+        continue
+    raw=Image.open(p/f'returned/east-{i}.png').convert('RGBA')
+    for yy in range(32):
+        for xx in range(32):
+            expected=ref.getpixel((xx,yy))
+            if i in (1,2,3) and xx==21 and 11<=yy<=25:
+                lo,hi=(16,20) if i==2 else (13,23)
+                if not lo<=yy<=hi: expected=(37,53,74,255)
+            actual=im.getpixel((xx,yy))
+            assert actual==expected,(i,xx,yy,actual,expected)
+    target=out/f'east-{i}.png'
+    if i in (0,4): shutil.copyfile(p/f'returned/east-{i}.png',target)
+    else: im.save(target)
+    files.append({'index':i,'path':str(target),'sheet_cell':[x,y,32,32],
+        'sha256':hashlib.sha256(target.read_bytes()).hexdigest(),
+        'origin':'unchanged original provider endpoint bytes' if i in (0,4) else 'lossless extraction from official edited sheet',
+        'rgba_changed_from_raw':sum(a!=b for a,b in zip(im.getdata(),raw.getdata())),
+        'alpha_mask_changes_from_input':sum((a[3]>0)!=(b[3]>0) for a,b in zip(im.getdata(),ref.getdata()))})
+for scale in (1,8):
+    canvas=Image.new('RGBA',(160*scale,32*scale),'#e7e7e7')
+    for i,im in enumerate(cells[:5]): canvas.alpha_composite(im.resize((32*scale,32*scale),Image.Resampling.NEAREST),(i*32*scale,0))
+    canvas.convert('RGB').save(out/f'inspection-light-{scale}x.png')
+(p/'corrected-inventory.json').write_text(json.dumps({'provider_image_id':'b13d0eb4-14e7-4b4d-9a0d-712e8fc56625',
+    'provider_sheet':'corrected/provider-frames.png','provider_sheet_sha256':hashlib.sha256(sheet_path.read_bytes()).hexdigest(),
+    'provider_sheet_size':sheet.size,'extraction':'Observed row-major 3-column grid; 5 exact32x32 cells and transparent padding sixth; no pixel edits/resizing/trimming. All5120 pixels verified against actual request. Endpoints retain original bytes.',
+    'frames':files},indent=2)+'\n',encoding='utf-8')
+print(json.dumps(files))

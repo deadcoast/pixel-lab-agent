@@ -1,0 +1,36 @@
+"""Download official edited sheet; losslessly unpack its five cells without pixel edits."""
+import hashlib,json,pathlib,urllib.request
+from PIL import Image
+p=pathlib.Path(__file__).resolve().parent
+out=p/'corrected';out.mkdir(exist_ok=False)
+image_id='b13d0eb4-14e7-4b4d-9a0d-712e8fc56625'
+url=f'https://api.pixellab.ai/mcp/pixel-tools/{image_id}/frames.png'
+with urllib.request.urlopen(url,timeout=45) as r: data=r.read()
+(out/'provider-frames.png').write_bytes(data)
+sheet=Image.open(out/'provider-frames.png').convert('RGBA')
+assert sheet.size==(160,32),sheet.size
+ref=Image.open(p/'returned/east-0.png').convert('RGBA')
+files=[]
+for i in range(5):
+    im=sheet.crop((i*32,0,(i+1)*32,32)); target=out/f'east-{i}.png';im.save(target)
+    raw=Image.open(p/f'returned/east-{i}.png').convert('RGBA')
+    for y in range(32):
+        for x in range(32):
+            expected=ref.getpixel((x,y))
+            if i in (1,2,3) and x==21 and 11<=y<=25:
+                lo,hi=(16,20) if i==2 else (13,23)
+                if not lo<=y<=hi: expected=(37,53,74,255)
+            assert im.getpixel((x,y))==expected,(i,x,y)
+    files.append({'index':i,'path':str(target),'sha256':hashlib.sha256(target.read_bytes()).hexdigest(),
+        'origin':'lossless cell extraction of official deterministic edited sheet',
+        'rgba_changed_from_raw':sum(a!=b for a,b in zip(im.getdata(),raw.getdata())),
+        'alpha_mask_changes_from_input':sum((a[3]>0)!=(b[3]>0) for a,b in zip(im.getdata(),ref.getdata()))})
+for scale in (1,8):
+    canvas=Image.new('RGBA',(160*scale,32*scale),'#e7e7e7')
+    canvas.alpha_composite(sheet.resize(canvas.size,Image.Resampling.NEAREST))
+    canvas.convert('RGB').save(out/f'inspection-light-{scale}x.png')
+(p/'corrected-inventory.json').write_text(json.dumps({'provider_image_id':image_id,'download':url,
+    'provider_sheet_sha256':hashlib.sha256(data).hexdigest(),'provider_sheet_size':sheet.size,
+    'extraction':'Five horizontal 32x32 cells in provider order; no pixel edits, resizing or trimming',
+    'frames':files},indent=2)+'\n',encoding='utf-8')
+print(json.dumps(files))

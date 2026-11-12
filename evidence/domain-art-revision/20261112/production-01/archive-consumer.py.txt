@@ -1,0 +1,21 @@
+"""Freeze final consumer and verified inventory; exclude disposable bytecode only."""
+import hashlib,json,pathlib,shutil,zipfile
+p=pathlib.Path(__file__).resolve().parent;repo=p.parents[3]
+c=repo/'build/cf09-robot-idle-01/consumer'
+shutil.copyfile(c/'work/cf09-production-01/integration-summary.json',p/'integration-summary.json')
+files={};excluded=[]
+archive=p/'consumer-final.zip';assert not archive.exists()
+with zipfile.ZipFile(archive,'x',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+    for f in sorted(c.rglob('*')):
+        if not f.is_file():continue
+        name=f.relative_to(c).as_posix()
+        if '__pycache__' in f.parts or f.suffix=='.pyc':excluded.append(name);continue
+        data=f.read_bytes();files[name]=hashlib.sha256(data).hexdigest();z.writestr(name,data)
+with zipfile.ZipFile(archive) as z:
+    assert {n:hashlib.sha256(z.read(n)).hexdigest() for n in z.namelist()}==files
+record={'consumer':'build/cf09-robot-idle-01/consumer','archive':'consumer-final.zip',
+ 'sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'bytes':archive.stat().st_size,
+ 'file_count':len(files),'files':files,'excluded_disposable_bytecode':excluded,
+ 'state_revision':50,'state_hash':'ccdb1ec4e6f053cc55fd6f109ef467933f62cd27205d2cbbcb87a0b64eb941b7'}
+(p/'consumer-final-inventory.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({k:v for k,v in record.items() if k!='files'}))

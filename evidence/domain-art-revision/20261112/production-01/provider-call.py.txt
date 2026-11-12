@@ -1,0 +1,43 @@
+"""Bounded CF-09 official calls with refreshed host-local auth; no secret retention."""
+import json
+import pathlib
+import sys
+import urllib.request
+from datetime import datetime, timezone
+
+from evaluations.native_provider import ReadOnlyMCP, credential, ENDPOINT, MAX_RESPONSE
+
+tool, args_file, output = sys.argv[1:]
+assert tool in {'animate_image', 'get_image', 'pixelart_workbench', 'wait_for_jobs'}
+dest = pathlib.Path(output)
+assert not dest.exists(), 'Never overwrite a retained observation'
+arguments = json.loads(pathlib.Path(args_file).read_bytes())
+c = ReadOnlyMCP(credential('codex'))
+start = c.request('initialize', {'protocolVersion': c.protocol, 'capabilities': {},
+    'clientInfo': {'name': 'pixl-cf09-evaluation', 'version': '1'}}, 1)
+c.protocol = start['result']['protocolVersion']
+c.request('notifications/initialized')
+headers = {'Authorization': 'Bearer '+c.access.token, 'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream', 'MCP-Protocol-Version': c.protocol}
+if c.session:
+    headers['Mcp-Session-Id'] = c.session
+body = json.dumps({'jsonrpc': '2.0', 'id': 2, 'method': 'tools/call',
+    'params': {'name': tool, 'arguments': arguments}}).encode()
+req = urllib.request.Request(ENDPOINT, data=body, headers=headers, method='POST')
+with c.opener.open(req, timeout=55) as response:
+    raw = response.read(MAX_RESPONSE+1)
+    kind = response.headers.get('Content-Type','')
+assert len(raw) <= MAX_RESPONSE and c.access.token.encode() not in raw
+if 'text/event-stream' in kind:
+    values = [json.loads(line[5:].strip()) for line in raw.decode().splitlines() if line.startswith('data:')]
+    result = next(value for value in values if value.get('id') == 2)
+else:
+    result = json.loads(raw)
+assert result.get('id') == 2
+record = {'observed_at': datetime.now(timezone.utc).isoformat(), 'endpoint': ENDPOINT,
+    'host_credential_source': 'codex', 'native_host_trial': False, 'tool': tool,
+    'arguments_file': str(pathlib.Path(args_file)), 'response': result}
+dest.parent.mkdir(parents=True,exist_ok=True)
+dest.write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'saved':str(dest),'isError':result.get('result',{}).get('isError',False),
+    'content_text':[v['text'] for v in result.get('result',{}).get('content',[]) if v.get('type')=='text']}))

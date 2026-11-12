@@ -1,0 +1,283 @@
+"""Read-only CF-09 actual-art evidence audit; writes one fresh report only.
+
+Manifest paths are repository-relative. Required entries: consumer, raw_frames,
+final_frames (ordered five-path lists), provider_result, returned_inventory,
+dispatch, raw_capture, raw_check, final_capture, final_check, rejected_candidates,
+reviews, scan_roots, documents.
+The helper measures scoped artifact facts; it does not supply visual acceptance.
+"""
+import argparse
+import base64
+import hashlib
+import io
+import json
+import re
+import zipfile
+from pathlib import Path
+from urllib.parse import unquote
+
+from PIL import Image
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def image(path):
+    with Image.open(path) as source:
+        assert source.format == "PNG" and source.size == (32, 32), str(path)
+        result = source.convert("RGBA")
+        result.load()
+        return result
+
+
+def pixels(im):
+    return tuple(im.getdata())
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    repo = args.repo.resolve()
+    assert not args.out.exists(), "Never overwrite an earlier audit"
+    manifest = read(args.manifest)
+
+    def path(value):
+        result = (repo / value).resolve()
+        assert result.is_relative_to(repo) and result.exists(), value
+        return result
+
+    consumer = path(manifest["consumer"])
+    before = read(repo / "evidence/domain-art-revision/20261112/preparation-01/after-focus-fix.json")
+    original_names = ["BRIEF.md", "CF-09-ROBOT-IDLE.md", "src/robot.ts",
+                      "src/animation.ts", "src/animation-baseline.ts", "assets/robot-base.png"]
+    original_names += [f"assets/robot/{direction}.png" for direction in ("east", "north", "south", "west")]
+    original = {}
+    for name in original_names:
+        actual = digest((consumer / name).read_bytes())
+        assert actual == before["files"][name], name
+        original[name] = actual
+    archive_path = path(manifest["consumer_archive"])
+    archive_inventory = read(path(manifest["consumer_inventory"]))
+    assert archive_inventory["sha256"] == digest(archive_path.read_bytes())
+    assert archive_inventory["bytes"] == archive_path.stat().st_size
+    assert archive_inventory["file_count"] == len(archive_inventory["files"]) == 740
+    with zipfile.ZipFile(archive_path) as retained:
+        names = retained.namelist()
+        assert len(names) == len(set(names)) == archive_inventory["file_count"]
+        assert set(names) == set(archive_inventory["files"])
+        for name, sha in archive_inventory["files"].items():
+            target = (consumer / name).resolve()
+            assert target.is_relative_to(consumer)
+            assert digest(retained.read(name)) == sha == digest(target.read_bytes()), name
+    current_files = {p.relative_to(consumer).as_posix() for p in consumer.rglob("*") if p.is_file()}
+    excluded = set(archive_inventory["excluded_disposable_bytecode"])
+    assert all("/__pycache__/" in name and name.endswith(".pyc") for name in excluded)
+    assert current_files - excluded == set(archive_inventory["files"])
+    original_unchanged = []
+    original_mutable = []
+    for name, sha in before["files"].items():
+        target = consumer / name
+        assert target.is_file(), f"Prior consumer file missing: {name}"
+        if digest(target.read_bytes()) == sha:
+            original_unchanged.append(name)
+        else:
+            original_mutable.append(name)
+    assert set(original_mutable) == {".pixl/assets/robot.idle/state.px", "plar.txt"}
+    original_archive = repo / "evidence/domain-art-revision/20261112/preparation-01" / before["archive"]
+    assert digest(original_archive.read_bytes()) == before["sha256"]
+    with zipfile.ZipFile(original_archive) as retained:
+        assert set(retained.namelist()) == set(before["files"])
+        for name, sha in before["files"].items():
+            assert digest(retained.read(name)) == sha, f"Prior archive changed: {name}"
+
+    east = image(consumer / "assets/robot/east.png")
+    reference = pixels(east)
+    raw_paths = [path(value) for value in manifest["raw_frames"]]
+    final_paths = [path(value) for value in manifest["final_frames"]]
+    assert len(raw_paths) == len(final_paths) == 5
+    raw = [pixels(image(value)) for value in raw_paths]
+    final = [pixels(image(value)) for value in final_paths]
+    assert raw[0] == reference, "Provider index 0 must remain reused input"
+    assert final[0] == final[4] == reference, "Loop endpoints must match supplied East"
+    assert len(set(final)) > 1, "Final animation must contain actual motion"
+    frame_facts = []
+    for index, (old, new) in enumerate(zip(raw, final)):
+        served = consumer / f"assets/robot-idle/east-{index}.png"
+        assert served.read_bytes() == final_paths[index].read_bytes(), str(served)
+        assert [p[3] for p in new] == [p[3] for p in reference], f"Final silhouette drift: {index}"
+        changes_from_east = [(a, b) for a, b in zip(reference, new) if a != b]
+        assert all(a == (86, 181, 188, 255) and b == (37, 53, 74, 255)
+                   for a, b in changes_from_east), f"Unrelated final pixel changed: {index}"
+        frame_facts.append({"index": index,
+            "raw_sha256": digest(raw_paths[index].read_bytes()),
+            "final_sha256": digest(final_paths[index].read_bytes()),
+            "changed_rgba_pixels": sum(a != b for a, b in zip(old, new)),
+            "raw_alpha_difference_from_east": sum(a[3] != b[3] for a, b in zip(old, reference)),
+            "final_alpha_difference_from_east": sum(a[3] != b[3] for a, b in zip(new, reference)),
+            "final_rgba_difference_from_east": len(changes_from_east),
+            "final_changes_limited_to_opaque_cyan_to_navy": True})
+    assert any(value["changed_rgba_pixels"] for value in frame_facts), "No actual revision"
+
+    captures = []
+    for label in ("raw", "final"):
+        capture_path = path(manifest[label + "_capture"])
+        capture = read(capture_path)
+        check = read(path(manifest[label + "_check"]))
+        assert check["status"] == "pass" and check["pass"] is True, label
+        assert capture["consumer"] == "sprite-animation-v1" and not capture["errors"]
+        animation = capture["animation"]
+        assert animation["viewport"] == [48, 40] and animation["background"] == "#172336"
+        assert animation["sampling"] == "nearest" and len(animation["clips"]) == 1
+        clip = animation["clips"][0]
+        assert clip["id"] == "east-idle" and clip["loop"] is True and clip["anchor"] == [24, 34]
+        frames = clip["frames"]
+        assert [value["duration_ms"] for value in frames] == [800, 120, 160, 120, 400]
+        assert all(value["pivot"] == [16, 28] and value["rect"] == [0, 0, 32, 32] for value in frames)
+        assert [value["path"] for value in frames] == [f"assets/robot-idle/east-{i}.png" for i in range(5)]
+        counts = check["facts"]["phases"]["playback"]["counts"]
+        assert set(counts) == {"east-idle@1x", "east-idle@3x"}
+        assert all(value["wraps"] >= 2 and value["skips"] == 0 and value["frames"] == list(range(5)) for value in counts.values())
+        execution = read(capture_path.parent / "execution.json")
+        assert execution["renderer_executed"] is True and execution["cleanup"]["complete"] is True
+        captures.append({"label": label, "capture_sha256": digest(capture_path.read_bytes()),
+                         "checks": check["facts"], "cleanup_complete": True})
+
+    provider = read(path(manifest["provider_result"]))
+    assert provider["tool"] == "get_image" and provider["endpoint"] == "https://api.pixellab.ai/mcp"
+    assert provider["response"]["result"].get("isError") is not True
+    provider_text = "\n".join(block["text"] for block in provider["response"]["result"]["content"] if block.get("type") == "text")
+    assert "d7180b0b-c77a-4148-9dcd-0917439df9b5" in provider_text
+    assert "completed" in provider_text.lower(), "Need actual successful response"
+    inventory = read(path(manifest["returned_inventory"]))
+    assert inventory["job_id"] == "d7180b0b-c77a-4148-9dcd-0917439df9b5"
+    assert inventory["provider_frame_count"] == len(inventory["frames"]) == 5
+    for index, row in enumerate(inventory["frames"]):
+        assert row["index"] == index and row["sha256"] == digest(raw_paths[index].read_bytes())
+        assert row["url"] == f"https://api.pixellab.ai/mcp/images/{inventory['job_id']}/download?index={index}"
+    assert inventory["frames"][0]["origin"] == "reused input"
+    inline = [block for block in provider["response"]["result"]["content"] if block.get("type") == "image"]
+    for index, block in enumerate(inline):
+        with Image.open(io.BytesIO(base64.b64decode(block["data"]))) as provided:
+            assert pixels(provided.convert("RGBA")) == raw[index], f"Provider inline/download mismatch: {index}"
+    dispatch = read(path(manifest["dispatch"]))
+    arguments = read(consumer / "work/cf09-request/arguments.json")
+    assert dispatch["dispatch_request"]["arguments"] == arguments
+    assert dispatch["job"]["id"] == "r.b4e4a5984acb71ac.request"
+
+    from pixl.codec import parse
+    state = parse((consumer / ".pixl/assets/robot.idle/state.px").read_bytes())
+    assert state.revision == archive_inventory["state_revision"] == 50
+    assert digest((consumer / ".pixl/assets/robot.idle/state.px").read_bytes()) == archive_inventory["state_hash"]
+    for index, raw_path in enumerate(raw_paths):
+        record = state.records[f"raw.frame{index}"]
+        assert record.kind == "X" and record.fields["dg"] == digest(raw_path.read_bytes())
+        retained = consumer / record.fields["ur"]
+        assert retained.read_bytes() == raw_path.read_bytes(), f"Lost imported raw candidate: {index}"
+    rejected = []
+    assert manifest["rejected_candidates"], "Failed artistic candidates must remain retained"
+    for candidate in manifest["rejected_candidates"]:
+        record = state.records[candidate]
+        assert record.kind == "X"
+        failures = [row.id for row in state.records.values() if row.kind == "V"
+                    and row.fields["xr"].id == candidate and row.fields["st"].value == "fail"]
+        assert failures, f"Candidate lacks retained failed verdict: {candidate}"
+        rejected.append({"candidate": candidate, "failed_verdicts": failures})
+    review_references = []
+
+    def verify_review_refs(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("path"), str) and isinstance(value.get("sha256"), str):
+                relative = value["path"]
+                target = (repo / relative).resolve()
+                if not target.exists():
+                    target = (consumer / relative).resolve()
+                assert target.is_relative_to(repo) and target.exists(), relative
+                assert digest(target.read_bytes()) == value["sha256"], f"Reviewed artifact changed: {relative}"
+                review_references.append(relative)
+            for child in value.values():
+                verify_review_refs(child)
+        elif isinstance(value, list):
+            for child in value:
+                verify_review_refs(child)
+
+    reviews = []
+    for value in manifest["reviews"]:
+        review_path = path(value)
+        verify_review_refs(read(review_path))
+        reviews.append({"path": value, "sha256": digest(review_path.read_bytes())})
+    assert len(reviews) >= 2, "Explicit specialist and caller reviews must be retained"
+
+    links = []
+    for name in manifest["documents"]:
+        document = path(name)
+        for target in re.findall(r"\]\(([^)]+)\)", document.read_text(encoding="utf-8")):
+            target = target.strip("<>").split("#")[0]
+            if not target or re.match(r"^[a-zA-Z]+:", target):
+                continue
+            target = unquote(target)
+            assert (document.parent / target).resolve().exists(), (name, target)
+            links.append({"source": name, "target": target})
+    findings = re.findall(r"^- \*\*([A-Z]+-\d+)\b", (repo / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    rows = re.findall(r"^\| \[([A-Z]+-\d+)\]", (repo / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    assert set(findings) == set(rows) and len(rows) == len(set(rows)) == 50
+    outcome = read(repo / "evidence/domain-art-revision/OUTCOME.json")
+    assert all(value == "open" for value in outcome["milestones"].values())
+    assert "not recorded" in outcome["human_acceptance"]
+
+    scanned = set()
+    credential_shape = re.compile(rb"pixl_[0-9a-fA-F]{32}")
+
+    def scan(data, name):
+        assert not credential_shape.search(data), f"Credential-shaped value in {name}"
+        if name.lower().endswith(".zip"):
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                for entry in archive.infolist():
+                    if not entry.is_dir():
+                        scan(archive.read(entry), name + "!" + entry.filename)
+
+    for value in manifest["scan_roots"]:
+        root = path(value)
+        for file in root.rglob("*") if root.is_dir() else [root]:
+            if file.is_file() and file not in scanned:
+                scan(file.read_bytes(), file.as_posix())
+                scanned.add(file)
+    verification = read(repo / "evidence/verification-runs/20261112T213958.037642Z/result.json")
+    assert verification["status"] == "pass"
+    for name, sha in verification["checked_input_hashes"].items():
+        assert digest((repo / name).read_bytes()) == sha, f"Source changed after retained verifier: {name}"
+    result = {"status": "pass", "script_sha256": digest(Path(__file__).read_bytes()),
+        "manifest_sha256": digest(args.manifest.read_bytes()), "original_source_hashes": original,
+        "consumer_archive": {"path": manifest["consumer_archive"], "sha256": archive_inventory["sha256"],
+                             "files": archive_inventory["file_count"], "matches_current_consumer": True},
+        "prior_consumer": {"unchanged_files": len(original_unchanged), "mutable_files": original_mutable,
+                           "all_prior_files_retained": True, "original_archive_verified": True},
+        "frame_facts": frame_facts, "frame0_reused_input_rgba_equal": True,
+        "provider_inline_frames_matched": len(inline), "all_five_raw_imports_retained": True,
+        "same_retained_arguments_dispatched": True,
+        "capture_checks": captures, "rejected_candidates_retained": rejected, "reviews": reviews,
+        "reviewed_artifact_hashes_checked": len(review_references),
+        "documents": manifest["documents"], "relative_file_links": len(links), "links": links,
+        "finding_count": len(findings), "backlog_rows": len(rows), "credential_shape_scan_files": len(scanned),
+        "unchanged_verified_sources": len(verification["checked_input_hashes"]),
+        "human_acceptance": "not recorded", "milestones": outcome["milestones"],
+        "limits": ["Artifact and execution facts do not supply artistic acceptance; named reviews remain separate.",
+                   "Credential-shaped values scanned without loading host secrets; not an arbitrary-secret detector.",
+                   "Remote links and heading anchors were not fetched/reparsed.",
+                   "Source identity is checked against retained verification; full suite was not rerun."]}
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({"status": "pass", "frames": len(frame_facts), "links": len(links),
+                      "sources": len(verification["checked_input_hashes"]), "scanned_files": len(scanned)}))
+
+
+if __name__ == "__main__":
+    main()

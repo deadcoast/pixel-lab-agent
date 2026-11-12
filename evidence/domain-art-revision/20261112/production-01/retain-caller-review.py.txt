@@ -1,0 +1,37 @@
+"""Retain the development caller's inspected outcome and full literal criteria."""
+import hashlib,json,pathlib
+from datetime import datetime,timezone
+p=pathlib.Path(__file__).resolve().parent;repo=p.parents[3]
+consumer=repo/'build/cf09-robot-idle-01/consumer'
+def ref(path):
+    return {'path':path.relative_to(repo).as_posix(),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+plan=json.loads((consumer/'work/cf09-request-02/candidate-plan.json').read_bytes())
+bases={
+ 'identity':'Viewed all actual returned/corrected frames at native and light8x: raw middle post/body wobble is removed; navy/cyan identity is preserved. No invented anatomy or detail.',
+ 'contact':'Same anchor/pivot and original alpha footprint across final frames; raw frame2 narrowed footprint is repaired without offset compensation.',
+ 'geometry':'Every final artifact is a full32x32 transparent PNG. Actual official96x64 grid was inspected, then five full32x32 cells extracted and all5120RGBA verified against exact guarded request. No trimming/rescaling occurred.',
+ 'pulse':'Native and3x actual destination samples show centered cyan15/11/5/11/15-pixel sequence with navy-filled shortened parts. Recorded [800,120,160,120,400]ms durations give1200ms resting pose and400ms pulse, clean identical endpoints and two wraps/scale without skips.',
+ 'retained_input':'Frame0 retains original provider-return bytes and decodedRGBA; accurately labeled reused input.',
+ 'finishing_pose':'Finalframe4 is exact starting-frame bytes andRGBA, preserving full-height cyan and registration.'}
+criteria=[{'output':f['id'],'id':q['id'],'check':q['check'],'authority':q['authority'],'sources':q['sources'],'verdict':'pass','basis':bases[q['id']]} for f in plan['outputs'] for q in f['criteria']]
+assert len(criteria)==22
+before=json.loads((p.parent/'preparation-01/after-focus-fix.json').read_bytes())
+names=['BRIEF.md','CF-09-ROBOT-IDLE.md','src/robot.ts','src/animation.ts','src/animation-baseline.ts','assets/robot-base.png']+[f'assets/robot/{d}.png' for d in ['east','north','south','west']]
+preserved=[]
+for name in names:
+    assert hashlib.sha256((consumer/name).read_bytes()).hexdigest()==before['files'][name]
+    preserved.append(ref(consumer/name))
+views=[p/'returned/inspection-light-1x.png',p/'returned/inspection-light-8x.png',p/'corrected-02/inspection-light-1x.png',p/'corrected-02/inspection-light-8x.png']
+views += [p/'raw-capture-01'/f'live-east-idle-{s}x-2.png' for s in (1,3)]
+views += [p/'corrected-capture-01'/f'live-east-idle-{s}x-{i}.png' for s in (1,3) for i in range(5)]
+result={'version':1,'reviewed_at':datetime.now(timezone.utc).isoformat(),'reviewer':'development caller /root',
+ 'status':'accepted_within_bounded_art_and_destination_scope','criteria':criteria,
+ 'actual_revision':{'raw':'genuine body/post/panel/contact drift in actual generated middleframes; rejected','successor':'official deterministic guarded patch42/77/14pixels; endpoints unchanged','R7':'pass: same intended criteria improve in same authored destination; no seeded defect or reused old repair'},
+ 'provider_provenance':{'generation_job':'d7180b0b-c77a-4148-9dcd-0917439df9b5','generation_calls':1,'edited_image':'b13d0eb4-14e7-4b4d-9a0d-712e8fc56625','edit_kind':'synchronous official deterministic workbench operation','edit_durable_job':'No prior local J claim; retained actual request/response and X lineage; no backfilled job'},
+ 'inspected_views':[ref(v) for v in views],'preserved_sources':preserved,
+ 'playback':[ref(p/f'{name}-capture-01/capture.json') for name in ('raw','corrected')],
+ 'mechanical_checks':[ref(p/f'{name}-check-01.json') for name in ('raw','corrected')],
+ 'limits':['Visual review uses actual native/enlarged frames and captured destination samples plus recorded browser timing; no claim of direct continuous human viewing.','Family publication and exact public consumer-execute require their own subsequent receipts.','No new recorded Codex/Claude qualification trial or general generated-quality claim.'],
+ 'human_acceptance':'unrecorded; separate','milestones':{'M1':'open','M2':'open','broader M3':'open','broader M4':'open'}}
+out=p/'caller-art-review.json';assert not out.exists();out.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'status':result['status'],'literal_criteria':len(criteria),'preserved_source_files':len(preserved)}))
