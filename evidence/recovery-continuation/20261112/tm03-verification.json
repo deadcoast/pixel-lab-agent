@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "recorded_at": "2026-11-12T12:10:40.183489+00:00",
+  "scope": "TM-03 controlled publication/confinement checks. Summary of actual tool output, not a native or provider run.",
+  "baseline_commit": "afb66c22d68077f37c2dbfd33d1f4200da9c5258",
+  "owned_files": [
+    "pixl/graph.py",
+    "tests/test_recovery_publication.py",
+    "tests/test_confined_paths.py"
+  ],
+  "source_sha256": {
+    "pixl/graph.py": "399c0709bf93665e2ae7508e4295ed88ca623a3ac8e5038a8aebd97898f79196",
+    "pixl/jobs.py": "3b987f69a3c468fa93041824b1200a79d455c4b9c902cc6797c43f7f6b0494bb",
+    "pixl/pixellab_http.py": "0daf6d2b6fee7341daca9cfbe1fe349fb2a1c852fdcd8278871b1fbf7a37983e",
+    "pixl/store.py": "cfab8f2304d69e51de66a5ccb4aaf8a866b62497a6fcafd7264a183cd5bde531",
+    "pixl/candidate_review.py": "a5301f1c60f388d03bc9b235fdaf496292662a045f56772c2e4c0c3fe4cfe760",
+    "tests/test_recovery_publication.py": "aca66ac1b34ebe2dcf589c42a09bc6b55c3ff387bdfe7f32118ec87691a7ab9e",
+    "tests/test_confined_paths.py": "654149c295e9594e9b90dff2388028b192fb3b57dc3390dcbfa1782b2c8ffb49",
+    "tests/test_graph.py": "ab61726317dc71a65b99167306c9790720dc92d58a9c2fcdb56b8d9b5f0a5477",
+    "tests/test_store.py": "969229b223755c9bacec16662f3722bb1063be21ebe31861742387bf3fbea88a"
+  },
+  "focused_command": ".venv/Scripts/python.exe -m unittest tests.test_recovery_publication tests.test_confined_paths tests.test_graph tests.test_store -v",
+  "focused_result": {
+    "run": 40,
+    "passed": 39,
+    "skipped": 1,
+    "skip": "test_history_symlink_cannot_redirect_publication: symlink privilege unavailable",
+    "errors": 0,
+    "failures": 0
+  },
+  "new_tests": {
+    "publication": 8,
+    "confinement": 6
+  },
+  "lint_command": ".venv/Scripts/python.exe -m ruff check pixl/graph.py tests/test_confined_paths.py tests/test_recovery_publication.py",
+  "lint_result": "pass",
+  "diagnostics": [
+    {
+      "scope": "Initial eight publication tests before runtime import replay implementation",
+      "passed": 6,
+      "failures": 1,
+      "errors": 1,
+      "failure": "Concurrent import loser reported path_escape",
+      "error": "Repeated same-candidate import rejected by old job_artifact behavior; runtime worker implemented exact replay later"
+    },
+    {
+      "scope": "Twenty repetitions of concurrent-import regression before graph fix, not twenty independent feature tests",
+      "passed": 17,
+      "failed": 3,
+      "error": "path_escape"
+    },
+    {
+      "scope": "Twelve repetitions with exception-local tracing before graph fix",
+      "passed": 10,
+      "failed": 2,
+      "root_form": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\<case>",
+      "resolved_child_form": "\\\\?\\C:\\Users\\ryanf\\AppData\\Local\\Temp\\<case>\\.pixl\\artifacts\\<sha>.png",
+      "finding": "Path.resolve returned extended-length spelling for concurrently created child, causing false lexical containment rejection"
+    },
+    {
+      "scope": "Twenty repetitions of same concurrent-import regression after graph fix",
+      "passed": 20,
+      "failed": 0,
+      "limitations": "Bounded diagnostic replay, not general concurrency/host reliability"
+    }
+  ],
+  "fix": "Normalize only already-resolved Windows drive/UNC prefix spelling consistently for root and child; leave other device namespaces unchanged and preserve input/escape rejection.",
+  "independent_runtime_diff_review": {
+    "result": "No concrete issue found in additive jobs recovery, exact import replay or HTTP atomic download/recovery diff",
+    "limits": "Focused source review only; HTTP cache bytes remain unaccepted until candidate import/review; no new provider execution"
+  },
+  "human_acceptance": "not_recorded"
+}

@@ -1,0 +1,47 @@
+{
+  "phase": 1,
+  "provider_simulated": true,
+  "job": "recoverable-job",
+  "remote_id": "controlled-recovery-0001",
+  "output": "recovered-avatar",
+  "attempt": 1,
+  "retries_this_round": 0,
+  "url": "http://127.0.0.1:7099/controlled-recovery-0001.png",
+  "url_source": "work/provider-recovery/phase-1/provider-get-image-2.json images[0].download_url (loopback URL from the originating controlled fixture get_image response)",
+  "command": "curl.exe --fail --show-error --output \"work/provider-recovery/phase-1/download.part\" http://127.0.0.1:7099/controlled-recovery-0001.png",
+  "tool_version": "curl 8.18.0 (x86_64-w64-mingw32) libcurl/8.18.0 Schannel zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.5 libssh2/1.11.1 WinLDAP",
+  "started_at": "2026-11-12T12:16:13.648983+00:00",
+  "finished_at": "2026-11-12T12:16:13.738573+00:00",
+  "timestamp_source": "host clock via selected Python datetime.now(UTC) immediately before and after the curl invocation",
+  "exit_code": 18,
+  "exit_meaning": "CURLE_PARTIAL_FILE: transfer ended before the announced Content-Length was received",
+  "stdout": "",
+  "stdout_file": "work/provider-recovery/phase-1/curl-stdout.txt",
+  "stderr": "  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current\n                                 Dload  Upload  Total   Spent   Left   Speed\n  0      0   0      0   0      0      0      0                              0\ncurl: (18) end of response with 118 bytes missing\n",
+  "stderr_file": "work/provider-recovery/phase-1/curl-stderr.txt",
+  "expected": {
+    "bytes": 177,
+    "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "width": 32,
+    "height": 32,
+    "format": "png",
+    "source": "work/provider-recovery/phase-1/provider-get-image-2.json images[0]"
+  },
+  "partial": {
+    "path": "work/provider-recovery/phase-1/download.part",
+    "bytes": 59,
+    "sha256": "c782e097dc9ebb50682becc305d82839e4ee73c38926dd9dd6495b75ed037c4f",
+    "missing_bytes": 118,
+    "complete": false,
+    "imported": false
+  },
+  "actions_not_taken": [
+    "no retry of the download this round",
+    "no import of the partial file",
+    "no copy of reference.png or input.png pixels (expected sha256 coincides with the local reference.png identity, but the recovered bytes must come from the originating resource)",
+    "no assets/robot.png created",
+    "no candidate created",
+    "no new submission, dispatch or prepare"
+  ],
+  "next_action": "Phase 2 cold retrieval: re-query get_image for controlled-recovery-0001 after restart to obtain a fresh loopback URL, download the complete 177 bytes into a fresh path, verify sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7, then pixl_job_import recoverable-job / recovered-avatar as an unaccepted candidate and byte-copy to assets/robot.png."
+}

@@ -24,3 +24,42 @@ consumer changes. Job reports expose selection state without rewriting the immut
 intent. This adds no journal field and does not reinterpret legacy untagged inputs.
 
 PLAR-bound continuation uses the [allocation/revision contract](asset-preparation.md#allocation-and-revised-work). Pending attempts for the same explicitly tagged asset exclude new jobs even under different task/output IDs. New task activation/completion checks the current selection and selected generation; retained historical validation is unchanged.
+
+## Recovery reports and local retries
+
+The existing `jobs` report adds a read-only `recovery` projection to each durable
+job: `action`, originating `provider`/`tool`, immutable observed `remote_id`,
+`missing_outputs`, `imported` and `guidance`. Each imported entry identifies
+`candidate_id`, `output_id`, retained project-relative `path`, file `sha256` and
+`record_sha256`. It projects the validated journal and actual artifact records;
+it does not authenticate the provider, grant dispatch or accept candidates.
+Legacy unjournaled jobs retain their manual-history route.
+
+Succeeded jobs with any planned output not yet imported report
+`next_action: retrieve_outputs`; a partial set of imports is not complete
+retrieval. Once every requested output has at least one imported candidate, the
+next action is `inspect_candidates`, using current acceptance separately. Unknown
+jobs still require reconciliation through their originating connection, with or
+without an observed ID. Submitted/running jobs require observation of that exact
+identity; neither missing IDs nor elapsed time permit another dispatch.
+
+An import reply can be lost after publication. After rereading the current state
+hash, the same `job-import` may return `reused_import: true` with unchanged
+hash/revision and no new event or blob. This requires the same job's already
+retained imported event, output and candidate record identity, unchanged current
+output context, equal source-file bytes and canonically identical import evidence.
+The source file's original textual path is not in the journal; an equivalent
+local file is allowed, without claiming directed ancestry from its path. An
+existing candidate from another job, changed bytes/evidence/output/context, or
+stale expected hash still fails. Fresh imports return `reused_import: false`.
+
+The optional HTTP adapter materializes its fully retained, validated succeeded
+PNG response atomically before candidate publication. A conflicting or partial
+old download is preserved in place; verified response bytes are retained under a
+separate deterministic recovery path. The returned `download` gives the actual
+path/hash/size, whether that download was reused, and the preserved old
+`recovered_from` path/hash/size when applicable. Conflicting recovery-path bytes
+are refused rather than overwritten. This local repair uses no new provider call,
+changes no journal field, and grants no artifact acceptance. Interruption between
+download retention and candidate publication may leave an unreferenced complete
+file, which a cold retry can reuse under the normal expected-hash rules.

@@ -53,6 +53,15 @@ For delegated work, compare the saved prepared request with the exact arguments 
 
 Start with `jobs STORE/state.px --root ROOT`. It returns the saved request, context, event history, remote identity, candidate associations, drift and next action. Reading a request is not a new dispatch grant.
 
+Use each durable job's `recovery` projection for the practical next step: it names
+the originating provider/tool and observed ID, missing output IDs, retained
+candidate paths/file hashes and guidance. A succeeded job with missing imports
+returns `retrieve_outputs`, including when another member was already imported.
+Once all requested outputs have imported candidates it returns
+`inspect_candidates`; read their current reviews instead of inferring acceptance
+from import alone. These are local observations of saved state, not fresh provider
+queries or a new dispatch grant.
+
 A resource ID belongs to the connection that returned it. Use that same provider/account context for lookup or retrieval; never carry a simulated or unrelated provider ID into a real service. If the originating connection cannot return an image, retain that limitation and its observed state. Separate future production uses its own actual request and provider identity under the assignment; it is not retrieval of the simulated job. A finished request-only assignment does not terminate its queued job: before another request for the same asset, resolve the pending attempt with supported originating-connection evidence, or keep a truly separate assignment/context explicit. Changing task/output IDs within the asset store cannot bypass its pending attempt.
 
 | Saved state / issue | Next operation |
@@ -61,7 +70,8 @@ A resource ID belongs to the connection that returned it. Use that same provider
 | Prepared, plan drift or lifecycle blocker | Resolve the specific context; abandon obsolete intent with an evidenced failed observation if appropriate, then prepare a new request ID |
 | Unknown | Reconcile using the actual provider's documented lookup/status capabilities and retained evidence; do not dispatch or recreate |
 | Submitted/running with ID | Inspect that exact resource using its discovered status tool, then record the observed response |
-| Succeeded | Retrieve the actual output through the host, import local candidate bytes, then evaluate acceptance |
+| Succeeded, missing outputs | Re-query the same originating resource for current retrieval details, retrieve complete bytes for the missing outputs, import them, then evaluate acceptance |
+| Succeeded, all outputs imported | Follow `recovery.imported` retained paths/hashes and current reviews; do not redownload or regenerate merely because a previous reply was lost |
 | Failed | Preserve failure, establish its consequence and any still-valid retry authorization, then use a new job ID for a new attempt |
 | Legacy unjournaled job | Inspect its actual available history manually; do not attach a fictional journal or ignore pending work |
 | File/hash error | Preserve the diagnostic and restore the exact retained bytes from available history/backups before continuing; do not rewrite receipts to make a changed file pass |
@@ -73,6 +83,28 @@ On `stale_write` or `store_locked`, no dispatch grant was returned. Reread the s
 ## Import and hand back to acceptance
 
 Download with the actual host/provider mechanism into the project. Then run `job-import STORE JOB OUTPUT CANDIDATE DOWNLOADED_PATH EVIDENCE_JSON --expect HASH --root ROOT`. DOWNLOADED_PATH is relative to ROOT. This copies a byte snapshot into the store and creates X.of for the original F, plus a retained import event and J.xs reference. It preserves the downloaded original. It does not nominate the candidate, measure the image, grant V, or finish T.
+
+If retrieval is interrupted, preserve the partial file and transport diagnostic.
+Re-query the **same** resource through its originating connection when a download
+URL has expired or changed; a temporary URL is not the resource's identity. Retry
+retrieval into a fresh path and verify completeness/format/identity against the
+actual response before importing. A partial download is not a reason to prepare
+or submit another generation.
+
+If `job-import` may already have succeeded but its reply was lost, reread `jobs`
+and the current store hash. Use the retained candidate directly, or repeat the
+same job/output/candidate import with the original saved evidence and equal local
+bytes. An exact replay returns `reused_import: true` without another event or
+candidate; changed evidence, bytes, output, job or current output context is not
+that replay. Do not invent a new candidate ID merely to bypass an existing one.
+
+For the optional HTTP bridge, `pixellab_import_image` can recover an interrupted
+local download from the already retained succeeded response without polling or
+submitting again. Its `download` result identifies verified bytes and any
+`recovered_from` partial/conflicting file preserved at its original path. Keep
+both observations; a conflicting recovery-path file requires explicit identity
+reconciliation instead of silent overwrite. A complete retained download may be
+reused after interruption before candidate publication.
 
 Import rejects changed output/contract/criterion context. Keep the returned file and original history; reconcile the intended plan explicitly before associating it. A new interpretation must not relabel an old generation as though it used the new contract. Submitted observations can still be recorded while the plan has drifted.
 

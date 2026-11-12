@@ -346,15 +346,39 @@ class Workflow:
         relative = (
             directory.relative_to(self.root) / "downloads" / (digest + ".png")
         ).as_posix()
-        target = graph.confined(self.root, relative)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if target.exists():
-            if target.read_bytes() != data:
-                raise PixlError("pixellab_import", "Retained download changed")
-        else:
-            with target.open("xb") as stream:
-                stream.write(data)
-        return self._result(
+        recovered_from: dict | None = None
+        # A failed download publication may leave unreferenced cache data, but
+        # must not publish a partial hash-named file or destroy old evidence.
+        with store.lock(directory):
+            self._load_job(directory, expected, job_id)
+            target = graph.confined(self.root, relative)
+            if not target.is_relative_to(directory):
+                raise PixlError("pixellab_import", "Download must remain inside the store")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if target.exists() and (existing := target.read_bytes()) != data:
+                recovered_from = {
+                    "path": relative,
+                    "sha256": hashlib.sha256(existing).hexdigest(),
+                    "bytes": len(existing),
+                }
+                relative = (
+                    directory.relative_to(self.root) / "downloads" / "recovery"
+                    / (digest + "-from-" + recovered_from["sha256"] + ".png")
+                ).as_posix()
+                target = graph.confined(self.root, relative)
+                if not target.is_relative_to(directory):
+                    raise PixlError("pixellab_import", "Download must remain inside the store")
+                target.parent.mkdir(parents=True, exist_ok=True)
+            reused_download = target.exists()
+            if reused_download:
+                if target.read_bytes() != data:
+                    raise PixlError(
+                        "pixellab_import",
+                        "Retained recovery download changed; preserve both files and reconcile their identities",
+                    )
+            else:
+                store._atomic(target, data)
+        result = self._result(
             jobs.import_artifact(
                 directory,
                 expected,
@@ -368,3 +392,11 @@ class Workflow:
                 self.root,
             )
         )
+        result["download"] = {
+            "path": relative,
+            "sha256": digest,
+            "bytes": len(data),
+            "reused_download": reused_download,
+            "recovered_from": recovered_from,
+        }
+        return result

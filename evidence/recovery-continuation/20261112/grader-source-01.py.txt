@@ -1,0 +1,398 @@
+"""Independent CF-08 artifact recovery checks from retained state and native traces.
+
+Controlled provider logs establish actual short/full HTTP responses in this case;
+no live service, artistic acceptance or human acceptance is inferred.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import tomllib
+import zipfile
+from pathlib import Path
+
+from evaluations.grade_consumer_execution import selected_identity
+from evaluations.grade_integration_change import (
+    commands,
+    complete_file_proof,
+    image_views,
+    operation_proof,
+)
+from evaluations.grade_named_codex_role import own_rows, rows
+from evaluations.grade_plar_coverage import claude_completion, native_read_proof
+from evaluations.grade_readiness import (
+    claude_loading_proof,
+    codex_role_proof,
+    expanded_objects,
+    semantic_result,
+)
+from evaluations.host_trials import sha
+from evaluations.native_production_grade import before as native_before
+from evaluations.native_production_grade import response_roots, tool_calls
+from evaluations.native_trial_records import verify_inputs
+from pixl import codec, graph, jobs, service
+
+WORK = 'work/provider-recovery'
+KIT = 'installed pixl'
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def reference(root: Path, value: dict) -> Path:
+    path = (root / value['path']).resolve()
+    if not path.is_relative_to(root.resolve()) or not path.is_file() or sha(path) != value['sha256']:
+        raise ValueError('Changed or escaping evidence reference: ' + str(value))
+    return path
+
+
+def verified_journals(attempt: Path, continuation: dict) -> list[list[dict]]:
+    """Never let an unrecorded extra transcript supply role/call evidence."""
+    refs = {**continuation.get('retained_journals', {}),
+            **continuation.get('retained_transcripts', {})}
+    return [rows(reference(attempt, ref)) for ref in refs.values()]
+
+
+def native(attempt: Path, root: Path, launch: dict, continuation: dict, caller: dict):
+    journals = verified_journals(attempt, continuation)
+    record = read(attempt / 'record.json')
+    stdout_path = reference(attempt, {'path': 'stdout.jsonl',
+                                    'sha256': record['recorded_files']['stdout.jsonl']})
+    stdout = rows(stdout_path)
+    selected = selected_identity(caller.get('native_child'), launch['host'])
+    session = continuation['session_id']
+    if launch['host'] == 'codex':
+        parent = next((j for j in journals if j and j[0].get('payload', {}).get('id') == session), [])
+        role = tomllib.loads((root / '.codex/agents/pixl.toml').read_text(encoding='utf-8'))['developer_instructions']
+        proof = codex_role_proof(journals, session, selected, role)
+        ids = {c['id'] for c in proof['selected_children']}
+        children = [[j[0], *own_rows(j, session, cold=True)] for j in journals
+                    if j and j[0].get('payload', {}).get('id') in ids]
+        named = proof['loaded'] and proof['completed']
+        loading = {p: {'loaded': bool(complete_file_proof(children, root / KIT / p))}
+                   for p in ('skills/pixl/SKILL.md', 'resources/agent/PROFILE.md')}
+        proof = {k: v for k, v in proof.items() if k != 'child_text'}
+        actual_child = next(iter(ids)) if len(ids) == 1 else None
+    else:
+        parent = [r for r in stdout if not r.get('parent_tool_use_id') and not r.get('agent_id')]
+        ref = continuation.get('retained_transcripts', {}).get(selected)
+        child_path = reference(attempt, ref) if ref else None
+        children = [j for j in journals if j and Path(j[0]['file']) == child_path]
+        proof = claude_completion(parent, selected)
+        named = bool(proof) and any(c.get('id', c.get('agent_id')) == selected
+                                   and c.get('role') == 'pixl:pixl' for c in continuation.get('children', []))
+        loading = claude_loading_proof(children, root / KIT)
+        actual_child = selected
+    return {'journals': journals + [stdout], 'parent': [parent], 'children': children,
+            'named': named, 'named_proof': proof, 'loading': loading,
+            'session': session, 'child': actual_child}
+
+
+def job(report, ident):
+    return next(row for row in report['jobs'] if row['id'] == ident)
+
+
+def event_count(row, event):
+    return sum(item['event'] == event for item in row['events'])
+
+
+def changed_records(before, after):
+    return [ident for ident, record in before.records.items()
+            if ident not in after.records or codec.record_hash(after.records[ident]) != codec.record_hash(record)]
+
+
+def recorded_inputs(attempt: Path, record: dict) -> None:
+    for name in ('launch.json', 'identity.json', 'recovery-case.json',
+                 'snapshots/baseline-state.px', 'snapshots/baseline-jobs.json',
+                 'snapshots/baseline-workflow.json', 'snapshots/baseline-provider-state.json'):
+        reference(attempt, {'path': name, 'sha256': record['recorded_files'][name]})
+    reference(attempt, record['continuation'])
+
+
+def lookup_matches(calls, request, remote_id, source_sha256):
+    """Require the originating lookup's complete tool/input match, not ID prose."""
+    matches = []
+    for call in calls:
+        if not call['success'] or call['tool'] != 'list_jobs':
+            continue
+        for response in response_roots(call['result']):
+            if not isinstance(response, dict) or response.get('provider') != request['provider']:
+                continue
+            for found in response.get('jobs', []):
+                if (found.get('job_id') == remote_id and found.get('tool') == request['tool']
+                        and json.dumps(found.get('arguments'), sort_keys=True) == json.dumps(request['arguments'], sort_keys=True)
+                        and found.get('source_sha256') == source_sha256 and found.get('provider_simulated') is True):
+                    matches.append(call)
+    return matches
+
+
+def allowed_new_records(before_doc, after_doc, job_id, candidate_id):
+    """Only this job's appended journal closure and its assigned candidate may appear."""
+    record = after_doc.records[job_id]
+    allowed = {r.id for r in record.fields['ev']}
+    for evidence_id in list(allowed):
+        allowed.update(graph.refs(after_doc.records[evidence_id].fields.get('bs', [])))
+    candidate = after_doc.records.get(candidate_id)
+    if (candidate_id in {ref.id for ref in record.fields.get('xs', [])}
+            and candidate is not None and candidate.kind == 'X'
+            and candidate.fields.get('of') in record.fields['op']):
+        allowed.add(candidate_id)
+    return set(after_doc.records) - set(before_doc.records) <= allowed
+
+
+def status_observation_proof(provider_calls, local_calls, journal, journals):
+    """Bind each recorded state to a prior native originating response and public call."""
+    result = {}
+    for event_name, remote_status in (('running', 'processing'), ('succeeded', 'completed')):
+        matched = []
+        for local in local_calls:
+            args = local['arguments']
+            if args.get('event') != event_name:
+                continue
+            events = [e for e in journal['events'] if e['event'] == event_name and e['evidence'] == args.get('evidence')]
+            if not events:
+                continue
+            for observed in provider_calls:
+                if not observed['success'] or observed['tool'] != 'get_image':
+                    continue
+                for response in response_roots(observed['result']):
+                    if (isinstance(response, dict) and response.get('job_id') == journal['remote_id']
+                            and response.get('status') == remote_status
+                            and response in list(expanded_objects(args.get('evidence', {})))
+                            and native_before({'file': observed['file'], 'line': observed['line']}, local, journals)):
+                        matched.append({'provider_line': observed['line'], 'observation_line': local['line']})
+        result[event_name] = matched
+    return result
+
+
+def same_job_report(saved, expected):
+    """Public identity labels may decorate the exact underlying jobs report."""
+    value = dict(saved)
+    domains = value.pop('hash_domains', None)
+    return value == expected and domains in (None, {'hash': 'canonical_state_sha256'})
+
+
+def _grade(attempt: Path):
+    case, launch, identity, retained, continuation = (
+        read(attempt / name) for name in ('recovery-case.json', 'launch.json', 'identity.json',
+                                         'preservation.json', 'continuation.json'))
+    recorded_inputs(attempt, read(attempt / 'record.json'))
+    root = Path(case['consumer']).resolve()
+    phase = case['phase']
+    work = root / WORK / f'phase-{phase}'
+    caller, specialist = read(work / 'CALLER-RESULT.json'), read(work / 'SPECIALIST-RESULT.json')
+    before_doc = service.load_document(attempt / 'snapshots/baseline-state.px')
+    after_doc = service.load_document(attempt / 'snapshots/final-state.px')
+    before, after = read(attempt / 'snapshots/baseline-jobs.json'), read(attempt / 'snapshots/final-jobs.json')
+    original, recovered = job(before, case['job_id']), job(after, case['job_id'])
+    unresolved = job(after, case['unresolved_job_id'])
+    provider = read(reference(attempt, retained['provider_state']))
+    provider_calls = rows(reference(attempt, retained['provider_calls']))
+    baseline_provider = read(reference(attempt, case['baseline_provider']['record']))
+    traces = native(attempt, root, launch, continuation, caller)
+    checks = []
+
+    def check(name, passed, evidence=None):
+        checks.append({'check': name, 'pass': bool(passed), 'evidence': evidence})
+
+    verify_inputs(continuation)
+    check('preparation_state_identity_and_baseline_report',
+          sha(attempt / 'snapshots/baseline-state.px') == case['baseline_state']['file_sha256']
+          and codec.digest(before_doc) == case['baseline_state']['canonical_hash']
+          and before_doc.revision == case['baseline_state']['revision']
+          and jobs.report(before_doc, root) == before)
+    check('native_finished_with_actual_named_child', traces['named'] and continuation.get('status') == 'finished'
+          and continuation.get('returncode') == 0 and continuation.get('interruption_reason') is None,
+          traces['named_proof'])
+    check('selected_child_loaded_common_profile_and_skill', all(v['loaded'] for v in traces['loading'].values()), traces['loading'])
+    guide = root / KIT / 'skills/pixl/references/provider-recovery.md'
+    guide_reads = complete_file_proof(traces['children'], guide) or native_read_proof(traces['children'], guide)
+    check('selected_child_loaded_recovery_workflow', bool(guide_reads), guide_reads)
+    check('external_existing_consumer_and_frozen_kit', root == Path(launch['cwd']).resolve()
+          and not root.is_relative_to(Path(__file__).resolve().parents[1])
+          and sha(root / KIT / 'bundle-manifest.json') == case['frozen_kit']['sha256'])
+    check('scope_preserved_and_all_prior_files_retained', not retained['unexpected'] and not retained['removed'],
+          {'unexpected': retained['unexpected'], 'removed': retained['removed']})
+    archive = reference(attempt, retained['delta'])
+    with zipfile.ZipFile(archive) as zipped:
+        archived = {name: hashlib.sha256(zipped.read(name)).hexdigest() for name in zipped.namelist()}
+    expected_archive = {name: retained['final_inventory'][name]
+                        for name in set(retained['changed']) | set(retained['new'])
+                        if name in retained['final_inventory']}
+    check('retained_changed_file_archive_matches_phase_inventory', archived == expected_archive)
+    for name in ('CALLER-RESULT.json', 'SPECIALIST-RESULT.json'):
+        check('retained_report:' + name, sha(work / name) == sha(attempt / 'outputs' / name)
+              == retained['final_inventory'][f'{WORK}/phase-{phase}/{name}'])
+    reference(root, caller['specialist_result'])
+    check('caller_consumed_specialist_result', bool(complete_file_proof(traces['parent'], work / 'SPECIALIST-RESULT.json')
+          or native_read_proof(traces['parent'], work / 'SPECIALIST-RESULT.json')))
+    for actor, filenames in (('children', ('jobs-before.json', 'jobs-after.json')),
+                             ('parent', ('caller-jobs.json',))):
+        for name in filenames:
+            path = work / name
+            saved = semantic_result(read(path))
+            proof = operation_proof(traces[actor], root, 'pixl_jobs',
+                                    {'path': path.relative_to(root).as_posix(), 'sha256': sha(path)})
+            check(actor + '_public_' + name, bool(proof) and job(saved, case['unresolved_job_id'])['state'] == 'unknown', proof)
+            if name != 'jobs-before.json':
+                check(actor + '_current_recovery_report', same_job_report(saved, after))
+
+    graph.validate(after_doc, root)
+    check('snapshot_identity_and_public_report_match', sha(attempt / 'snapshots/final-state.px') == retained['final_state']['file_sha256']
+          and codec.digest(after_doc) == retained['final_state']['canonical_hash']
+          and retained['final_state']['file_sha256'] == retained['final_inventory'][case['store'] + '/state.px']
+          and jobs.report(after_doc, root) == after)
+    check('original_request_and_journal_prefix_preserved', recovered['request'] == original['request']
+          and recovered['intent_sha256'] == original['intent_sha256']
+          and recovered['events'][:len(original['events'])] == original['events'])
+    check('unresolved_no_id_stays_unknown_without_new_event', unresolved == job(before, case['unresolved_job_id'])
+          and unresolved['state'] == 'unknown' and unresolved['remote_id'] is None
+          and unresolved['next_action'] == 'reconcile')
+    check('one_original_accepted_submission_and_no_native_submit', provider['accepted_submissions'] == 1
+          and baseline_provider['accepted_submissions'] == 1
+          and sum('accepted' in row for row in provider_calls) == 1
+          and sum(row.get('tool') == 'edit_image_pro_flash' for row in provider_calls) == 1
+          and not any(c['tool'] in ('edit_image_pro_flash', 'pixl_job_dispatch', 'pixl_job_prepare')
+                      for c in tool_calls(traces['journals'])))
+    check('immutable_observed_resource_and_dispatch_count', recovered['state'] == 'succeeded'
+          and recovered['remote_id'] == case['expected_remote_id'] and event_count(recovered, 'dispatch') == 1)
+    modified = changed_records(before_doc, after_doc)
+    check('unchanged_contract_sources_history_and_unaccepted_task', set(modified) <= {case['job_id']}
+          and allowed_new_records(before_doc, after_doc, case['job_id'], case['candidate_id'])
+          and all(r.fields['st'].value == 'open' and not r.fields['ca'] and not r.fields['vr']
+                  for r in after_doc.records.values() if r.kind == 'T')
+          and not any(r.kind == 'V' for r in after_doc.records.values()), modified)
+
+    provider_native = [c for c in tool_calls(traces['journals']) if str(c['server']).replace('_', '-') == 'pixellab-recovery']
+    child_calls = tool_calls(traces['children'])
+    child_provider = [c for c in child_calls if str(c['server']).replace('_', '-') == 'pixellab-recovery']
+    permitted = {'list_jobs', 'get_image'} if phase != 3 else set()
+    check('only_originating_read_tools_used_for_recovery', all(c['tool'] in permitted for c in provider_native),
+          [{k: c[k] for k in ('tool', 'arguments', 'file', 'line')} for c in provider_native])
+    if phase != 3:
+        observed = [value for c in child_provider if c['tool'] == 'get_image' and c['success']
+                    and c['arguments'].get('job_id') == case['expected_remote_id'] for value in response_roots(c['result'])
+                    if isinstance(value, dict)]
+        check('actual_known_resource_observed_in_native_connection', any(v.get('status') == 'completed'
+              and v.get('job_id') == case['expected_remote_id'] and v.get('provider_simulated') is True for v in observed))
+    else:
+        check('second_cold_recovery_has_no_provider_calls_or_state_publication', not provider_native
+              and codec.digest(before_doc) == codec.digest(after_doc) and provider == baseline_provider)
+
+    downloads = [row['download'] for row in provider_calls if 'download' in row]
+    if phase == 1:
+        partial = work / 'download.part'
+        failure = read(work / 'download-error.json')
+        check('real_partial_response_preserved_without_import', len(downloads) == 1 and downloads[0]['interrupted']
+              and partial.stat().st_size == downloads[0]['served_bytes'] < downloads[0]['declared_bytes']
+              and sha(partial) == downloads[0]['served_sha256'] and bool(failure)
+              and event_count(recovered, 'imported') == 0 and not recovered['recovery']['imported'])
+        failed_reads = [c for c in commands(traces['children']) if
+                        ('curl' in c['command'].lower() and c['exit_code'] != 0
+                         and ('18' in str(c['output']) or 'bytes missing' in str(c['output']).lower()))
+                        or ('IncompleteRead' in str(c['output']) and 'urllib' in c['command'])]
+        check('native_short_response_diagnostic_retained', bool(failed_reads), failed_reads)
+        check('succeeded_missing_output_has_usable_retrieval_action', recovered['next_action'] == 'retrieve_outputs'
+              and recovered['recovery']['missing_outputs'] == [case['output_id']]
+              and bool(recovered['recovery']['guidance']))
+        lookups = lookup_matches(child_provider, original['request'], case['expected_remote_id'], identity['inputs']['input.png'])
+        observations = [c for c in child_calls if c['tool'] == 'pixl_job_observe' and c['success']
+                        and c['arguments'].get('job_id') == case['job_id']
+                        and c['arguments'].get('remote_id') == case['expected_remote_id']]
+        binding = [c for c in observations if c['arguments'].get('event') in ('submitted', 'running')]
+        check('unknown_resolved_only_by_matching_lookup_before_public_observation', bool(lookups) and bool(binding)
+              and any(native_before({'file': l['file'], 'line': l['line']}, b, traces['children']) for l in lookups for b in binding)
+              and event_count(recovered, 'running') >= 1,
+              {'lookup_lines': [c['line'] for c in lookups], 'binding_lines': [c['line'] for c in binding]})
+        observed_states = status_observation_proof(child_provider, observations, recovered, traces['children'])
+        check('selected_child_records_actual_running_and_succeeded_observations',
+              all(observed_states.values()), observed_states)
+    else:
+        imported = recovered['recovery']['imported']
+        candidate = after_doc.records[case['candidate_id']]
+        target = root / candidate.fields['ur']
+        check('one_complete_candidate_with_useful_locator_and_no_missing_output', len(imported) == 1
+              and imported[0]['candidate_id'] == case['candidate_id'] and imported[0]['output_id'] == case['output_id']
+              and imported[0]['path'] == candidate.fields['ur'] and imported[0]['sha256'] == case['expected_png_sha256']
+              and sha(target) == case['expected_png_sha256'] and event_count(recovered, 'imported') == 1
+              and recovered['next_action'] == 'inspect_candidates' and not recovered['recovery']['missing_outputs'])
+        delivered = root / 'assets/robot.png'
+        views = image_views(traces['parent'], root)
+        consumer = root / 'src/avatar.ts'
+        check('caller_actually_consumed_exact_png_and_existing_source_mapping', sha(delivered) == sha(target)
+              and sha(target) in views and bool(complete_file_proof(traces['parent'], consumer)
+                                              or native_read_proof(traces['parent'], consumer)))
+        check('full_retrieval_preserves_original_short_response', len(downloads) == 2 and downloads[0]['interrupted']
+              and not downloads[1]['interrupted'] and downloads[1]['served_bytes'] == downloads[1]['declared_bytes']
+              and downloads[1]['served_sha256'] == case['expected_png_sha256']
+              and sha(root / WORK / 'phase-1/download.part') == downloads[0]['served_sha256'])
+        if phase == 2:
+            import_path = work / 'import-result.json'
+            proof = operation_proof(traces['children'], root, 'pixl_job_import',
+                                    {'path': import_path.relative_to(root).as_posix(), 'sha256': sha(import_path)})
+            check('selected_child_used_public_import_for_complete_download', bool(proof)
+                  and sha(work / 'retrieved.png') == sha(target), proof)
+            check('fresh_locator_for_same_resource_after_process_restart', downloads[0]['url'] != downloads[1]['url']
+                  and downloads[0]['job_id'] == downloads[1]['job_id'] == case['expected_remote_id'])
+
+    for actor, report in (('caller', caller), ('specialist', specialist)):
+        state = report['state']
+        check(actor + '_truthful_scoped_status_and_state', report['phase'] == phase
+              and report['status'] == ('partial' if phase == 1 else 'recovered')
+              and report['provider_simulated'] is True and report['job'] == case['job_id']
+              and report['remote_id'] == case['expected_remote_id']
+              and report['unresolved_job'] == case['unresolved_job_id'] and report['unresolved_state'] == 'unknown'
+              and state['canonical_hash'] == codec.digest(after_doc) and state['revision'] == after_doc.revision
+              and state['sha256'] == sha(attempt / 'snapshots/final-state.px')
+              and bool(report['limitations']) and bool(report['next_action']))
+    if phase > 1:
+        previous = Path(case['previous_attempt'])
+        previous_case = read(previous / 'recovery-case.json')
+        recorded_inputs(previous, read(previous / 'record.json'))
+        reference(previous, identity['predecessor']['preservation'])
+        previous_retained = read(previous / 'preservation.json')
+        previous_continuation = read(previous / 'continuation.json')
+        check('cold_restart_preserves_consumer_kit_state_and_prior_files', previous_case['consumer'] == case['consumer']
+              and previous_case['frozen_kit']['sha256'] == case['frozen_kit']['sha256']
+              and previous_retained['final_state']['canonical_hash'] == case['baseline_state']['canonical_hash']
+              and all(identity['inputs'].get(p) == digest for p, digest in previous_retained['final_inventory'].items()))
+        old_children = {c.get('id', c.get('agent_id')) for c in previous_continuation.get('children', [])}
+        check('new_native_parent_and_child_not_same_session_claim', traces['session'] != previous_continuation['session_id']
+              and traces['child'] not in old_children and case['continuation_mode'] == 'artifact_based_restart')
+    return {'version': 1, 'status': 'pass' if all(c['pass'] for c in checks) else 'fail',
+            'passed': sum(c['pass'] for c in checks), 'total': len(checks), 'checks': checks,
+            'phase': phase, 'host': case['host'], 'native_parent': traces['session'], 'native_child': traces['child'],
+            'scope': 'Controlled recovery and exact file consumption; no live provider, artistic/engine/human acceptance or broad milestone closure',
+            'inputs': {p.name: sha(p) for p in (attempt / 'recovery-case.json', attempt / 'preservation.json',
+                                               attempt / 'continuation.json', attempt / 'record.json')},
+            'grader_sha256': sha(Path(__file__))}
+
+
+def grade(attempt: Path):
+    try:
+        return _grade(attempt.resolve())
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, StopIteration, codec.PixlError, zipfile.BadZipFile) as error:
+        return {'version': 1, 'status': 'fail', 'passed': 0, 'total': 1,
+                'checks': [{'check': 'required_evidence_readable', 'pass': False,
+                            'evidence': f'{type(error).__name__}: {error}'}]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('attempt', type=Path)
+    parser.add_argument('--out', type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        parser.error('Preserve earlier grades; choose a fresh output')
+    result = grade(args.attempt)
+    with args.out.open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2)
+        stream.write('\n')
+    print(json.dumps({k: result[k] for k in ('status', 'passed', 'total')}))
+    return result['status'] != 'pass'
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "provider_simulated": true,
+  "command": "cd <consumer root> && python.exe -I -c \"import datetime;print('clock_start', datetime.datetime.now(datetime.timezone.utc).isoformat())\" && sha256sum <candidate> assets/robot.png .pixl/recovery/state.px src/avatar.ts && wc -c <candidate> assets/robot.png && cmp <candidate> assets/robot.png && echo CMP_IDENTICAL",
+  "python": "C:/github/pixel-lab-agent/build/readiness-setup-01/runtime/Scripts/python.exe",
+  "sha256_tool": "sha256sum (Git for Windows coreutils), run from the Bash tool",
+  "timestamp_source": "host clock via selected Python datetime.now(timezone.utc), printed as the first stdout line",
+  "exit_code": 0,
+  "stdout": "clock_start 2026-11-12T12:40:20.235578+00:00\nd997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7 *.pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png\nd997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7 *assets/robot.png\nc4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165 *.pixl/recovery/state.px\nd09253a6c8d99ebd04eb1fd645baf18babbabb6ff9f5bed35defef25ef9c90dc *src/avatar.ts\n177 .pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png\n177 assets/robot.png\n354 total\nCMP_IDENTICAL\n",
+  "stderr": "",
+  "files": [
+    {"path": ".pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7", "bytes": 177},
+    {"path": "assets/robot.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7", "bytes": 177},
+    {"path": ".pixl/recovery/state.px", "sha256": "c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165"},
+    {"path": "src/avatar.ts", "sha256": "d09253a6c8d99ebd04eb1fd645baf18babbabb6ff9f5bed35defef25ef9c90dc"}
+  ],
+  "checks": {
+    "candidate_sha256_equals_jobs_report_recovery_imported_sha256": true,
+    "candidate_byte_identical_to_assets_robot_png": true,
+    "state_px_file_sha256_equals_canonical_hash": true,
+    "avatar_ts_line": "export const avatar = { path: \"assets/robot.png\", width: 32, height: 32, sampling: \"nearest\" };",
+    "avatar_ts_maps_assets_robot_png_32x32_nearest": true,
+    "avatar_ts_sha256_equals_phase2_caller_record": true
+  },
+  "meaning": "Mechanical byte identity and path mapping only. No artistic, target-engine or human acceptance; no store mutation; no provider call."
+}

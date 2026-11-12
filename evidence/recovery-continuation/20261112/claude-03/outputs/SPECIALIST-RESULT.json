@@ -1,0 +1,46 @@
+{
+  "phase": 3,
+  "status": "recovered",
+  "provider_simulated": true,
+  "job": "recoverable-job",
+  "remote_id": "controlled-recovery-0001",
+  "unresolved_job": "unresolved-job",
+  "unresolved_state": "unknown",
+  "candidate": {
+    "id": "recovered-avatar-candidate",
+    "output": "recovered-avatar",
+    "path": ".pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png",
+    "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+  },
+  "state": {
+    "path": ".pixl/recovery/state.px",
+    "sha256": "c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165",
+    "canonical_hash": "c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165",
+    "revision": 9
+  },
+  "evidence_refs": [
+    {"path": "work/provider-recovery/phase-3/jobs-before.json", "sha256": "7c681da21af84a59edef37ff1e24737cd786f28594d59855121941993d45644f"},
+    {"path": "work/provider-recovery/phase-3/validate-before.json", "sha256": "0bef7bab9da6567d2f003e8d0aaa4a98fcdacdcb744ec6714eba7ffaef48aa43"},
+    {"path": "work/provider-recovery/phase-3/workflow-before.json", "sha256": "2345bff42ab6012f5f2cbf1337b033b4a2de26723095e4b1a1f5810f713a437e"},
+    {"path": "work/provider-recovery/phase-3/asset-check.json", "sha256": "8b8ea17f9d0032a07410261b309cd6ce79fa21457cc5197a28371c0c588da546"},
+    {"path": "work/provider-recovery/phase-3/rehash.json", "sha256": "a7c51429c4eec91a347ef84812d2710cdede482737116853f1dcd8f5bedf4809"},
+    {"path": "work/provider-recovery/phase-3/jobs-after.json", "sha256": "7c681da21af84a59edef37ff1e24737cd786f28594d59855121941993d45644f"},
+    {"path": "work/provider-recovery/phase-3/validate-after.json", "sha256": "0bef7bab9da6567d2f003e8d0aaa4a98fcdacdcb744ec6714eba7ffaef48aa43"},
+    {"path": ".pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"},
+    {"path": ".pixl/recovery/state.px", "sha256": "c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165"},
+    {"path": "assets/robot.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"},
+    {"path": "src/avatar.ts", "sha256": "d09253a6c8d99ebd04eb1fd645baf18babbabb6ff9f5bed35defef25ef9c90dc"}
+  ],
+  "limitations": [
+    "No live PixelLab: the provider is the controlled pixellab-recovery-test fixture with provider_simulated=true. In this phase no pixellab-recovery fixture tool was called at all (no get_image, list_jobs or edit), and no submission, dispatch, prepare, generate, upload, download, poll or paid work occurred.",
+    "Read-only round: no production-state mutation was performed. The only pixl-local calls were pixl_jobs (twice), pixl_validate (twice), pixl_workflow (once) and one pixl_asset_check measurement; no job-observe, job-import, candidate-review, inspection-prepare, nomination, task-complete or commit. The store, assets/robot.png, src/, input.png, reference.png, the kit and every phase-1/phase-2 file were left untouched; no file copy was needed or made outside work/provider-recovery/phase-3/.",
+    "State verified unchanged: pixl_validate before and after both report valid=true, format 2, revision 9, 30 records, files_verified=true, canonical hash c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165; the on-disk .pixl/recovery/state.px file SHA-256 equals that canonical hash. jobs-after.json and validate-after.json are byte-identical to their before files (cmp exit 0). jobs-before.json (sha256 7c681da21af84a59edef37ff1e24737cd786f28594d59855121941993d45644f) is also byte-identical to the phase-2 caller's independently saved caller-jobs.json, so the public jobs report has not changed since phase 2.",
+    "Recovery is mechanical only: the retained candidate recovered-avatar-candidate (177 bytes, sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7) was re-hashed on disk with sha256sum and matches recovery.imported[0].sha256 in the current jobs report; assets/robot.png is byte-identical to it (cmp exit 0, 177 bytes). pixl_asset_check (width 32, height 32, alpha binary) reports pass=true, 1 frame, 390 visible pixels, 3 visible colors, 0 fractional-alpha pixels, 1 opaque component, visible bbox [7,3,25,28], with visual_quality_verified=false and engine_import_verified=false.",
+    "Integration check is source-text only: src/avatar.ts (sha256 d09253a6c8d99ebd04eb1fd645baf18babbabb6ff9f5bed35defef25ef9c90dc) declares path \"assets/robot.png\", width 32, height 32, sampling \"nearest\", matching the delivered file's path and measured dimensions. No consumer was executed and no renderer or target engine was exercised.",
+    "No acceptance of any kind is claimed: the candidate remains nominated=false, criterion q.bytes (Complete 32 by 32 PNG matches originating response byte identity; mechanical, local) remains status unperformed with verdict null in the current workflow report, and the phase-3 measurements above are observations, not a recorded verdict. No artistic, target-engine or human acceptance was performed. M1/M2 and the broader M3/M4 remain open.",
+    "unresolved-job stays unknown: state unknown, remote_id null, next_action reconcile, recovery.missing_outputs [\"unresolved-output\"], only its original two events (dispatch, unknown). It was not observed, modified, abandoned or resolved; absence from any listing is not proof of non-acceptance, and no originating-connection lookup was made in this read-only phase.",
+    "Timestamps were read from the host clock via the selected Python -I datetime.now(timezone.utc): rehash run started at 2026-11-12T12:40:20.235578+00:00; the after-reports/hash step ran at 2026-11-12T12:40:58.077834+00:00; this result file was composed immediately after that second reading. No helper scripts were written; sha256sum and cmp from the Bash tool were used for hashing/comparison, with stdout retained verbatim in rehash.json.",
+    "jobs-before/after.json, validate-before/after.json, workflow-before.json and asset-check.json contain the exact JSON text returned by the respective pixl-local tools; the after files were saved as copies of the before files only after confirming the second tool outputs were identical text (same revision 9 and hash)."
+  ],
+  "next_action": "Candidate: perform a separate, deliberate inspection/review of recovered-avatar-candidate for criterion q.bytes, starting with pixl_review_context (path .pixl/recovery/state.px, candidate_id recovered-avatar-candidate) and then pixl_inspection_prepare (store .pixl/recovery, expect c4d3812040eb9b1d1cae8e0e3eae167efeb7ae5f8f1d3f21e0bae24ea649e165 or the then-current canonical hash) followed by an explicit pixl_candidate_review verdict for q.bytes bound to the retained path .pixl/recovery/artifacts/d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7.png (sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7); nomination/task completion remain further separate steps and are not an automatic consequence of import or of these measurements. unresolved-job: the public jobs report's next_action is reconcile (recovery.action reconcile, missing_outputs [unresolved-output], guidance: use the originating provider connection and saved request/history to resolve this attempt; no ID or elapsed time proves non-acceptance; do not redispatch) - it stays unknown with no dispatch, no re-prepare and no abandon until actual matching originating-connection evidence exists, which was not sought in this read-only phase."
+}

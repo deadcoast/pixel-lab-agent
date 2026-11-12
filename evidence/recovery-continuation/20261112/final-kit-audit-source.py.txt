@@ -1,0 +1,193 @@
+"""Read-only CF-08 frozen/final kit identity audit; no native or provider replay.
+
+Run this retained script directly after the final full verifier completes. Only a
+fresh requested output receipt is written; package/evidence inputs are unchanged.
+"""
+import argparse
+import ast
+import hashlib
+import json
+import sys
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from pixl.readiness import verify_manifest  # noqa: E402
+
+NATIVE_MANIFEST = '60f2a7dd8cd3e4bb080bdb286eead4a9754cdff64d464d0461f837bc00e0ce6d'
+ALLOWED = {
+    'bundle-manifest.json',
+    'resources/evidence/art-methods/poc-report.json',
+    'resources/examples/atelier/measurement.json',
+    'resources/examples/atelier/project.px',
+    'resources/knowledge/library.px',
+}
+TYPE_ONLY = {'runtime/pixl/pixellab_http.py', 'resources/pixl/pixellab_http.py'}
+CF08_CHECKED_INPUTS = {
+    'pixl/graph.py', 'pixl/jobs.py', 'pixl/pixellab_http.py',
+    'evaluations/provider_recovery_case.py', 'evaluations/provider_recovery_fixture.py',
+    'evaluations/grade_provider_recovery.py', 'tests/test_job_recovery.py',
+    'tests/test_pixellab_http_recovery.py', 'tests/test_recovery_publication.py',
+    'tests/test_provider_recovery_case.py', 'tests/test_provider_recovery_fixture.py',
+    'tests/test_grade_provider_recovery.py',
+    'tests/test_graph.py', 'tests/test_confined_paths.py',
+}
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def reference(path):
+    path = Path(path).resolve()
+    return {'path': path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path),
+            'sha256': sha(path), 'bytes': path.stat().st_size}
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob('*'))
+            if p.is_file() and '__pycache__' not in p.relative_to(root).parts}
+
+
+def type_only_change(before, after):
+    """Allow only the reviewed local annotation, with independent AST equality."""
+    original = b'        recovered_from = None'
+    annotated = b'        recovered_from: dict | None = None'
+    exact_patch = before.count(original) == 1 and after == before.replace(original, annotated, 1)
+    old_tree, new_tree = ast.parse(before), ast.parse(after)
+    normalized = 0
+    for cls in new_tree.body:
+        if not isinstance(cls, ast.ClassDef) or cls.name != 'Workflow':
+            continue
+        for method in cls.body:
+            if not isinstance(method, ast.FunctionDef) or method.name != 'import_image':
+                continue
+            for index, node in enumerate(method.body):
+                if (isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
+                        and node.target.id == 'recovered_from' and node.simple == 1
+                        and isinstance(node.value, ast.Constant) and node.value.value is None
+                        and isinstance(node.annotation, ast.BinOp) and isinstance(node.annotation.op, ast.BitOr)
+                        and isinstance(node.annotation.left, ast.Name) and node.annotation.left.id == 'dict'
+                        and isinstance(node.annotation.right, ast.Constant) and node.annotation.right.value is None):
+                    method.body[index] = ast.Assign(targets=[node.target], value=node.value, type_comment=None)
+                    normalized += 1
+    return {'exact_reviewed_text_change_only': exact_patch,
+            'exact_local_annotation_normalized': normalized == 1,
+            'ast_equal_after_exact_annotation_normalization': ast.dump(old_tree, include_attributes=False)
+                == ast.dump(new_tree, include_attributes=False),
+            'location': 'Workflow.import_image local recovered_from initialization',
+            'before': 'recovered_from = None', 'after': 'recovered_from: dict | None = None',
+            'meaning': 'Reviewed local type annotation only; native bytes differ and no final-byte native rerun is claimed.'}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    base = ROOT / 'evidence/recovery-continuation/20261112'
+    parser.add_argument('--out', type=Path, default=base / 'final-kit-compatibility.json')
+    args = parser.parse_args()
+    out = args.out.resolve()
+    if out.exists():
+        raise ValueError('Retain the previous receipt; choose a fresh output path')
+    snapshot_path = base / 'native-kit-snapshot.json'
+    snapshot = json.loads(snapshot_path.read_bytes())
+    archive = ROOT / snapshot['archive']['path']
+    with zipfile.ZipFile(archive) as stream:
+        names = [name for name in stream.namelist() if not name.endswith('/')]
+        native = {name: hashlib.sha256(stream.read(name)).hexdigest() for name in names}
+        native_type_sources = {name: stream.read(name) for name in TYPE_ONLY}
+    kit = ROOT / 'plugins/pixl'
+    current = inventory(kit)
+    manifest = json.loads((kit / 'bundle-manifest.json').read_bytes())
+    changed = [{'path': name, 'native_sha256': native[name], 'final_sha256': current.get(name)}
+               for name in sorted(native) if native[name] != current.get(name)]
+    added = sorted(set(current) - set(native))
+    removed = sorted(set(native) - set(current))
+    type_changes = {name: {
+        'native_sha256': native[name], 'final_sha256': current.get(name),
+        **type_only_change(native_type_sources[name], (kit / name).read_bytes())}
+        for name in sorted(TYPE_ONLY)}
+
+    result_pointer = ROOT / 'evidence/test-results.json'
+    result = json.loads(result_pointer.read_bytes())
+    verifier = ROOT / result['run_directory'] / 'result.json'
+    recorded = json.loads(verifier.read_bytes())
+    checked = result.get('checked_input_hashes', {})
+    changed_inputs = [name for name, digest in checked.items()
+                      if not (ROOT / name).is_file() or sha(ROOT / name) != digest]
+    source_mismatches = []
+    for row in manifest['files']:
+        source = (ROOT / row['source']).resolve()
+        if not source.is_relative_to(ROOT) or not source.is_file() or sha(source) != row['sha256']:
+            source_mismatches.append({'path': row['path'], 'source': row['source'],
+                                      'expected_sha256': row['sha256']})
+
+    consumers = {}
+    for host in ('codex', 'claude'):
+        attempt = base / (host + '-01')
+        launch = json.loads((attempt / 'launch.json').read_bytes())
+        identity = json.loads((attempt / 'identity.json').read_bytes())
+        consumer_kit = Path(launch['cwd']) / 'installed pixl'
+        actual = inventory(consumer_kit)
+        consumer_checks = {
+            'initial_identity_matches_frozen_archive': identity['package_files'] == native,
+            'actual_installed_payload_matches_frozen_archive': actual == native,
+        }
+        consumers[host] = {
+            'root': str(consumer_kit), 'launch': reference(attempt / 'launch.json'),
+            'identity': reference(attempt / 'identity.json'), 'checks': consumer_checks,
+            'files': len(actual), 'manifest_sha256': sha(consumer_kit / 'bundle-manifest.json'),
+            'changed_or_missing': [name for name in native if actual.get(name) != native[name]],
+            'unexpected_non_cache_files': sorted(set(actual) - set(native)),
+            'excluded_interpreter_cache_files': sorted(p.relative_to(consumer_kit).as_posix()
+                for p in consumer_kit.rglob('*') if p.is_file() and '__pycache__' in p.relative_to(consumer_kit).parts),
+        }
+    bundle = verify_manifest(kit.resolve())
+    checks = {
+        'exact_frozen_archive_and_snapshot_verified': sha(archive) == snapshot['archive']['sha256']
+            and native == snapshot['files'] and len(names) == len(set(names))
+            and len(native) == snapshot['file_count']
+            and native.get('bundle-manifest.json') == snapshot['manifest_sha256'] == NATIVE_MANIFEST,
+        'complete_file_inventory_same': not added and not removed,
+        'only_precise_generated_references_manifest_and_reviewed_annotation_changed': all(row['path'] in ALLOWED | TYPE_ONLY for row in changed),
+        'reviewed_annotation_only_in_both_http_runtime_copies': all(
+            row['exact_reviewed_text_change_only'] and row['exact_local_annotation_normalized']
+            and row['ast_equal_after_exact_annotation_normalization'] for row in type_changes.values()),
+        'all_other_runtime_profile_skills_specs_configs_renderers_byte_identical': all(native[name] == current.get(name)
+            for name in native if name not in ALLOWED | TYPE_ONLY),
+        'both_actual_installed_consumer_kits_preserved': all(all(row['checks'].values()) for row in consumers.values()),
+        'final_bundle_verified': bundle['status'] == 'verified',
+        'final_bundle_payload_matches_canonical_sources': not source_mismatches,
+        'final_verifier_pointer_matches_retained_run': result == recorded,
+        'final_full_verifier_passed': result['status'] == 'pass' and result.get('tests', {}).get('passed', 0) > 0,
+        'final_verifier_includes_cf08_inputs': CF08_CHECKED_INPUTS <= set(checked),
+        'all_final_checked_sources_unchanged': bool(checked) and not changed_inputs,
+        'final_verifier_binds_exact_final_manifest': result.get('bundle_manifest_sha256') == sha(kit / 'bundle-manifest.json'),
+    }
+    payload = {
+        'version': 1, 'status': 'pass' if all(checks.values()) else 'fail',
+        'observed_at': datetime.now(UTC).isoformat(), 'checks': checks,
+        'native_snapshot': reference(snapshot_path), 'native_archive': reference(archive),
+        'native_manifest_sha256': NATIVE_MANIFEST,
+        'final_manifest': reference(kit / 'bundle-manifest.json'), 'files': len(current),
+        'changed': changed, 'added': added, 'removed': removed,
+        'allowed_generated_changes': sorted(ALLOWED), 'reviewed_type_only_changes': type_changes,
+        'native_consumer_kits': consumers,
+        'bundle_verification': bundle, 'source_mismatches': source_mismatches,
+        'full_verification': reference(verifier), 'verifier_pointer': reference(result_pointer),
+        'checked_source_count': len(checked), 'changed_checked_inputs': changed_inputs,
+        'audit_source': reference(__file__),
+        'scope': 'Independent frozen/final identity and source compatibility only. Both installed native kits remain original 60f2a7dd bytes. Final pixellab_http.py copies differ only by the explicitly reviewed recovered_from local type annotation, checked as an exact textual change and AST equality after removing that annotation. All other runtime/profile/skill/spec/config/renderer bytes are identical apart from the precise generated-reference allowlist. No native rerun of final annotated bytes, provider operation, artifact review, engine outcome or human acceptance is inferred.',
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open('x', encoding='utf-8', newline='\n') as handle:
+        json.dump(payload, handle, indent=2)
+        handle.write('\n')
+    print(json.dumps({'status': payload['status'], 'checks': checks, 'files': len(current),
+                      'changed': changed, 'changed_checked_inputs': changed_inputs}, indent=2))
+    raise SystemExit(0 if payload['status'] == 'pass' else 1)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,205 @@
+"""Audit retained Claude03 async completion; no host run or grade replacement.
+
+This independent receipt supplements the frozen 30/31 grade's synchronous-only
+completion adapter. It observes only the exact retained native events below.
+"""
+import argparse
+import hashlib
+import json
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[3]
+CHILD = 'a06ade5d7e5d27b80'
+SESSION = 'ac38ceff-6558-4fd9-b06a-811b90e60210'
+CALL = 'toolu_01UCXQCjca6bWJEjzp7k1x1o'
+RUN = '0mwdjad45-7bc202b9'
+CHILD_FILE = f'native-transcripts/{CHILD}.jsonl'
+EXPECTED = {
+    'stdout.jsonl': '1da9d71943bcad3083406847721f43a57358258b4468b979dceed1d46f56cae1',
+    'native-transcripts/parent.jsonl': 'c88ca24515a523023680130900049e34e18df4756d6b21181816b82a9fc752a2',
+    CHILD_FILE: '09d7777d4eb8a2e35ff1d57e8c8040257b7b39421fd5e01592222f1f3bdb88ec',
+    'continuation.json': 'fdbd569c2bd9674e831e07df896d9fed56dd7dd5ef29a2d6f7b6063f3f62904a',
+    'record.json': 'abb366e69c48bbec1ddf3556d30012fe7bf3f9baa1f3368b8bc9b29a11d72bb2',
+    'outputs/CALLER-RESULT.json': '66d1cc6ec86ddae9dddfd11707c995f8ed39d34187e1e5bc7c20e05db1e3c7cc',
+    'outputs/SPECIALIST-RESULT.json': 'dc52cdae9ffcc567df3a16d0df069f5a9ec282dd76d49a493547c1542b0a9ad4',
+    'grade-final-01.json': '682324d684866f187b99788df96ec9040f3c51ee38ad0803cc77b146b77fe8da',
+}
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def reference(path):
+    data = path.read_bytes()
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(data), 'bytes': len(data)}
+
+
+def tag(text, name):
+    matches = re.findall(r'<' + name + r'>(.*?)</' + name + r'>', text, re.DOTALL)
+    if len(matches) != 1:
+        raise ValueError('Expected one host notification tag: ' + name)
+    return matches[0]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out', type=Path, default=BASE / 'async-completion-proof.json')
+    out = parser.parse_args().out.resolve()
+    if out.exists():
+        raise ValueError('Preserve the previous receipt; choose a fresh output path')
+    raw = {name: (BASE / name).read_bytes() for name in EXPECTED}
+    mismatches = [name for name, data in raw.items() if sha(data) != EXPECTED[name]]
+    if mismatches:
+        raise ValueError('Changed retained audit inputs: ' + ', '.join(mismatches))
+    values = {name: ([json.loads(line) for line in data.splitlines()]
+                     if name.endswith('.jsonl') else json.loads(data))
+              for name, data in raw.items()}
+    stdout = values['stdout.jsonl']
+    parent = values['native-transcripts/parent.jsonl']
+    child = values[CHILD_FILE]
+    continuation = values['continuation.json']
+    record = values['record.json']
+    caller = values['outputs/CALLER-RESULT.json']
+    grade = values['grade-final-01.json']
+    call_row, start, launch = stdout[49], stdout[51], stdout[52]
+    update, notice, terminal = stdout[182], stdout[183], stdout[252]
+    call = call_row['message']['content'][0]
+    result_block = launch['message']['content'][0]
+    child_end = child[130]
+    child_text = child_end['message']['content'][0]['text']
+    parent_call, parent_launch, parent_notice = parent[79], parent[80], parent[118]
+    notification = parent_notice['message']['content']
+    parent_call_block = parent_call['message']['content'][0]
+
+    checks = {
+        'exact_inputs_record_bindings_and_frozen_grade_preserved': (
+            all(record['recorded_files'][name] == EXPECTED[name] for name in
+                ('stdout.jsonl', 'continuation.json', 'native-transcripts/parent.jsonl', CHILD_FILE))
+            and record['continuation']['sha256'] == EXPECTED['continuation.json']
+            and grade['inputs']['record.json'] == EXPECTED['record.json']
+            and grade['inputs']['continuation.json'] == EXPECTED['continuation.json']
+            and grade['status'] == 'fail' and grade['passed'] == 30 and grade['total'] == 31
+            and [r['check'] for r in grade['checks'] if not r['pass']]
+                == ['native_finished_with_actual_named_child']),
+        'selected_child_matches_caller_continuation_and_grade': (
+            caller['native_child']['agent_id'] == CHILD
+            and caller['native_child']['agent_type'] == 'pixl:pixl'
+            and continuation['children'] == [{'id': CHILD, 'first_line': 52,
+                                             'last_line': 182, 'role': 'pixl:pixl'}]
+            and grade['native_child'] == CHILD and grade['native_parent'] == SESSION),
+        'named_async_agent_call': (call_row['type'] == 'assistant' and call['type'] == 'tool_use'
+            and call['name'] == 'Agent' and call['id'] == CALL
+            and call['input']['subagent_type'] == 'pixl:pixl'
+            and call['input']['run_in_background'] is True),
+        'successful_async_launch_binds_selected_child': (
+            launch['type'] == 'user' and result_block['type'] == 'tool_result'
+            and result_block['tool_use_id'] == CALL and not result_block.get('is_error', False)
+            and launch['tool_use_result']['status'] == 'async_launched'
+            and launch['tool_use_result']['isAsync'] is True
+            and launch['tool_use_result']['agentId'] == CHILD),
+        'host_started_event_binds_named_child_call_and_run': (
+            start['type'] == 'system' and start['subtype'] == 'task_started'
+            and start['task_id'] == CHILD and start['tool_use_id'] == CALL
+            and start['run_id'] == RUN and start['subagent_type'] == 'pixl:pixl'
+            and start['is_backgrounded'] is True),
+        'host_update_completed_same_child_and_run': (
+            update['type'] == 'system' and update['subtype'] == 'task_updated'
+            and update['task_id'] == CHILD and update['run_id'] == RUN
+            and update['patch']['status'] == 'completed'),
+        'host_notification_completed_same_child_call_and_run': (
+            notice['type'] == 'system' and notice['subtype'] == 'task_notification'
+            and notice['task_id'] == CHILD and notice['tool_use_id'] == CALL
+            and notice['run_id'] == RUN and notice['status'] == 'completed'),
+        'all_host_events_bind_same_parent_session': (
+            continuation['session_id'] == SESSION
+            and all(r['session_id'] == SESSION for r in
+                    (call_row, start, launch, update, notice, terminal))
+            and all(r['sessionId'] == SESSION for r in
+                    (parent_call, parent_launch, parent_notice))),
+        'retained_native_parent_and_child_hashes_match_recorder': (
+            continuation['retained_transcripts'][CHILD]['sha256'] == EXPECTED[CHILD_FILE]
+            and continuation['retained_transcripts']['parent']['sha256']
+                == EXPECTED['native-transcripts/parent.jsonl']),
+        'actual_child_ended_turn_with_same_identity_and_session': (
+            child_end['type'] == 'assistant' and child_end['agentId'] == CHILD
+            and child_end['sessionId'] == SESSION and child_end['isSidechain'] is True
+            and child_end['message']['stop_reason'] == 'end_turn'
+            and child_end['message']['content'][0]['type'] == 'text'),
+        'independent_parent_host_notification_matches_child_final': (
+            parent_call['type'] == 'assistant' and parent_call_block == call
+            and parent_launch['type'] == 'user'
+            and parent_launch['toolUseResult']['status'] == 'async_launched'
+            and parent_launch['toolUseResult']['agentId'] == CHILD
+            and parent_launch['message']['content'][0]['tool_use_id'] == CALL
+            and parent_notice['type'] == 'user' and parent_notice['isSidechain'] is False
+            and parent_notice['promptSource'] == 'system'
+            and parent_notice['turnOrigin'] == 'task_notification'
+            and parent_notice['origin'] == {'kind': 'task-notification',
+                                          'producer': 'session-task', 'runId': RUN}
+            and notification.startswith('<task-notification>\n')
+            and notification.endswith('</task-notification>')
+            and tag(notification, 'task-id') == CHILD
+            and tag(notification, 'tool-use-id') == CALL
+            and tag(notification, 'status') == 'completed'
+            and tag(notification, 'result') == notice['summary'] == child_text),
+        'natural_host_exit_and_final_completion': (
+            record['returncode'] == 0 and continuation['returncode'] == 0
+            and continuation['status'] == 'finished'
+            and continuation['interruption_reason'] is None
+            and terminal['type'] == 'result' and terminal['subtype'] == 'success'
+            and terminal['terminal_reason'] == 'completed' and terminal['is_error'] is False
+            and terminal['subagent_stats']['completed'] == 1
+            and terminal['subagent_stats']['failed'] == 0
+            and terminal['origin']['runId'] == RUN),
+    }
+
+    def event(name, line, fields):
+        row = values[name][line - 1]
+        return {'input': name, 'line': line,
+                'line_sha256_without_newline': sha(raw[name].splitlines()[line - 1]),
+                'observed': {key: row[key] for key in fields}}
+
+    events = [
+        event('stdout.jsonl', 50, ('type', 'session_id', 'uuid')),
+        event('stdout.jsonl', 52, ('type', 'subtype', 'task_id', 'tool_use_id', 'run_id', 'subagent_type')),
+        event('stdout.jsonl', 53, ('type', 'session_id', 'uuid')),
+        event('stdout.jsonl', 183, ('type', 'subtype', 'task_id', 'run_id', 'patch')),
+        event('stdout.jsonl', 184, ('type', 'subtype', 'task_id', 'run_id', 'tool_use_id', 'status')),
+        event(CHILD_FILE, 131, ('type', 'agentId', 'sessionId', 'uuid')),
+        event('native-transcripts/parent.jsonl', 80, ('type', 'sessionId', 'uuid')),
+        event('native-transcripts/parent.jsonl', 81, ('type', 'sessionId', 'uuid')),
+        event('native-transcripts/parent.jsonl', 119,
+              ('type', 'sessionId', 'uuid', 'origin', 'promptSource', 'turnOrigin')),
+        event('stdout.jsonl', 253, ('type', 'subtype', 'terminal_reason', 'is_error', 'origin')),
+    ]
+    payload = {
+        'version': 1, 'status': 'pass' if all(checks.values()) else 'fail',
+        'observed_at': datetime.now(UTC).isoformat(),
+        'passed': sum(checks.values()), 'total': len(checks), 'checks': checks,
+        'host': 'claude', 'phase': 3, 'native_parent': SESSION,
+        'native_child': CHILD, 'named_role': 'pixl:pixl', 'call_id': CALL, 'run_id': RUN,
+        'inputs': {name: reference(BASE / name) for name in EXPECTED},
+        'events': events, 'audit_source': reference(Path(__file__).resolve()),
+        'frozen_grade': {'path': 'grade-final-01.json', 'status': 'fail', 'passed': 30, 'total': 31,
+                         'unrecognized_check': 'native_finished_with_actual_named_child'},
+        'scope': 'Separate identity/completion proof for the already retained Claude03 async Agent run. '
+                 'The frozen grader recognizes synchronous tool results only; these native host events '
+                 'bind its background launch and completion. The original 30/31 grade remains unchanged. '
+                 'This is not a new native outcome or a replay, does not repair Claude02 profile loading, '
+                 'and adds no provider, artistic, engine, human acceptance or broad milestone claim.',
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open('x', encoding='utf-8', newline='\n') as handle:
+        json.dump(payload, handle, indent=2)
+        handle.write('\n')
+    print(json.dumps({'status': payload['status'], 'passed': payload['passed'],
+                      'total': payload['total'], 'checks': checks, 'receipt': str(out)}, indent=2))
+    raise SystemExit(0 if payload['status'] == 'pass' else 1)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,81 @@
+"""Summarize the bounded CF-08 exit; never rewrite a native grade."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).resolve().parent
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def main():
+    output = BASE / 'OUTCOME.json'
+    if output.exists():
+        raise ValueError('Keep the retained outcome; use a new source/output for a new review')
+    records = []
+    failures = []
+    for host in ('codex', 'claude'):
+        for phase in range(1, 4):
+            attempt = BASE / f'{host}-0{phase}'
+            grade_path = attempt / 'grade-final-01.json'
+            grade = read(grade_path)
+            assert grade['host'] == host and grade['phase'] == phase
+            assert grade['grader_sha256'] == hashlib.sha256((ROOT / 'evaluations/grade_provider_recovery.py').read_bytes()).hexdigest()
+            failed = [c['check'] for c in grade['checks'] if not c['pass']]
+            failures.extend((attempt.name, name) for name in failed)
+            provider = read(attempt / 'provider-state.json')
+            records.append({'host': host, 'phase': phase, 'grade': ref(grade_path),
+                            'overall_status': grade['status'], 'passed': grade['passed'], 'total': grade['total'],
+                            'failed_checks': failed, 'parent': grade['native_parent'], 'child': grade['native_child'],
+                            'accepted_controlled_submissions': provider['accepted_submissions'],
+                            'preservation': ref(attempt / 'preservation.json')})
+    # Explicit retained conformance failure, not a waiver or a changed native grade.
+    assert failures == [('claude-02', 'selected_child_loaded_common_profile_and_skill'),
+                        ('claude-03', 'native_finished_with_actual_named_child')], failures
+    asynchronous = BASE / 'claude-03/async-completion-proof.json'
+    assert read(asynchronous)['status'] == 'pass'
+    # This independent host-event proof supplies the async completion that the
+    # frozen synchronous-only grader cannot recognize; the failed grade stays.
+    verification = ROOT / 'evidence/verification-runs/20261112T123657.135315Z/result.json'
+    assert read(verification)['status'] == 'pass'
+    static = BASE / 'static-verification-02.json'
+    compatibility = BASE / 'final-kit-compatibility.json'
+    assert read(static)['status'] == read(compatibility)['status'] == 'pass'
+    result = {
+        'bounded_development_outcome': 'core_recovery_complete',
+        'native_instruction_conformance': 'partial; Claude phase two remains failed 32/33',
+        'acceptance_authority': 'Development review against existing CF-08/TM-03 PLAN exits; not human acceptance',
+        'criteria': [
+            'Reconcile one unknown only from matching originating provider/tool/arguments/input observations',
+            'Preserve a genuinely unresolved no-ID attempt unchanged as unknown',
+            'Recover known-ID output from actual truncated HTTP bytes across cold parent/child processes',
+            'Import one complete candidate and independently consume the exact bytes/source mapping',
+            'Second cold recovery preserves candidate, state, full provider call log and prior failures',
+            'No new native preparation/dispatch/generation; one original accepted controlled submission per host',
+            'Selected real local publication windows and competing writers preserve history without duplicate publication',
+        ],
+        'native': records, 'verification': ref(verification), 'static': ref(static),
+        'kit_compatibility': ref(compatibility), 'tm03': ref(BASE / 'tm03-verification.json'),
+        'profile_loading_finding': ref(BASE / 'claude-02/profile-loading-finding.json'),
+        'asynchronous_completion_supplement': ref(asynchronous),
+        'provider_simulated': True, 'human_acceptance': 'unperformed',
+        'open': ['M1', 'M2 including observed profile-loading conformance gap', 'broader M3', 'broader M4',
+                 'live ambiguous paid-service recovery', 'broader domain quality and host reliability', 'unrelated Claude QOL-10 continuation'],
+        'next': 'TM-08 directional, animation and tile consumers, supporting CF-09',
+        'source': ref(Path(__file__).resolve()),
+    }
+    with output.open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({'outcome': result['bounded_development_outcome'], 'conformance': result['native_instruction_conformance']}))
+
+
+if __name__ == '__main__':
+    main()

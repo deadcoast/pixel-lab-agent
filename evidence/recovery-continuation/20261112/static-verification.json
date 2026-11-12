@@ -1,0 +1,60 @@
+{
+  "scope": "Ruff repository Python and scoped Mypy; untyped function bodies not fully checked; transitive historical evaluation type errors are outside scoped Mypy.",
+  "status": "fail",
+  "checks": [
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "pixl",
+        "evaluations",
+        "tests",
+        "scripts"
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy",
+        "--explicit-package-bases",
+        "--follow-imports=silent",
+        "pixl",
+        "evaluations/grade_provider_recovery.py",
+        "evaluations/provider_recovery_case.py",
+        "evaluations/provider_recovery_fixture.py"
+      ],
+      "returncode": 1,
+      "stdout": "pixl\\codec.py:117: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\codec.py:130: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\assets.py:39: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\platform.py:893: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\job_history.py:86: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\lifecycle.py:265: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\lifecycle.py:286: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\graph.py:142: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\graph.py:394: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\plar.py:68: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\plar.py:180: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\jobs.py:127: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\catalog.py:34: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\request_review.py:76: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\request_review.py:118: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\inspection.py:835: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\npixl\\poc.py:1251: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\nevaluations\\provider_recovery_fixture.py:22: error: Cannot find implementation or library stub for module named \"pixellab_mcp_fixture\"  [import-not-found]\nevaluations\\provider_recovery_fixture.py:22: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports\nevaluations\\provider_recovery_fixture.py:22: error: Name \"BASE_SCHEMAS\" already defined (possibly by an import)  [no-redef]\nFound 2 errors in 1 file (checked 44 source files)\n",
+      "stderr": ""
+    }
+  ],
+  "source_hashes": {
+    "pixl/graph.py": "399c0709bf93665e2ae7508e4295ed88ca623a3ac8e5038a8aebd97898f79196",
+    "pixl/jobs.py": "3b987f69a3c468fa93041824b1200a79d455c4b9c902cc6797c43f7f6b0494bb",
+    "pixl/pixellab_http.py": "b058e94984711894f04483452f2e8d86bbcf5bbc52167a009499b00511392419",
+    "evaluations/grade_provider_recovery.py": "155b73fb41a92925093b7c5bc1767eaae24f362ca4f221dbd2077c9fe8649078",
+    "evaluations/provider_recovery_case.py": "75f316cb958c487b7cc2440cf40567a406ee30ab5bf39e523dc58bd28b490ec1",
+    "evaluations/provider_recovery_fixture.py": "346a305278b16dd4d5010a69aacddfc24a2fd4f24cd545256e403fc02e18f413",
+    "tests/test_grade_provider_recovery.py": "ad4d994447421314801aca2f2e378d5cee79b32ab617d11fbc30b3001ef4d7fd"
+  },
+  "earlier_attempts": [
+    {
+      "command": "mypy pixl plus three evaluation paths",
+      "result": "module found twice under different names; use explicit package bases"
+    },
+    {
+      "command": "mypy --explicit-package-bases pixl plus three evaluation paths",
+      "result": "45 type errors including inherited historical evaluation modules and new local annotations; fixed new scoped errors and checked selected sources with follow-imports=silent"
+    },
+    {
+      "command": "ruff check after typing fix",
+      "result": "one import formatting failure; fixed with Ruff and rechecked"
+    }
+  ]
+}

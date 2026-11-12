@@ -1,0 +1,40 @@
+{
+  "phase": 1,
+  "status": "partial",
+  "provider_simulated": true,
+  "job": "recoverable-job",
+  "remote_id": "controlled-recovery-0001",
+  "unresolved_job": "unresolved-job",
+  "unresolved_state": "unknown",
+  "candidate": null,
+  "state": {
+    "path": ".pixl/recovery/state.px",
+    "sha256": "ec122a796be05ad2f2a2f092af28747170cf72eea02811546ff457535fc53ee0",
+    "canonical_hash": "ec122a796be05ad2f2a2f092af28747170cf72eea02811546ff457535fc53ee0",
+    "revision": 8
+  },
+  "evidence_refs": [
+    {"path": "work/provider-recovery/phase-1/jobs-before.json", "sha256": "221160d18321745bc26e3ee5fad6a68b6422de1ecca837f7fb30cd90c9e7bf49"},
+    {"path": "work/provider-recovery/phase-1/workflow-before.json", "sha256": "3a8e1905d3454b019d1eacb6c68907b1981c80155a655d4904ad62b196e29da8"},
+    {"path": "work/provider-recovery/phase-1/provider-list-jobs.json", "sha256": "e346b3ba852d75ddf424d0f789590d8b80ab81820925d600a93873aba0caab66"},
+    {"path": "work/provider-recovery/phase-1/identity-match.json", "sha256": "8df80a362e88072b4444410b5b969efbab663ac3b589ced587be90a49802cc6c"},
+    {"path": "work/provider-recovery/phase-1/provider-get-image-1.json", "sha256": "6681864b249a2b54f8ffee7a826906f71bd15bc1608979dfaf26a96a3e7031dc"},
+    {"path": "work/provider-recovery/phase-1/provider-get-image-2.json", "sha256": "fa2710707c5159c95f1b7a2825c15138caff938411d9162e95ca4ac569ee867c"},
+    {"path": "work/provider-recovery/phase-1/download.part", "sha256": "c782e097dc9ebb50682becc305d82839e4ee73c38926dd9dd6495b75ed037c4f"},
+    {"path": "work/provider-recovery/phase-1/download-error.json", "sha256": "a20dde823756d0d4052e3a3dc483483ab7ad8f29a9e25947c3d2091b391b4af3"},
+    {"path": "work/provider-recovery/phase-1/curl-stdout.txt", "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+    {"path": "work/provider-recovery/phase-1/curl-stderr.txt", "sha256": "14eabb2faeabfac1b9533db6f6289ecffe635d94e983c545f76bd43c8bb21517"},
+    {"path": "work/provider-recovery/phase-1/jobs-after.json", "sha256": "86c4f8bf9a9194cbea27b3bfe24174d746d160c8fbb4b133368366b7056d48a2"},
+    {"path": "work/provider-recovery/phase-1/workflow-after.json", "sha256": "0c0813539411cb8cd95803e96c59b3c6ca5f8894a0ada9fd4df8eb689e8d204d"}
+  ],
+  "limitations": [
+    "No live PixelLab: provider pixellab-recovery-test is a controlled fixture; provider_simulated=true throughout and no new submission, dispatch, prepare, generate or upload occurred.",
+    "No artistic, engine or human acceptance was performed or claimed; q.bytes remains unperformed and no candidate exists.",
+    "Partial bytes only: the single authorized retrieval of http://127.0.0.1:7099/controlled-recovery-0001.png ended with curl exit 18 (118 bytes missing); 59 of 177 expected bytes are retained at work/provider-recovery/phase-1/download.part (sha256 c782e097dc9ebb50682becc305d82839e4ee73c38926dd9dd6495b75ed037c4f); the partial file was not imported and assets/robot.png was not created.",
+    "unresolved-job remains unknown with remote_id null: no listing entry matched its full request identity and absence from the listing is not proof of non-acceptance; it was not modified.",
+    "M1/M2 and M3/M4 remain open.",
+    "Timestamps in evidence were read from the host clock via the selected Python (result written at 2026-11-12T12:17:42.674542+00:00); the local PIXL journal recorded its own recorded_at values (running 2026-11-12T12:15:17.594157+00:00, succeeded 2026-11-12T12:16:01.644010+00:00).",
+    "The expected result sha256 (d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7) coincides with the local reference.png identity; no reference pixels were copied and the recovered bytes must still come from the originating resource."
+  ],
+  "next_action": "Phase 2 cold retrieval for recoverable-job, same remote_id controlled-recovery-0001, no new dispatch and no import of partial bytes: after restart, re-query mcp__pixellab-recovery__get_image job_id=controlled-recovery-0001 to obtain a fresh loopback download URL (the previous URL is not the resource identity); download the complete bytes into a fresh path under work/provider-recovery/phase-2/ (do not overwrite phase-1/download.part); verify size 177, sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7 and that it decodes as a 32x32 PNG; no further pixl_job_observe is needed (job already succeeded); run pixl_job_import with store .pixl/recovery, expect = current pixl_validate hash (ec122a796be05ad2f2a2f092af28747170cf72eea02811546ff457535fc53ee0 unless changed), job_id recoverable-job, output_id recovered-avatar, a new candidate_id, path = the verified downloaded file, evidence = the fresh get_image response plus actual download diagnostics; then byte-copy the verified file to assets/robot.png as an unaccepted asset (src/avatar.ts expects 32x32 at that path) and save jobs/workflow reports. Keep unresolved-job unknown."
+}

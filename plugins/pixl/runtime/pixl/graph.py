@@ -63,12 +63,26 @@ def proof_scope(doc, seeds, adjacency=None):
     )
 
 
+def _resolved_path(path):
+    resolved = Path(path).resolve()
+    # Windows realpath can retain an extended-length prefix when another writer
+    # creates a previously missing path during resolution. Compare the same
+    # resolved location using one spelling; never normalize unresolved input or
+    # reinterpret other device namespaces as ordinary drive/UNC paths.
+    drive = resolved.drive
+    if drive.upper().startswith("\\\\?\\UNC\\"):
+        return Path("\\\\" + str(resolved)[8:])
+    if len(drive) == 6 and drive.startswith("\\\\?\\") and drive[4].isalpha() and drive[5] == ":":
+        return Path(str(resolved)[4:])
+    return resolved
+
+
 def confined(root, name):
-    root = Path(root).resolve()
+    root = _resolved_path(root)
     path = Path(name)
     if path.is_absolute() or not name or "\\" in name or ":" in name:
         raise PixlError("path_escape", f"{name!r}: use a nonempty forward-slash relative path inside declared root {root}; absolute paths, backslashes and drive prefixes are not accepted here")
-    path = (root / path).resolve()
+    path = _resolved_path(root / path)
     if not path.is_relative_to(root) or path == root:
         raise PixlError("path_escape", f"{name!r}: resolved path must remain inside declared root {root}; parent or symlink escape is not accepted")
     return path

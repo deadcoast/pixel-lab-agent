@@ -1,0 +1,191 @@
+"""Read-only CF-08 living-document audit; writes only a fresh requested report.
+
+Run after final documents and full verification are complete. This validates
+references, preserved workflow IDs and input/evidence identity, not native/art
+behavior or human acceptance. The earlier NF-04 snapshot is never regenerated.
+"""
+
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+BASELINE = 'afb66c22d68077f37c2dbfd33d1f4200da9c5258'
+CYCLE = 'IDENTIFY-2026-11-09-01'
+DOCUMENTS = (
+    'TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/CAPABILITY-OUTCOMES.md',
+    'docs/IDENTIFIED.md', 'evaluations/README.md',
+    'evidence/recovery-continuation/README.md', 'evaluations/TODO.spec.md',
+)
+SOURCES = (
+    'pixl/graph.py', 'pixl/jobs.py', 'pixl/pixellab_http.py',
+    'spec/provider-recovery.md',
+    'plugins/pixl/skills/pixl/references/provider-recovery.md',
+    '.agents/PROFILE.md',
+)
+REGENERATED_ROOT = {
+    'evidence/test-results.json', 'evidence/test-log.txt',
+    'evidence/representation-benchmark.json', 'evidence/wheel-check.json',
+}
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def identity(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': digest(path.read_bytes())}
+
+
+def git(*arguments):
+    return subprocess.check_output(['git', '-C', str(ROOT), *arguments])
+
+
+def no_examples(text):
+    return re.sub(r'(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)', '', text)
+
+
+def anchors(path):
+    text = no_examples(path.read_text(encoding='utf-8-sig'))
+    result = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', text))
+    seen = {}
+    for heading in re.findall(r'^#{1,6}\s+(.+?)\s*#*$', text, re.M):
+        slug = re.sub(r'[^\w\s-]', '', heading.lower()).replace(' ', '-')
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        result.add(slug + (f'-{count}' if count else ''))
+    return result
+
+
+def audit(verification, output):
+    checks = []
+
+    def check(name, passed, detail):
+        checks.append({'name': name, 'passed': bool(passed), 'detail': detail})
+
+    link_count, link_failures = 0, []
+    linked = set()
+    for name in DOCUMENTS:
+        path = ROOT / name
+        body = no_examples(path.read_text(encoding='utf-8-sig'))
+        for target in re.findall(r'\]\(([^)]+)\)', body):
+            if re.match(r'[a-zA-Z][a-zA-Z0-9+.-]*:', target):
+                continue
+            local, _, fragment = unquote(target).partition('#')
+            destination = (path.parent / local).resolve() if local else path
+            link_count += 1
+            # The requested audit's own link is materialized by exclusive write
+            # below; no other future file is exempt from existence checks.
+            exists = destination.exists() or (destination == output and not fragment)
+            valid_anchor = not fragment or (destination.is_file() and fragment in anchors(destination))
+            if not exists or not valid_anchor:
+                link_failures.append({'document': name, 'target': target})
+            if destination.is_file() and destination.is_relative_to(ROOT):
+                linked.add(destination)
+    check('local_links_and_anchors', not link_failures,
+          {'occurrences': link_count, 'failures': link_failures})
+
+    patterns = {
+        'docs/IDENTIFIED.md': r'^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s',
+        'SHELVED.md': r'^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]',
+    }
+    inventories = {}
+    for name, pattern in patterns.items():
+        before = re.findall(pattern, git('show', BASELINE + ':' + name).decode('utf-8'), re.M)
+        after = re.findall(pattern, (ROOT / name).read_text(encoding='utf-8'), re.M)
+        inventories[name] = after
+        check('original_ids_once:' + name, len(after) == len(set(after)) == 50 and after == before,
+              {'original_ids': before, 'current_ids': after})
+    check('finding_backlog_coverage', set(inventories['docs/IDENTIFIED.md']) == set(inventories['SHELVED.md']), 50)
+    for name in ('TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/IDENTIFIED.md'):
+        text = (ROOT / name).read_text(encoding='utf-8')
+        check('active_cycle:' + name, CYCLE in text, CYCLE)
+
+    result = json.loads(verification.read_text(encoding='utf-8'))
+    check('full_verification_completed', result.get('status') == 'pass', result.get('status'))
+    source_failures = []
+    for name, expected in result['checked_input_hashes'].items():
+        path = ROOT / name
+        observed = digest(path.read_bytes()) if path.is_file() else None
+        if observed != expected:
+            source_failures.append({'path': name, 'expected': expected, 'observed': observed})
+    check('verified_source_inputs_unchanged', not source_failures,
+          {'checked': len(result['checked_input_hashes']), 'mismatches': source_failures})
+
+    original = set(git('ls-tree', '-r', '--name-only', BASELINE, '--', 'evidence').decode().splitlines())
+    changed = git('diff', '--no-renames', '--name-only', BASELINE, '--', 'evidence').decode().splitlines()
+    previous = [name for name in changed if name in original]
+    allowed = [name for name in previous if name in REGENERATED_ROOT or name.startswith('evidence/art-methods/')]
+    unexpected = sorted(set(previous) - set(allowed))
+    check('historical_evidence_unchanged', not unexpected,
+          {'unexpected_changes': unexpected, 'intentional_generated_changes': allowed})
+
+    # Exact old generated bytes must still be in a new verifier's previous.zip.
+    # A later retry may archive already-regenerated bytes, so use the earliest
+    # matching new retained archive instead of assuming the final run has them.
+    manifests = []
+    for manifest in sorted((ROOT / 'evidence/verification-runs').glob('*/previous-manifest.json')):
+        if manifest.relative_to(ROOT).as_posix() not in original:
+            manifests.append((manifest, json.loads(manifest.read_text(encoding='utf-8'))))
+    preserved, missing = [], []
+    for name in allowed:
+        expected = digest(git('show', BASELINE + ':' + name))
+        matching = None
+        for manifest, entries in manifests:
+            archive = manifest.with_name('previous.zip')
+            if entries.get(name) == expected and archive.is_file():
+                with zipfile.ZipFile(archive) as retained:
+                    if digest(retained.read(name)) == expected:
+                        matching = archive.relative_to(ROOT).as_posix()
+                        break
+        if matching is None:
+            missing.append(name)
+        else:
+            preserved.append({'path': name, 'previous_sha256': expected, 'archive': matching,
+                              'current_sha256': digest((ROOT / name).read_bytes())})
+    check('regenerated_evidence_originals_retained', not missing,
+          {'preserved': preserved, 'missing': missing})
+    check('nf04_snapshot_unchanged', not any(name.startswith('evidence/capability-outcomes/') for name in previous),
+          'Earlier NF-04 receipts are retained, not regenerated for this matrix update')
+
+    whitespace = subprocess.run(['git', '-C', str(ROOT), '-c', 'core.whitespace=cr-at-eol',
+                                 'diff', '--check', BASELINE, '--', *DOCUMENTS],
+                                capture_output=True, text=True, encoding='utf-8')
+    check('document_whitespace', whitespace.returncode == 0, whitespace.stdout + whitespace.stderr)
+    return {
+        'version': 1, 'recorded_at': datetime.now(UTC).isoformat(),
+        'status': 'pass' if all(item['passed'] for item in checks) else 'fail',
+        'scope': 'Living-document reference and identity audit; no new native/provider/art/human qualification',
+        'baseline_commit': BASELINE, 'observed_head': git('rev-parse', 'HEAD').decode().strip(),
+        'audit_source': identity(Path(__file__).resolve()), 'full_verification': identity(verification),
+        'documents': [identity(ROOT / name) for name in DOCUMENTS],
+        'sources': [identity(ROOT / name) for name in SOURCES],
+        'linked_file_identities': [identity(path) for path in sorted(linked)],
+        'counts': {'documents': len(DOCUMENTS), 'local_links': link_count, 'original_findings': 50,
+                   'checks': len(checks), 'passed': sum(item['passed'] for item in checks)},
+        'checks': checks,
+        'human_acceptance': 'not_recorded; separate from development qualification',
+    }
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verification', required=True, type=Path, help='Completed full-verifier result.json')
+    parser.add_argument('--out', required=True, type=Path, help='Fresh audit receipt path')
+    args = parser.parse_args()
+    output = args.out.resolve()
+    if output.exists():
+        parser.error('Output exists; select a fresh path to preserve the earlier audit')
+    receipt = audit(args.verification.resolve(), output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open('x', encoding='utf-8', newline='\n') as handle:
+        json.dump(receipt, handle, ensure_ascii=False, indent=2)
+        handle.write('\n')
+    print(json.dumps({'status': receipt['status'], **receipt['counts']}))
+    raise SystemExit(0 if receipt['status'] == 'pass' else 1)

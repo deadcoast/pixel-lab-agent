@@ -518,14 +518,40 @@ def _summary(doc, record, journal, root=None, folder=None):
         if state == "prepared"
         else []
     )
+    imported = []
+    for event in journal["events"]:
+        if event["event"] == "imported":
+            item = event["artifact"]
+            candidate = doc.records[item["id"]]
+            imported.append({
+                "candidate_id": candidate.id,
+                "output_id": item["output"],
+                "path": candidate.fields["ur"],
+                "sha256": candidate.fields["dg"],
+                "record_sha256": item["record_sha256"],
+            })
+    imported_outputs = {item["output_id"] for item in imported}
+    missing_outputs = [
+        output for output in journal["intent"]["context"]["outputs"]
+        if output not in imported_outputs
+    ]
     next_action = {
         "prepared": "resolve_context" if stale or reasons else "dispatch",
         "unknown": "reconcile",
         "submitted": "observe",
         "running": "observe",
-        "succeeded": "inspect_candidates",
+        "succeeded": "retrieve_outputs" if missing_outputs else "inspect_candidates",
         "failed": "review_failure",
     }[state]
+    guidance = {
+        "dispatch": "Publish job-dispatch with the current state hash before one authorized host call; this report grants no dispatch.",
+        "resolve_context": "Reconcile the reported context/blockers before dispatch; do not replace a pending attempt to bypass them.",
+        "reconcile": "Use the originating provider connection and saved request/history to resolve this attempt. No ID or elapsed time proves non-acceptance; do not redispatch.",
+        "observe": "Observe this exact remote ID through the originating connection and retain the actual response; do not submit again.",
+        "retrieve_outputs": "Retrieve missing outputs from this succeeded resource through its originating connection. Preserve partial files and retry retrieval, not submission; import only complete verified bytes.",
+        "inspect_candidates": "Use the retained candidate paths and current review state. Import alone grants no acceptance; do not retrieve or generate again merely because a response was lost.",
+        "review_failure": "Preserve the failure and determine its consequence before a separately authorized new attempt with a new job ID.",
+    }[next_action]
     from .plar import selection_bindings
 
     return {
@@ -540,6 +566,15 @@ def _summary(doc, record, journal, root=None, folder=None):
         "stale": stale,
         "blockers": reasons,
         "next_action": next_action,
+        "recovery": {
+            "action": next_action,
+            "provider": journal["intent"]["request"]["provider"],
+            "tool": journal["intent"]["request"]["tool"],
+            "remote_id": journal["remote_id"],
+            "missing_outputs": missing_outputs,
+            "imported": imported,
+            "guidance": [guidance],
+        },
         "request": copy.deepcopy(journal["intent"]["request"]),
         "context": copy.deepcopy(journal["intent"]["context"]),
         "events": copy.deepcopy(journal["events"]),
@@ -645,7 +680,6 @@ def import_artifact(
 ):
     folder, root, doc = _load(folder, expected, root)
     previous = _get(doc, job_id, root)
-    _require(candidate_id not in doc.records, "job_artifact", "use a new candidate ID")
     context = previous["intent"]["context"]
     _require(
         output_id in context["outputs"],
@@ -668,6 +702,34 @@ def import_artifact(
         "job_artifact",
         "unsupported filename suffix",
     )
+    if candidate_id in doc.records:
+        # The reply may have been lost after publication. Only the exact saved
+        # association is a replay; byte equivalence with another job is not one.
+        artifact = doc.records[candidate_id]
+        imported = next((
+            event for event in previous["events"]
+            if event["event"] == "imported"
+            and event["artifact"]["id"] == candidate_id
+        ), None)
+        _require(
+            imported is not None
+            and imported["artifact"]["output"] == output_id
+            and artifact.kind == "X"
+            and artifact.fields.get("of") == Ref(output_id)
+            and codec.record_hash(artifact) == imported["artifact"]["record_sha256"]
+            and artifact.fields["dg"] == hashlib.sha256(data).hexdigest()
+            and platform._json_bytes(evidence) == platform._json_bytes(imported["evidence"]),
+            "job_artifact",
+            "candidate ID exists; reconcile its saved job/output, bytes and import evidence before retrying",
+        )
+        return {
+            "revision": doc.revision,
+            "hash": codec.digest(doc),
+            "state": str(folder / "state.px"),
+            "job": _summary(doc, doc.records[job_id], previous, root, folder),
+            "remote_executed": False,
+            "reused_import": True,
+        }
     uri, hash_ = _blob(folder, root, "artifacts", data, suffix)
     fields = {
         "nm": f"Imported candidate {candidate_id}",
@@ -690,7 +752,7 @@ def import_artifact(
             "record_sha256": codec.record_hash(artifact),
         },
     )
-    return _save(folder, root, doc, journal, expected)
+    return {**_save(folder, root, doc, journal, expected), "reused_import": False}
 
 
 def report(doc, root, folder=None):
