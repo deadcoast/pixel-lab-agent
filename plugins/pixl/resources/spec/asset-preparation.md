@@ -114,6 +114,10 @@ concurrent allocation edit wins, the prepared job remains retained and the resul
 reports `allocation.status: needs_reconciliation`; reread and link it instead of
 starting another request. Unchanged matching links are left byte-identical. A
 multi-output plan returns `needs_output_link` for an explicit delivery-output choice.
+It separately retains the explicitly prepared task in the asset store's versioned
+`preparation-focus.json`. A focused read can resume that task before a collective
+delivery output exists; it never substitutes an arbitrary member for delivery.
+An existing explicit PLAR delivery link remains authoritative.
 This linking step does not create a destination file or certify integration.
 
 `revise: true` with `expect` appends a new candidate task/output/criteria/choice/input
@@ -123,6 +127,27 @@ Project source/choice membership grows to include the new generation; no accepta
 is copied. The single-output allocation link advances only after its job is prepared.
 A new plan can be retained before its job or allocation link; an unchanged explicit
 retry with the current state hash resumes that generation, not another one.
+
+Preparation focus is confined metadata, not a new PLAR field or PX2 record. It
+binds the PLAR path, asset and retained requirements to the exact immutable
+preparation marker (path, file hash and input fingerprint), its task and durable
+job. Publication uses the store lock, a fresh state compare-and-swap and current
+source requirements, after the job/context has been verified. Job observations
+may advance state without invalidating an unchanged focus. Identical retries
+leave focus bytes unchanged. A malformed or mismatched focus is an explicit
+reconciliation diagnostic; no timestamp, lexical ID or old task status chooses
+its replacement. A direct older preparation is not currently selected merely
+because its source requirements match; existing dispatch/completion guards retain
+that distinction. Connected family stages keep their separate selection semantics.
+
+For an existing generation, repairing missing focus or deliberately selecting a
+prepared generation requires explicit `revise` and the current `expect`, with the
+exact target job still prepared and all other owned pending work resolved. This
+also supports a legacy multi-output store after an interrupted publication. A
+terminal historical retry cannot reclaim focus. An absent sidecar retains legacy
+unique-task discovery; multiple unlinked tasks stay ambiguous until explicit
+recovery. Older runtimes ignore this separate metadata and retain their original
+ambiguity; PLAR version 1 and PX2 wire semantics are unchanged.
 
 Before revision, resolve every pending attempt bound to this PLAR asset. A provider
 change, new task ID or new output ID does not bypass that rule. Low-level prepare

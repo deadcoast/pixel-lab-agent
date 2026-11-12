@@ -1,0 +1,97 @@
+"""Replay the original CF-09 focus failure through the exact final copied plugin."""
+import hashlib
+import json
+import shutil
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[5]
+evidence = repo / "evidence/domain-art-revision/20261112/final-kit-01"
+scratch = repo / "build/cf09-final-kit-01"
+evidence.mkdir(parents=True, exist_ok=False)
+scratch.mkdir(parents=True, exist_ok=False)
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write(path, value):
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(value, indent=2) + "\n")
+
+
+def unpack(archive, destination):
+    destination.mkdir(parents=True, exist_ok=False)
+    with zipfile.ZipFile(archive) as retained:
+        for name in retained.namelist():
+            target = (destination / name).resolve()
+            if not target.is_relative_to(destination.resolve()) or name.endswith("/"):
+                raise ValueError("Unexpected archive member: " + name)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(retained.read(name))
+
+
+verification_path = repo / "evidence/verification-runs/20261112T213958.037642Z/result.json"
+verification = read(verification_path)
+assert verification["status"] == "pass"
+plugin = repo / "plugins/pixl"
+manifest_path = plugin / "bundle-manifest.json"
+assert sha(manifest_path) == verification["bundle_manifest_sha256"]
+manifest = read(manifest_path)
+files = {row["path"]: row["sha256"] for row in manifest["files"]}
+for name, digest in files.items():
+    assert sha(plugin / name) == digest, name
+for name in ("bundle-manifest.json", "requirements.txt"):
+    files[name] = sha(plugin / name)
+kit = evidence / "pixl-kit.zip"
+with zipfile.ZipFile(kit, "x", compression=zipfile.ZIP_DEFLATED) as retained:
+    for name in sorted(files):
+        retained.write(plugin / name, name)
+unpack(kit, scratch / "pixl")
+before = repo / "evidence/domain-art-revision/20261112/preparation-01/consumer-before-focus-fix.zip"
+before_manifest = read(before.with_name("before-focus-fix.json"))
+assert sha(before) == before_manifest["sha256"]
+consumer = scratch / "consumer"
+unpack(before, consumer)
+for name, digest in before_manifest["files"].items():
+    assert sha(consumer / name) == digest, name
+script = Path(__file__).with_name("replay-focus-recovery.py.txt")
+argv = [sys.executable, str(script), "--repo", str(repo), "--consumer", str(consumer),
+        "--plugin-runner", str(scratch / "pixl/scripts/pixl.py")]
+result = subprocess.run(argv, cwd=repo, capture_output=True, text=True, encoding="utf-8", timeout=120)
+write(evidence / "execution.json", {"argv": argv, "returncode": result.returncode,
+      "stdout": result.stdout, "stderr": result.stderr})
+assert result.returncode == 0, "Retain failed replay; use a fresh attempt after correction"
+replay = read(consumer / "work/focus-recovery-01/result.json")
+assert replay["status"] == "pass"
+for name, digest in files.items():
+    assert sha(scratch / "pixl" / name) == digest, name
+for name, digest in before_manifest["files"].items():
+    assert sha(consumer / name) == digest, name
+shutil.copytree(consumer / "work/focus-recovery-01", evidence / "replay")
+consumer_archive = evidence / "consumer-after-replay.zip"
+consumer_files = {p.relative_to(consumer).as_posix(): sha(p) for p in sorted(consumer.rglob("*"))
+                  if p.is_file() and "__pycache__" not in p.parts}
+with zipfile.ZipFile(consumer_archive, "x", compression=zipfile.ZIP_DEFLATED) as retained:
+    for name in consumer_files:
+        retained.write(consumer / name, name)
+write(evidence / "result.json", {
+    "status": "pass", "scope": "Copied final plugin and relocated exact prepared consumer; no native model or provider execution",
+    "script": {"path": str(Path(__file__)), "sha256": sha(Path(__file__))},
+    "verification": {"path": str(verification_path.relative_to(repo)), "sha256": sha(verification_path)},
+    "kit": {"path": kit.name, "sha256": sha(kit), "manifest_sha256": sha(manifest_path), "files": files},
+    "original_consumer": {"path": str(before.relative_to(repo)), "sha256": sha(before), "files_preserved": len(before_manifest["files"])},
+    "final_consumer": {"path": consumer_archive.name, "sha256": sha(consumer_archive), "files": consumer_files},
+    "state_hash_unchanged": replay["state_hash"], "state_revision": replay["state_revision"],
+    "task": replay["task"], "job": replay["job"], "provider_calls": 0, "new_art": False,
+    "human_acceptance": "not recorded", "cf09_complete": False,
+})
+print(json.dumps({"status": "pass", "kit_files": len(files), "preserved_consumer_files": len(before_manifest["files"]),
+                  "result": str(evidence / "result.json")}))

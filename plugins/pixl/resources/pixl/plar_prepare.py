@@ -12,7 +12,17 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from . import codec, graph, jobs, lifecycle, plar, plar_workflow, platform, store
+from . import (
+    codec,
+    graph,
+    jobs,
+    lifecycle,
+    plar,
+    plar_workflow,
+    platform,
+    preparation_focus,
+    store,
+)
 from .codec import PixlError, Record, Ref, Symbol
 
 SCHEMA = json.loads(
@@ -487,7 +497,8 @@ def prepare(
             raise PixlError(
                 "stale_write", "production changed before retaining the revised plan"
             )
-        if marker_file.exists():
+        retained_marker = marker_file.exists()
+        if retained_marker:
             marker, marker_hash, marker_path = _json_file(
                 root, marker_file.relative_to(root).as_posix()
             )
@@ -496,6 +507,14 @@ def prepare(
                 and marker.get("input") == identity,
                 "asset preparation already exists with a different contract; preserve and revise the existing plan",
             )
+            if len(plan["outputs"]) > 1 or (not linked and graph.confined(folder, preparation_focus.NAME).exists()):
+                focus_task = marker.get("prefix", "") + "task"
+                preparation_focus.check_switch(
+                    current, root, folder, path, asset_id, focus_task, marker=marker,
+                    revise=revise, expected=expected,
+                    new_task=current is None or focus_task not in current.records,
+                    retained_marker=True,
+                )
         else:
             prefix = ""
             if current is not None:
@@ -547,6 +566,15 @@ def prepare(
                 "created_at": datetime.now(UTC).isoformat(),
                 **({"prefix": prefix} if prefix else {}),
             }
+            if len(plan["outputs"]) > 1:
+                focus = preparation_focus.check_switch(
+                    current, root, folder, path, asset_id, prefix + "task",
+                    revise=revise, expected=expected, new_task=True,
+                )
+                marker["preparation_focus"] = {
+                    "version": 1,
+                    "previous_sha256": focus["sha256"] if focus else None,
+                }
             data = platform._json_bytes(marker) + b"\n"
             marker_hash = sha256(data).hexdigest()
             marker_path = marker_file.relative_to(root).as_posix()
@@ -576,6 +604,7 @@ def prepare(
     )
     document = _document(root, selected, plan, marker_path, marker, marker_hash)
     task_id = marker.get("prefix", "") + "task"
+    new_task = current is None or task_id not in current.records
     output_ids = [r.id for r in document.records[task_id].fields["op"]]
     job_id = (
         marker.get("prefix", "") + "request"
@@ -695,6 +724,18 @@ def prepare(
         == platform._sha(identity["request"]),
         "existing first request differs from the reviewed intent; inspect its actual journal before continuing",
     )
+    focus_result = None
+    if len(output_ids) > 1:
+        try:
+            focus_result = preparation_focus.publish(
+                current, root, folder, path, selected, task_id, marker_path, marker_hash,
+                revise=revise, expected=expected, new_task=new_task, retained_marker=retained_marker,
+            )
+        except (PixlError, OSError) as error:
+            focus_result = {
+                "status": "needs_reconciliation", "reason": str(error),
+                "next": "The plan and job remain retained. Reread state and retry the exact current packet with revise/expect; do not create another request.",
+            }
     allocation = plar_workflow.synchronize(
         root, selected, path, folder, task_id, output_ids, marker_path
     )
@@ -703,6 +744,7 @@ def prepare(
     )
     return {
         "allocation": allocation,
+        **({"preparation_focus": focus_result} if focus_result is not None else {}),
         "store": folder.relative_to(root).as_posix(),
         "state": str(folder / "state.px"),
         "hash": codec.digest(current),

@@ -1,0 +1,172 @@
+"""Preserve and replace an undispatched CF-09 intent after criterion review.
+
+The correction explicitly carries the already requested navy/cyan treatment into
+each literal identity criterion. This is a local contract repair, not art repair.
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+import hashlib
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): sha(p) for p in root.rglob("*") if p.is_file()}
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+
+
+def main(repo, root):
+    repo, root = repo.resolve(), root.resolve()
+    old = root / "work/cf09-request"
+    work = root / "work/cf09-request-02"
+    if work.exists():
+        raise ValueError("Use fresh revision evidence; never overwrite the prior attempt")
+    previous = read(old / "result.json")
+    store = root / ".pixl/assets/robot.idle"
+    old_files = inventory(old)
+    store_files = inventory(store)
+    original = read(root.parent / "preparation.json")["consumer_inputs"]
+    for name, digest in original.items():
+        assert sha(root / name) == digest, name
+    work.mkdir(parents=True)
+    with (work / "state-before.px").open("xb") as stream:
+        stream.write((store / "state.px").read_bytes())
+    count = 0
+
+    def command(label, *args):
+        nonlocal count
+        count += 1
+        argv = [sys.executable, "-m", "pixl", *map(str, args)]
+        result = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
+                                encoding="utf-8", errors="strict", timeout=60)
+        name = f"{count:02d}-{label}"
+        write(work / "commands" / (name + ".json"), {
+            "argv": argv, "cwd": repo.as_posix(), "returncode": result.returncode,
+            "stdout": result.stdout, "stderr": result.stderr,
+        })
+        if result.returncode:
+            raise RuntimeError(f"{label} failed; preserve commands/{name}.json")
+        value = json.loads(result.stdout)
+        write(work / (name + ".json"), value)
+        return value
+
+    before = command("jobs-before", "jobs", store / "state.px", "--root", root)
+    assert before["hash"] == previous["state_hash"]
+    assert len(before["jobs"]) == 1
+    old_job = before["jobs"][0]
+    assert old_job["id"] == "first_request" and old_job["state"] == "prepared"
+    assert old_job["remote_id"] is None and not old_job["events"]
+    old_doc = command("state-before", "decode", store / "state.px")
+    selected = command("selected-before", "plar", "read", "--root", root, "--asset", "robot.idle")
+    assert selected["requirements_hash"] == previous["requirements_hash"]
+
+    plan = read(old / "candidate-plan.json")
+    original_plan = copy.deepcopy(plan)
+    lines = (root / "CF-09-ROBOT-IDLE.md").read_text(encoding="utf-8").splitlines()
+    starts = [i + 1 for i, line in enumerate(lines) if line.startswith("Create one calm, planted")]
+    assert len(starts) == 1
+    body_range = [starts[0], starts[0] + 6]
+    assert "Preserve the minimal navy/cyan treatment and transparent exterior." in lines[body_range[1] - 2]
+    for output in plan["outputs"]:
+        identity = next(item for item in output["criteria"] if item["id"] == "identity")
+        identity["check"] = (
+            "East identity and proportions remain recognizable; body silhouette and top post remain steady in position and shape. "
+            "Preserve the supplied minimal navy/cyan treatment and transparent exterior, with no invented anatomy or unrelated detail."
+        )
+        identity["sources"].append({"path": "CF-09-ROBOT-IDLE.md",
+                                    "locator": "Intended motion: fixed geometry, opaque navy replacement, minimal navy/cyan and transparent exterior",
+                                    "lines": body_range})
+    write(work / "candidate-plan.json", plan)
+    packet = read(old / "request-review.json")
+    packet["criteria"] = {"path": (work / "candidate-plan.json").relative_to(root).as_posix(),
+                           "sha256": sha(work / "candidate-plan.json")}
+    write(work / "request-review.json", packet)
+    packet_path = (work / "request-review.json").relative_to(root).as_posix()
+    reviewed = command("request-review", "request-review", packet_path, "--root", root, "--asset", "robot.idle")
+    assert not reviewed["diagnostics"]
+    write(work / "local-abandonment.json", {
+        "kind": "local_pre_dispatch_abandonment",
+        "reason": "Root semantic comparison found that literal frame identity criteria omitted the already requested minimal navy/cyan treatment. Replace this undispatched intent with an appended, corrected criterion generation; actual provider arguments are unchanged.",
+        "previous_job": "first_request", "previous_state_hash": before["hash"],
+        "previous_plan": {"path": (old / "candidate-plan.json").relative_to(root).as_posix(), "sha256": sha(old / "candidate-plan.json")},
+        "corrected_plan": packet["criteria"], "observed_job_state": "prepared",
+        "dispatch_events": 0, "remote_id": None, "provider_calls": 0,
+        "scope": "Local abandonment only. No provider failure, cancellation, rejection or execution is claimed; no art or CF-09 artistic-revision credit.",
+    })
+    abandoned = command("local-abandon", "job-observe", store, "first_request", "failed", work / "local-abandonment.json",
+                        "--expect", before["hash"], "--root", root)
+    prepared = command("revised-prepare", "plar", "prepare", "--root", root, "--asset", "robot.idle",
+                       "--requirements", selected["requirements_hash"], "--packet", packet_path,
+                       "--connection", packet["request"]["connection"]["path"], "--revise", "--expect", abandoned["hash"])
+    focused = command("selected-after", "plar", "read", "--root", root, "--asset", "robot.idle")
+    jobs = command("jobs-after", "jobs", store / "state.px", "--root", root)
+    decoded = command("state-after", "decode", store / "state.px")
+    current_jobs = {row["id"]: row for row in jobs["jobs"]}
+    assert len(current_jobs) == 2
+    assert current_jobs["first_request"]["state"] == "failed"
+    assert len(current_jobs["first_request"]["events"]) == 1
+    assert current_jobs["first_request"]["events"][0]["event"] == "failed"
+    new_job = prepared["job"]["id"]
+    assert current_jobs[new_job]["state"] == "prepared" and not current_jobs[new_job]["events"]
+    assert all(row["remote_id"] is None for row in current_jobs.values())
+    assert current_jobs[new_job]["request"]["arguments"] == old_job["request"]["arguments"]
+    assert current_jobs[new_job]["request"]["schema"] == old_job["request"]["schema"]
+    current_records = {row["id"]: row for row in decoded["records"]}
+    for record in old_doc["records"]:
+        if record["id"] not in {"project", "first_request"}:
+            assert current_records[record["id"]] == record, record["id"]
+    assert not [row for row in decoded["records"] if row["kind"] == "V" or (row["kind"] == "X" and "of" in row["fields"])]
+    assert inventory(old) == old_files
+    for name, digest in store_files.items():
+        if name != "state.px":
+            assert sha(store / name) == digest, name
+    for name, digest in original.items():
+        assert sha(root / name) == digest, name
+    config = read(root / "config.json")
+    config["destinations"] = {id_: f"assets/robot-idle/east-{i}.png" for i, id_ in enumerate(prepared["outputs"])}
+    assert not any((root / name).exists() for name in config["destinations"].values())
+    write(work / "config-bound.json", config)
+    write(work / "result.json", {
+        "status": "corrected_prepared_intent", "created_at": datetime.now(UTC).isoformat(),
+        "script_sha256": sha(Path(__file__)), "state": prepared["state"], "state_hash": prepared["hash"],
+        "revision": prepared["revision"], "task": prepared["task"], "outputs": prepared["outputs"], "job": new_job,
+        "requirements_hash": selected["requirements_hash"], "original_job": "first_request",
+        "original_job_status": "failed with explicit local pre-dispatch abandonment", "original_attempt_files_preserved": len(old_files),
+        "original_store_files_preserved_except_head": len(store_files) - 1,
+        "original_nonproject_nonjob_records_unchanged": len(old_doc["records"]) - 2,
+        "original_consumer_inputs_preserved": len(original), "request_arguments_unchanged": True,
+        "criteria_changed": [f"{output['id']}.identity: explicit minimal navy/cyan treatment and transparent exterior, plus actual source lines" for output in original_plan["outputs"]],
+        "source_lines": body_range, "allocation": prepared["allocation"], "focused_production": focused["production"],
+        "config": {"path": (work / "config-bound.json").relative_to(root).as_posix(), "sha256": sha(work / "config-bound.json")},
+        "provider_calls": 0, "paid_calls": 0, "remote_id": None, "candidate_count": 0, "verdict_count": 0,
+        "artistic_revision_credit": False, "artistic_acceptance": False, "human_acceptance": False, "cf09_complete": False,
+        "next": "Restore official authentication and recheck exact current criteria/job before dispatch. Use this revised generation, never the locally abandoned first_request. Collective family delivery remains unlinked.",
+    })
+    print(json.dumps({"status": "corrected_prepared_intent", "state_hash": prepared["hash"], "revision": prepared["revision"], "job": new_job,
+                      "outputs": prepared["outputs"], "focused_status": focused["production"]["status"], "result": str(work / "result.json")}))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, required=True)
+    parser.add_argument("--consumer", type=Path, required=True)
+    options = parser.parse_args()
+    main(options.repo, options.consumer)

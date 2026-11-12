@@ -79,8 +79,11 @@ combines the allocation with actual store, output acceptance and pending provide
 state. Carry its `continuation` in the result and use that immediate action for the
 next step; future new requests retain its pending-resolution prerequisites. The operation links single-output work back into PLAR; verify `allocation`
 in its response. A concurrent queue edit can leave a prepared job needing its link
-repaired. Preserve that job and reread the queue. Multi-output work needs an explicit
-choice of the delivery output; all planned outputs remain required by the task.
+repaired. Preserve that job and reread the queue. Multi-output work retains the
+explicit current preparation task, so focused reads can resume it before a delivery
+output is chosen. All planned outputs remain required. Later bind the actual
+collective delivery output; do not label the first frame as the whole package.
+Local dispatch advice does not establish provider authentication or availability.
 
 An unchanged call resumes the same preparation. For a changed contract, refresh the
 actual source bindings/requirements, retain a new exact packet and obtain the caller's
@@ -98,6 +101,13 @@ IDs after a revision. Review/retrieve against the appropriate generation. An int
 revision resumes with the same packet and current state hash. Acceptance from an earlier
 plan is not inherited. Existing explicit low-level amendments and family/adoption
 operations remain available when their broader scope is needed.
+
+If an older store has several unlinked preparations, reread its jobs and resume the
+exact intended prepared packet with `--revise --expect STATE_HASH`. Other pending
+work must first be resolved. This publishes its preparation focus without creating
+another job. An old terminal request cannot reclaim focus; malformed focus metadata
+needs reconciliation rather than a guessed selection. Keep the original failure
+and use a runtime supporting preparation focus for this recovery.
 
 An isolated direct assignment can still use ordinary PIXL operations without creating
 a repository-wide inventory. Neither route turns a sample into approved production.

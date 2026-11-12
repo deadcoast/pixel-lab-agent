@@ -1,0 +1,67 @@
+"""Read-only final claim, source, archive and documentation check for CF-09 work."""
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import zipfile
+from pathlib import Path
+from urllib.parse import unquote
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--repo", type=Path, required=True)
+args = parser.parse_args()
+repo = args.repo.resolve()
+out = repo / "evidence/domain-art-revision/20261112/final-audit.json"
+assert not out.exists()
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+read = lambda p: json.loads(p.read_text(encoding="utf-8"))
+changed = subprocess.check_output(["git", "diff", "--cached", "--name-only"], cwd=repo, text=True).splitlines()
+documents = [name for name in changed if name.endswith(".md")]
+links = []
+for name in documents:
+    path = repo / name
+    for target in re.findall(r"\]\(([^)]+)\)", path.read_text(encoding="utf-8")):
+        target = target.strip("<>").split("#")[0]
+        if not target or re.match(r"^[a-zA-Z]+:", target):
+            continue
+        target = unquote(target)
+        assert (path.parent / target).resolve().exists(), (name, target)
+        links.append({"source": name, "target": target})
+findings = re.findall(r"^- \*\*([A-Z]+-\d+)\b", (repo / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+rows = re.findall(r"^\| \[([A-Z]+-\d+)\]", (repo / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+assert set(findings) == set(rows) and len(rows) == len(set(rows)) == 50
+verification = read(repo / "evidence/verification-runs/20261112T213958.037642Z/result.json")
+assert verification["status"] == "pass"
+for name, digest in verification["checked_input_hashes"].items():
+    assert sha(repo / name) == digest, name
+plugin = repo / "plugins/pixl"
+assert sha(plugin / "bundle-manifest.json") == verification["bundle_manifest_sha256"]
+manifest = read(plugin / "bundle-manifest.json")
+for row in manifest["files"]:
+    assert sha(plugin / row["path"]) == row["sha256"], row["path"]
+base = repo / "evidence/domain-art-revision/20261112/preparation-01"
+archives = []
+for name in ("before-focus-fix.json", "after-focus-fix.json"):
+    receipt = read(base / name)
+    archive = base / receipt["archive"]
+    assert sha(archive) == receipt["sha256"]
+    with zipfile.ZipFile(archive) as retained:
+        assert len(retained.namelist()) == len(set(retained.namelist())) == len(receipt["files"])
+        assert set(retained.namelist()) == set(receipt["files"])
+        for path, digest in receipt["files"].items():
+            assert hashlib.sha256(retained.read(path)).hexdigest() == digest, path
+    archives.append({"path": archive.relative_to(repo).as_posix(), "files": len(receipt["files"]), "sha256": sha(archive)})
+outcome = read(repo / "evidence/domain-art-revision/OUTCOME.json")
+assert outcome["cf09_complete"] is False
+assert outcome["provider"]["paid_calls"] == outcome["provider"]["new_outputs"] == 0
+assert all(value == "open" for value in outcome["milestones"].values())
+value = {"status": "pass", "scope": "Current staged documentation targets, workflow coverage, exact verified sources and archives; no new provider/native/art outcome",
+         "script_sha256": sha(Path(__file__)), "documents": documents, "relative_link_targets": len(links), "links": links,
+         "findings": len(findings), "backlog_rows": len(rows), "one_row_per_finding": True,
+         "verified_input_hashes": len(verification["checked_input_hashes"]), "bundle_entries": len(manifest["files"]),
+         "archives": archives, "cf09_open": True, "human_acceptance": "not recorded",
+         "limits": ["Local link targets checked; remote links and heading anchors were not fetched/reparsed.", "Preserved original preparation, access, continuation and wrapper failures remain distinct."]}
+with out.open("x", encoding="utf-8", newline="\n") as stream:
+    stream.write(json.dumps(value, indent=2) + "\n")
+print(json.dumps({"status": "pass", "documents": len(documents), "links": len(links), "verified_inputs": value["verified_input_hashes"], "bundle_entries": value["bundle_entries"]}))

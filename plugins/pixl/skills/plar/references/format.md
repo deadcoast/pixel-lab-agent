@@ -98,3 +98,13 @@ retain the reviewed new packet, then use `plar prepare --revise --expect STATE_H
 The new generation is appended to the existing store; prior inputs, jobs, candidates
 and verdicts remain. Use returned IDs. Historical acceptance describes its original
 contract and cannot complete the newly selected generation.
+
+Multi-output preparation also retains its explicit current task separately from the
+delivery-output link. Focused reads use that task without guessing the newest ID
+or timestamp. Prior preparation generations remain visible as history and do not
+become current merely because their source requirements still match. A missing
+legacy focus with several generations needs an unchanged explicit preparation
+retry with `--revise --expect STATE_HASH`; use the exact intended prepared packet
+and resolve other pending work first. A corrupt focus is reported for reconciliation,
+not silently ignored. This metadata does not change the version-1 PLAR shape or
+PX2 records; older readers retain their earlier multiple-unlinked-task limitation.

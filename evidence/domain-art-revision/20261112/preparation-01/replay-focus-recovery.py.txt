@@ -1,0 +1,121 @@
+"""Resume the exact retained CF-09 intent after the focused-continuation repair.
+
+Local public operations only. Never dispatch or contact a provider. Every output
+is new; prior captures, requests, failure and production history stay unchanged.
+"""
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+
+
+def main(repo, root, runner):
+    work = root / "work/focus-recovery-01"
+    work.mkdir(parents=True, exist_ok=False)
+    before = {p.relative_to(root).as_posix(): sha(p) for p in root.rglob("*")
+              if p.is_file() and "__pycache__" not in p.parts}
+    prior = read(root / "work/cf09-request-02/result.json")
+    packet = read(root / "work/cf09-request-02/request-review.json")
+    number = 0
+
+    def command(label, *args):
+        nonlocal number
+        number += 1
+        argv = [sys.executable, *runner, *map(str, args)]
+        result = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
+                                encoding="utf-8", errors="strict", timeout=60)
+        name = f"{number:02d}-{label}.json"
+        write(work / "commands" / name, {"argv": argv, "cwd": str(repo),
+              "returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr})
+        if result.returncode:
+            raise RuntimeError(label + " failed; retain command evidence")
+        value = json.loads(result.stdout)
+        write(work / name, value)
+        return value
+
+    pre = command("selected-before", "plar", "read", "--root", root, "--asset", "robot.idle")
+    prepared = command("resume-exact-intent", "plar", "prepare", "--root", root,
+                       "--asset", "robot.idle", "--requirements", prior["requirements_hash"],
+                       "--packet", "work/cf09-request-02/request-review.json",
+                       "--connection", packet["request"]["connection"]["path"],
+                       "--revise", "--expect", prior["state_hash"])
+    selected = command("selected-after", "plar", "read", "--root", root, "--asset", "robot.idle")
+    jobs = command("jobs", "jobs", root / ".pixl/assets/robot.idle/state.px", "--root", root)
+    assert prepared["already_prepared"] is True
+    assert prepared["hash"] == prior["state_hash"] and prepared["revision"] == prior["revision"]
+    assert prepared["task"] == prior["task"] and prepared["job"]["id"] == prior["job"]
+    assert prepared["outputs"] == prior["outputs"]
+    assert selected["production"]["status"] == "available"
+    assert selected["production"]["task"] == prior["task"]
+    assert selected["production"]["selection_current"] is True
+    assert selected["production"]["delivery"] is None
+    assert "production" not in selected["asset"]
+    assert prepared["allocation"]["status"] == "needs_output_link"
+    indexed = {job["id"]: job for job in jobs["jobs"]}
+    assert indexed["first_request"]["state"] == "failed"
+    assert indexed[prior["job"]]["state"] == "prepared"
+    assert all(job["remote_id"] is None for job in indexed.values())
+    for name, digest in before.items():
+        assert sha(root / name) == digest, name
+    assert all(not (root / f"assets/robot-idle/east-{i}.png").exists() for i in range(5))
+    details = {
+        "status": "blocked",
+        "reason": "Official PixelLab free authenticated checks return 401 Invalid API token; refresh the MCP credential before any dispatch.",
+        "completed": ["Exact actual-art source preservation and explicit motion contract",
+                      "Static baseline actual browser checks at 1x/3x",
+                      "Public pre-dispatch criterion correction with original intent preserved",
+                      "Recovered focused continuation for the exact current five-output preparation"],
+        "prepared_request": {"job": prior["job"], "state_hash": prior["state_hash"],
+                             "packet": "work/cf09-request-02/request-review.json",
+                             "config": "work/cf09-request-02/config-bound.json"},
+        "remaining": ["Refresh and verify actual provider access", "Reread current request and criteria before one dispatch",
+                      "Retrieve and inspect actual returned frames", "Correct only a genuinely observed artistic failure",
+                      "Bind collective family delivery and compare the same actual destination"],
+        "local_dispatch_advice_is_authentication_proof": False,
+        "new_art": False, "human_acceptance": "not recorded", "cf09_complete": False,
+    }
+    write(work / "handoff-details.json", details)
+    handoff = command("handoff", "plar", "handoff", work / "handoff-details.json",
+                      "--root", root, "--asset", "robot.idle",
+                      "--requirements", prior["requirements_hash"], "--expect", prior["state_hash"],
+                      "--view", "caller")
+    write(work / "result.json", {
+        "status": "pass", "scope": "Actual prepared consumer continuation recovery; no new art or provider work",
+        "source": {"path": str(Path(__file__)), "sha256": sha(Path(__file__))},
+        "runner": runner, "before_focused_status": pre["production"]["status"],
+        "after_focused_status": selected["production"]["status"],
+        "state_hash": prior["state_hash"], "state_revision": prior["revision"],
+        "task": prior["task"], "job": prior["job"], "outputs": prior["outputs"],
+        "old_files_preserved": len(before), "original_job_terminal": True,
+        "current_job_unsubmitted": True, "false_delivery_link_created": False,
+        "provider_calls": 0, "paid_calls": 0, "new_art": False,
+        "human_acceptance": "not recorded", "cf09_complete": False,
+        "handoff": handoff,
+    })
+    print(json.dumps({"status": "pass", "task": prior["task"], "job": prior["job"], "result": str(work / "result.json")}))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, required=True)
+    parser.add_argument("--consumer", type=Path, required=True)
+    parser.add_argument("--plugin-runner", type=Path)
+    args = parser.parse_args()
+    main(args.repo.resolve(), args.consumer.resolve(),
+         [str(args.plugin_runner.resolve())] if args.plugin_runner else ["-m", "pixl"])

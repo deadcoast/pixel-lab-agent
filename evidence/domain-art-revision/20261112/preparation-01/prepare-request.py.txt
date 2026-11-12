@@ -1,0 +1,203 @@
+"""Author one CF-09 local pending request through public CLI operations.
+
+No provider call or art edit is performed. Run once against the fresh consumer
+prepared by evaluations.art_revision_case; all result files are exclusive writes.
+"""
+from __future__ import annotations
+
+import argparse
+import base64
+import hashlib
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+
+
+def main(repo, root):
+    repo, root = repo.resolve(), root.resolve()
+    work = root / "work/cf09-request"
+    if work.exists() or (root / "plar.txt").exists() or (root / ".pixl").exists():
+        raise ValueError("Use the fresh, unprepared CF-09 consumer; preserve existing attempts")
+    preparation = read(root.parent / "preparation.json")
+    original = preparation["consumer_inputs"]
+    for name, digest in original.items():
+        if sha(root / name) != digest:
+            raise ValueError("Prepared input changed: " + name)
+    inventory_path = repo / "evidence/domain-art-revision/20261112/access/codex-01/tools-01.json"
+    expected_inventory = "2ec4e0c91b83577909fbdb27143a762742ece735797684c50e2a9416b62d7ef2"
+    if sha(inventory_path) != expected_inventory:
+        raise ValueError("Observed official tool inventory changed")
+    tool = next(item for item in read(inventory_path)["result"]["tools"] if item["name"] == "animate_image")
+    work.mkdir(parents=True)
+    (work / "input-provenance.json").write_bytes((root.parent / "preparation.json").read_bytes())
+    write(work / "animate-image-tool.json", tool)
+    command_count = 0
+
+    def command(label, *args):
+        nonlocal command_count
+        command_count += 1
+        argv = [sys.executable, "-m", "pixl", *map(str, args)]
+        result = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
+                                encoding="utf-8", errors="strict", timeout=60)
+        name = f"{command_count:02d}-{label}"
+        write(work / "commands" / (name + ".json"), {
+            "argv": argv, "cwd": repo.as_posix(), "returncode": result.returncode,
+            "stdout": result.stdout, "stderr": result.stderr,
+        })
+        if result.returncode:
+            raise RuntimeError(f"{label} failed; preserve commands/{name}.json")
+        value = json.loads(result.stdout)
+        write(work / (name + ".json"), value)
+        return value
+
+    sources = [
+        ("history-brief", "BRIEF.md", "Historical static identity brief; not new motion authority"),
+        ("history-controller", "src/robot.ts", "Historical four-direction controller; preserve unchanged"),
+        ("assignment", "CF-09-ROBOT-IDLE.md", "New scoped CF-09 motion and acceptance authority"),
+        ("animation", "src/animation.ts", "Actual prospective animation consumer contract"),
+        ("provenance", "work/cf09-request/input-provenance.json", "Exact retained input identities and distinct origins"),
+        ("east", "assets/robot/east.png", "Actual generated East reference; no new generation claimed"),
+    ]
+    requirements = [
+        ("identity_and_motion", "Preserve steady East body/post/silhouette/contact; briefly contract cyan toward center and restore it, replacing shortened cyan with opaque navy, without new anatomy, shadow or camera movement.", ["assignment", "east"]),
+        ("frames", {"count": 5, "size": [32, 32], "starting_pose": "exact retained East", "finishing_pose": "same supplied East", "alpha": "transparent exterior"}, ["assignment", "animation", "east"]),
+        ("destination", {"profile": "sprite-animation-v1", "durations_ms": [800, 120, 160, 120, 400], "pivot": [16, 28], "anchor": [24, 34], "viewport": [48, 40], "sampling": "nearest", "scales": [1, 3], "observed_wraps": 2}, ["assignment", "animation"]),
+        ("preservation", "Preserve the exact historical brief, controller, robot-base reference and four accepted static directions; preserve original provenance.", ["assignment", "history-brief", "history-controller", "provenance"]),
+    ]
+    plar = {
+        "version": 1,
+        "project": {"name": "CF-09 robot panel idle", "brief": "New scoped idle extension of accepted actual CF-10 art; no new output or acceptance yet."},
+        "coverage": {
+            "included": ["Actual accepted four-direction files", "Explicit CF-09 addendum", "Prospective sprite-animation-v1 source and static baseline adapter"],
+            "excluded": ["Historical producer state is not reconstructed", "No additional directions, anatomy or tile work assigned"],
+            "unresolved": ["Official authenticated operations returned 401; do not dispatch until access is restored", "Actual new animation, review, useful correction and current delivery remain unperformed"],
+        },
+        "sources": [{"id": id_, "path": name, "sha256": sha(root / name)} for id_, name, _ in sources],
+        "assets": [{
+            "id": "robot.idle", "kind": "animation", "purpose": "One calm planted cyan-panel idle using the accepted generated East identity", "status": "todo",
+            "consumers": [{"source": "animation", "symbol": "animation.clips[east-idle] / frameAt", "usage": "Full-frame PNG sequence with authored timing, pivot and actual playback"}],
+            "existing": [{"path": name, "role": row["origin"] + "; preserved static art"} for row in preparation["preserved_directions"] for name in [row["path"]]],
+            "requirements": [{"property": key, "value": value, "authority": "requirement", "sources": ids, "reason": "Explicit new assignment; historical static acceptance remains unchanged."} for key, value, ids in requirements],
+            "references": [{"source": "east", "role": "identity", "instructions": "Use these exact retained CF-10 East pixels as the initial and final reference; preserve facing, steady silhouette/post/contact and minimal navy/cyan treatment. This is actual old art, not a new candidate."}],
+            "delivery": {"path": "assets/robot-idle", "checks": ["Inspect actual returned frame order and pixels", "Review identity, pulse, planted contact and loop", "Run exact mapped family at 1x/3x for two wraps", "Separate human acceptance and useful-repair evidence"]},
+            "depends_on": [], "questions": [],
+            "next": "Prepare locally; retain pending intent until official authentication is restored. Then reread sources and exact current job before any dispatch. No approval gate is added.",
+            "evidence": [],
+        }],
+    }
+    write(work / "plar-input.json", plar)
+    command("plar-save", "plar", "save", work / "plar-input.json", "--root", root, "--expect", "new")
+    selected = command("selected-before", "plar", "read", "--root", root, "--asset", "robot.idle")
+    requirements_hash = selected["requirements_hash"]
+    authority_lines = (root / "CF-09-ROBOT-IDLE.md").read_text(encoding="utf-8").splitlines()
+
+    def source_range(needle, count=1):
+        rows = [i + 1 for i, line in enumerate(authority_lines) if needle in line]
+        if len(rows) != 1:
+            raise ValueError("Ambiguous assignment locator: " + needle)
+        return {"path": "CF-09-ROBOT-IDLE.md", "locator": needle, "lines": [rows[0], rows[0] + count - 1]}
+
+    def criterion(id_, check, domain, mode, locator, *, count=1, scope="Each actual returned frame in its complete clip"):
+        return {"id": id_, "check": check, "domain": domain, "mode": mode,
+                "authority": "requirement", "basis": "Explicit scoped CF-09 addendum; no inherited historical motion requirement",
+                "scope": scope, "sources": [source_range(locator, count)]}
+
+    outputs = []
+    for i in range(5):
+        checks = [
+            criterion("identity", "East identity and proportions remain recognizable; body silhouette and top post remain steady in position and shape, with no invented anatomy or unrelated detail.", "visual", "visual", "| R1 |"),
+            criterion("contact", "Lower contact is planted across the actual sequence without changing pivot or camera to compensate.", "continuity", "visual", "| R3 |"),
+            criterion("geometry", "PNG is 32x32 with a transparent exterior; retain actual returned file hash and index. No cropping, rescaling or frame-order guess substitutes for observation.", "mechanical", "local", "Use five full 32", count=5),
+            criterion("pulse", "In the complete authored clip, the cyan panel briefly contracts toward its center then returns full-height; shortened cyan is opaque navy, preserving silhouette. The pulse reads calmly and wraps cleanly under [800,120,160,120,400] ms.", "continuity", "visual", "Create one calm, planted", count=20),
+        ]
+        if i == 0:
+            checks.append(criterion("retained_input", "Frame 0 has the same decoded RGBA pixels as the exact retained East input. Retain its actual returned PNG hash and label it reused input, not newly generated art.", "mechanical", "local", "Use five full 32", count=5, scope="Returned frame 0 only"))
+        if i == 4:
+            checks.append(criterion("finishing_pose", "The ending pose matches the supplied East starting pose, including full-height cyan edge, body/post shape and registration; inspect the transition back to frame 0.", "continuity", "visual", "Use the exact accepted East PNG", count=3, scope="Final returned frame and wrap to frame 0"))
+        outputs.append({"id": f"frame{i}", "name": f"East idle frame {i}" + (" (returned input)" if i == 0 else " (generated)"),
+                        "kind": "sprite", "contract": {"size": [32, 32], "palette": [], "view": "side", "sampling": "nearest", "alpha": "full",
+                        "intent": "Preserve rigid generated East identity and transparent exterior; panel-only calm idle. Palette is reviewed visually against the actual reference rather than silently fixed to a synthetic palette."}, "criteria": checks})
+    plan = {"version": 1, "scope": "Unsubmitted five-frame idle sample: returned original plus four generated frames. No actual candidate, review or delivery is claimed.", "outputs": outputs}
+    write(work / "candidate-plan.json", plan)
+    image_url = "data:image/png;base64," + base64.b64encode((root / "assets/robot/east.png").read_bytes()).decode("ascii")
+    arguments = {
+        "action": "One calm planted idle. Keep the rigid body silhouette, top post, framing, proportions and lower contact edge completely steady. Only the narrow cyan front-edge display briefly contracts toward its vertical center, then returns to full height and the supplied starting pose. Replace shortened cyan portions with existing opaque navy, never transparency or holes. Preserve the minimal navy/cyan treatment and transparent exterior. No body breathing, blink, limbs, wheels, new anatomy, equipment, shadows, camera movement or unrelated detail.",
+        "frame_count": 4, "first_frame_url": image_url, "last_frame_url": image_url, "no_background": True,
+    }
+    write(work / "arguments.json", arguments)
+    connection = {
+        "provider": "pixellab", "schema": tool["inputSchema"],
+        "discovery": {"source": "Official PixelLab MCP tools/list", "observed_at": "2026-11-12T20:58:52.678994+00:00",
+                      "evidence": {"tool": "animate_image", "inventory_sha256": expected_inventory,
+                                   "inventory": "evidence/domain-art-revision/20261112/access/codex-01/tools-01.json",
+                                   "authentication": "Free authenticated operation failed with 401 Invalid API token; execution unavailable"}},
+        "authorization": {"scope": "Current user CF-09 development assignment: useful actual-art robot idle production and scoped correction; this retained operation is local preparation only while official authentication fails.",
+                          "evidence": {"source": "CF-09-ROBOT-IDLE.md", "sha256": sha(root / "CF-09-ROBOT-IDLE.md"), "user_direction": "Next: CF-09 useful actual-art revision; prioritize core-feature usability, human acceptance separate and M1/M2/broader M3/M4 open"}},
+    }
+    write(work / "connection.json", connection)
+
+    def pointer(name):
+        return {"path": (work / name).relative_to(root).as_posix(), "sha256": sha(work / name)}
+
+    packet = {"version": 1, "requirements_hash": requirements_hash,
+              "sources": [{"path": name, "sha256": sha(root / name), "role": role} for _, name, role in sources],
+              "request": {**pointer("arguments.json"), "kind": "provider_arguments", "provider": "pixellab", "tool": "animate_image", "connection": pointer("connection.json")},
+              "criteria": pointer("candidate-plan.json")}
+    write(work / "request-review.json", packet)
+    packet_path = pointer("request-review.json")["path"]
+    command("request-review", "request-review", packet_path, "--root", root, "--asset", "robot.idle")
+    prepared = command("prepared", "plar", "prepare", "--root", root, "--asset", "robot.idle", "--requirements", requirements_hash,
+                       "--packet", packet_path, "--connection", pointer("connection.json")["path"])
+    command("selected-after", "plar", "read", "--root", root, "--asset", "robot.idle")
+    command("jobs", "jobs", prepared["state"], "--root", root)
+    decoded = command("state", "decode", prepared["state"])
+    records = decoded["records"]
+    jobs = [row for row in records if row["kind"] == "J"]
+    assert len(jobs) == 1 and jobs[0]["fields"]["si"] == {"$symbol": "prepared"}
+    assert not jobs[0]["fields"]["ri"]
+    assert len([row for row in records if row["kind"] == "F"]) == 5
+    assert not [row for row in records if row["kind"] == "V" or (row["kind"] == "X" and "of" in row["fields"])]
+    assert prepared["allocation"]["status"] == "needs_output_link"
+    configuration = read(root / "config.json")
+    configuration["destinations"] = {id_: f"assets/robot-idle/east-{i}.png" for i, id_ in enumerate(prepared["outputs"])}
+    write(work / "config-bound.json", configuration)
+    for name, digest in original.items():
+        assert sha(root / name) == digest, name
+    assert not any((root / name).exists() for name in configuration["destinations"].values())
+    write(work / "result.json", {
+        "status": "prepared_locally", "created_at": datetime.now(UTC).isoformat(),
+        "consumer": root.as_posix(), "script_sha256": sha(Path(__file__)),
+        "requirements_hash": requirements_hash, "state": prepared["state"], "state_hash": prepared["hash"],
+        "revision": prepared["revision"], "task": prepared["task"], "outputs": prepared["outputs"], "job": jobs[0]["id"],
+        "allocation": prepared["allocation"], "source_files_preserved": len(original),
+        "provider_calls": 0, "paid_calls": 0, "remote_id": None, "candidate_count": 0, "verdict_count": 0,
+        "bound_config": pointer("config-bound.json"), "planned_files_missing": list(configuration["destinations"].values()),
+        "collective_review": "R4 preservation/R6 actual destination and conditional R7 useful-repair outcome remain pending; no family delivery is falsely linked to frame 0",
+        "next": "Restore official authentication, reread source/requirements/current job and exact request-review, then continue this same prepared intent if still applicable. No automatic retry or new job.",
+        "artistic_acceptance": False, "human_acceptance": False, "cf09_complete": False,
+    })
+    print(json.dumps({"status": "prepared_locally", "result": str(work / "result.json"), "state": prepared["state"], "job": jobs[0]["id"], "outputs": prepared["outputs"]}))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, required=True)
+    parser.add_argument("--consumer", type=Path, required=True)
+    options = parser.parse_args()
+    main(options.repo, options.consumer)

@@ -1,6 +1,6 @@
 """Connect PLAR requirements to retained production without inventing acceptance."""
 
-from . import codec, graph, jobs, lifecycle, store
+from . import codec, graph, jobs, lifecycle, preparation_focus, store
 from .codec import PixlError
 
 
@@ -184,14 +184,21 @@ def report(root, selected, path):
                     "plar_production", "linked task belongs to another asset selection"
                 )
             owned = sorted(set(owned) | {task_id})
-        elif len(owned) == 1:
-            task_id = owned[0]
-            result["link_status"] = "discovered"
         else:
-            raise PixlError(
-                "plar_production",
-                "unlinked state has no unique owned task; inspect and explicitly link the retained work",
-            )
+            focus = preparation_focus.read(document, root, folder, path, asset["id"])
+            if focus:
+                task_id = focus["value"]["task"]
+                if task_id not in owned:
+                    raise PixlError("plar_focus", "selected preparation belongs to another asset")
+                result.update(link_status="focused", preparation_focus=focus)
+            elif len(owned) == 1:
+                task_id = owned[0]
+                result["link_status"] = "discovered"
+            else:
+                raise PixlError(
+                    "plar_production",
+                    "unlinked state has no unique owned task; inspect the exact retained intent and use explicit prepare revise/expect to recover its preparation focus",
+                )
         from .plar import selection_bindings
 
         task = document.records[task_id]

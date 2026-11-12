@@ -363,6 +363,15 @@ def selection_bindings(document, task_id, root, folder=None):
             row["selected_for_asset"] = link is None or (link["task"] == task_id and (folder is None or graph.confined(root, link["store"]) == Path(folder).resolve()))
             row["linked_task"] = link["task"] if link else None
             row["linked_store"] = link["store"] if link else None
+            if link is None:
+                from . import preparation_focus
+
+                preparation_store = preparation_focus.task_store(document, root, task_id, artifact)
+                if preparation_store is not None:
+                    focus = preparation_focus.read(document, root, preparation_store, metadata["plar_path"], metadata["asset_id"])
+                    if focus:
+                        row["selected_for_asset"] = focus["value"]["task"] == task_id
+                        row["preparation_focus"] = {"task": focus["value"]["task"], "path": focus["path"], "sha256": focus["sha256"]}
             row["status"] = (
                 "current"
                 if current["requirements_hash"] == metadata["requirements_hash"]
