@@ -4,6 +4,28 @@ from . import codec, graph, jobs, lifecycle, store
 from .codec import PixlError
 
 
+def _family_destination(root, destination, members):
+    """Observe only the manifest's exact consumer paths, never guessed filenames."""
+    files, seen = [], set()
+    for member in members:
+        path = graph.confined(root, member["source_path"])
+        within = path != destination and path.is_relative_to(destination)
+        duplicate = path in seen
+        seen.add(path)
+        present = within and not duplicate and path.is_file()
+        observed = graph.file_hash(path) if present else None
+        size = path.stat().st_size if present else None
+        files.append({
+            "output": member["output"], "candidate": member["candidate"],
+            "source_path": member["source_path"], "within_destination": within,
+            "duplicate_destination": duplicate, "expected_sha256": member["sha256"],
+            "observed_sha256": observed, "expected_bytes": member["bytes"],
+            "observed_bytes": size,
+            "destination_matches": present and observed == member["sha256"] and size == member["bytes"],
+        })
+    return files, destination.is_dir() and bool(files) and all(row["destination_matches"] for row in files)
+
+
 def _delivery_status(document, root, folder, asset, output_id, outputs):
     """Report the exact nominated bytes and collective plans, without new verdicts."""
     from . import asset_lineage, delivery
@@ -21,8 +43,12 @@ def _delivery_status(document, root, folder, asset, output_id, outputs):
         if record.kind == "F"
         and any(member.id == output_id for member in record.fields.get("mb", []))
     }
+    linked_family = "mb" in document.records[output_id].fields
+    if linked_family:
+        related.add(output_id)
     families = []
     lineage = None
+    destination_files = None
     if related:
         for row in delivery.report(document, root)["families"]:
             if row["output"] not in related:
@@ -51,15 +77,23 @@ def _delivery_status(document, root, folder, asset, output_id, outputs):
                              "manifest": snapshot["manifest"] if snapshot else None,
                              "manifest_sha256": snapshot["sha256"] if snapshot else None,
                              "members": [dict(member) for member in snapshot["files"]] if snapshot else []})
+            if row["output"] == output_id and not destination.is_file():
+                destination_files, matching = _family_destination(root, destination, snapshot["files"] if snapshot else [])
+                # A directory has no single artifact digest. The family entry
+                # separately identifies the verified manifest and each member.
+                expected = observed = None
     if candidate_id is not None and lineage is None:
         lineage = asset_lineage.describe(document, root, candidate_id)
-    return {
+    result = {
         "destination": asset["delivery"]["path"], "candidate": candidate_id, "lineage": lineage,
         "expected_sha256": expected, "observed_sha256": observed,
         "destination_matches": matching, "families": families,
         "complete": matching and all(row["accepted"] for row in families),
-        "scope": "Current nominated bytes at the declared destination and acceptance of every saved containing family; only the declared criteria are established.",
+        "scope": "Current nominated file bytes or exact manifest member paths beneath the declared directory, and acceptance of the linked/containing families; only the declared criteria are established.",
     }
+    if destination_files is not None:
+        result.update(destination_kind="directory", destination_files=destination_files)
+    return result
 
 
 def owned_tasks(document, root, path, asset_id):

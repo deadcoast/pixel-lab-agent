@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "status": "draft for pixl_production_plan after the sample is reviewed; not yet authored in state",
+  "members_in_order": [
+    "south (baseline sample output, reused bytes)",
+    "east",
+    "north",
+    "west"
+  ],
+  "destinations": {
+    "paths": {
+      "south": "assets/robot/south.png",
+      "east": "assets/robot/east.png",
+      "north": "assets/robot/north.png",
+      "west": "assets/robot/west.png"
+    },
+    "sampling": "nearest",
+    "cell": [
+      32,
+      32
+    ],
+    "source": "src/robot.ts lines 1-7 (requirement)"
+  },
+  "collective_criteria": [
+    {
+      "id": "continuity",
+      "domain": "continuity",
+      "mode": "visual",
+      "authority": "requirement",
+      "check": "Viewed together at 1x and 3x in one 32x32 cell each, the four facings share the same robot: equal height and ground line, the same navy frame/teal body/pale-yellow eye colours, consistent antenna posts, and a box volume that turns coherently S->E->N->W without a facing looking like a different object or size.",
+      "basis": "Brief identity/proportions/palette; PLAR delivery check 'identity, volume and alignment together'."
+    },
+    {
+      "id": "direction_mapping",
+      "domain": "continuity",
+      "mode": "visual",
+      "authority": "requirement",
+      "check": "Each file at the controller path spriteFor(facing) shows that facing: south front, east right, north back, west left.",
+      "basis": "src/robot.ts mapping; brief 'Keep direction labels aligned with the controller'."
+    },
+    {
+      "id": "renderer_mechanical",
+      "domain": "engine",
+      "mode": "live",
+      "authority": "requirement",
+      "check": "renderer-native/check.py reports pass for the capture made from the delivered files with the unchanged controller (all four facings mapped, 32x32 RGBA transparent, south bytes identical, screenshot pixels match).",
+      "basis": "CF-10: run the copied renderer and save exact returned reports; renderer README contract."
+    },
+    {
+      "id": "renderer_visual",
+      "domain": "engine",
+      "mode": "visual",
+      "authority": "requirement",
+      "check": "destination.png and every 1x/3x cell of the capture, viewed with the image tool, show the four facings rendered crisply (nearest), transparent over the observation background, without resampling blur, cropping or misplacement.",
+      "basis": "CF-10: inspect destination.png and all actual 1x/3x cells; acceptance requires actual visual judgment."
+    }
+  ],
+  "note": "Engine-domain criteria must be live mode in PX2; the visual renderer inspection will be authored as a visual-mode 'other'/'continuity' criterion if the validator refuses engine+visual, keeping the obligation."
+}

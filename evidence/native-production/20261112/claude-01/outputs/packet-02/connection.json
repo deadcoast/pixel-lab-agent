@@ -1,0 +1,245 @@
+{
+  "provider": "pixellab-mcp",
+  "schema": {
+    "additionalProperties": false,
+    "properties": {
+      "description": {
+        "maxLength": 2000,
+        "minLength": 1,
+        "type": "string"
+      },
+      "first_frame_base64": {
+        "default": null,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "first_frame_direction": {
+        "const": "south",
+        "default": "south",
+        "type": "string"
+      },
+      "first_frame_url": {
+        "default": null,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "height": {
+        "default": null,
+        "maximum": 256,
+        "minimum": 16,
+        "multipleOf": 4,
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "max_colors": {
+        "default": null,
+        "description": "At most this many colours (2-64). With a palette, they are picked from it. On the three tools that have a standard mode — create_character, create_topdown_tileset, animate_object — ANY palette setting needs mode='pro': standard refuses palette and max_colors, alone or together. Every other tool taking them has no standard mode and accepts them always.",
+        "maximum": 64,
+        "minimum": 2,
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "n_directions": {
+        "default": 8,
+        "enum": [
+          1,
+          8
+        ],
+        "type": "integer"
+      },
+      "name": {
+        "default": "",
+        "type": "string"
+      },
+      "palette": {
+        "default": null,
+        "description": "Target palette, 2 to 256 hex colours as a JSON array, e.g. [\"#081820\", \"#346856\", \"#88c070\", \"#e0f8d0\"] for Game Boy or [\"#000000\", \"#ffffff\"] for 1-bit. Every pixel the tool draws is one of them; pixels you supplied (a direction you drew) stay as they are.",
+        "items": {
+          "type": "string"
+        },
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "palette_name": {
+        "default": null,
+        "description": "Optional name of the palette (e.g. 'Game Boy', 'PICO-8'); naming it helps the look. It only LABELS the colours you pass in palette rather than looking any up, so it cannot be sent on its own.",
+        "maxLength": 100,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "seed": {
+        "default": 0,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "source_image_id": {
+        "default": null,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "style_image": {
+        "additionalProperties": false,
+        "default": null,
+        "description": "Style anchor. Exactly ONE of its three sources: `url` also accepts an `upload:<id>` from get_upload_url or a data: URL, and `source_image_id` is an image you own (what a Pro Flash job returns). It must fit INSIDE the output canvas both ways — a larger one is refused, so crop it; resizing pixel art is never the answer. Reuse one anchor across calls to keep a set consistent.",
+        "properties": {
+          "base64": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_image_id": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usage_description": {
+            "default": null,
+            "description": "How this reference should guide appearance.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "style_options": {
+        "additionalProperties": false,
+        "default": null,
+        "description": "Choose which visual traits to copy from the style image.",
+        "properties": {
+          "color_palette": {
+            "default": true,
+            "type": "boolean"
+          },
+          "detail": {
+            "default": true,
+            "type": "boolean"
+          },
+          "outline": {
+            "default": true,
+            "type": "boolean"
+          },
+          "shading": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "view": {
+        "default": "low top-down",
+        "enum": [
+          "low top-down",
+          "high top-down",
+          "side"
+        ],
+        "type": "string"
+      },
+      "width": {
+        "default": null,
+        "description": "Defaults to 64 for text creation. Native sizes: 16x16 (experimental), 24x24, 32x32, 32x48, 48x48, 64x64, 96x64, 96x96, 128x128. Custom size (Beta): integer width 16–256 and height 16–256. Both dimensions must be multiples of 4 pixels. Pixel-grid recovery uses image-to-pixel-art with fixer when needed. No native image resizing.",
+        "maximum": 256,
+        "minimum": 16,
+        "multipleOf": 4,
+        "type": [
+          "integer",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "description"
+    ],
+    "type": "object"
+  },
+  "discovery": {
+    "source": "Host MCP connection 'pixellab' (https://api.pixellab.ai/mcp): tool declaration mcp__pixellab__create_object_pro_flash read in-session; search_help(tool='create_object_pro_flash'); get_pro_flash_capabilities(operation='object', width=32, height=32, n_directions=8); get_upload_url + POST of the exact source bytes",
+    "observed_at": "2026-11-12T08:08:04+00:00",
+    "evidence": {
+      "declaration": "inputSchema transcribed verbatim from the host tool declaration (see schema)",
+      "capabilities_quote": {
+        "revision": "pro-flash-presets-48-128-2026-09-29",
+        "operation": "object",
+        "width": 32,
+        "height": 32,
+        "n_directions": 8,
+        "cost": {
+          "image": 5,
+          "rotations": 1,
+          "total": 6,
+          "provisional": true
+        },
+        "note": "Reusing a first frame bills only the rotation part (tool description); expected charge for this call: 1 generation, provisional until the receipt.",
+        "rotation_canvas": "Eight views use the square V3 canvas; one direction keeps the native size.",
+        "supports_existing_source": true,
+        "includes_first_direction": true
+      },
+      "upload": {
+        "ref": "upload:57ceb659-b047-49e5-9250-58343f194c5f",
+        "source_path": "assets/robot-base.png",
+        "source_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+        "width": 32,
+        "height": 32,
+        "n_frames": 1,
+        "expires_in_days": 3,
+        "observed_at": "2026-11-12T08:09:03+00:00",
+        "raw_response": "work/native-production/upload-response.raw.json",
+        "note": "The temporary signed upload URL is deliberately not retained in any artifact; only the returned ref is used."
+      },
+      "alternatives_considered": "work/native-production/packet-01/review-context.md#operation-choice",
+      "discovery_report": "work/native-production/discovery-01.json"
+    }
+  },
+  "authorization": {
+    "scope": "NATIVE-PRODUCTION.md CF-10 useful production of robot.directions through the host's official PixelLab MCP connection; limit 20 subscription generations for the whole assignment including revisions; free upload/discovery/retrieval and deterministic corrections allowed; no deletion, publication or repeated calls for counts",
+    "evidence": {
+      "document": {
+        "path": "NATIVE-PRODUCTION.md",
+        "sha256": "8a60110ad8fb6fcc31a75b32860432400f1309a46ba7bfbe477a38f37c833b7b",
+        "lines": [
+          43,
+          60
+        ]
+      },
+      "balance_start": {
+        "path": "work/native-production/balance-start.json",
+        "generations_remaining": 4984,
+        "observed_at": "2026-11-12T08:06:01+00:00",
+        "assignment_limit_generations": 20
+      },
+      "caller": "Claude Code main session delegation message to the named pixl:pixl specialist (this session), 2026-11-12"
+    }
+  }
+}

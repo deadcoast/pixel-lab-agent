@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "kind": "method proof for decision adopt_rotation",
+ "written_at": "2026-11-12T08:48:21+00:00",
+ "method": "Reference-conditioned PixelLab V3 rotation of the exact approved south frame (create_object_pro_flash, first_frame_url = uploaded source bytes, n_directions 8, view side, palette = source colours) to obtain east/north/west; exact byte reuse for south; deterministic local mirror of the accepted east when the provider's west lacks the front edge.",
+ "executed_on": {
+  "job": "r.acf329804ba043b7.request",
+  "object_id": "2a3cb51a-6cf7-485d-8441-3c3db762cc9d",
+  "background_job_id": "ea834364-0f7d-42eb-876b-bb26e21e1269",
+  "generations_consumed": 1,
+  "source_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+ },
+ "outcome": {
+  "east": {
+   "candidate": "candidate.east.raw",
+   "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4",
+   "provenance": "generated",
+   "verdicts": "10/10 pass",
+   "review": {
+    "path": "work/native-production/reviews/review-east-raw-01.result.json",
+    "sha256": "5dd6f435d25f4fd02b3a08e3c4b48483ff2a8ac16ed8afda54465ed2123ce56f",
+    "review": "review.east.raw.01",
+    "state_hash": "88014e5114c5499fd684be1d4aec307ca472a861edebbfabf42f8d9afe19b30a"
+   }
+  },
+  "north": {
+   "candidate": "candidate.north.raw",
+   "sha256": "db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5",
+   "provenance": "generated",
+   "verdicts": "10/10 pass",
+   "review": {
+    "path": "work/native-production/reviews/review-north-raw-01.result.json",
+    "sha256": "b74a6ce851305c285c890d82d3fb065156fb450e52e5208b614626d8eee82730",
+    "review": "review.north.raw.01",
+    "state_hash": "af8e810a8c94fe1ca463f751c70d8db41c8feb891679ee8052472522a2a1f2e8"
+   }
+  },
+  "west_raw": {
+   "candidate": "candidate.west.raw",
+   "sha256": "8209e5f6bc71d22eb76a6aa98b8bf08ffcfea46aafaf0bd056e649d64980f84c",
+   "provenance": "generated, rejected",
+   "verdicts": "identity fail, direction fail, 8 pass",
+   "review": {
+    "path": "work/native-production/reviews/review-west-raw-01.result.json",
+    "sha256": "63f1cd1132fe4ca8ad53b2a795e46db888ab7c0e5ae41dde718574f3b564ae80",
+    "review": "review.west.raw.01",
+    "state_hash": "4c14e31bc8a53fe2c0272ccc58d063b9082daaa9128aa5547c46db1516acd59b"
+   }
+  },
+  "west_edited": {
+   "candidate": "candidate.west.edited",
+   "sha256": "ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0",
+   "provenance": "edited (mirror of candidate.east.raw)",
+   "verdicts": "10/10 pass",
+   "review": {
+    "path": "work/native-production/reviews/review-west-edited-01.result.json",
+    "sha256": "d2fe7d762fd26f5218b5496ebef3196bc05454feeb007a93fe8384c1e96b9b9b",
+    "review": "review.west.edited.01",
+    "state_hash": "1cd5298b9b750ae27f33801ffdc7d0faf377a5f307ccc32b3eaa68d6fdf41eac"
+   }
+  },
+  "south": {
+   "candidate": "candidate.south",
+   "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+   "provenance": "reused source bytes",
+   "verdicts": "2/2 pass",
+   "review": {
+    "path": "work/native-production/reviews/review-south-01.result.json",
+    "sha256": "966c69b22ae95efcb81f4accc43f0cb42a014d9027387a54173544637ec1ca40",
+    "review": "review.south.01",
+    "state_hash": "0910bdeda52eefd1580879090f2dfdc9daa0b304624fb6fa451f3f7dd8bfbfe1"
+   }
+  }
+ },
+ "conclusion": "The method produced identity-preserving east and north views at 1 generation; west needed a deterministic mirror of the accepted east. Adopted for this family with that limitation recorded; the raw west is retained as rejected. This proof is the specialist's retained summary of actual reviewed results, not provider attestation.",
+ "limitations": [
+  "One sample on one 32x32 symmetric sprite; not a general claim about the tool.",
+  "The provider's west required a local edit; a different seed or Pro rotate could be tried at extra cost if an unedited west is ever required."
+ ]
+}

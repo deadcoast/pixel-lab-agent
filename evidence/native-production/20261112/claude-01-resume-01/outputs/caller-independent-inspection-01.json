@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "kind": "caller independent inspection of official returned files and the edited west (before destination/renderer evidence)",
+  "viewer": "caller (Claude Code main session), host Read image tool plus Pillow 13 with -I via the assignment Python",
+  "viewed_at_utc": "2026-11-12T08:49Z to 08:51Z (actual session clock; the bounded wait for the child started 08:47Z)",
+  "files_viewed": [
+    {"path": "assets/robot-base.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7", "scales": ["1x (Read)", "8x (work/native-production/inspect/robot-base-8x.png)"]},
+    {"path": "work/native-production/returned/rotations/east.png", "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4", "scales": ["1x (Read)", "3x (inspect/east-3x.png)", "8x (inspect/sheet-4dir-8x-dark.png)"]},
+    {"path": "work/native-production/returned/rotations/north.png", "sha256": "db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5", "scales": ["1x (Read)", "3x (inspect/north-3x.png)", "8x (sheet)"]},
+    {"path": "work/native-production/returned/rotations/west.png", "sha256": "8209e5f6bc71d22eb76a6aa98b8bf08ffcfea46aafaf0bd056e649d64980f84c", "scales": ["1x (Read)", "3x (inspect/west-3x.png)", "8x (sheet)"]},
+    {"path": "work/native-production/edited/west-mirror-of-east.png", "sha256": "ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0", "scales": ["1x (Read)", "3x (inspect/west-edited-3x.png)", "8x (inspect/sheet-4dir-edited-8x-dark.png)"]},
+    {"path": "work/native-production/inspect/sheet-4dir-edited-1x-dark.png", "role": "south|east|north|west(edited) at native 1x on #172336"},
+    {"path": "work/native-production/inspect/sheet-8dir-6x-dark.png", "role": "all eight official rotations at 6x"}
+  ],
+  "independent_measurements": {
+    "convention": "zero-based pixels, boxes [left,top,right,bottom) exclusive",
+    "east": {"size": [32, 32], "visible": 255, "fractional_alpha": 0, "bbox": [11, 3, 22, 28], "centre_x": 16.5, "colours": ["#25354a", "#56b5bc"], "notes": "post cols 12-19 rows 3-8 (8 wide, 6 tall); body [11,21) rows 9-27; teal front edge x=21 rows 11-25; rows 26-27 span [11,21) leaving a 1x2 transparent notch at x=21"},
+    "north": {"size": [32, 32], "visible": 390, "fractional_alpha": 0, "bbox": [7, 3, 25, 28], "centre_x": 16.0, "colours": ["#25354a"], "notes": "alpha channel byte-identical to the south source; all opaque pixels navy"},
+    "west_raw_official": {"size": [32, 32], "visible": 257, "fractional_alpha": 0, "bbox": [10, 3, 21, 28], "centre_x": 15.5, "colours": ["#25354a"], "notes": "navy only; no teal edge; rows 26-27 span [10,21); not the mirror of east (17 px differ)"},
+    "west_edited": {"size": [32, 32], "visible": 255, "fractional_alpha": 0, "bbox": [10, 3, 21, 28], "centre_x": 15.5, "colours": ["#25354a", "#56b5bc"], "notes": "ImageOps.mirror(east) == edited west verified byte-for-byte on decoded RGBA; differs from raw west in exactly 17 px (x=10 rows 11-27)"},
+    "agreement_with_specialist_measurements": true
+  },
+  "visual_judgments": {
+    "east": "At 1x the sprite is a narrow navy slab of the same height as south with a bright teal line on its right edge and a post on top; it reads as the same box robot turned to the viewer's right. At 3x and 8x the teal line is clearly the front panel seen edge-on; no eyes are visible, which is correct in strict profile; no added features. Same ground line (row 27) and top (row 3) as south. Direction east: pass. Identity, proportions, alignment: pass. The 1x2 transparent notch under the teal edge is invisible at 1x and minor at 3x; observation, not a rejection.",
+    "north": "Exactly the south silhouette filled navy with both posts; reads as the plain back of the box. Direction north: pass. Identity (frame colour, both posts, no eyes, no added features): pass. Alignment identical to south.",
+    "west_raw_official": "An anonymous navy slab; nothing marks the facing at 1x or 3x. Direction west: FAIL. Continuity with east: FAIL (not its mirror). Mechanically it passes dims, alpha, palette, height and ground line.",
+    "west_edited": "The exact mirror of east: teal edge on the viewer's left, post on top, same height and ground line. Direction west: pass. Identity/proportions/alignment: pass. In the four-direction 1x sheet the box turns coherently S, E, N, W."
+  },
+  "lineage_findings": [
+    "east and north delivered candidates are official provider outputs (object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d), byte-identical to the download ZIP entries.",
+    "The provider also returned a south byte-identical to the source; it is lineage evidence only, the delivered south is the preserved original copy.",
+    "The west candidate intended for delivery is an EDITED local derivative (horizontal mirror made with Pillow) of the official east; it is not an official generated west. The official west is retained and fails the direction criterion.",
+    "The mirror is a deterministic correction but was made with local Pillow, not through a PixelLab tool (pixelart_workbench has a free mirror command). The result of an exact horizontal flip is the same either way; the route is recorded here as a limitation against the literal wording 'deterministic PixelLab corrections'."
+  ],
+  "not_yet_inspected": ["assets/robot/east.png, north.png, west.png (destinations not yet written at this time)", "renderer destination.png and 1x/3x cells (renderer not yet run)"]
+}

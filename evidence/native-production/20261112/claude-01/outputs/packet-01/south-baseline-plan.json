@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "scope": "South baseline: reuse of the exact approved identity bytes as assets/robot/south.png (sample task, no provider call). Authored after caller comparison as the family baseline.",
+  "outputs": [
+    {
+      "id": "south",
+      "name": "Robot facing south (preserved)",
+      "kind": "sprite",
+      "contract": {
+        "size": [
+          32,
+          32
+        ],
+        "palette": [],
+        "view": "side",
+        "sampling": "nearest",
+        "alpha": "binary",
+        "intent": "Byte-identical copy of assets/robot-base.png at assets/robot/south.png."
+      },
+      "criteria": [
+        {
+          "id": "bytes_identical",
+          "domain": "mechanical",
+          "mode": "local",
+          "authority": "requirement",
+          "check": "assets/robot/south.png is byte-identical to assets/robot-base.png (sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7).",
+          "basis": "CF-10: preserve its exact south PNG bytes; renderer README requires the south file to preserve the exact base bytes.",
+          "scope": "The delivered south file",
+          "sources": [
+            {
+              "path": "NATIVE-PRODUCTION.md",
+              "locator": "Useful assignment: preserve south, generate E/N/W, inspect identity/proportions/palette/volume/direction/anchor",
+              "lines": [
+                21,
+                29
+              ]
+            },
+            {
+              "path": "renderer-native/README.md",
+              "locator": "south must preserve the exact base bytes",
+              "lines": [
+                25,
+                27
+              ]
+            }
+          ]
+        },
+        {
+          "id": "identity",
+          "domain": "visual",
+          "mode": "visual",
+          "authority": "requirement",
+          "check": "Viewed at 1x and 3x the file shows the approved robot identity unchanged.",
+          "basis": "Brief: approved identity; robot.base identity requirement.",
+          "scope": "The delivered south file",
+          "sources": [
+            {
+              "path": "BRIEF.md",
+              "locator": "Identity, four 32x32 transparent views under assets/robot/, controller labels",
+              "lines": [
+                3,
+                3
+              ]
+            },
+            {
+              "path": "production-plar.txt",
+              "locator": "robot.base identity requirement and identity reference",
+              "lines": [
+                62,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

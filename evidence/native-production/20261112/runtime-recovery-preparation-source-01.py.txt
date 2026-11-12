@@ -1,0 +1,208 @@
+"""Explicit CF-10 runtime upgrade recovery, preserving the original native kit.
+
+This is not the unchanged-package continuation route. Both packages, the narrow
+runtime/spec delta and the exact new launch are independently bound and checked.
+"""
+from __future__ import annotations
+
+import json
+import shutil
+from datetime import UTC, datetime
+from pathlib import Path
+
+from evaluations.host_trials import inventory, write_json
+from evaluations.native_production_case import WORK
+from evaluations.native_trial_records import prepare_resume, reference, verify_inputs
+from pixl.readiness import verify_manifest
+
+KIT = f"{WORK}/runtime-recovery-kit"
+ALLOWED_CHANGES = {
+    "runtime/pixl/plar_workflow.py", "resources/spec/family-delivery.md",
+    "bundle-manifest.json", "resources/evidence/art-methods/poc-report.json",
+    "resources/examples/atelier/measurement.json", "resources/examples/atelier/project.px",
+    "resources/knowledge/library.px",
+}
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def package_delta(old, new):
+    """Require verified complete kits and only the reviewed CF-10 source delta."""
+    old, new = Path(old).resolve(), Path(new).resolve()
+    if any(verify_manifest(path)["status"] != "verified" for path in (old, new)):
+        raise ValueError("Both runtime packages must verify before recovery")
+    before, after = inventory(old, ("__pycache__",)), inventory(new, ("__pycache__",))
+    changed = sorted(name for name in before if before[name] != after.get(name))
+    if set(before) != set(after) or not set(changed) <= ALLOWED_CHANGES:
+        raise ValueError("Runtime recovery has an unreviewed package change")
+    if "runtime/pixl/plar_workflow.py" not in changed:
+        raise ValueError("Recovery must contain the actual family-delivery runtime correction")
+    return before, after, changed
+
+
+def rebased_launch(launch, destination, old_kit, new_kit):
+    """Change only the local MCP bootstrap and plugin/package locators."""
+    launch = json.loads(json.dumps(launch))
+    command = launch["command"]
+    config_index, plugin_index = command.index("--mcp-config") + 1, command.index("--plugin-dir") + 1
+    if Path(command[plugin_index]).resolve() != old_kit:
+        raise ValueError("Original plugin directory is not the frozen package")
+    config = read(command[config_index])
+    args = config["mcpServers"]["pixl-local"]["args"]
+    expected = str(old_kit / "scripts/pixl.py")
+    matches = [i for i, arg in enumerate(args) if Path(arg).resolve() == Path(expected)]
+    if len(matches) != 1:
+        raise ValueError("Original local MCP bootstrap is not the frozen package")
+    args[matches[0]] = str(new_kit / "scripts/pixl.py")
+    command[config_index] = str(destination / "mcp.json")
+    command[plugin_index] = str(new_kit)
+    launch["configuration_files"]["package"] = str(new_kit / "bundle-manifest.json")
+    launch["configuration_files"]["claude_plugin_agent"] = str(new_kit / "agents/pixl.md")
+    return launch, config
+
+
+def prepare(previous: Path, destination: Path, prompt: str, child_id: str, package: Path,
+            *, intermediate: tuple[Path, ...] = ()):
+    """Prepare same native IDs with a separately copied, explicitly upgraded kit."""
+    previous, destination, package = previous.resolve(), destination.resolve(), package.resolve()
+    prior, original = read(previous / "continuation.json"), read(previous / "launch.json")
+    old_kit = Path(prior["configuration"]["package"]["path"]).parent.resolve()
+    root = Path(original["cwd"]).resolve()
+    new_kit = root / KIT
+    before, after, changed = package_delta(old_kit, package)
+    retained = intermediate_proofs(previous, intermediate, child_id)
+    if new_kit.exists() or destination.exists():
+        raise ValueError("Runtime recovery requires fresh package and attempt locations")
+    # The normal preparation verifies the untouched original launch/package and
+    # real parent/child availability. The explicit transition is recorded below.
+    prepare_resume(previous, destination, prompt, child_id)
+    initial_launch = read(destination / "launch.json")
+    launch, config = rebased_launch(initial_launch, destination, old_kit, new_kit)
+    shutil.copytree(package, new_kit, ignore=shutil.ignore_patterns("__pycache__"))
+    if inventory(new_kit, ("__pycache__",)) != after:
+        raise ValueError("Copied runtime package differs from prepared source")
+    write_json(destination / "mcp.json", config)
+    receipt = {
+        "version": 1, "observed_at": datetime.now(UTC).isoformat(),
+        "scope": "Guided same-parent/same-child recovery with an explicit runtime upgrade; not unchanged-package continuation.",
+        "predecessor": reference(previous / "continuation.json"),
+        "old_kit": {"root": str(old_kit), "files": before},
+        "new_kit": {"root": str(new_kit), "files": after}, "changed": changed,
+        "expected_launch": launch, "mcp": reference(destination / "mcp.json"),
+        "preparation_source": reference(Path(__file__)),
+        "intermediate_attempts": retained,
+    }
+    write_json(destination / "runtime-recovery.json", receipt)
+    transition = reference(destination / "runtime-recovery.json")
+    launch["runtime_recovery"] = transition
+    write_json(destination / "launch.json", launch)
+    identity = read(destination / "identity.json")
+    identity["runtime_recovery"] = transition
+    write_json(destination / "identity.json", identity)
+    (destination / "native_production_recovery.py.txt").write_bytes(Path(__file__).read_bytes())
+    return receipt
+
+
+def intermediate_proofs(base, directories, child):
+    """Keep intervening same-package processes and their outputs available."""
+    from evaluations.grade_plar_coverage import continuation_record
+    proofs = []
+    for directory in directories:
+        directory = Path(directory).resolve()
+        current, proof = continuation_record(base, directory, child)
+        if current.get("status") != "finished":
+            raise ValueError("Intermediate native attempt is not retained and finished")
+        archived = inventory(directory / "outputs")
+        root = Path(current["cwd"]).resolve()
+        for item in current.get("artifacts", []):
+            path = Path(item["path"])
+            if path.is_relative_to(root / WORK):
+                name = path.relative_to(root / WORK).as_posix()
+                if archived.get(name) != item["sha256"]:
+                    raise ValueError("Intermediate native output archive is incomplete")
+        proofs.append({"directory": str(directory), "continuation": proof["continuation"],
+                       "stdout": reference(directory / "stdout.jsonl"), "outputs": archived})
+    return proofs
+
+
+def verify_transition(base: Path, resumed: Path):
+    """Validate the package/launch transition without trusting receipt booleans."""
+    base, resumed = base.resolve(), resumed.resolve()
+    prior, original = read(base / "continuation.json"), read(base / "launch.json")
+    launch, identity = read(resumed / "launch.json"), read(resumed / "identity.json")
+    path = resumed / "runtime-recovery.json"
+    ref = reference(path)
+    if launch.get("runtime_recovery") != ref or identity.get("runtime_recovery") != ref:
+        raise ValueError("Runtime transition reference changed")
+    receipt = read(path)
+    if receipt.get("predecessor") != reference(base / "continuation.json"):
+        raise ValueError("Runtime transition predecessor changed")
+    verify_inputs(prior)
+    old_kit = Path(prior["configuration"]["package"]["path"]).parent.resolve()
+    root = Path(original["cwd"]).resolve()
+    new_kit = root / KIT
+    before, after, changed = package_delta(old_kit, new_kit)
+    if (receipt.get("old_kit") != {"root": str(old_kit), "files": before}
+            or receipt.get("new_kit") != {"root": str(new_kit), "files": after}
+            or receipt.get("changed") != changed):
+        raise ValueError("Runtime transition package identities changed")
+    # Independently reconstruct the normal resume command before applying the
+    # permitted bootstrap relocation; do not let a receipt authorize extra args.
+    initial = json.loads(json.dumps(original))
+    command, revised, index = initial["command"], [], 0
+    while index < len(command):
+        arg = command[index]
+        if arg in {"--session-id", "--resume", "-r"}:
+            index += 2
+            continue
+        if arg in {"--continue", "-c", "--fork-session", "--no-session-persistence"}:
+            index += 1
+            continue
+        revised.append(arg)
+        index += 1
+    initial.update(command=revised + ["--resume", prior["session_id"]],
+                   predecessor=reference(base / "continuation.json"), continuation_mode="native_same_session",
+                   expected_session_id=prior["session_id"], expected_child_id=identity["child_id"])
+    expected, config = rebased_launch(initial, resumed, old_kit, new_kit)
+    if ({k: v for k, v in launch.items() if k != "runtime_recovery"} != expected
+            or receipt.get("expected_launch") != expected or read(resumed / "mcp.json") != config
+            or receipt.get("mcp") != reference(resumed / "mcp.json")):
+        raise ValueError("Runtime recovery changed more than the declared package/configuration")
+    intermediates = receipt.get("intermediate_attempts", [])
+    if intermediate_proofs(base, [item["directory"] for item in intermediates], identity["child_id"]) != intermediates:
+        raise ValueError("Intermediate native attempt changed")
+    return receipt
+
+
+def verify_continuation(base: Path, resumed: Path, selected: str | None):
+    """Return combined native identities after validating the explicit upgrade."""
+    receipt = verify_transition(base, resumed)
+    prior, original = read(base / "continuation.json"), read(base / "launch.json")
+    launch, identity, current = (read(resumed / name) for name in ("launch.json", "identity.json", "continuation.json"))
+    predecessor, session = reference(base / "continuation.json"), prior["session_id"]
+    if any(value.get("predecessor") != predecessor for value in (launch, identity, current)):
+        raise ValueError("Recovery does not name the exact predecessor")
+    if (original["host"] != "claude" or current.get("host") != "claude"
+            or current.get("mode") != "native_same_session" or current.get("session_id") != session
+            or current.get("observed_expected_session") is not True
+            or not selected or selected not in {row["id"] for row in prior["children"]}
+            or any(value.get("expected_session_id") != session or value.get("expected_child_id") != selected for value in (launch, current))
+            or identity.get("session_id") != session or identity.get("child_id") != selected
+            or Path(current["cwd"]).resolve() != Path(original["cwd"]).resolve()
+            or Path(identity["original_consumer"]).resolve() != Path(original["cwd"]).resolve()):
+        raise ValueError("Runtime recovery changed the native parent, child, mode or consumer")
+    expected_config = dict(prior["configuration"])
+    expected_config.update({"--mcp-config": reference(resumed / "mcp.json"),
+                            "package": reference(Path(receipt["new_kit"]["root"]) / "bundle-manifest.json"),
+                            "file:claude_plugin_agent": reference(Path(receipt["new_kit"]["root"]) / "agents/pixl.md")})
+    if current.get("configuration") != expected_config:
+        raise ValueError("Runtime recovery configuration does not match the verified transition")
+    verify_inputs(current)
+    children = {row["id"]: row for row in [*prior["children"], *current["children"]]}
+    combined = {**current, "children": list(children.values()), "calls": [*prior["calls"], *current["calls"]]}
+    return combined, {"predecessor": predecessor, "continuation": reference(resumed / "continuation.json"),
+                      "runtime_recovery": reference(resumed / "runtime-recovery.json"), "session_id": session,
+                      "selected_child_id": selected, "scope": receipt["scope"],
+                      "intermediate_attempts": receipt["intermediate_attempts"]}

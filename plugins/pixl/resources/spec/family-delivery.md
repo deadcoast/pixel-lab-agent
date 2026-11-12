@@ -46,6 +46,12 @@ Rooted `family` reports derive `lineage` beside each currently selected member a
 beside each historical snapshot file. `review-context` exposes the same projection
 for its candidate and delivered members. PLAR delivery status carries nominated
 candidate lineage and the nominated family snapshot's members into fresh handoffs.
+When PLAR links the family output itself to a directory, delivery observation checks
+every distinct manifest `source_path` beneath that directory against its retained
+member size and SHA-256. It does not infer destination names, count unrelated files
+as members, or treat the manifest digest as a directory digest. The nominated
+snapshot must still match the current accepted family, its selections and pending
+work; these read-time file checks create no acceptance or new saved-state fields.
 These are read-time views of existing artifact and durable-job identities, not new
 PX2 fields or changes to the immutable manifest contract above. Historical reports
 and handoffs keep their original bytes; read current state for a fresh projection.

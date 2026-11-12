@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "requirements_hash": "de0268290f5cc14b5e6e1d9493f21e8767ca2a83ad231d5620b4086d5ddbddd0",
+  "asset_id": "robot.directions",
+  "plar_path": "production-plar.txt",
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "e1202361a26c377aff4ace08166854beff4f2978b08f1f961ef8b775269aa0e1",
+      "role": "brief (owner requirements: identity, 32x32, four directions, transparent, assets/robot/, controller labels)",
+      "locator": "Request paragraph",
+      "lines": [
+        3,
+        3
+      ]
+    },
+    {
+      "path": "src/robot.ts",
+      "sha256": "d57b9a903dc4210944ad1d7ea83c83718cffd22b9b044932852ed6f1ba80c1d0",
+      "role": "consumer (direction->path map, 32x32 cell, nearest sampling)",
+      "locator": "whole file",
+      "lines": [
+        1,
+        7
+      ]
+    },
+    {
+      "path": "assets/robot-base.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+      "role": "identity reference and preserved south; the exact bytes uploaded as upload:57ceb659-b047-49e5-9250-58343f194c5f",
+      "locator": "whole 32x32 image; measured: 390 visible px, one 4-connected opaque component, bbox [7,3,25,28) zero-based exclusive, colours #25354a (frame, 180 px), #56b5bc (body, 186 px), #f4dda2 (eyes, 24 px, two 3x4 boxes), 0 fractional-alpha px"
+    },
+    {
+      "path": "NATIVE-PRODUCTION.md",
+      "sha256": "8a60110ad8fb6fcc31a75b32860432400f1309a46ba7bfbe477a38f37c833b7b",
+      "role": "cf10-authority (scope, inspection list, spending limit)",
+      "locator": "Useful assignment and scope/payment sections",
+      "lines": [
+        13,
+        60
+      ]
+    },
+    {
+      "path": "production-plar.txt",
+      "sha256": "b6d6509a1fc5581b67746347e8e0085125385d71bf9df2176e0ec395aca1f13f",
+      "role": "selected PLAR queue (robot.directions requirements, robot.base identity dependency, delivery checks)",
+      "locator": "robot.base and robot.directions rows",
+      "lines": [
+        44,
+        178
+      ]
+    },
+    {
+      "path": "renderer-native/README.md",
+      "sha256": "c7df318641ee7235e4497cf1df4f95ec4c5bfe2001092d6ee9bd044c66e4e2b0",
+      "role": "destination renderer contract (south exact bytes, 32x32 RGBA transparent, mapping)",
+      "locator": "Required inputs paragraph",
+      "lines": [
+        25,
+        31
+      ]
+    }
+  ],
+  "request": {
+    "path": "work/native-production/packet-01/provider-arguments.json",
+    "sha256": "05c7321fee5f012da04ac641d8d9c33d04b527c7c585aa90e670a77c5418eb99",
+    "kind": "provider_arguments",
+    "tool": "create_object_pro_flash",
+    "provider": "pixellab-mcp",
+    "connection": {
+      "path": "work/native-production/packet-01/connection.json",
+      "sha256": "804573c2cbb4a087f137747e3ff85c49fdbdf2dc1e0195bb3f05c1ff9f95f73b"
+    }
+  },
+  "criteria": {
+    "path": "work/native-production/packet-01/candidate-plan.json",
+    "sha256": "a1519897f568941aacc31a1c5c594ce3d111b575b8597a7a3acea452441c163e"
+  },
+  "image_inputs": [
+    {
+      "role": "identity + south first frame",
+      "local_path": "assets/robot-base.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+      "request_field": "first_frame_url",
+      "handle": "upload:57ceb659-b047-49e5-9250-58343f194c5f",
+      "handle_kind": "PixelLab upload ref (3-day temporary transport), obtained by POSTing the exact file bytes to get_upload_url at 2026-11-12T08:09:03Z; reply: width 32, height 32, n_frames 1",
+      "raw_upload_reply": "work/native-production/upload-response.raw.json"
+    }
+  ],
+  "delivered_scope": {
+    "preserved": [
+      {
+        "path": "assets/robot/south.png",
+        "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+        "role": "exact copy of assets/robot-base.png (already written, verified identical)"
+      }
+    ],
+    "generated": [
+      "assets/robot/east.png",
+      "assets/robot/north.png",
+      "assets/robot/west.png"
+    ],
+    "retained_not_delivered": "south-east, north-east, north-west, south-west views returned by n_directions=8 (kept under work/native-production, not delivered)",
+    "family_delivery": "work/native-production/packet-01/family-plan-draft.json",
+    "south_baseline": "work/native-production/packet-01/south-baseline-plan.json"
+  },
+  "choices": [
+    {
+      "id": "operation",
+      "where": "request.tool / provider-arguments.json",
+      "choice": "create_object_pro_flash with the exact source as first_frame_url and n_directions=8",
+      "reason": "Cheapest discovered route (rotations only, quoted 1 generation) that takes the actual pixels as the south frame without a humanoid skeleton assumption; the robot is a limbless box, which create_character v3 documents as a body it 'tends to add limbs' to. Fallbacks ranked in discovery-01.json.",
+      "authority": "specialist choice"
+    },
+    {
+      "id": "view_side",
+      "where": "provider-arguments.json view; contract.view 'side'",
+      "choice": "view = 'side' (eye level)",
+      "reason": "The source is drawn strictly frontal with no visible top face; an eye-level camera keeps the preserved south consistent with the generated views. 'low top-down' would invent a top surface the south frame does not have. Open to caller correction if the game camera is known to be top-down.",
+      "authority": "specialist choice (proposal)"
+    },
+    {
+      "id": "n_directions_8",
+      "where": "provider-arguments.json n_directions",
+      "choice": "8 (tool offers only 1 or 8)",
+      "reason": "East/north/west are only available through the 8-view rotation; the four diagonals are retained but not delivered.",
+      "authority": "tool constraint"
+    },
+    {
+      "id": "description_text",
+      "where": "provider-arguments.json description",
+      "choice": "Literal description of the observed source pixels; no new features",
+      "reason": "The tool documents description as guidance beside the first frame; it names only what the image already shows.",
+      "authority": "specialist choice"
+    },
+    {
+      "id": "seed_0",
+      "where": "provider-arguments.json seed",
+      "choice": "seed 0 recorded explicitly",
+      "reason": "Reproducibility of the attempt record; a revision would use a different seed.",
+      "authority": "specialist choice"
+    },
+    {
+      "id": "alpha_binary",
+      "where": "contract.alpha, criterion alpha_binary",
+      "choice": "binary alpha",
+      "reason": "Matches the source (0 fractional pixels) and nearest sampling; proposal, not an owner rule.",
+      "authority": "specialist choice (proposal)"
+    },
+    {
+      "id": "palette_exact_set",
+      "where": "criterion palette_preserved",
+      "choice": "'preserve palette' read as: only the three source colours",
+      "reason": "Most literal reading of the brief; a turned face could arguably use one added shade while still 'preserving the palette' in spirit. The caller may relax this to 'no colours outside the source palette family' if it reads the brief differently.",
+      "authority": "specialist interpretation of an owner requirement"
+    },
+    {
+      "id": "tolerances",
+      "where": "criteria proportions_volume, ground_line_measure",
+      "choice": "±1 px height / centre tolerance; bottom row 27",
+      "reason": "Measurement proxies for the owner's qualitative proportion/alignment requirements; the numbers are the specialist's.",
+      "authority": "specialist choice (proposal)"
+    },
+    {
+      "id": "sample_then_family",
+      "where": "state plan (review-context.md)",
+      "choice": "One sample-phase generation task (plar_prepare) proves the method; accepted bytes are then reused as production-stage members under a family delivery with the preserved south as baseline; no second paid call unless a revision is needed",
+      "reason": "PX2 family members must be production outputs sharing a sample baseline; the representative sample supplies the adoption proof.",
+      "authority": "specialist choice (process)"
+    },
+    {
+      "id": "deferred_family_checks",
+      "where": "family-plan-draft.json",
+      "choice": "Continuity, direction mapping and renderer (engine) checks are family-level, reviewed after all four files exist",
+      "reason": "They cannot pass on a single direction; deferral keeps the obligation scheduled rather than dropped.",
+      "authority": "specialist choice (process)"
+    }
+  ],
+  "budget": {
+    "assignment_limit_generations": 20,
+    "expected_this_call": 1,
+    "provisional": true,
+    "spent_so_far": 0
+  }
+}

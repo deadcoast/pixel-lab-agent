@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Directional robot consumer",
+    "brief": "CF-10 authorized robot-directions production; original allocation remains in plar.txt."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md",
+      "src/robot.ts",
+      "assets/robot-base.png",
+      "Explicit CF-10 production addendum and bounded actual consumer renderer"
+    ],
+    "excluded": [
+      "Animation and UI panels are not requested."
+    ],
+    "unresolved": [
+      "Artistic quality beyond the saved criteria and any real game's art direction remain the owner's judgment; this is a representative fixture."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "e1202361a26c377aff4ace08166854beff4f2978b08f1f961ef8b775269aa0e1"
+    },
+    {
+      "id": "consumer",
+      "path": "src/robot.ts",
+      "sha256": "d57b9a903dc4210944ad1d7ea83c83718cffd22b9b044932852ed6f1ba80c1d0"
+    },
+    {
+      "id": "robot",
+      "path": "assets/robot-base.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    },
+    {
+      "id": "cf10-authority",
+      "path": "NATIVE-PRODUCTION.md",
+      "sha256": "8a60110ad8fb6fcc31a75b32860432400f1309a46ba7bfbe477a38f37c833b7b"
+    }
+  ],
+  "assets": [
+    {
+      "id": "robot.base",
+      "kind": "sprite",
+      "purpose": "Approved source identity for this example",
+      "status": "deferred",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Approved identity",
+          "usage": "Identity baseline for the directional asset family"
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/robot-base.png",
+          "role": "Retained approved identity fixture"
+        }
+      ],
+      "requirements": [
+        {
+          "property": "identity",
+          "value": "Preserve the supplied subject, proportions, palette and south frame.",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "robot"
+          ],
+          "reason": "The example assignment approves this source identity."
+        }
+      ],
+      "references": [
+        {
+          "source": "robot",
+          "role": "identity",
+          "instructions": "Keep this exact south-facing sprite and its subject identity when producing other directions."
+        }
+      ],
+      "delivery": {
+        "path": "assets/robot-base.png",
+        "checks": [
+          "Read the actual source at native scale before choosing a rotation operation."
+        ]
+      },
+      "depends_on": [],
+      "questions": [],
+      "next": "Preserve existing art/source; no new production assigned for this row.",
+      "evidence": []
+    },
+    {
+      "id": "robot.directions",
+      "kind": "directional-sprites",
+      "purpose": "Render the robot in the controller's four facing states",
+      "status": "integrated",
+      "consumers": [
+        {
+          "source": "consumer",
+          "symbol": "spriteFor",
+          "usage": "Select one of four named directional sprite files"
+        }
+      ],
+      "existing": [
+        {
+          "path": "assets/robot/south.png",
+          "role": "south facing: exact copy of assets/robot-base.png (reused, sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7)"
+        },
+        {
+          "path": "assets/robot/east.png",
+          "role": "east facing: official PixelLab rotation (generated; object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d; sha256 71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4)"
+        },
+        {
+          "path": "assets/robot/north.png",
+          "role": "north facing: official PixelLab rotation (generated; object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d; sha256 db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5)"
+        },
+        {
+          "path": "assets/robot/west.png",
+          "role": "west facing: EDITED deterministic mirror of the official east (not an official generated west; raw provider west rejected; sha256 ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0)"
+        }
+      ],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "directions",
+          "value": [
+            "south",
+            "east",
+            "north",
+            "west"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "alpha",
+          "value": "transparent background",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "consumer"
+          ],
+          "reason": "Preserve the supplied assignment and consumer contract."
+        },
+        {
+          "property": "cf10_production_scope",
+          "value": "Official robot-directions production, actual inspection and caller consumption under NATIVE-PRODUCTION.md.",
+          "authority": "requirement",
+          "sources": [
+            "cf10-authority"
+          ],
+          "reason": "New explicit development-evaluation production authority; old plan-only/preserve-Ready scope is historical."
+        }
+      ],
+      "delivery": {
+        "path": "assets/robot",
+        "checks": [
+          "Check separate PNGs, dimensions, transparency and direction names.",
+          "Inspect identity, volume and alignment together.",
+          "Render all facings in the real controller when a runner is available."
+        ]
+      },
+      "depends_on": [
+        "robot.base"
+      ],
+      "questions": [],
+      "next": "Delivered and reviewed under CF-10 (family delivery task done, renderer check pass). Caller: consume the handoff; any future revision of west (e.g. an unedited provider west) is a new request needing a fresh comparison.",
+      "evidence": [
+        {
+          "path": "work/native-production/packet-02/request-review.json",
+          "note": "Reviewed request/criteria packet (caller comparison COMPARISON.json); not acceptance."
+        },
+        {
+          "path": "work/native-production/COMPARISON.json",
+          "note": "Caller comparison of packet-01 with corrections adopted in packet-02."
+        },
+        {
+          "path": "work/native-production/provider/create_object_pro_flash-response.json",
+          "note": "Actual provider response: object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d, background job ea834364-0f7d-42eb-876b-bb26e21e1269, 1 generation."
+        },
+        {
+          "path": "work/native-production/reviews/review-delivery-01.result.json",
+          "note": "Family delivery review: continuity, direction mapping, renderer mechanical (live) and renderer visual all pass."
+        },
+        {
+          "path": "work/native-production/renderer-check-01.json",
+          "note": "Consumer renderer mechanical check: pass."
+        },
+        {
+          "path": "work/native-production/edited/west-mirror-of-east.receipt.json",
+          "note": "Deterministic west edit receipt (mirror of the official east)."
+        }
+      ],
+      "production": {
+        "store": ".pixl/assets/robot.directions",
+        "task": "robot-directions-family.delivery.task",
+        "output": "robot-directions-family.delivery.output"
+      }
+    }
+  ]
+}

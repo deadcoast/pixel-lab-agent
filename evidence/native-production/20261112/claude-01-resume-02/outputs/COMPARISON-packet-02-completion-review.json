@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "kind": "caller completion review of packet-02 (post-dispatch)",
+  "reviewer": "caller (Claude Code main session, model claude-fable-5-1), persisted parent session 9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+  "reviewed_at": "2026-11-12T08:42:25Z",
+  "native_child": "aeb8fdd3833c62981 (pixl:pixl), same child continued after host interruption",
+  "chronology_disclosure": "The earlier parent SendMessage (around 08:25Z) conditionally authorized five specified corrections before paid dispatch. The child applied corrections 1-4 in packet-02 and dispatched create_object_pro_flash (dispatch claim recorded 08:26:36Z; native call start 08:26:46.369Z, return 08:26:46.712Z per the preserved raw native chronology). There was NO parent reread of packet-02 before that paid call. This file is the current completion review, written after the fact; it is not a pre-dispatch reread and does not retroactively create one.",
+  "reviewed_files": {
+    "request-review.json": {
+      "path": "work/native-production/packet-02/request-review.json",
+      "sha256": "83d66b63e9bac32c9a3ae33a74a9ee3e6171d141c9de385bc74e2bf090441b62"
+    },
+    "provider-arguments.json": {
+      "path": "work/native-production/packet-02/provider-arguments.json",
+      "sha256": "85d6725c61791ba4b61db3f1f173a2e897749129b84f33cc9f7b055fd2728105"
+    },
+    "candidate-plan.json": {
+      "path": "work/native-production/packet-02/candidate-plan.json",
+      "sha256": "e7e5a190da86360878ab097094dcea98feaf12a6f6bde7af0cac16083a53b517"
+    },
+    "connection.json": {
+      "path": "work/native-production/packet-02/connection.json",
+      "sha256": "804573c2cbb4a087f137747e3ff85c49fdbdf2dc1e0195bb3f05c1ff9f95f73b"
+    },
+    "family-plan-draft.json": {
+      "path": "work/native-production/packet-02/family-plan-draft.json",
+      "sha256": "9065a632af11912fefa42dfce4fe612097c90804ed79b25cb79b5d92dbd77850"
+    },
+    "south-baseline-plan.json": {
+      "path": "work/native-production/packet-02/south-baseline-plan.json",
+      "sha256": "3cc85b730dd19bfb19e8ea5b9de00d35da87d3154181747b7aec4a53c3685862"
+    },
+    "request-review-report.json": {
+      "path": "work/native-production/packet-02/request-review-report.json",
+      "sha256": "6ccf3b0bc2e72e1b1cf9709a6526b4a6d5b21249fdf61269359d507328c9a673"
+    },
+    "discovery-01.json": {
+      "path": "work/native-production/packet-02/discovery-01.json",
+      "sha256": "779de253632a96aabcfae45d23b750c8533d732c6d662178c1907c8aa41ed86f"
+    }
+  },
+  "unchanged_from_packet_01": [
+    "connection.json",
+    "discovery-01.json",
+    "family-plan-draft.json",
+    "south-baseline-plan.json"
+  ],
+  "packet_01_preserved": {
+    "path": "work/native-production/packet-01/request-review.json",
+    "sha256": "a7cc497cfbcd8d9e7b97b010908b5572966cf2ebff5497251cc573680a870005"
+  },
+  "comparison_preserved": {
+    "path": "work/native-production/COMPARISON.json",
+    "sha256": "503de778135f188c64f45eab170144e65fc3b3d375ef566be01b18083b1169a2"
+  },
+  "correction_checks": [
+    {
+      "n": 1,
+      "requested": "palette argument with the three source colours",
+      "observed": "provider-arguments.json has palette ['#25354a','#56b5bc','#f4dda2'] and palette_name 'robot-base source colours'; the dispatched job record (r.acf329804ba043b7.request, request_sha256 ca743f1d...) carries the same arguments.",
+      "status": "applied"
+    },
+    {
+      "n": 2,
+      "requested": "description: rectangular posts; three colours on transparency",
+      "observed": "description now reads 'two rectangular antenna posts' and 'in three colours (navy, teal, pale yellow) on a transparent background'.",
+      "status": "applied"
+    },
+    {
+      "n": 3,
+      "requested": "identity per facing (profile may occlude a post; north need not show the teal panel)",
+      "observed": "candidate-plan identity checks for east/west say 'the rectangular antenna post(s) as visible from that facing (one post may hide the other in profile) at the same post height'; north says 'both rectangular antenna posts ... no eyes. The teal front panel is not required on the back'.",
+      "status": "applied"
+    },
+    {
+      "n": 4,
+      "requested": "move numeric tolerances out of requirement-authority proportions_volume",
+      "observed": "proportions_volume is now qualitative; a new proposal criterion height_measure holds top in [2,4], bottom == 28, posts 6 px within 1 px.",
+      "status": "applied"
+    },
+    {
+      "n": 5,
+      "requested": "re-run pixl_request_review on packet-02 and bind the prepared job to the corrected request before dispatch",
+      "observed": "packet-02/request-review-report.json exists; the first prepared job 'first_request' was withdrawn (failed, withdrawn_before_dispatch, 0 generations) and a new job r.acf329804ba043b7.request was prepared at 08:26:26Z with the corrected arguments, dispatch-claimed 08:26:36Z, then called. Binding is correct. The parent's own reread happened only now.",
+      "status": "applied by the child; parent verification is this file"
+    }
+  ],
+  "residual_observations": [
+    "Choice east/north/west contract.palette is still [] while palette_preserved and the request list the three colours; a harmless inconsistency in the PX2 contract value, noted, not a contract defect for acceptance.",
+    "The identity check for east/west names 'the teal body panel' among what reads as the same robot; the generated east shows the panel as a 1-px teal front edge in strict profile. The caller reads that as the panel seen edge-on, consistent with the clause; the reviewer should say so explicitly in the verdict reason.",
+    "The raw provider west (sha256 8209e5f6...) lacks the teal edge and is not the mirror of east; the child's deterministic mirror (sha256 ec96bf63...) is an EDITED candidate derived from the official east, not an official generated west. Any acceptance must label it so; the official raw west stays retained as a rejected candidate."
+  ],
+  "result": "consistent (packet-02 matches the COMPARISON.json dispositions and the dispatched request)",
+  "not_established": "Consistency is not provider execution, visual acceptance or destination acceptance; those follow from the child's reviews, the renderer evidence and the caller's final independent inspection.",
+  "next_action": "Resume child aeb8fdd3833c62981 to finish reviews, renderer capture/check, family delivery, PLAR update and handoff; then caller final inspection and CALLER-RESULT.json."
+}

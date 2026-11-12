@@ -1,0 +1,58 @@
+{
+  "observed_clock_utc": {
+    "session_start_read": "2026-11-12T08:07:36Z",
+    "discovery": "2026-11-12T08:08:04Z",
+    "upload": "2026-11-12T08:09:03Z"
+  },
+  "host_tools_observed": {
+    "pixellab_mcp": true,
+    "pixl_local_mcp": true
+  },
+  "candidate_operations": [
+    {
+      "tool": "create_object_pro_flash",
+      "inputs": "first_frame_url=upload:<id> (exact source bytes), n_directions=8, view",
+      "canvas": "32x32 square V3 canvas for eight views",
+      "quoted_cost": "rotations 1 generation (provisional; image part not charged when a first frame is supplied)",
+      "skeleton": "none (object)",
+      "chosen": true
+    },
+    {
+      "tool": "create_character (mode v3 + reference_image_url, n_directions 4)",
+      "inputs": "reference_image_url=upload:<id>; south kept as drawn",
+      "canvas": "reference's own 32x32",
+      "cost": "ceil(32*32*8/65536) -> minimum 1 generation",
+      "risk": "search_help reference: v3 assumes a standing humanoid/quadruped body and 'tends to add limbs' to other bodies; this robot has no limbs",
+      "chosen": false,
+      "fallback_rank": 1
+    },
+    {
+      "tool": "create_character_pro_flash (first_frame_url)",
+      "cost": "rotations ~1 generation at this size",
+      "risk": "mannequin skeleton template on a limbless box",
+      "chosen": false,
+      "fallback_rank": 2
+    },
+    {
+      "tool": "create_character (mode pro, reference_image_url) 'Pro rotate'",
+      "cost": "10 generations",
+      "note": "documented for bodies v3 gets wrong; Pro redraws all 8 directions; affordable once within the 20 limit",
+      "chosen": false,
+      "fallback_rank": 3
+    },
+    {
+      "tool": "create_8_direction_object (reference_image_base64)",
+      "cost": "10 generations",
+      "risk": "canvas padded to 34x34 for 32 (per declaration) -> would need cropping to meet 32x32",
+      "chosen": false
+    }
+  ],
+  "upload": {
+    "ref": "upload:57ceb659-b047-49e5-9250-58343f194c5f",
+    "source_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "width": 32,
+    "height": 32,
+    "n_frames": 1
+  },
+  "schema_source": "mcp__pixellab__create_object_pro_flash declaration (transcribed into packet-01/connection.json)"
+}

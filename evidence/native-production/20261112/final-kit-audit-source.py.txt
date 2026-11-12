@@ -1,0 +1,82 @@
+"""Read-only final CF-10 kit/source identity audit; never reruns paid work."""
+import hashlib
+import json
+import sys
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from pixl.readiness import verify_manifest
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob('*'))
+            if p.is_file() and '__pycache__' not in p.parts}
+
+
+def main():
+    base = ROOT / 'evidence/native-production/20261112'
+    out = base / 'final-kit-compatibility.json'
+    if out.exists():
+        raise ValueError('Retain the previous receipt; use a new output name')
+    original_snapshot = json.loads((base / 'native-kit-snapshot.json').read_bytes())
+    snapshot = json.loads((base / 'runtime-recovery-kit-snapshot.json').read_bytes())
+    original_archive = ROOT / original_snapshot['archive']['path']
+    with zipfile.ZipFile(original_archive) as stream:
+        original_native = {name: hashlib.sha256(stream.read(name)).hexdigest()
+                           for name in stream.namelist() if not name.endswith('/')}
+    archive = ROOT / snapshot['archive']['path']
+    with zipfile.ZipFile(archive) as stream:
+        native = {name: hashlib.sha256(stream.read(name)).hexdigest()
+                  for name in stream.namelist() if not name.endswith('/')}
+    current = inventory(ROOT / 'plugins/pixl')
+    changed = [{'path': name, 'native_sha256': native[name],
+                'final_sha256': current.get(name)}
+               for name in sorted(native) if native[name] != current.get(name)]
+    allowed = {'bundle-manifest.json', 'resources/evidence/art-methods/poc-report.json',
+               'resources/examples/atelier/measurement.json',
+               'resources/examples/atelier/project.px', 'resources/knowledge/library.px'}
+    result = json.loads((ROOT / 'evidence/test-results.json').read_bytes())
+    bundle = verify_manifest((ROOT / 'plugins/pixl').resolve())
+    unchanged = all((ROOT / name).is_file() and sha(ROOT / name) == digest
+                    for name, digest in result['checked_input_hashes'].items())
+    consumers = {}
+    for attempt in ('codex-01', 'claude-01'):
+        launch = json.loads((base / attempt / 'launch.json').read_bytes())
+        consumers[attempt] = inventory(Path(launch['cwd']) / 'installed pixl') == original_native
+    recovered = inventory(Path(launch['cwd']) / 'work/native-production/runtime-recovery-kit') == native
+    checks = {
+        'exact_original_native_archive_verified': sha(original_archive) == original_snapshot['archive']['sha256'] and original_native == original_snapshot['files'],
+        'exact_corrected_native_archive_verified': sha(archive) == snapshot['archive']['sha256'] and native == snapshot['files'],
+        'complete_file_inventory_same': set(native) == set(current),
+        'only_generated_reference_evidence_and_manifest_changed': all(row['path'] in allowed for row in changed),
+        'all_runtime_profile_workflow_contract_renderer_sources_identical': all(native[name] == current.get(name) for name in native if name not in allowed),
+        'both_native_consumer_kits_preserved': all(consumers.values()),
+        'separately_copied_corrected_native_kit_preserved': recovered,
+        'final_bundle_verified': bundle['status'] == 'verified',
+        'final_full_verifier_passed': result['status'] == 'pass',
+        'final_checked_sources_unchanged': unchanged,
+    }
+    payload = {'status': 'pass' if all(checks.values()) else 'fail',
+               'observed_at': datetime.now(UTC).isoformat(), 'checks': checks,
+               'original_native_kit': original_snapshot['archive'],
+               'corrected_native_kit': snapshot['archive'], 'native_manifest_sha256': snapshot['manifest_sha256'],
+               'final_bundle_manifest_sha256': sha(ROOT / 'plugins/pixl/bundle-manifest.json'),
+               'files': len(current), 'changed': changed, 'native_consumer_kits': consumers,
+               'bundle_verification': bundle,
+               'full_verification': {'path': result['run_directory'] + '/result.json',
+                                     'sha256': sha(ROOT / result['run_directory'] / 'result.json')},
+               'audit_source_sha256': sha(__file__),
+               'scope': 'Final runtime/spec/profile/workflow/renderer identity is compared with the explicitly upgraded Claude recovery kit. Both original host kits remain frozen; the runtime transition is separately documented. Byte identity and final-source compatibility only; no new native, paid, visual or engine outcome.'}
+    out.write_text(json.dumps(payload, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps({'status': payload['status'], 'checks': checks, 'files': len(current), 'changed': changed}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

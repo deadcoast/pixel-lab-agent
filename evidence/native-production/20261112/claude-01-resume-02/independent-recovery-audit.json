@@ -1,0 +1,2077 @@
+{
+  "version": 1,
+  "kind": "Independent read-only audit of same-session guided CF-10 recovery-02",
+  "observed_at_utc": "2026-11-12T09:49:41.862455+00:00",
+  "scope": "Retained native transcript ordering, current-selection repair, exact delivered bytes, runtime transition and caller consumption. No provider call or source/state edit performed by this auditor. Separate from artistic review and native grader verdicts.",
+  "verdict": {
+    "all_checks_pass": true,
+    "passed": 28,
+    "total": 28,
+    "current_handoff_acceptance_observed": true,
+    "additional_paid_generations": 0,
+    "original_claude_paid_generations": 1,
+    "same_parent": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+    "same_child": "aeb8fdd3833c62981",
+    "runtime_upgrade_explicit": true,
+    "milestone_closure": false
+  },
+  "source_refs": {
+    "stdout.jsonl": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/stdout.jsonl",
+      "sha256": "bbc78001fde2d2eb296e59640ca1507d3e9d2802298581f6840bd26806eed9c1",
+      "bytes": 1284991
+    },
+    "continuation.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/continuation.json",
+      "sha256": "b59fc2af9ca570e4e1a208f3efe2b34da1d05b2d1e2b89ddbeb712c4b3a7278b",
+      "bytes": 172474
+    },
+    "runtime-recovery.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/runtime-recovery.json",
+      "sha256": "d48c19d98eee4eb2042b824f2a8fc937db5a77d985e615898ae0880950c9b903",
+      "bytes": 67893
+    },
+    "consumer-delta.zip": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+      "sha256": "c8a763a8ec952bc9d447ff5b40212207264be4cd9290d455764c90c3f5f34f1d",
+      "bytes": 3007530
+    },
+    "preservation.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/preservation.json",
+      "sha256": "ecc1b3b6f9915024aa22dc129b2da0025b6eb2505bc7e90484fdf68eaee0530a",
+      "bytes": 81641
+    },
+    "identity.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/identity.json",
+      "sha256": "25c08cc70cc4ce200102f4cf2eda2ee23ec8b9eb4221c2de1160d55eabaee427",
+      "bytes": 837
+    },
+    "launch.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/launch.json",
+      "sha256": "6dc40da634335528d836e13436ecadd1c918442f8ebe936886216c262fb65969",
+      "bytes": 2858
+    },
+    "mcp.json": {
+      "path": "evidence/native-production/20261112/claude-01-resume-02/mcp.json",
+      "sha256": "13eae89846947031e82ca17d46e91539dd7b4e6642e85ef17a12e9120913ad9e",
+      "bytes": 715
+    }
+  },
+  "checks": [
+    {
+      "id": "native_process_finished",
+      "pass": true,
+      "details": {
+        "finished_at": "2026-11-12T09:36:32.154828+00:00",
+        "stdout_lines": 268
+      }
+    },
+    {
+      "id": "same_parent_and_resumed_original_child",
+      "pass": true,
+      "details": {
+        "parent": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "child": "aeb8fdd3833c62981",
+        "send": {
+          "stdout_line": 93,
+          "timestamp": "2026-11-12T09:23:56.636Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "SendMessage",
+          "tool_use_id": "toolu_01TJZP54dN51i5S1vD2cHB8F"
+        },
+        "ack": {
+          "stdout_line": 96,
+          "timestamp": "2026-11-12T09:23:56.673Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool_use_id": "toolu_01TJZP54dN51i5S1vD2cHB8F"
+        }
+      }
+    },
+    {
+      "id": "original_and_first_resume_transcript_prefixes_preserved",
+      "pass": true,
+      "details": [
+        {
+          "previous": {
+            "path": "evidence/native-production/20261112/claude-01/native-transcripts/parent.jsonl",
+            "sha256": "520c193efa5f90de3d44a731cb42cb13d03845a2ea30a526bfb178386b559990",
+            "bytes": 2314021
+          },
+          "continued": {
+            "path": "evidence/native-production/20261112/claude-01-resume-02/native-transcripts/parent.jsonl",
+            "sha256": "f90430d400dbe3847c5229cfe2ce9af69d8503ddfc7a901d2dcefc6b6b9c1549",
+            "bytes": 5627616
+          },
+          "strict_byte_prefix": true
+        },
+        {
+          "previous": {
+            "path": "evidence/native-production/20261112/claude-01/native-transcripts/aeb8fdd3833c62981.jsonl",
+            "sha256": "6a2bf5535e75450c4048fe7895fbbd148069e81cd16a354014780e1326efa549",
+            "bytes": 3478099
+          },
+          "continued": {
+            "path": "evidence/native-production/20261112/claude-01-resume-02/native-transcripts/aeb8fdd3833c62981.jsonl",
+            "sha256": "adcee5b0b1c859fb2f604181e46204855003c32e2669a9d19b707f21d52275cf",
+            "bytes": 5435363
+          },
+          "strict_byte_prefix": true
+        },
+        {
+          "previous": {
+            "path": "evidence/native-production/20261112/claude-01-resume-01/native-transcripts/parent.jsonl",
+            "sha256": "7638fd06c66e8fefaf2807d41815a56c96c03539c38ea0ab88d1840e3af6a5dc",
+            "bytes": 4222495
+          },
+          "continued": {
+            "path": "evidence/native-production/20261112/claude-01-resume-02/native-transcripts/parent.jsonl",
+            "sha256": "f90430d400dbe3847c5229cfe2ce9af69d8503ddfc7a901d2dcefc6b6b9c1549",
+            "bytes": 5627616
+          },
+          "strict_byte_prefix": true
+        },
+        {
+          "previous": {
+            "path": "evidence/native-production/20261112/claude-01-resume-01/native-transcripts/aeb8fdd3833c62981.jsonl",
+            "sha256": "1df1033627f06b4c2e0642f8c706a7989fab324f6a51d3acfe0eddadf038bbd0",
+            "bytes": 4798587
+          },
+          "continued": {
+            "path": "evidence/native-production/20261112/claude-01-resume-02/native-transcripts/aeb8fdd3833c62981.jsonl",
+            "sha256": "adcee5b0b1c859fb2f604181e46204855003c32e2669a9d19b707f21d52275cf",
+            "bytes": 5435363
+          },
+          "strict_byte_prefix": true
+        }
+      ]
+    },
+    {
+      "id": "no_replacement_child_spawned",
+      "pass": true
+    },
+    {
+      "id": "child_genuinely_completed_before_caller_final",
+      "pass": true,
+      "details": {
+        "notification": {
+          "stdout_line": 205,
+          "timestamp": null,
+          "type": "system",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "subtype": "task_notification",
+          "task_id": "aeb8fdd3833c62981",
+          "status": "completed"
+        },
+        "caller_final": {
+          "stdout_line": 266,
+          "timestamp": "2026-11-12T09:36:31.031Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null
+        }
+      }
+    },
+    {
+      "id": "explicit_upgrade_all_recorded_kit_files_verified",
+      "pass": true,
+      "details": {
+        "old_kit": {
+          "root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean h0x5smz6\\consumer\\installed pixl",
+          "recorded_files": 206,
+          "mismatches": [],
+          "extra_unrecorded_files": [
+            "runtime/pixl/__pycache__/__init__.cpython-314.pyc",
+            "runtime/pixl/__pycache__/codec.cpython-314.pyc",
+            "runtime/pixl/__pycache__/graph.cpython-314.pyc",
+            "runtime/pixl/__pycache__/store.cpython-314.pyc"
+          ],
+          "bundle_manifest_sha256": "391986953bb4df189796ac210a566f527947cb8400c18fcb5618786d90a522a0"
+        },
+        "new_kit": {
+          "root": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean h0x5smz6\\consumer\\work\\native-production\\runtime-recovery-kit",
+          "recorded_files": 206,
+          "mismatches": [],
+          "extra_unrecorded_files": [
+            "runtime/pixl/__pycache__/__init__.cpython-314.pyc",
+            "runtime/pixl/__pycache__/assets.cpython-314.pyc",
+            "runtime/pixl/__pycache__/catalog.cpython-314.pyc",
+            "runtime/pixl/__pycache__/codec.cpython-314.pyc",
+            "runtime/pixl/__pycache__/families.cpython-314.pyc",
+            "runtime/pixl/__pycache__/graph.cpython-314.pyc",
+            "runtime/pixl/__pycache__/job_history.cpython-314.pyc",
+            "runtime/pixl/__pycache__/jobs.cpython-314.pyc",
+            "runtime/pixl/__pycache__/lifecycle.cpython-314.pyc",
+            "runtime/pixl/__pycache__/plar.cpython-314.pyc",
+            "runtime/pixl/__pycache__/platform.cpython-314.pyc",
+            "runtime/pixl/__pycache__/service.cpython-314.pyc",
+            "runtime/pixl/__pycache__/sources.cpython-314.pyc",
+            "runtime/pixl/__pycache__/store.cpython-314.pyc"
+          ],
+          "bundle_manifest_sha256": "5dc8af04225cbb8efc535662a6d8548e5ba860ed87578f88dace06545940125e"
+        }
+      }
+    },
+    {
+      "id": "corrected_kit_all_206_files_archived",
+      "pass": true,
+      "details": {
+        "archive_prefix": "work/native-production/runtime-recovery-kit/",
+        "mismatches": []
+      }
+    },
+    {
+      "id": "corrected_bundle_bound_in_native_configuration",
+      "pass": true
+    },
+    {
+      "id": "independent_current_selection_delta_is_only_truthful_existing_rows",
+      "pass": true,
+      "details": {
+        "asset_delta": {
+          "existing": {
+            "old": [],
+            "current": [
+              {
+                "path": "assets/robot/south.png",
+                "role": "south facing: exact copy of assets/robot-base.png (reused, sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7)"
+              },
+              {
+                "path": "assets/robot/east.png",
+                "role": "east facing: official PixelLab rotation (generated; object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d; sha256 71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4)"
+              },
+              {
+                "path": "assets/robot/north.png",
+                "role": "north facing: official PixelLab rotation (generated; object 2a3cb51a-6cf7-485d-8441-3c3db762cc9d; sha256 db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5)"
+              },
+              {
+                "path": "assets/robot/west.png",
+                "role": "west facing: EDITED deterministic mirror of the official east (not an official generated west; raw provider west rejected; sha256 ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0)"
+              }
+            ]
+          }
+        },
+        "dependency_delta": {},
+        "source_digests_equal": true,
+        "comparison": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": "work/native-production/recovery-02/CALLER-SELECTION-COMPARISON.json",
+          "sha256": "b61d3627b3d6744ebca29fbcb6db445325710bf7c5801d43b2fda4193267b5cf",
+          "bytes": 11612
+        }
+      }
+    },
+    {
+      "id": "caller_comparison_precedes_same_child_instruction_and_mutation",
+      "pass": true,
+      "details": {
+        "comparison_write": {
+          "stdout_line": 85,
+          "timestamp": "2026-11-12T09:23:21.396Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Write",
+          "tool_use_id": "toolu_01XYZTos93w3ti5PdfJYkwv6"
+        },
+        "comparison_execute": {
+          "stdout_line": 87,
+          "timestamp": "2026-11-12T09:23:26.684Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Bash",
+          "tool_use_id": "toolu_01DNtbYhB8msXU8siRexuPiG"
+        },
+        "comparison_result": {
+          "stdout_line": 89,
+          "timestamp": "2026-11-12T09:23:26.870Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool_use_id": "toolu_01DNtbYhB8msXU8siRexuPiG"
+        },
+        "instruction": {
+          "stdout_line": 93,
+          "timestamp": "2026-11-12T09:23:56.636Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "SendMessage",
+          "tool_use_id": "toolu_01TJZP54dN51i5S1vD2cHB8F"
+        },
+        "child_read": {
+          "stdout_line": 108,
+          "timestamp": "2026-11-12T09:24:13.121Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "Bash",
+          "tool_use_id": "toolu_01VXgaffWUYhuSyunreGVYan"
+        },
+        "commit": {
+          "stdout_line": 151,
+          "timestamp": "2026-11-12T09:26:12.271Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "Bash",
+          "tool_use_id": "toolu_01QfduYX4cDPh3M6zoDj9Kvo"
+        }
+      }
+    },
+    {
+      "id": "state_delta_only_selection_marker_task_input_and_recompletion",
+      "pass": true,
+      "details": {
+        "revision40_to41": {
+          "added": [
+            "robot-directions-family.delivery.selection"
+          ],
+          "removed": [],
+          "changed": {
+            "robot-directions-family.delivery.task": {
+              "ip": {
+                "old": [
+                  {
+                    "ref": "robot-directions-family.plan"
+                  },
+                  {
+                    "ref": "candidate.south"
+                  }
+                ],
+                "new": [
+                  {
+                    "ref": "robot-directions-family.plan"
+                  },
+                  {
+                    "ref": "candidate.south"
+                  },
+                  {
+                    "ref": "robot-directions-family.delivery.selection"
+                  }
+                ]
+              },
+              "st": {
+                "old": {
+                  "symbol": "done"
+                },
+                "new": {
+                  "symbol": "open"
+                }
+              }
+            }
+          }
+        },
+        "revision41_to43": {
+          "added": [],
+          "removed": [],
+          "changed": {
+            "robot-directions-family.delivery.task": {
+              "st": {
+                "old": {
+                  "symbol": "open"
+                },
+                "new": {
+                  "symbol": "done"
+                }
+              }
+            }
+          }
+        },
+        "revision40_hash": "ceb0b61ea85dc3c03f1548a66198e1c7c992271ce9e974665872c2b377f64cf7",
+        "revision41_hash": "6c4d089c27455a2129f83060e5acada77286ad774cdc2261c6fd86151f4ee910",
+        "revision43_hash": "9fc60e840e69bd54a0118fffef407e2700fdc10fe66fbdd316d4704559fe7b53",
+        "record_counts": [
+          353,
+          354,
+          354
+        ]
+      }
+    },
+    {
+      "id": "all_other_prior_job_candidate_review_verdict_manifest_records_unchanged",
+      "pass": true,
+      "details": {
+        "verified_old_records": 352
+      }
+    },
+    {
+      "id": "new_selection_blob_digest_and_current_binding_match",
+      "pass": true,
+      "details": {
+        "marker": {
+          "dg": "731a0f8579a95e0fc0d03bca109292568625c9533000342231b1110200fc878c",
+          "kd": {
+            "symbol": "report"
+          },
+          "mt": {
+            "asset_id": "robot.directions",
+            "binding": "pixl.plar.selection/1",
+            "plar_path": "production-plar.txt",
+            "requirements_hash": "e3918fbaa7fcedf4be73603cd83448c4bde6f043a58f45f16a39417372a142f7"
+          },
+          "nm": "Current PLAR selection (recovery-02)",
+          "ur": ".pixl/assets/robot.directions/selections/731a0f8579a95e0fc0d03bca109292568625c9533000342231b1110200fc878c.json"
+        },
+        "snapshot": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": ".pixl/assets/robot.directions/selections/731a0f8579a95e0fc0d03bca109292568625c9533000342231b1110200fc878c.json",
+          "sha256": "731a0f8579a95e0fc0d03bca109292568625c9533000342231b1110200fc878c",
+          "bytes": 5353
+        }
+      }
+    },
+    {
+      "id": "actual_public_commit_and_task_complete_match_retained_state",
+      "pass": true,
+      "details": {
+        "commit": {
+          "stdout_line": 151,
+          "timestamp": "2026-11-12T09:26:12.271Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "Bash",
+          "tool_use_id": "toolu_01QfduYX4cDPh3M6zoDj9Kvo"
+        },
+        "commit_response": {
+          "stdout_line": 153,
+          "timestamp": "2026-11-12T09:26:14.106Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool_use_id": "toolu_01QfduYX4cDPh3M6zoDj9Kvo"
+        },
+        "complete": {
+          "stdout_line": 156,
+          "timestamp": "2026-11-12T09:26:20.340Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "mcp__pixl-local__pixl_task_complete",
+          "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA"
+        },
+        "complete_response": {
+          "stdout_line": 158,
+          "timestamp": "2026-11-12T09:26:21.891Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA"
+        },
+        "public_complete_result": {
+          "revision": 43,
+          "hash": "9fc60e840e69bd54a0118fffef407e2700fdc10fe66fbdd316d4704559fe7b53",
+          "state": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean h0x5smz6\\consumer\\.pixl\\assets\\robot.directions\\state.px",
+          "task": "robot-directions-family.delivery.task",
+          "candidates": [
+            "robot-directions-family.delivery.manifest.01"
+          ],
+          "already_complete": false,
+          "acceptance_created": false,
+          "remote_executed": false,
+          "publications": [
+            {
+              "revision": 42,
+              "hash": "5426e190071914fa83887457f169b9affddce3d6e965b397b72f4d8e0a726ef4",
+              "state": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean h0x5smz6\\consumer\\.pixl\\assets\\robot.directions\\state.px"
+            },
+            {
+              "revision": 43,
+              "hash": "9fc60e840e69bd54a0118fffef407e2700fdc10fe66fbdd316d4704559fe7b53",
+              "state": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean h0x5smz6\\consumer\\.pixl\\assets\\robot.directions\\state.px"
+            }
+          ],
+          "hash_domains": {
+            "hash": "canonical_state_sha256"
+          }
+        }
+      }
+    },
+    {
+      "id": "four_exact_manifest_destination_bytes_verified",
+      "pass": true,
+      "details": [
+        {
+          "source_path": "assets/robot/south.png",
+          "candidate": "candidate.south",
+          "output": "output.south",
+          "expected_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+          "observed_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+          "expected_bytes": 177,
+          "observed_bytes": 177,
+          "inside_declared_directory": true,
+          "actual_live_file_matches_archive": true,
+          "retained_manifest_member_matches": true,
+          "candidate_record_sha256_matches": true
+        },
+        {
+          "source_path": "assets/robot/east.png",
+          "candidate": "robot-directions-family.east.member",
+          "output": "robot-directions-family.east.output",
+          "expected_sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4",
+          "observed_sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4",
+          "expected_bytes": 166,
+          "observed_bytes": 166,
+          "inside_declared_directory": true,
+          "actual_live_file_matches_archive": true,
+          "retained_manifest_member_matches": true,
+          "candidate_record_sha256_matches": true
+        },
+        {
+          "source_path": "assets/robot/north.png",
+          "candidate": "robot-directions-family.north.member",
+          "output": "robot-directions-family.north.output",
+          "expected_sha256": "db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5",
+          "observed_sha256": "db516f78a836f89b618ba00cfac0d2373f260ae3923b6198f17c62ab957ba3f5",
+          "expected_bytes": 155,
+          "observed_bytes": 155,
+          "inside_declared_directory": true,
+          "actual_live_file_matches_archive": true,
+          "retained_manifest_member_matches": true,
+          "candidate_record_sha256_matches": true
+        },
+        {
+          "source_path": "assets/robot/west.png",
+          "candidate": "robot-directions-family.west.member",
+          "output": "robot-directions-family.west.output",
+          "expected_sha256": "ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0",
+          "observed_sha256": "ec96bf6379daf161ce8643894b72c50b4bb543e105f336cbc58f27293df655a0",
+          "expected_bytes": 167,
+          "observed_bytes": 167,
+          "inside_declared_directory": true,
+          "actual_live_file_matches_archive": true,
+          "retained_manifest_member_matches": true,
+          "candidate_record_sha256_matches": true
+        }
+      ]
+    },
+    {
+      "id": "current_plar_and_handoff_accept_exact_family_delivery",
+      "pass": true,
+      "details": {
+        "selection_current": true,
+        "next_action": "delivered",
+        "pending_jobs": [],
+        "directory_complete": true,
+        "destination_matches": true,
+        "family_accepted": true,
+        "family_member_selection_current": true,
+        "manifest": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": ".pixl/assets/robot.directions/deliveries/4bd3135c696ebd65df46df9653a95e8155063fab29c9177133191bc8f7e5fd89/manifest.json",
+          "sha256": "4bd3135c696ebd65df46df9653a95e8155063fab29c9177133191bc8f7e5fd89",
+          "bytes": 26639
+        },
+        "compact_handoff": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": "work/native-production/recovery-02/handoff-caller-view-02.json",
+          "sha256": "bdd5da51d5ee282f9ae5a6c97e8689ab565d12fa09f59f25e76f8287b906efac",
+          "bytes": 10480
+        },
+        "immutable_handoff": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": ".pixl/handoffs/42882a9bd16b0c6fc78ab291f16a06fc7db8d18da65e6f1102305bcb05bdc7fd.json",
+          "sha256": "42882a9bd16b0c6fc78ab291f16a06fc7db8d18da65e6f1102305bcb05bdc7fd",
+          "bytes": 54363
+        },
+        "state": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": ".pixl/assets/robot.directions/state.px",
+          "sha256": "9fc60e840e69bd54a0118fffef407e2700fdc10fe66fbdd316d4704559fe7b53",
+          "bytes": 391967
+        }
+      }
+    },
+    {
+      "id": "child_handoff_actual_response_matches_archived_bytes",
+      "pass": true,
+      "details": {
+        "call": {
+          "stdout_line": 180,
+          "timestamp": "2026-11-12T09:28:25.453Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "mcp__pixl-local__pixl_plar_handoff",
+          "tool_use_id": "toolu_016c8uRbUckMmVZKkQR2BCUa"
+        },
+        "response": {
+          "stdout_line": 182,
+          "timestamp": "2026-11-12T09:28:26.573Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool_use_id": "toolu_016c8uRbUckMmVZKkQR2BCUa"
+        }
+      }
+    },
+    {
+      "id": "caller_fresh_public_read_matches_child_read",
+      "pass": true,
+      "details": {
+        "child_read": {
+          "stdout_line": 161,
+          "timestamp": "2026-11-12T09:26:34.241Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "mcp__pixl-local__pixl_plar_read",
+          "tool_use_id": "toolu_01Xt3ABDkmd3zAKNCtMbob2V"
+        },
+        "child_response": {
+          "stdout_line": 168,
+          "timestamp": "2026-11-12T09:26:35.303Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool_use_id": "toolu_01Xt3ABDkmd3zAKNCtMbob2V"
+        },
+        "child_retention": {
+          "stdout_line": 175,
+          "timestamp": "2026-11-12T09:27:04.953Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool": "Bash",
+          "tool_use_id": "toolu_01LjxQvRUcK5AbJFnBChDL3h"
+        },
+        "caller_read": {
+          "stdout_line": 212,
+          "timestamp": "2026-11-12T09:33:35.875Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "mcp__pixl-local__pixl_plar_read",
+          "tool_use_id": "toolu_01QEkCfFjcRbHkLcpWb1DMhk"
+        },
+        "caller_full_json_load_and_retention": {
+          "stdout_line": 247,
+          "timestamp": "2026-11-12T09:34:14.578Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Bash",
+          "tool_use_id": "toolu_01NG7AZZzVXKgdQ2HrF9BM8C"
+        },
+        "retained_read": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": "work/native-production/recovery-02/caller-plar-read-after-rev43.raw.json",
+          "sha256": "2bb6af2fc72967ed7bb2d86e5623cbd0760e4ab9973b385f5deea83f95e3b9d0",
+          "bytes": 71590
+        }
+      }
+    },
+    {
+      "id": "retained_current_plar_and_family_bytes_equal_actual_host_tool_results",
+      "pass": true,
+      "details": [
+        {
+          "native_response": {
+            "stdout_line": 168,
+            "timestamp": "2026-11-12T09:26:35.303Z",
+            "type": "user",
+            "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+            "agent_id": "aeb8fdd3833c62981",
+            "tool_use_id": "toolu_01Xt3ABDkmd3zAKNCtMbob2V"
+          },
+          "host_file": {
+            "path": "C:\\Users\\ryanf\\.claude\\projects\\C--Users-ryanf-AppData-Local-Temp-pixl-readiness-claude-clean-h0x5smz6-consumer\\9d0f792b-9ac2-42e1-8131-5861ce4b1dc5\\tool-results\\mcp-pixl-local-pixl_plar_read-1794475595293.txt",
+            "sha256": "2bb6af2fc72967ed7bb2d86e5623cbd0760e4ab9973b385f5deea83f95e3b9d0",
+            "bytes": 71590
+          },
+          "matching_archived_members": [
+            "work/native-production/recovery-02/caller-plar-read-after-rev43.raw.json"
+          ]
+        },
+        {
+          "native_response": {
+            "stdout_line": 215,
+            "timestamp": "2026-11-12T09:33:37.091Z",
+            "type": "user",
+            "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+            "agent_id": null,
+            "tool_use_id": "toolu_01QEkCfFjcRbHkLcpWb1DMhk"
+          },
+          "host_file": {
+            "path": "C:\\Users\\ryanf\\.claude\\projects\\C--Users-ryanf-AppData-Local-Temp-pixl-readiness-claude-clean-h0x5smz6-consumer\\9d0f792b-9ac2-42e1-8131-5861ce4b1dc5\\tool-results\\mcp-pixl-local-pixl_plar_read-1794476017081.txt",
+            "sha256": "2bb6af2fc72967ed7bb2d86e5623cbd0760e4ab9973b385f5deea83f95e3b9d0",
+            "bytes": 71590
+          },
+          "matching_archived_members": [
+            "work/native-production/recovery-02/caller-plar-read-after-rev43.raw.json"
+          ]
+        },
+        {
+          "native_response": {
+            "stdout_line": 218,
+            "timestamp": "2026-11-12T09:33:37.850Z",
+            "type": "user",
+            "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+            "agent_id": null,
+            "tool_use_id": "toolu_01TUZdCByZhzsNso9JesWJs4"
+          },
+          "host_file": {
+            "path": "C:\\Users\\ryanf\\.claude\\projects\\C--Users-ryanf-AppData-Local-Temp-pixl-readiness-claude-clean-h0x5smz6-consumer\\9d0f792b-9ac2-42e1-8131-5861ce4b1dc5\\tool-results\\mcp-pixl-local-pixl_family-1794476017848.txt",
+            "sha256": "a6570190b9dde896b2d704bfe6e1afe8d7f2d675b4e1990329f538dbce33074c",
+            "bytes": 64415
+          },
+          "matching_archived_members": [
+            "work/native-production/recovery-02/caller-family-report-after-rev43.raw.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "caller_consumes_current_specialist_handoff_and_fresh_public_reports",
+      "pass": true,
+      "details": {
+        "specialist_read": {
+          "stdout_line": 199,
+          "timestamp": "2026-11-12T09:33:27.812Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Read",
+          "tool_use_id": "toolu_01N6XD3f9NdNJxJV61d9Ruvt"
+        },
+        "compact_handoff_read": {
+          "stdout_line": 220,
+          "timestamp": "2026-11-12T09:33:38.594Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Read",
+          "tool_use_id": "toolu_01KxpMw8f7dACN6XuuLeNkBz"
+        },
+        "immutable_handoff_full_json_load": {
+          "stdout_line": 228,
+          "timestamp": "2026-11-12T09:33:51.762Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Bash",
+          "tool_use_id": "toolu_01MZXFWFAjZXfKNRLwxPk2Cr"
+        },
+        "fresh_public_json_consumption": {
+          "stdout_line": 247,
+          "timestamp": "2026-11-12T09:34:14.578Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Bash",
+          "tool_use_id": "toolu_01NG7AZZzVXKgdQ2HrF9BM8C"
+        },
+        "caller_author_script": {
+          "stdout_line": 262,
+          "timestamp": "2026-11-12T09:36:14.512Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Write",
+          "tool_use_id": "toolu_016LA6DUwM35W8VE451wsgFi"
+        },
+        "caller_write_execution": {
+          "stdout_line": 264,
+          "timestamp": "2026-11-12T09:36:19.581Z",
+          "type": "assistant",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool": "Bash",
+          "tool_use_id": "toolu_013NmDBf4YPsow9g83gc1dGy"
+        },
+        "caller_write_result": {
+          "stdout_line": 265,
+          "timestamp": "2026-11-12T09:36:19.858Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool_use_id": "toolu_013NmDBf4YPsow9g83gc1dGy"
+        },
+        "caller_report": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": "work/native-production/CALLER-RESULT.json",
+          "sha256": "6938b3aef48929909580e932530f604e2290cf93cbd690e15a76f0f09e28a09f",
+          "bytes": 35632
+        },
+        "specialist_report": {
+          "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+          "member": "work/native-production/SPECIALIST-RESULT.json",
+          "sha256": "1167bb0fce8190a6cdc946258a77fa1ab6af030fe9112191c91261d8986e7fcc",
+          "bytes": 39171
+        },
+        "limits": "Bash parsed the full JSON and emitted selected acceptance fields. This establishes explicit consumption of these current fields, not literal model rereading of every unrelated raw JSON field."
+      }
+    },
+    {
+      "id": "prior_false_acceptance_reports_preserved_byte_exact",
+      "pass": true,
+      "details": [
+        {
+          "name": "CALLER-RESULT.json",
+          "prior_sha256": "06000bb0a110f63f1d4ed7c382305fb28d6016f4615377e5999dd5abf5031cbc",
+          "preserved": {
+            "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+            "member": "work/native-production/recovery-02/prior-CALLER-RESULT.json",
+            "sha256": "06000bb0a110f63f1d4ed7c382305fb28d6016f4615377e5999dd5abf5031cbc",
+            "bytes": 29410
+          },
+          "byte_equal": true,
+          "current": {
+            "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+            "member": "work/native-production/CALLER-RESULT.json",
+            "sha256": "6938b3aef48929909580e932530f604e2290cf93cbd690e15a76f0f09e28a09f",
+            "bytes": 35632
+          }
+        },
+        {
+          "name": "SPECIALIST-RESULT.json",
+          "prior_sha256": "b2b0f24281cdf08ec4fa027ed51057e5c9b8a6ac197baa813331bcd0eddebe54",
+          "preserved": {
+            "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+            "member": "work/native-production/recovery-02/prior-SPECIALIST-RESULT.json",
+            "sha256": "b2b0f24281cdf08ec4fa027ed51057e5c9b8a6ac197baa813331bcd0eddebe54",
+            "bytes": 29491
+          },
+          "byte_equal": true,
+          "current": {
+            "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+            "member": "work/native-production/SPECIALIST-RESULT.json",
+            "sha256": "1167bb0fce8190a6cdc946258a77fa1ab6af030fe9112191c91261d8986e7fcc",
+            "bytes": 39171
+          }
+        }
+      ]
+    },
+    {
+      "id": "all_143_prior_non_state_store_artifacts_preserved",
+      "pass": true,
+      "details": {
+        "count": 143,
+        "changed_or_missing": [],
+        "new_store_paths": [
+          ".pixl/assets/robot.directions/history/5426e190071914fa83887457f169b9affddce3d6e965b397b72f4d8e0a726ef4.px",
+          ".pixl/assets/robot.directions/history/6c4d089c27455a2129f83060e5acada77286ad774cdc2261c6fd86151f4ee910.px",
+          ".pixl/assets/robot.directions/history/9fc60e840e69bd54a0118fffef407e2700fdc10fe66fbdd316d4704559fe7b53.px",
+          ".pixl/assets/robot.directions/selections/731a0f8579a95e0fc0d03bca109292568625c9533000342231b1110200fc878c.json",
+          ".pixl/handoffs/42882a9bd16b0c6fc78ab291f16a06fc7db8d18da65e6f1102305bcb05bdc7fd.json"
+        ]
+      }
+    },
+    {
+      "id": "all_prior_archived_art_and_capture_pngs_unchanged",
+      "pass": true,
+      "details": {
+        "count": 92,
+        "changed_or_missing": []
+      }
+    },
+    {
+      "id": "resume2_has_only_two_free_provider_balance_reads",
+      "pass": true,
+      "details": [
+        {
+          "event": {
+            "stdout_line": 163,
+            "timestamp": "2026-11-12T09:26:34.560Z",
+            "type": "assistant",
+            "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+            "agent_id": "aeb8fdd3833c62981",
+            "tool": "mcp__pixellab__get_balance",
+            "tool_use_id": "toolu_01EjrrqGVEe9hud7cKzV7Jyj"
+          },
+          "arguments": {}
+        },
+        {
+          "event": {
+            "stdout_line": 216,
+            "timestamp": "2026-11-12T09:33:37.220Z",
+            "type": "assistant",
+            "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+            "agent_id": null,
+            "tool": "mcp__pixellab__get_balance",
+            "tool_use_id": "toolu_01CmfRSo2zVUdS9msiNVHKtg"
+          },
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "id": "both_actual_balance_results_unchanged_at_4978",
+      "pass": true,
+      "details": {
+        "child": {
+          "stdout_line": 167,
+          "timestamp": "2026-11-12T09:26:35.218Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": "aeb8fdd3833c62981",
+          "tool_use_id": "toolu_01EjrrqGVEe9hud7cKzV7Jyj"
+        },
+        "parent": {
+          "stdout_line": 219,
+          "timestamp": "2026-11-12T09:33:38.360Z",
+          "type": "user",
+          "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+          "agent_id": null,
+          "tool_use_id": "toolu_01CmfRSo2zVUdS9msiNVHKtg"
+        },
+        "generations_remaining": 4978
+      }
+    },
+    {
+      "id": "one_original_generation_and_no_generation_repeated_across_resumes",
+      "pass": true,
+      "details": [
+        {
+          "attempt": "claude-01",
+          "paid_or_mutating_generation_calls": [
+            {
+              "line": 550,
+              "timestamp": "2026-11-12T08:26:46.369Z",
+              "name": "mcp__pixellab__create_object_pro_flash",
+              "tool_use_id": "toolu_01P12mZP2cZuykABAZSnUiMw"
+            }
+          ]
+        },
+        {
+          "attempt": "claude-01-resume-01",
+          "paid_or_mutating_generation_calls": []
+        },
+        {
+          "attempt": "claude-01-resume-02",
+          "paid_or_mutating_generation_calls": []
+        }
+      ]
+    },
+    {
+      "id": "no_direct_network_provider_commands_in_resume2_bash",
+      "pass": true,
+      "details": {
+        "screened_terms": [
+          "curl ",
+          "wget ",
+          "requests.",
+          "httpx.",
+          "Authorization",
+          "create_object",
+          "create_image",
+          "upload_image",
+          "get_balance"
+        ],
+        "hits": [],
+        "limit": "Supplementary command screen; accounting is supported by actual MCP tool names, unchanged durable job records, and balance results."
+      }
+    },
+    {
+      "id": "prior_independent_audits_untouched",
+      "pass": true,
+      "details": [
+        {
+          "path": "evidence/native-production/20261112/codex-01/independent-trace-audit.json",
+          "sha256": "e923ec464604921039d7df3fe9c27979d83a56804c9eae968646465e2f1bc47d",
+          "bytes": 7885
+        },
+        {
+          "path": "evidence/native-production/20261112/claude-01/predispatch-chronology-audit-01.json",
+          "sha256": "1c62918cfa110fc6e0fc7a1093bbafb5cb7f3458699abd5f285801e44de3d4da",
+          "bytes": 10894
+        },
+        {
+          "path": "evidence/native-production/20261112/claude-01-resume-01/independent-resume-audit.json",
+          "sha256": "4c435299c5034cab26b1c059361be60a79e95245827e3bb890cc2d0f2693b7cd",
+          "bytes": 57437
+        }
+      ]
+    }
+  ],
+  "chronology": [
+    {
+      "stdout_line": 85,
+      "timestamp": "2026-11-12T09:23:21.396Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Write",
+      "tool_use_id": "toolu_01XYZTos93w3ti5PdfJYkwv6",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 622,
+          "timestamp": "2026-11-12T09:23:21.396Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 623,
+          "timestamp": "2026-11-12T09:23:21.426Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 626,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 87,
+      "timestamp": "2026-11-12T09:23:26.684Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Bash",
+      "tool_use_id": "toolu_01DNtbYhB8msXU8siRexuPiG",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 633,
+          "timestamp": "2026-11-12T09:23:26.684Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 634,
+          "timestamp": "2026-11-12T09:23:26.870Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 637,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 89,
+      "timestamp": "2026-11-12T09:23:26.870Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool_use_id": "toolu_01DNtbYhB8msXU8siRexuPiG",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 633,
+          "timestamp": "2026-11-12T09:23:26.684Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 634,
+          "timestamp": "2026-11-12T09:23:26.870Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 637,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 93,
+      "timestamp": "2026-11-12T09:23:56.636Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "SendMessage",
+      "tool_use_id": "toolu_01TJZP54dN51i5S1vD2cHB8F",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 641,
+          "timestamp": "2026-11-12T09:23:56.636Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 642,
+          "timestamp": "2026-11-12T09:23:56.673Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 647,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 648,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 96,
+      "timestamp": "2026-11-12T09:23:56.673Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool_use_id": "toolu_01TJZP54dN51i5S1vD2cHB8F",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 641,
+          "timestamp": "2026-11-12T09:23:56.636Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 642,
+          "timestamp": "2026-11-12T09:23:56.673Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 647,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 648,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 108,
+      "timestamp": "2026-11-12T09:24:13.121Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Bash",
+      "tool_use_id": "toolu_01VXgaffWUYhuSyunreGVYan",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 828,
+          "timestamp": "2026-11-12T09:24:13.121Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 829,
+          "timestamp": "2026-11-12T09:24:13.490Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 838,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 839,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 111,
+      "timestamp": "2026-11-12T09:24:16.907Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Bash",
+      "tool_use_id": "toolu_01M1DrTaMRB5dPPVXinCNFwV",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 830,
+          "timestamp": "2026-11-12T09:24:16.907Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 831,
+          "timestamp": "2026-11-12T09:24:17.096Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 838,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 839,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 114,
+      "timestamp": "2026-11-12T09:24:19.734Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Bash",
+      "tool_use_id": "toolu_01341xWM1trEUqtYCL7qKkii",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 657,
+          "timestamp": "2026-11-12T09:24:19.734Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 658,
+          "timestamp": "2026-11-12T09:24:19.894Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 661,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 151,
+      "timestamp": "2026-11-12T09:26:12.271Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Bash",
+      "tool_use_id": "toolu_01QfduYX4cDPh3M6zoDj9Kvo",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 874,
+          "timestamp": "2026-11-12T09:26:12.271Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 875,
+          "timestamp": "2026-11-12T09:26:14.106Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 878,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 153,
+      "timestamp": "2026-11-12T09:26:14.106Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_01QfduYX4cDPh3M6zoDj9Kvo",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 874,
+          "timestamp": "2026-11-12T09:26:12.271Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 875,
+          "timestamp": "2026-11-12T09:26:14.106Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 878,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 156,
+      "timestamp": "2026-11-12T09:26:20.340Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "mcp__pixl-local__pixl_task_complete",
+      "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 883,
+          "timestamp": "2026-11-12T09:26:20.340Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 884,
+          "timestamp": "2026-11-12T09:26:21.891Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 887,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 158,
+      "timestamp": "2026-11-12T09:26:21.891Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 883,
+          "timestamp": "2026-11-12T09:26:20.340Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 884,
+          "timestamp": "2026-11-12T09:26:21.891Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 887,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 161,
+      "timestamp": "2026-11-12T09:26:34.241Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "mcp__pixl-local__pixl_plar_read",
+      "tool_use_id": "toolu_01Xt3ABDkmd3zAKNCtMbob2V",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 892,
+          "timestamp": "2026-11-12T09:26:34.241Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 896,
+          "timestamp": "2026-11-12T09:26:35.303Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 902,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 903,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 163,
+      "timestamp": "2026-11-12T09:26:34.560Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "mcp__pixellab__get_balance",
+      "tool_use_id": "toolu_01EjrrqGVEe9hud7cKzV7Jyj",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 893,
+          "timestamp": "2026-11-12T09:26:34.560Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 895,
+          "timestamp": "2026-11-12T09:26:35.218Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 902,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 903,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 167,
+      "timestamp": "2026-11-12T09:26:35.218Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_01EjrrqGVEe9hud7cKzV7Jyj",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 893,
+          "timestamp": "2026-11-12T09:26:34.560Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 895,
+          "timestamp": "2026-11-12T09:26:35.218Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 902,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 903,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 168,
+      "timestamp": "2026-11-12T09:26:35.303Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_01Xt3ABDkmd3zAKNCtMbob2V",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 892,
+          "timestamp": "2026-11-12T09:26:34.241Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 896,
+          "timestamp": "2026-11-12T09:26:35.303Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 902,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 903,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 170,
+      "timestamp": "2026-11-12T09:26:42.269Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Bash",
+      "tool_use_id": "toolu_016ZfZxDT4gsKdHK5o7ieHTt",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 898,
+          "timestamp": "2026-11-12T09:26:42.269Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 899,
+          "timestamp": "2026-11-12T09:26:42.464Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 902,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 903,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 175,
+      "timestamp": "2026-11-12T09:27:04.953Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Bash",
+      "tool_use_id": "toolu_01LjxQvRUcK5AbJFnBChDL3h",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 908,
+          "timestamp": "2026-11-12T09:27:04.953Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 909,
+          "timestamp": "2026-11-12T09:27:05.233Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 912,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 177,
+      "timestamp": "2026-11-12T09:27:05.233Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_01LjxQvRUcK5AbJFnBChDL3h",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 908,
+          "timestamp": "2026-11-12T09:27:04.953Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 909,
+          "timestamp": "2026-11-12T09:27:05.233Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 912,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 180,
+      "timestamp": "2026-11-12T09:28:25.453Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "mcp__pixl-local__pixl_plar_handoff",
+      "tool_use_id": "toolu_016c8uRbUckMmVZKkQR2BCUa",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 917,
+          "timestamp": "2026-11-12T09:28:25.453Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 918,
+          "timestamp": "2026-11-12T09:28:26.573Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 921,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 182,
+      "timestamp": "2026-11-12T09:28:26.573Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool_use_id": "toolu_016c8uRbUckMmVZKkQR2BCUa",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 917,
+          "timestamp": "2026-11-12T09:28:25.453Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 918,
+          "timestamp": "2026-11-12T09:28:26.573Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 921,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 185,
+      "timestamp": "2026-11-12T09:33:09.950Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": "aeb8fdd3833c62981",
+      "tool": "Write",
+      "tool_use_id": "toolu_012h46oCXz2VmcmyDqz262Pr",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 926,
+          "timestamp": "2026-11-12T09:33:09.950Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 927,
+          "timestamp": "2026-11-12T09:33:10.025Z"
+        },
+        {
+          "path": "native-transcripts/aeb8fdd3833c62981.jsonl",
+          "line": 930,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 199,
+      "timestamp": "2026-11-12T09:33:27.812Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Read",
+      "tool_use_id": "toolu_01N6XD3f9NdNJxJV61d9Ruvt",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 685,
+          "timestamp": "2026-11-12T09:33:27.812Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 686,
+          "timestamp": "2026-11-12T09:33:28.026Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 689,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 690,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 205,
+      "timestamp": null,
+      "type": "system",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "subtype": "task_notification",
+      "task_id": "aeb8fdd3833c62981",
+      "status": "completed",
+      "native_transcript_matches": []
+    },
+    {
+      "stdout_line": 212,
+      "timestamp": "2026-11-12T09:33:35.875Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "mcp__pixl-local__pixl_plar_read",
+      "tool_use_id": "toolu_01QEkCfFjcRbHkLcpWb1DMhk",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 699,
+          "timestamp": "2026-11-12T09:33:35.875Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 702,
+          "timestamp": "2026-11-12T09:33:37.091Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 214,
+      "timestamp": "2026-11-12T09:33:37.027Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "mcp__pixl-local__pixl_family",
+      "tool_use_id": "toolu_01TUZdCByZhzsNso9JesWJs4",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 701,
+          "timestamp": "2026-11-12T09:33:37.027Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 705,
+          "timestamp": "2026-11-12T09:33:37.850Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 216,
+      "timestamp": "2026-11-12T09:33:37.220Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "mcp__pixellab__get_balance",
+      "tool_use_id": "toolu_01CmfRSo2zVUdS9msiNVHKtg",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 703,
+          "timestamp": "2026-11-12T09:33:37.220Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 706,
+          "timestamp": "2026-11-12T09:33:38.360Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 219,
+      "timestamp": "2026-11-12T09:33:38.360Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool_use_id": "toolu_01CmfRSo2zVUdS9msiNVHKtg",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 703,
+          "timestamp": "2026-11-12T09:33:37.220Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 706,
+          "timestamp": "2026-11-12T09:33:38.360Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 220,
+      "timestamp": "2026-11-12T09:33:38.594Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Read",
+      "tool_use_id": "toolu_01KxpMw8f7dACN6XuuLeNkBz",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 707,
+          "timestamp": "2026-11-12T09:33:38.594Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 708,
+          "timestamp": "2026-11-12T09:33:38.618Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 228,
+      "timestamp": "2026-11-12T09:33:51.762Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Bash",
+      "tool_use_id": "toolu_01MZXFWFAjZXfKNRLwxPk2Cr",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 715,
+          "timestamp": "2026-11-12T09:33:51.762Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 720,
+          "timestamp": "2026-11-12T09:33:52.066Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 724,
+          "timestamp": null
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 725,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 247,
+      "timestamp": "2026-11-12T09:34:14.578Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Bash",
+      "tool_use_id": "toolu_01NG7AZZzVXKgdQ2HrF9BM8C",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 734,
+          "timestamp": "2026-11-12T09:34:14.578Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 735,
+          "timestamp": "2026-11-12T09:34:15.051Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 738,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 248,
+      "timestamp": "2026-11-12T09:34:15.051Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool_use_id": "toolu_01NG7AZZzVXKgdQ2HrF9BM8C",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 734,
+          "timestamp": "2026-11-12T09:34:14.578Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 735,
+          "timestamp": "2026-11-12T09:34:15.051Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 738,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 262,
+      "timestamp": "2026-11-12T09:36:14.512Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Write",
+      "tool_use_id": "toolu_016LA6DUwM35W8VE451wsgFi",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 747,
+          "timestamp": "2026-11-12T09:36:14.512Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 748,
+          "timestamp": "2026-11-12T09:36:14.544Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 751,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 264,
+      "timestamp": "2026-11-12T09:36:19.581Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool": "Bash",
+      "tool_use_id": "toolu_013NmDBf4YPsow9g83gc1dGy",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 758,
+          "timestamp": "2026-11-12T09:36:19.581Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 759,
+          "timestamp": "2026-11-12T09:36:19.858Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 762,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 265,
+      "timestamp": "2026-11-12T09:36:19.858Z",
+      "type": "user",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "tool_use_id": "toolu_013NmDBf4YPsow9g83gc1dGy",
+      "native_transcript_matches": [
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 758,
+          "timestamp": "2026-11-12T09:36:19.581Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 759,
+          "timestamp": "2026-11-12T09:36:19.858Z"
+        },
+        {
+          "path": "native-transcripts/parent.jsonl",
+          "line": 762,
+          "timestamp": null
+        }
+      ]
+    },
+    {
+      "stdout_line": 266,
+      "timestamp": "2026-11-12T09:36:31.031Z",
+      "type": "assistant",
+      "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+      "agent_id": null,
+      "native_transcript_matches": []
+    }
+  ],
+  "known_defects_and_limits": [
+    {
+      "id": "task_completion_receipt_timestamp_label",
+      "artifact": {
+        "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+        "member": "work/native-production/recovery-02/task-complete-rev43.result.json",
+        "sha256": "50e059c682790cbb2b1ec6397bb395054e989a349fee5079c00692d031373795",
+        "bytes": 1022
+      },
+      "claimed_observed_at": "2026-11-12T09:26:50Z",
+      "actual_complete_call": {
+        "stdout_line": 156,
+        "timestamp": "2026-11-12T09:26:20.340Z",
+        "type": "assistant",
+        "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "agent_id": "aeb8fdd3833c62981",
+        "tool": "mcp__pixl-local__pixl_task_complete",
+        "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA"
+      },
+      "actual_complete_result": {
+        "stdout_line": 158,
+        "timestamp": "2026-11-12T09:26:21.891Z",
+        "type": "user",
+        "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "agent_id": "aeb8fdd3833c62981",
+        "tool_use_id": "toolu_015yHJ7DXDuygoDFTkNzVJxA"
+      },
+      "receipt_written_by_bash": {
+        "stdout_line": 170,
+        "timestamp": "2026-11-12T09:26:42.269Z",
+        "type": "assistant",
+        "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "agent_id": "aeb8fdd3833c62981",
+        "tool": "Bash",
+        "tool_use_id": "toolu_016ZfZxDT4gsKdHK5o7ieHTt"
+      },
+      "finding": "The agent-authored observed_at 09:26:50Z is later than both the actual response 09:26:21.891Z and receipt-writing command 09:26:42.269Z. Use native event chronology."
+    },
+    {
+      "id": "specialist_written_at_timestamp_label",
+      "artifact": {
+        "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip",
+        "member": "work/native-production/SPECIALIST-RESULT.json",
+        "sha256": "1167bb0fce8190a6cdc946258a77fa1ab6af030fe9112191c91261d8986e7fcc",
+        "bytes": 39171
+      },
+      "claimed_written_at_utc": "2026-11-12T09:28:30Z",
+      "actual_native_write": {
+        "stdout_line": 185,
+        "timestamp": "2026-11-12T09:33:09.950Z",
+        "type": "assistant",
+        "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "agent_id": "aeb8fdd3833c62981",
+        "tool": "Write",
+        "tool_use_id": "toolu_012h46oCXz2VmcmyDqz262Pr"
+      },
+      "finding": "The specialist labels its report 09:28:30Z, while the actual Write event occurred 09:33:09.950Z. The parent read it at 09:33:27.812Z. This label remains a defect; ordering relies on native events."
+    },
+    {
+      "id": "caller_final_provider_wording",
+      "event": {
+        "stdout_line": 266,
+        "timestamp": "2026-11-12T09:36:31.031Z",
+        "type": "assistant",
+        "session_id": "9d0f792b-9ac2-42e1-8131-5861ce4b1dc5",
+        "agent_id": null
+      },
+      "quote": "no paid or provider calls",
+      "finding": "No additional paid generation or provider mutation is supported. No-provider-calls is inaccurate: child and parent each called official free get_balance, at lines 163 and 216."
+    },
+    {
+      "id": "old_kit_unrecorded_pycache",
+      "files": [
+        "runtime/pixl/__pycache__/__init__.cpython-314.pyc",
+        "runtime/pixl/__pycache__/codec.cpython-314.pyc",
+        "runtime/pixl/__pycache__/graph.cpython-314.pyc",
+        "runtime/pixl/__pycache__/store.cpython-314.pyc"
+      ],
+      "finding": "All 206 recorded old package files match. Four extra unrecorded Python cache files exist. No claim is made that the directory has no extra files or that recovery-02 created those caches."
+    },
+    {
+      "id": "earlier_failures_and_timestamp_labels",
+      "refs": [
+        {
+          "path": "evidence/native-production/20261112/codex-01/independent-trace-audit.json",
+          "sha256": "e923ec464604921039d7df3fe9c27979d83a56804c9eae968646465e2f1bc47d",
+          "bytes": 7885
+        },
+        {
+          "path": "evidence/native-production/20261112/claude-01/predispatch-chronology-audit-01.json",
+          "sha256": "1c62918cfa110fc6e0fc7a1093bbafb5cb7f3458699abd5f285801e44de3d4da",
+          "bytes": 10894
+        },
+        {
+          "path": "evidence/native-production/20261112/claude-01-resume-01/independent-resume-audit.json",
+          "sha256": "4c435299c5034cab26b1c059361be60a79e95245827e3bb890cc2d0f2693b7cd",
+          "bytes": 57437
+        }
+      ],
+      "finding": "Original and first-resume failures remain preserved. Guided recovery corrects the stale current handoff after a deliberate runtime upgrade; it does not retroactively validate failed outcomes or earlier asserted timestamps. Original predispatch authorization is the audited five-correction conditional route, not exact packet-02 parent rereading before paid execution."
+    },
+    {
+      "id": "artistic_and_provider_lineage_scope",
+      "finding": "No fresh artistic review is claimed here. All prior archived PNG bytes are unchanged. Prior direct native upload/download/provider and mirror lineage remain in independent-resume-audit.json. South is reused source; east/north are official generated rotations; west is a disclosed local Pillow mirror of official east. Rejected raw official west is preserved. Actual edited-versus-raw difference is 17 pixels, including two alpha changes; prior prose saying 15 and nothing else remains inaccurate. Official deterministic workbench use is not qualified."
+    },
+    {
+      "id": "bounded_acceptance",
+      "finding": "One fixture and guided same-parent/same-child recovery with deliberately upgraded runtime. No broad autonomous host reliability, image quality, target-engine behavior beyond this fixture, M1, M2, broader M3 or broader TM-08 closure. Full JSON parsing and extraction differ from literal model rereading of every raw field. No hidden reasoning was inspected or retained."
+    }
+  ]
+}

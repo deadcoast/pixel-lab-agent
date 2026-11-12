@@ -7,17 +7,20 @@ separate evidence-bound maintainer review is required for that judgment.
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 import hashlib
 import importlib.util
 import json
 import re
 import tomllib
+import zipfile
 from datetime import datetime
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageOps
 
+from evaluations.asset_lineage_grade import resumed_completion
 from evaluations.grade_consumer_execution import selected_identity
 from evaluations.grade_integration_change import (
     commands,
@@ -34,7 +37,11 @@ from evaluations.grade_named_codex_role import (
     rows,
     strings,
 )
-from evaluations.grade_plar_coverage import claude_completion, native_read_proof
+from evaluations.grade_plar_coverage import (
+    claude_completion,
+    continuation_record,
+    native_read_proof,
+)
 from evaluations.grade_readiness import (
     claude_loading_proof,
     codex_role_proof,
@@ -218,13 +225,46 @@ def file_refs(value):
 
 def named_ref(report, key, root):
     value = report.get(key)
-    if key == "handoff_ref" and isinstance(value, dict) and "caller_view" in value:
-        value = value["caller_view"]
+    if isinstance(value, dict):
+        if key == "handoff_ref":
+            value = value.get("caller_view", value.get("caller_view_result", value))
+        elif key == "renderer_report_ref":
+            value = value.get("capture", value)
+        if isinstance(value, dict) and isinstance(value.get("path"), str) and isinstance(value.get("sha256"), str):
+            value = {"path": value["path"], "sha256": value["sha256"]}
     values = file_refs(value)
+    if key == "comparison_ref" and len(values) > 1:
+        for item in values:
+            reference(root, item)
+        values = [item for item in values if "criterion_comparisons" in read(reference(root, item))]
     if len(values) != 1:
         raise ValueError("Expected one exact file reference for " + key)
     reference(root, values[0])
-    return values[0]
+    return {"path": values[0]["path"], "sha256": values[0]["sha256"]}
+
+
+def declared_state_matches(value, state_ref, canonical_hash, revision):
+    if not isinstance(value, dict):
+        return False
+    paths = [value[key] for key in ("path", "state") if key in value]
+    file_hashes = [value[key] for key in ("sha256", "file_sha256") if key in value]
+    if "state_file" in value:
+        nested = value["state_file"]
+        if not isinstance(nested, dict) or not any(key in nested for key in ("file_sha256", "sha256")):
+            return False
+        paths.append(nested.get("path"))
+        file_hashes.extend(nested[key] for key in ("file_sha256", "sha256") if key in nested)
+    if not paths or any(path != state_ref["path"] for path in paths):
+        return False
+    checks = [digest == state_ref["sha256"] for digest in file_hashes]
+    for key in ("final_hash", "state_hash", "canonical_state_hash"):
+        if key in value:
+            checks.append(value[key] == canonical_hash)
+    has_hash = bool(checks)
+    for key in ("final_revision", "revision"):
+        if key in value:
+            checks.append(type(value[key]) is int and value[key] == revision)
+    return has_hash and all(checks)
 
 
 def read_proof(journals, path):
@@ -320,34 +360,249 @@ def actual_image_views(journals, root):
     return found
 
 
+def conditional_plan_delta(original, corrected, comparison):
+    """Check the complete declared plan delta; its meaning still needs independent review.
+
+    Existing criteria may change only check/basis when the caller requested a
+    correction. An added measurement proposal must be explicitly cross-linked
+    with one of those corrected criteria, never silently become a requirement.
+    """
+    errors, mapped = [], []
+    if {key: value for key, value in original.items() if key not in ("scope", "outputs")} != {key: value for key, value in corrected.items() if key not in ("scope", "outputs")}:
+        errors.append("Unreviewed top-level plan change")
+    prior = {item["id"]: item for item in original["outputs"]}
+    current = {item["id"]: item for item in corrected["outputs"]}
+    if set(prior) != set(current) or len(prior) != len(original["outputs"]) or len(current) != len(corrected["outputs"]):
+        return {"pass": False, "errors": ["Output membership changed"], "criteria": []}
+    comparisons = {(row.get("output"), row.get("criterion")): row for row in comparison.get("criterion_comparisons", [])}
+    for output, previous in prior.items():
+        final = current[output]
+        if {key: value for key, value in previous.items() if key != "criteria"} != {key: value for key, value in final.items() if key != "criteria"}:
+            errors.append("Unreviewed output contract change: " + output)
+        old = {item["id"]: item for item in previous["criteria"]}
+        new = {item["id"]: item for item in final["criteria"]}
+        if not set(old) <= set(new) or len(old) != len(previous["criteria"]) or len(new) != len(final["criteria"]):
+            errors.append("Removed or duplicate criterion: " + output)
+        repaired = []
+        for ident, criterion in old.items():
+            row = comparisons.get((output, ident))
+            if not row:
+                errors.append(f"Original full comparison missing: {output}/{ident}")
+            changed = criterion != new.get(ident)
+            if changed:
+                disposition = str((row or {}).get("disposition", ""))
+                if not re.search(r"correct|clarif|revise|change", disposition, re.IGNORECASE):
+                    errors.append(f"Unrequested criterion change: {output}/{ident}")
+                elif {key: value for key, value in criterion.items() if key not in ("check", "basis")} != {key: value for key, value in new.get(ident, {}).items() if key not in ("check", "basis")}:
+                    errors.append(f"Criterion authority/domain/mode/source changed: {output}/{ident}")
+                else:
+                    repaired.append(ident)
+            if ident in new:
+                mapped.append({"output": output, "criterion": new[ident], "basis": "conditional_correction" if changed else "unchanged_compared_criterion"})
+        for ident in new.keys() - old.keys():
+            criterion = new[ident]
+            if (criterion.get("authority") != "proposal" or criterion.get("domain") != "mechanical" or criterion.get("mode") != "local"
+                    or not criterion.get("sources") or not re.search(r"\d", criterion.get("check", ""))
+                    or not any(ident in new[key].get("basis", "") and key in criterion.get("basis", "") for key in repaired)):
+                errors.append(f"Unbound added measurement proposal: {output}/{ident}")
+            mapped.append({"output": output, "criterion": criterion, "basis": "conditionally_requested_measurement_proposal_not_prepaid_reread"})
+    return {"pass": not errors, "errors": errors, "criteria": mapped,
+            "scope": "Exact structural/literal delta plus independently reviewed conditional correction; no final-packet parent reread inferred."}
+
+
+def bound_plan_criteria(document, criterion_ids, root, plan_ref, entries):
+    """Bind all dispatched Q records to the retained complete plan, including sources."""
+    reference(root, plan_ref)
+    found, missing = [], []
+    for ident in sorted(criterion_ids):
+        record = document.records[ident]
+        sources = [document.records[value.id] for value in record.fields.get("so", [])]
+        pinned_plan = any(source.kind == "S" and source.fields.get("dg") == plan_ref["sha256"]
+                          and sha(root / source.fields["ur"]) == plan_ref["sha256"] for source in sources)
+        matches = []
+        for row in entries:
+            entry, output = row["criterion"], row["output"]
+            generated_id = f"criterion.{output}.{entry['id']}"
+            if (ident == generated_id or ident.endswith("." + generated_id)) and record.fields.get("nm") == entry["id"] and record.fields.get("ck") == entry["check"] and getattr(record.fields.get("dm"), "value", None) == entry["domain"] and getattr(record.fields.get("md"), "value", None) == entry["mode"] and pinned_plan:
+                matches.append(row)
+        if len(matches) != 1:
+            missing.append(ident)
+        else:
+            found.append({"saved_criterion": ident, "output": matches[0]["output"], "criterion": matches[0]["criterion"], "review_basis": matches[0]["basis"]})
+    expected = {(row["output"], row["criterion"]["id"]) for row in entries}
+    actual = {(row["output"], row["criterion"]["id"]) for row in found}
+    return {"pass": bool(criterion_ids) and not missing and actual == expected, "missing": missing,
+            "unbound_plan_entries": sorted(expected - actual), "criteria": found, "plan_ref": plan_ref}
+
+
+def conditional_decision_review(path, attempt, root, trace, native):
+    """Bind an independent correction audit to actual plaintext transport and bytes."""
+    audit = read(path)
+    source = audit["source"]
+    stream = (attempt / source["path"]).resolve()
+    if not stream.is_relative_to(attempt.resolve()):
+        raise ValueError("Decision audit source escapes retained attempt")
+    prefix = b"".join(stream.read_bytes().splitlines(keepends=True)[:source["prefix_lines"]])
+    if len(prefix) != source["prefix_bytes"] or hashlib.sha256(prefix).hexdigest() != source["prefix_sha256"]:
+        raise ValueError("Decision audit native prefix changed")
+    if not audit.get("checks") or not all(value is True for value in audit["checks"].values()):
+        raise ValueError("Independent correction audit has unresolved conditions")
+    artifacts = {}
+    for name, item in audit["artifacts"].items():
+        ref = {"path": item["consumer_relative_path"], "sha256": item["sha256"]}
+        artifacts[name] = (ref, read(reference(root, ref)))
+    comparison_ref, comparison = next(value for value in artifacts.values() if "criterion_comparisons" in value[1])
+    old_plan_ref = comparison.get("reviewed_criteria", comparison.get("criteria"))
+    old_plan = read(reference(root, old_plan_ref))
+    packets = [(item, value) for item, value in artifacts.values() if isinstance(value.get("caller_comparison"), dict)
+               and value["caller_comparison"].get("sha256") == comparison_ref["sha256"] and "criteria" in value and "request" in value]
+    if len(packets) != 1:
+        raise ValueError("Correction audit must bind one corrected packet and its original comparison")
+    packet_ref, packet = packets[0]
+    corrected = read(reference(root, packet["criteria"]))
+    delta = conditional_plan_delta(old_plan, corrected, comparison)
+    actual_args = read(reference(root, packet["request"]))
+    paid = [call for call in native if call["server"] == "pixellab" and call["success"] and MUTATING.match(call["tool"] or "") and call["tool"] != "pixelart_workbench"]
+    sends, acknowledgments = {}, []
+    for journal in trace["parent"]:
+        for row in journal:
+            for block in row.get("message", {}).get("content", []):
+                if block.get("type") == "tool_use" and block.get("name") == "SendMessage":
+                    args = block.get("input", {})
+                    if args.get("to") == trace["selected"] and args.get("message") == audit["conditional_instruction"] and comparison_ref["sha256"] in args["message"]:
+                        sends[block["id"]] = row
+                result = row.get("tool_use_result", {})
+                if (block.get("type") == "tool_result" and block.get("tool_use_id") in sends and not block.get("is_error")
+                        and result.get("success") is True and result.get("resumedAgentId") == trace["selected"] and result.get("revivedAgentId") == trace["selected"]):
+                    acknowledgments.append({"file": row["file"], "line": row["line"], "send": {"file": sends[block["tool_use_id"]]["file"], "line": sends[block["tool_use_id"]]["line"]}})
+    review_calls = [call for call in tool_calls(trace["children"]) if call["server"] in ("pixl_local", "pixl-local")
+                    and call["tool"] == "pixl_request_review" and call["success"] and call["arguments"].get("packet") == packet_ref["path"]]
+    bound_paid = [call for call in paid if call["tool"] == official_tool(packet["request"]["tool"]) and call["arguments"] == actual_args
+                  and any(before(proof, call, trace["journals"]) for proof in acknowledgments)
+                  and any(before(proof, call, trace["journals"]) for proof in review_calls)]
+    compared = read_proof(trace["parent"], reference(root, old_plan_ref))
+    old_literals_read = bool(paid) and all(any(before(proof, call, trace["journals"]) for proof in compared) for call in paid)
+    return {"pass": delta["pass"] and bool(paid) and len(bound_paid) == len(paid) and old_literals_read,
+            "receipt": str(path), "receipt_sha256": sha(path), "original_comparison_ref": comparison_ref,
+            "corrected_packet_ref": packet_ref, "corrected_plan_ref": packet["criteria"], "delta": delta,
+            "native_conditional_decision": acknowledgments, "caller_read_original_full_plan": compared,
+            "bound_paid": [{key: call[key] for key in ("file", "line", "tool", "call_id")} for call in bound_paid],
+            "limits": audit.get("limits", []), "scope": "Conditional correction acceptance. No exact corrected-packet parent reread before payment; new proposal literals were not independently reread before payment."}
+
+
 def response_bindings(root, operations, journals, native):
     """Authenticate authored response/argument files against the real call return."""
     results = []
     by_job = {journal["intent"]["job"]: journal for journal in journals if journal.get("remote_id")}
     for job_id, journal in by_job.items():
-        reports = [item for item in objects(operations) if item.get("job") == job_id or item.get("job_id") == job_id]
+        reports = [item for item in objects(operations) if item.get("job") == job_id or item.get("job_id") == job_id
+                   or journal["remote_id"] in identifiers(item.get("actual_id", {})) or item.get("actual_id") == journal["remote_id"]]
         matches = []
         for item in reports:
             try:
                 arguments = read(reference(root, named_ref(item, "arguments_ref", root)))
-                response = read(reference(root, named_ref(item, "response_ref", root)))
+                response_refs = file_refs(item.get("response_ref"))
+                for response_ref in response_refs:
+                    reference(root, response_ref)
             except (OSError, ValueError, KeyError, TypeError):
                 continue
             request = journal["intent"]["request"]
             args_match = (arguments == request["arguments"] or arguments.get("arguments") == request["arguments"]
                           or arguments.get("dispatch_request", {}).get("arguments") == request["arguments"])
             for call in native:
-                saved_response = response
-                if (isinstance(response, dict) and "response" in response
-                        and official_tool(response.get("tool")) == call["tool"]
-                        and response.get("arguments") == call["arguments"]):
-                    saved_response = response["response"]
-                if (args_match and call["server"] == "pixellab" and call["success"] and call["tool"] == official_tool(request["tool"])
-                        and call["arguments"] == request["arguments"] and journal["remote_id"] in identifiers(call["result"])
-                        and response_matches(saved_response, call["result"])):
-                    matches.append({"file": call["file"], "line": call["line"], "arguments_ref": item["arguments_ref"], "response_ref": item["response_ref"]})
+                for response_ref in response_refs:
+                    if Path(response_ref["path"]).suffix.lower() != ".json":
+                        continue
+                    response = read(reference(root, response_ref))
+                    saved_response = response
+                    if (isinstance(response, dict) and "response" in response
+                            and official_tool(response.get("tool")) == call["tool"]
+                            and (response.get("arguments") == call["arguments"] or response.get("arguments_ref") == item["arguments_ref"].get("path"))):
+                        saved_response = response["response"]
+                    if (args_match and call["server"] == "pixellab" and call["success"] and call["tool"] == official_tool(request["tool"])
+                            and call["arguments"] == request["arguments"] and journal["remote_id"] in identifiers(call["result"])
+                            and response_matches(saved_response, call["result"])):
+                        matches.append({"file": call["file"], "line": call["line"], "arguments_ref": item["arguments_ref"], "response_ref": response_ref})
         results.append({"job": job_id, "pass": bool(matches), "proof": matches})
     return results
+
+
+def rotation_download_proof(command, root, name, digest, urls):
+    """Audit the bounded curl rotation loop plus read-only measurement/extraction.
+
+    It permits no arbitrary helper writes to downloaded frames. Both the native
+    printed measurement and a member of the returned downloaded ZIP must equal
+    the exact imported bytes.
+    """
+    pattern = (r'cd "([^"\n]+)" && D=([\w./-]+) && mkdir -p "\$D/zip" "\$D/rotations" && '
+               r'TS=\$\(date -u [^\n]+?\) && echo "download_start=\$TS" && '
+               r'curl -sS -L -o "\$D/zip/([\w.-]+)" "(https://[^"\s]+)" && '
+               r'for d in ([a-z -]+); do curl -sS -L -o "\$D/rotations/\$d.png" "(https://[^"\s]+/\$d.png)"; done && '
+               r'echo "download_end=\$\(date -u [^\n]+?\)" && file "\$D/zip/\3" \| head -1; '
+               r'"[^"\n]+python(?:\.exe)?" -I - <<\'([A-Za-z_]+)\'\r?\n(.*?)\r?\n\7\r?\nsha256sum "\$D/zip/\3"\s*')
+    match = re.fullmatch(pattern, command["command"].strip(), re.DOTALL)
+    if not match or command["exit_code"] != 0:
+        return None
+    msys_root = "/" + root.as_posix()[0].lower() + root.as_posix()[2:] if root.drive else root.as_posix()
+    direction = Path(name).stem
+    if match[1] not in (root.as_posix(), msys_root) or direction not in match[5].split() or match[4] not in urls or match[6].replace("$d", direction) not in urls:
+        return None
+    folder = graph.confined(root, match[2])
+    source = graph.confined(root, name)
+    archive = folder / "zip" / match[3]
+    if source != folder / "rotations" / (direction + ".png") or not archive.is_file() or sha(archive) not in command["output"]:
+        return None
+    try:
+        tree = ast.parse(match[8])
+    except SyntaxError:
+        return None
+    allowed_calls = {"Path", "print", "set", "min", "max", "range", "sorted", "measure", "zipfile.ZipFile", "hashlib.sha256", "json.dumps", "io.BytesIO", "Image.open"}
+    allowed_methods = {"namelist", "mkdir", "endswith", "read", "replace", "write_bytes", "read_bytes", "convert", "load", "add", "as_posix", "hexdigest", "glob", "write_text", "items"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import) and any(item.name not in ("zipfile", "hashlib", "json", "io") or item.asname for item in node.names):
+            return None
+        if isinstance(node, ast.ImportFrom) and (node.module not in ("pathlib", "PIL") or any(item.asname or item.name not in ("Path", "Image") for item in node.names)):
+            return None
+        if isinstance(node, (ast.With, ast.Try, ast.While, ast.ClassDef, ast.AsyncFunctionDef, ast.Delete)):
+            return None
+        if isinstance(node, ast.Call):
+            call = ast.unparse(node.func)
+            if call not in allowed_calls and (not isinstance(node.func, ast.Attribute) or node.func.attr not in allowed_methods):
+                return None
+            if isinstance(node.func, ast.Attribute) and node.func.attr == "write_bytes" and ast.dump(node) != ast.dump(ast.parse("p.write_bytes(data)").body[0].value):
+                return None
+            if isinstance(node.func, ast.Attribute) and node.func.attr == "write_text" and ast.dump(node.func.value) != ast.dump(ast.parse('(D/"measurements.json")', mode="eval").body):
+                return None
+    # Freeze the writable extraction dataflow while permitting measurement detail.
+    expected_loop = ast.parse('''for n in names:
+    if n.endswith("/"): continue
+    data=z.read(n); p=ex/n.replace("/","__"); p.write_bytes(data)
+''').body[0]
+    loops = [node for node in tree.body if isinstance(node, ast.For) and isinstance(node.target, ast.Name) and node.target.id == "n"]
+    writes = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "write_bytes"]
+    if len(loops) != 1 or ast.dump(loops[0]) != ast.dump(expected_loop) or len(writes) != 1:
+        return None
+    assignments = {target.id: node.value for node in tree.body if isinstance(node, ast.Assign) for target in node.targets if isinstance(target, ast.Name)}
+    for variable, expected in {"D": f"Path({match[2]!r})", "z": f"zipfile.ZipFile(D/{('zip/' + match[3])!r})", "names": "z.namelist()", "ex": 'D/"zip/extracted"'}.items():
+        if variable not in assignments or ast.dump(assignments[variable]) != ast.dump(ast.parse(expected, mode="eval").body):
+            return None
+        stores = [node for node in ast.walk(tree) if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id == variable]
+        if len(stores) != 1:
+            return None
+    if any(isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Store) for node in ast.walk(tree)):
+        return None
+    try:
+        printed = command["output"].replace("\r\r\n", "\n")
+        measurements, _ = json.JSONDecoder().raw_decode(printed[printed.index("{"):])
+        measured = any(item.get("file") == name and item.get("sha256") == digest for item in measurements.values())
+        with zipfile.ZipFile(archive) as z:
+            member = z.read("rotations/" + direction + ".png")
+    except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+        return None
+    if not measured or hashlib.sha256(member).hexdigest() != digest or source.read_bytes() != member:
+        return None
+    return {"file": command["file"], "line": command["line"], "method": "native_curl_loop_and_exact_zip_member", "command_sha256": hashlib.sha256(command["command"].encode()).hexdigest(),
+            "archive": archive.relative_to(root).as_posix(), "archive_sha256": sha(archive), "member": "rotations/" + direction + ".png", "sha256": digest}
 
 
 def retrieval_proofs(journals, root, document, native):
@@ -377,10 +632,177 @@ source/dataflow auditing; merely naming urllib or a URL in prose is not evidence
                     and (str(path).replace("\\", "/") in text.replace("\\", "/") or name in text.replace("\\", "/"))
                     and before(command, call, journals)):
                 downloads.append({"file": command["file"], "line": command["line"]})
+            if exact and before(command, call, journals):
+                loop = rotation_download_proof(command, root, name, candidate.fields.get("dg"), urls)
+                if loop:
+                    downloads.append(loop)
         results.append({"candidate": ident, "path": name, "sha256": candidate.fields.get("dg"), "pass": exact and bool(downloads),
                         "import": {"file": call["file"], "line": call["line"]}, "downloads": downloads,
                         "limit": "Unrecognized helper downloads remain unproven until independently source/dataflow audited."})
     return results
+
+
+def mirror_program(command, root, output_path, input_hash):
+    """Audit a bounded executed Pillow mirror program without executing its code.
+
+    The saved image must derive from a literal loaded path via RGBA and mirror.
+    Remaining calls are inspection/receipt operations; protected variables may
+    not be reassigned and other saves must target separate inspection files.
+    """
+    match = re.search(r"-I\s+-\s+<<'([A-Za-z_]+)'\r?\n(.*?)\r?\n\1(?:\r?\n|$)(.*)", command, re.DOTALL)
+    if not match:
+        return None
+    prefix = command[:match.start()]
+    start = re.fullmatch(r'cd\s+"([^"\n]+)"\s*&&\s*mkdir\s+-p\s+([^;&\r\n]+?)\s*&&\s*"[^"\n]+python(?:\.exe)?"\s*', prefix, re.IGNORECASE)
+    if not start:
+        return None
+    msys_root = "/" + root.as_posix()[0].lower() + root.as_posix()[2:] if root.drive else root.as_posix()
+    if start[1] not in (root.as_posix(), msys_root) or graph.confined(root, start[2]) != output_path.parent:
+        return None
+    tail = match[3].strip()
+    if tail and not re.fullmatch(r"wc -l [\w./-]+; sha256sum [\w./ -]+", tail):
+        return None
+    try:
+        tree = ast.parse(match[2])
+    except SyntaxError:
+        return None
+    paths, images, saved, protected = {}, {}, [], set()
+    def path_value(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name):
+            return paths.get(node.id)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Path" and len(node.args) == 1:
+            return path_value(node.args[0])
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+            left, right = path_value(node.left), path_value(node.right)
+            return (Path(left) / right).as_posix() if left is not None and right is not None else None
+        if isinstance(node, ast.JoinedStr):
+            return "".join(value.value if isinstance(value, ast.Constant) else "VARIABLE" for value in node.values)
+        return None
+    def image_value(node):
+        if isinstance(node, ast.Name):
+            return images.get(node.id)
+        if not isinstance(node, ast.Call):
+            return None
+        name = ast.unparse(node.func)
+        if name == "Image.open" and len(node.args) == 1:
+            path = path_value(node.args[0])
+            return (path, ()) if path is not None else None
+        if name == "ImageOps.mirror" and len(node.args) == 1:
+            value = image_value(node.args[0])
+            return (value[0], (*value[1], "mirror")) if value else None
+        if isinstance(node.func, ast.Attribute) and node.func.attr == "convert" and len(node.args) == 1 and isinstance(node.args[0], ast.Constant) and node.args[0].value == "RGBA":
+            value = image_value(node.func.value)
+            return (value[0], (*value[1], "RGBA")) if value else None
+        return None
+    allowed_names = {"Path", "list", "len", "set", "sum", "sorted", "range", "enumerate", "print"}
+    allowed_methods = {"open", "new", "mirror", "convert", "save", "load", "getdata", "get_flattened_data", "read_bytes", "sha256", "hexdigest", "as_posix", "append", "dumps", "write_text", "resize", "alpha_composite"}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.With, ast.Try, ast.While, ast.Delete, ast.AugAssign)):
+            return None
+        if isinstance(node, ast.Import) and any(item.name not in ("hashlib", "json") or item.asname for item in node.names):
+            return None
+        if isinstance(node, ast.ImportFrom) and (node.module not in ("pathlib", "PIL") or any(item.asname or item.name not in ("Path", "Image", "ImageOps") for item in node.names)):
+            return None
+        if isinstance(node, ast.Call) and ((isinstance(node.func, ast.Name) and node.func.id not in allowed_names) or (isinstance(node.func, ast.Attribute) and node.func.attr not in allowed_methods)):
+            return None
+    for statement in tree.body:
+        if isinstance(statement, ast.Assign):
+            for target in statement.targets:
+                if isinstance(target, ast.Name):
+                    if target.id in protected:
+                        return None
+                    value = path_value(statement.value)
+                    if value is not None:
+                        paths[target.id] = value
+                    value = image_value(statement.value)
+                    if value:
+                        images[target.id] = value
+        for node in ast.walk(statement):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+                continue
+            if node.func.attr in ("write_text", "save"):
+                target = path_value(node.args[0]) if node.func.attr == "save" and node.args else path_value(node.func.value)
+                if target is None:
+                    return None
+                path = graph.confined(root, target)
+                if path == output_path:
+                    value = image_value(node.func.value)
+                    if not isinstance(statement, ast.Expr) or statement.value is not node or node.func.attr != "save" or not value or value[1] != ("RGBA", "mirror"):
+                        return None
+                    source = graph.confined(root, value[0])
+                    if not source.is_file() or sha(source) != input_hash:
+                        return None
+                    saved.append(source)
+                    protected.update(paths)
+                    protected.update(images)
+                elif not path.is_relative_to(root / WORK) or any(path == graph.confined(root, value[0]) for value in images.values()):
+                    return None
+    return {"source": str(saved[0]), "source_sha256": input_hash, "program_sha256": hashlib.sha256(match[2].encode()).hexdigest()} if len(saved) == 1 else None
+
+
+def edited_proofs(journals, root, document, imported):
+    results = []
+    for candidate in document.records.values():
+        metadata = candidate.fields.get("mt", {})
+        if candidate.kind != "X" or not isinstance(metadata, dict) or metadata.get("provenance") != "edited":
+            continue
+        source_id = metadata.get("edited_from_provider_candidate")
+        source = document.records.get(source_id)
+        proof, errors = [], []
+        if not source or source.kind != "X" or source_id not in imported:
+            errors.append("Edited input is not an imported provider candidate")
+        else:
+            source_path = reference(root, {"path": source.fields["ur"], "sha256": source.fields["dg"]})
+            path = reference(root, {"path": candidate.fields["ur"], "sha256": candidate.fields["dg"]})
+            receipt_path = graph.confined(root, metadata["receipt"])
+            receipt = read(receipt_path)
+            with Image.open(source_path) as original, Image.open(path) as output:
+                mirror = ImageOps.mirror(original.convert("RGBA"))
+                pixels_match = output.size == mirror.size and output.convert("RGBA").tobytes() == mirror.tobytes()
+            if not pixels_match or receipt.get("edited_file") != candidate.fields["ur"] or receipt.get("sha256") != candidate.fields["dg"] or source.fields["dg"] not in receipt.values():
+                errors.append("Edited bytes/receipt do not match the imported input transform")
+            for command in commands(journals):
+                if command["exit_code"] != 0:
+                    continue
+                program = mirror_program(command["command"], root, path, source.fields["dg"])
+                if not program:
+                    continue
+                try:
+                    output = command["output"].replace("\r\r\n", "\n")
+                    observed, _ = json.JSONDecoder().raw_decode(output[output.index("{"):])
+                except (ValueError, TypeError):
+                    continue
+                if observed == receipt:
+                    proof.append({"file": command["file"], "line": command["line"], **program, "receipt_sha256": sha(receipt_path)})
+            if not proof:
+                errors.append("No successful audited native transform and exact receipt output")
+        results.append({"candidate": candidate.id, "source_candidate": source_id, "provenance": "edited", "pass": not errors, "proof": proof, "errors": errors,
+                        "scope": "Exact local horizontal mirror and imported-input lineage; not a provider-generated output or official-workbench qualification."})
+    return results
+
+
+def delivery_provenance(document, candidate_by_path, paths, imported, edits, retrieved=None):
+    edited = {item["candidate"]: item for item in edits if item["pass"]}
+    outcomes = []
+    for path in sorted(paths):
+        ids = set(candidate_by_path.get(path, []))
+        generated = ids & imported
+        if retrieved is not None:
+            generated &= retrieved
+        derived = []
+        for ident in ids & set(edited):
+            if retrieved is not None and edited[ident]["source_candidate"] not in retrieved:
+                continue
+            members = [record.id for record in document.records.values() if record.kind == "X" and record.fields.get("ur") == path
+                       and record.fields.get("dg") == document.records[ident].fields.get("dg")
+                       and isinstance(record.fields.get("mt"), dict) and record.fields["mt"].get("sample_candidate") == ident
+                       and record.fields["mt"].get("provenance") in ("edited", "reused-edited")]
+            if members:
+                derived.append({"candidate": ident, "input_candidate": edited[ident]["source_candidate"], "current_destination_members": members, "provenance": "edited"})
+        outcomes.append({"path": path, "pass": bool(generated or derived), "generated_candidates": sorted(generated), "edited_candidates": derived})
+    return outcomes
 
 
 def criteria_coverage(comparison, document, criterion_ids, root=None):
@@ -439,9 +861,20 @@ def delivered_errors(root, case, delivered):
     return errors
 
 
-def review_errors(root, review, case, state_ref, comparison_ref, delivered):
+def rendered_sources(renderer, viewed_hashes):
+    """Credit source pixels only through independently verified 1x AND 3x cells."""
+    if not renderer or renderer["checked"].get("status") != "pass":
+        return {}
+    sources = {cell.get("source_sha256") for cell in renderer["cells"]} - {None}
+    return {digest: [cell for cell in renderer["cells"] if cell.get("source_sha256") == digest and cell["sha256"] in viewed_hashes]
+            for digest in sources if all(any(cell.get("source_sha256") == digest and cell["scale"] == scale and cell["sha256"] in viewed_hashes for cell in renderer["cells"]) for scale in (1, 3))}
+
+
+def review_errors(root, review, case, state_ref, comparison_ref, delivered, renderer=None):
     errors = []
-    if review.get("case") != case or review.get("state_ref") != state_ref or review.get("comparison_ref") != comparison_ref:
+    def identity(value):
+        return (value.get("path"), value.get("sha256")) if isinstance(value, dict) else None
+    if review.get("case") != case or identity(review.get("state_ref")) != identity(state_ref) or identity(review.get("comparison_ref")) != identity(comparison_ref):
         errors.append("Independent review binds different case/state/comparison bytes")
     wanted = {(item["path"], item["sha256"]) for item in file_refs(delivered) if item["path"] in DESTINATIONS[case]}
     actual = {(item["path"], item["sha256"]) for item in file_refs(review.get("delivered_files")) if item["path"] in DESTINATIONS[case]}
@@ -453,17 +886,65 @@ def review_errors(root, review, case, state_ref, comparison_ref, delivered):
     inspected = file_refs(review.get("inspected_images"))
     if not review.get("rationale") or not inspected:
         errors.append("Independent review lacks rationale or inspected image identities")
-    if not {digest for name, digest in wanted} <= {item["sha256"] for item in inspected} or not any(Path(item["path"]).name == "destination.png" for item in inspected):
+    viewed_hashes = {item["sha256"] for item in inspected}
+    if not {digest for name, digest in wanted} <= viewed_hashes | set(rendered_sources(renderer, viewed_hashes)) or not any(Path(item["path"]).name == "destination.png" for item in inspected):
         errors.append("Independent review must inspect delivered pixels and the actual destination")
     for item in [*file_refs(review.get("inspected_images")), state_ref, comparison_ref, *file_refs(delivered)]:
         reference(root, item)
     return errors
 
 
-def _native(attempt, root, launch, continuation, caller):
-    journals = [rows(path) for path in sorted(attempt.glob("native-*.jsonl"))]
-    journals += [rows(path) for path in sorted((attempt / "native-transcripts").glob("*.jsonl"))]
-    stdout = rows(attempt / "stdout.jsonl") if (attempt / "stdout.jsonl").exists() else []
+def retained_child(directory, selected):
+    record = read(directory / "continuation.json")
+    item = record.get("retained_transcripts", {}).get(selected)
+    if not item:
+        raise FileNotFoundError("Selected child lacks a retained native snapshot")
+    path = Path(item["path"]).resolve()
+    if not path.is_relative_to((directory / "native-transcripts").resolve()) or sha(path) != item["sha256"]:
+        raise ValueError("Selected child snapshot differs from its retained identity")
+    return path
+
+
+def continuation_checks(attempt, resumed, root, selected):
+    if "runtime_recovery" in read(resumed / "launch.json"):
+        from evaluations.native_production_recovery import verify_continuation
+        combined, proof = verify_continuation(attempt, resumed, selected)
+    else:
+        combined, proof = continuation_record(attempt, resumed, selected)
+    original, continued = (retained_child(directory, selected) for directory in (attempt, resumed))
+    prefix, appended = original.read_bytes(), continued.read_bytes()
+    prefix_ok = len(appended) > len(prefix) and appended.startswith(prefix)
+    prefix_checks = []
+    predecessors = [attempt, *[Path(item["directory"]) for item in proof.get("intermediate_attempts", [])]]
+    for directory in predecessors:
+        for ident in ("parent", selected):
+            previous, final = retained_child(directory, ident), retained_child(resumed, ident)
+            earlier, later = previous.read_bytes(), final.read_bytes()
+            prefix_checks.append({"identity": ident, "original": str(previous), "continued": str(final),
+                                  "original_sha256": sha(previous), "continued_sha256": sha(final),
+                                  "pass": len(later) > len(earlier) and later.startswith(earlier)})
+    prior = read(attempt / "continuation.json")
+    expected = {Path(item["path"]).relative_to(root / WORK).as_posix(): item["sha256"]
+                for item in prior.get("artifacts", []) if Path(item["path"]).is_relative_to(root / WORK)}
+    archived = inventory(attempt / "outputs")
+    current = inventory(root / WORK)
+    drift = [name for name, digest in expected.items() if archived.get(name) != digest or current.get(name) != digest]
+    return combined, [
+        ("same_parent_child_configuration_and_predecessor_verified", True, proof),
+        ("same_child_transcript_preserves_exact_prefix_and_adds_native_records", prefix_ok,
+         {"original": str(original), "continued": str(continued), "original_sha256": sha(original), "continued_sha256": sha(continued)}),
+        ("all_original_and_intermediate_parent_child_prefixes_preserved", all(item["pass"] for item in prefix_checks), prefix_checks),
+        ("original_work_reports_retained_without_rewrite", bool(expected) and not drift, drift),
+    ]
+
+
+def _native(attempt, root, launch, continuation, caller, resumed=None, intermediate=()):
+    attempts = [attempt, *intermediate] + ([resumed] if resumed else [])
+    journals, stdout = [], []
+    for directory in attempts:
+        journals += [rows(path) for path in sorted(directory.glob("native-*.jsonl"))]
+        journals += [rows(path) for path in sorted((directory / "native-transcripts").glob("*.jsonl"))]
+        stdout += rows(directory / "stdout.jsonl") if (directory / "stdout.jsonl").exists() else []
     selected = selected_identity(caller.get("native_child"), launch["host"])
     if selected is None:
         children = [child for child in continuation.get("children", []) if child.get("role") == ("pixl" if launch["host"] == "codex" else "pixl:pixl")]
@@ -481,15 +962,20 @@ def _native(attempt, root, launch, continuation, caller):
         proof = {key: value for key, value in proof.items() if key != "child_text"}
     else:
         parent = [row for row in stdout if not row.get("parent_tool_use_id") and not row.get("agent_id")]
-        children = [journal for journal in journals if journal and Path(journal[0]["file"]).stem.removeprefix("agent-") == selected]
+        # The resumed transcript includes the original exact prefix. Read it once
+        # to avoid counting the same paid call twice under different file paths.
+        path = retained_child(resumed or attempt, selected)
+        children = [journal for journal in journals if journal and Path(journal[0]["file"]).resolve() == path]
         proof = claude_completion(parent, selected)
+        if resumed is not None:
+            proof = resumed_completion(parent, selected, continuation["session_id"])
         named = bool(proof) and any(child.get("id", child.get("agent_id")) == selected and child.get("role") == "pixl:pixl" for child in continuation.get("children", []))
         loading = claude_loading_proof(children, root / KIT)
     return {"journals": journals + [stdout], "parent": [parent], "children": children, "named": named,
             "named_proof": proof, "loading": loading, "selected": selected}
 
 
-def grade(attempt: Path, *, review: Path | None = None):
+def grade(attempt: Path, *, review: Path | None = None, continuation: Path | None = None, decision_review: Path | None = None):
     attempt = Path(attempt).resolve()
     checks = []
     def add(name, passed, evidence=None, pending=False):
@@ -505,16 +991,29 @@ def grade(attempt: Path, *, review: Path | None = None):
         return result(checks)
     launch, identity = initial
     root, case = Path(launch["cwd"]).resolve(), identity["case"]
+    resumed = Path(continuation).resolve() if continuation is not None else None
     continuation = read(attempt / "continuation.json") if (attempt / "continuation.json").exists() else {}
     caller = guarded("caller_result_retained", lambda: report_fields(read(root / WORK / "CALLER-RESULT.json"))) or {}
     specialist = guarded("specialist_result_retained", lambda: report_fields(read(root / WORK / "SPECIALIST-RESULT.json"))) or {}
+    intermediate = []
+    if resumed is not None:
+        selected = selected_identity(caller.get("native_child"), launch["host"]) or read(resumed / "launch.json").get("expected_child_id")
+        extended = guarded("native_continuation_evidence_valid", lambda: continuation_checks(attempt, resumed, root, selected))
+        if extended is None:
+            return result(checks)
+        continuation, extra = extended
+        intermediate = [Path(item["directory"]) for item in extra[0][2].get("intermediate_attempts", [])]
+        for name, passed, evidence in extra:
+            add(name, passed, evidence)
+        if not all(passed for _, passed, _ in extra):
+            return result(checks)
 
     current = inventory(root, ("__pycache__",))
     changed = [name for name, digest in identity["inputs"].items() if current.get(name) != digest and name not in identity["authorized_changes"]]
     added = [name for name in current if name not in identity["inputs"] and not name.startswith(tuple(identity["authorized_new_prefixes"]))]
     add("original_inputs_preserved_and_only_authorized_writes", not changed and not added, {"changed": changed, "unexpected_new": added})
     add("official_native_connection_configured", launch.get("official_provider", {}).get("endpoint") == "https://api.pixellab.ai/mcp" and identity.get("isolation", {}).get("official_provider_configured") is True)
-    trace = guarded("native_trace_readable", lambda: _native(attempt, root, launch, continuation, caller))
+    trace = guarded("native_trace_readable", lambda: _native(attempt, root, launch, continuation, caller, resumed, intermediate))
     if trace is None:
         return result(checks)
     children, parent, all_rows = trace["children"], trace["parent"], trace["journals"]
@@ -530,6 +1029,8 @@ def grade(attempt: Path, *, review: Path | None = None):
     valid = guarded("rooted_production_graph_valid", lambda: graph.validate(document, root))
     del valid
     state_ref = {"path": (folder / "state.px").relative_to(root).as_posix(), "sha256": sha(folder / "state.px")}
+    add("specialist_declared_state_matches_exact_file_and_canonical_domains", declared_state_matches(specialist.get("state_ref"), state_ref, codec.digest(document), document.revision),
+        {"file_reference": state_ref, "canonical_state_hash": codec.digest(document), "revision": document.revision})
     journal_values = guarded("durable_job_histories_valid", lambda: [jobs._get(document, item.id, root) for item in document.records.values() if item.kind == "J" and "jr" in item.fields]) or []
     proofs = [job_proof(journal, native, children) for journal in journal_values if journal.get("remote_id")]
     add("every_recorded_provider_job_has_exact_native_and_pre_dispatch_proof", bool(proofs) and all(proof["pass"] for proof in proofs), proofs)
@@ -539,17 +1040,27 @@ def grade(attempt: Path, *, review: Path | None = None):
     unbound = [{key: call[key] for key in ("file", "line", "tool", "success")} for call in production_calls if call["success"] and (call["file"], call["line"]) not in bound]
     add("no_successful_untracked_official_production", bool(production_calls) and not unbound, unbound)
 
+    conditional = None
+    if decision_review:
+        conditional = guarded("independent_conditional_decision_readable", lambda: conditional_decision_review(decision_review, attempt, root, trace, native))
+        add("independent_conditional_correction_bound_to_native_dispatch", bool(conditional) and conditional["pass"], conditional)
+
     comparison_ref = guarded("comparison_reference_valid", lambda: named_ref(specialist, "comparison_ref", root))
     if comparison_ref:
         comparison_path = reference(root, comparison_ref)
         comparison = read(comparison_path)
-        qids = {name for journal in journal_values for name in journal["intent"]["context"]["bindings"] if document.records[name].kind == "Q"}
-        coverage = criteria_coverage(comparison, document, qids, root)
-        add("caller_comparison_covers_all_dispatch_criteria", coverage["pass"], coverage)
+        qids = {name for journal in journal_values if journal.get("remote_id") for name in journal["intent"]["context"]["bindings"] if document.records[name].kind == "Q"}
+        coverage = (bound_plan_criteria(document, qids, root, conditional["corrected_plan_ref"], conditional["delta"]["criteria"])
+                    if conditional and conditional["pass"] else criteria_coverage(comparison, document, qids, root))
+        add("caller_comparison_and_conditional_delta_cover_all_dispatch_criteria" if conditional else "caller_comparison_covers_all_dispatch_criteria", coverage["pass"], coverage)
         communication = comparison_communication(parent, children, comparison_path)
         caller_reads, child_reads = communication["caller"], communication["child"]
         paid = [call for call in production_calls if call["tool"] != "pixelart_workbench"]
-        add("caller_comparison_saved_and_child_received_decision_before_paid_dispatch", bool(paid) and all(any(before(proof, call, all_rows) for proof in caller_reads) and any(before(proof, call, all_rows) for proof in child_reads) for call in paid), communication)
+        if conditional:
+            add("caller_full_original_comparison_and_conditional_child_decision_before_paid_dispatch", conditional["pass"],
+                {key: conditional[key] for key in ("original_comparison_ref", "native_conditional_decision", "caller_read_original_full_plan", "bound_paid", "scope")})
+        else:
+            add("caller_comparison_saved_and_child_received_decision_before_paid_dispatch", bool(paid) and all(any(before(proof, call, all_rows) for proof in caller_reads) and any(before(proof, call, all_rows) for proof in child_reads) for call in paid), communication)
         # A revised plan can preserve literals while correcting a source locator.
         # Prove the complete dispatched literals in actual read output, without
         # requiring an incidental serialization or a reread of unchanged text.
@@ -561,7 +1072,11 @@ def grade(attempt: Path, *, review: Path | None = None):
             if proof:
                 for value in literal_reads.values():
                     value.extend(proof)
-        add("caller_read_full_dispatch_criterion_literals_before_paid_dispatch", bool(qids) and bool(paid) and all(any(before(proof, call, all_rows) for proof in value) for value in literal_reads.values() for call in paid), literal_reads)
+        if conditional:
+            add("original_full_literals_read_and_corrected_literals_bound_without_claiming_reread", conditional["pass"] and coverage["pass"],
+                {"original_read": conditional["caller_read_original_full_plan"], "corrected_criteria": coverage, "limitation": conditional["scope"]})
+        else:
+            add("caller_read_full_dispatch_criterion_literals_before_paid_dispatch", bool(qids) and bool(paid) and all(any(before(proof, call, all_rows) for proof in value) for value in literal_reads.values() for call in paid), literal_reads)
         originals = [root / "BRIEF.md", root / ("src/queue-view.ts" if case == "queue-ready" else "src/robot.ts")]
         source_proofs = {path.relative_to(root).as_posix(): read_proof(parent, path) for path in originals}
         add("caller_read_original_sources_before_paid_dispatch", bool(paid) and all(any(before(proof, call, all_rows) for proof in value) for value in source_proofs.values() for call in paid), source_proofs)
@@ -580,12 +1095,18 @@ def grade(attempt: Path, *, review: Path | None = None):
     add("delivered_bytes_bind_saved_candidates", set(candidate_by_path) == DESTINATIONS[case], candidate_by_path)
     imported = {event["artifact"]["id"] for journal in journal_values for event in journal["events"] if event["event"] == "imported"}
     new_paths = DESTINATIONS[case] - ({"assets/robot/south.png"} if case == "robot-directions" else set())
-    add("every_new_delivered_member_has_provider_import", all(set(candidate_by_path.get(path, [])) & imported for path in new_paths), {"imports": sorted(imported), "new_members": sorted(new_paths)})
+    edits = guarded("local_edited_provenance_readable", lambda: edited_proofs(children, root, document, imported)) or []
+    lineage = delivery_provenance(document, candidate_by_path, new_paths, imported, edits)
+    add("every_new_delivered_member_has_generated_or_executed_edited_lineage", all(item["pass"] for item in lineage), {"routes": lineage, "edits": edits})
     retrievals = retrieval_proofs(children, root, document, native)
     retrieved = {item["candidate"] for item in retrievals if item["pass"]}
-    add("new_delivered_bytes_have_native_download_and_public_import_proof", all(set(candidate_by_path.get(path, [])) & retrieved for path in new_paths), retrievals)
+    retrieval_routes = delivery_provenance(document, candidate_by_path, new_paths, imported, edits, retrieved)
+    add("new_delivered_bytes_have_native_retrieval_import_or_verified_edit_input", all(item["pass"] for item in retrieval_routes), {"routes": retrieval_routes, "retrievals": retrievals})
     review_proofs = []
     for item in file_refs(specialist.get("review_refs", [])):
+        reference(root, item)
+        if Path(item["path"]).suffix.lower() != ".json":
+            continue
         review_proofs.extend(operation_proof(children, root, "pixl_candidate_review", item))
     add("child_performed_public_candidate_or_family_review", bool(review_proofs), review_proofs)
     selected = guarded("current_plar_selection_readable", lambda: plar.read(root, PLAR, ASSETS[case]))
@@ -613,7 +1134,10 @@ def grade(attempt: Path, *, review: Path | None = None):
         for actor, journals, report in (("child", children, specialist), ("caller", parent, caller)):
             views = actual_image_views(journals, root)
             declared = {item["sha256"] for item in file_refs(report.get("viewed_images"))}
-            add(actor + "_actually_viewed_reference_delivered_art_and_destination", required_images <= set(views) and required_images <= declared, {"observed": views, "missing_observed": sorted(required_images - set(views)), "missing_declared": sorted(required_images - declared)})
+            observed_sources, declared_sources = rendered_sources(renderer, set(views)), rendered_sources(renderer, declared)
+            observed_hashes, declared_hashes = set(views) | set(observed_sources), declared | set(declared_sources)
+            add(actor + "_actually_viewed_reference_delivered_art_and_destination", required_images <= observed_hashes and required_images <= declared_hashes,
+                {"observed": views, "verified_rendered_source_pixels": observed_sources, "missing_observed": sorted(required_images - observed_hashes), "missing_declared": sorted(required_images - declared_hashes)})
             cells = renderer["cells"]
             scale_coverage = {scale: any(cell["scale"] == scale and cell["sha256"] in views for cell in cells) for scale in (1, 3)}
             add(actor + "_viewed_actual_native_and_enlarged_cells", all(scale_coverage.values()), scale_coverage)
@@ -631,7 +1155,7 @@ def grade(attempt: Path, *, review: Path | None = None):
         add("caller_read_exact_specialist_report", bool(read_proof(parent, specialist_path)), read_proof(parent, specialist_path))
     add("native_process_completed", continuation.get("status") == "finished" and continuation.get("returncode") == 0 and continuation.get("interruption_reason") is None, {key: continuation.get(key) for key in ("status", "returncode", "interruption_reason")}, pending=not continuation)
     if review and comparison_ref:
-        errors = guarded("independent_visual_review_readable", lambda: review_errors(root, read(review), case, state_ref, comparison_ref, delivered))
+        errors = guarded("independent_visual_review_readable", lambda: review_errors(root, read(review), case, state_ref, comparison_ref, delivered, renderer))
         add("independent_art_and_source_authority_review", errors == [], {"receipt": str(review), "errors": errors})
     else:
         add("independent_art_and_source_authority_review", False, "Supply a separate evidence-bound maintainer review; machine checks do not judge art or source interpretation.", pending=True)
@@ -657,7 +1181,7 @@ def renderer_check(root, identity, specialist, case):
     checked = module.check(root, path.parent)
     screenshot = report["screenshot"]
     screenshot_path = reference(path.parent, screenshot)
-    cells = [{"scale": view["scale"], "sha256": view["image"]["sha256"]} for view in report["views"] if "image" in view]
+    cells = [{"scale": view["scale"], "sha256": view["image"]["sha256"], "source_sha256": view.get("asset", {}).get("sha256")} for view in report["views"] if "image" in view]
     return {"checked": checked, "saved": read(reference(root, check_ref)), "report_ref": report_ref,
             "check_ref": check_ref, "screenshot_sha256": sha(screenshot_path), "cells": cells}
 
@@ -675,9 +1199,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("attempt", type=Path)
     parser.add_argument("--review", type=Path)
+    parser.add_argument("--continuation", type=Path)
+    parser.add_argument("--decision-review", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    value = grade(args.attempt, review=args.review)
+    value = grade(args.attempt, review=args.review, continuation=args.continuation, decision_review=args.decision_review)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("x", encoding="utf-8", newline="\n") as stream:
         json.dump(value, stream, indent=2, allow_nan=False)

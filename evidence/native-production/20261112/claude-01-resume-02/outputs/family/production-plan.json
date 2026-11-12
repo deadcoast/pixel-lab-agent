@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "robot-directions-family",
+  "project": "project",
+  "actor": "actor",
+  "baseline": "candidate.south",
+  "decisions": ["adopt_rotation"],
+  "knowledge": [],
+  "stages": [
+    {
+      "id": "east", "name": "Robot facing east (production member)", "phase": "production", "kind": "sprite",
+      "contract": "r.acf329804ba043b7.contract.east", "needs": [],
+      "criteria": [
+        {"id": "dims", "check": "The file is a 32x32 RGBA PNG (one frame).", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.4"]},
+        {"id": "alpha_transparent", "check": "Every pixel outside the robot has alpha 0, the robot has at least one opaque pixel, and there is no opaque matte, backdrop or canvas fill behind it.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4"]},
+        {"id": "palette_preserved", "check": "Every opaque pixel is one of the source's three colours #25354a, #56b5bc, #f4dda2; no new colours are introduced.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4", "r.acf329804ba043b7.source.7"]},
+        {"id": "identity_direction", "check": "Viewed at 1x and 3x nearest, the member reads as the approved robot turned to face east (front/teal panel toward the viewer's right, rectangular post(s) at the same height, no added features) and is byte-identical to the sample candidate accepted for east.", "domain": "visual", "mode": "visual", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.3", "r.acf329804ba043b7.source.7"]}
+      ]
+    },
+    {
+      "id": "north", "name": "Robot facing north (production member)", "phase": "production", "kind": "sprite",
+      "contract": "r.acf329804ba043b7.contract.north", "needs": [],
+      "criteria": [
+        {"id": "dims", "check": "The file is a 32x32 RGBA PNG (one frame).", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.4"]},
+        {"id": "alpha_transparent", "check": "Every pixel outside the robot has alpha 0, the robot has at least one opaque pixel, and there is no opaque matte, backdrop or canvas fill behind it.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4"]},
+        {"id": "palette_preserved", "check": "Every opaque pixel is one of the source's three colours #25354a, #56b5bc, #f4dda2; no new colours are introduced.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4", "r.acf329804ba043b7.source.7"]},
+        {"id": "identity_direction", "check": "Viewed at 1x and 3x nearest, the member reads as the approved robot seen from behind (frame colour, both rectangular posts, no eyes, no added features) and is byte-identical to the sample candidate accepted for north.", "domain": "visual", "mode": "visual", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.3", "r.acf329804ba043b7.source.7"]}
+      ]
+    },
+    {
+      "id": "west", "name": "Robot facing west (production member)", "phase": "production", "kind": "sprite",
+      "contract": "r.acf329804ba043b7.contract.west", "needs": [],
+      "criteria": [
+        {"id": "dims", "check": "The file is a 32x32 RGBA PNG (one frame).", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.4"]},
+        {"id": "alpha_transparent", "check": "Every pixel outside the robot has alpha 0, the robot has at least one opaque pixel, and there is no opaque matte, backdrop or canvas fill behind it.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4"]},
+        {"id": "palette_preserved", "check": "Every opaque pixel is one of the source's three colours #25354a, #56b5bc, #f4dda2; no new colours are introduced.", "domain": "mechanical", "mode": "local", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4", "r.acf329804ba043b7.source.7"]},
+        {"id": "identity_direction", "check": "Viewed at 1x and 3x nearest, the member reads as the approved robot turned to face west (front/teal panel toward the viewer's left, rectangular post(s) at the same height, no added features) and is byte-identical to the sample candidate accepted for west (the edited mirror of the official east; provenance stays labelled 'edited').", "domain": "visual", "mode": "visual", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.3", "r.acf329804ba043b7.source.7", "source.west_edit_receipt"]}
+      ]
+    }
+  ],
+  "delivery": {
+    "name": "Deliver the four controller facings of the robot (south preserved, east/north/west from the reviewed sample)",
+    "members": ["output.south", "east", "north", "west"],
+    "destinations": ["destination.paths", "destination.sampling"],
+    "criteria": [
+      {"id": "continuity", "check": "Viewed together at 1x and 3x in one 32x32 cell each, the four facings share the same robot: equal height and ground line, the same navy frame / teal body / pale-yellow eye colours, consistent antenna posts, and a box volume that turns coherently S->E->N->W without a facing looking like a different object or size.", "domain": "continuity", "mode": "visual", "sources": ["r.acf329804ba043b7.source.8", "r.acf329804ba043b7.source.4", "r.acf329804ba043b7.source.7"]},
+      {"id": "direction_mapping", "check": "Each file at the controller path spriteFor(facing) shows that facing: assets/robot/south.png front, east.png right, north.png back, west.png left.", "domain": "continuity", "mode": "visual", "sources": ["r.acf329804ba043b7.source.6", "r.acf329804ba043b7.source.8"]},
+      {"id": "renderer_mechanical", "check": "renderer-native/check.py reports pass for a capture made from the delivered files with the unchanged controller: all four facings mapped, 32x32 RGBA transparent, south bytes identical to the base, screenshot pixels match the expected nearest-scaled composites.", "domain": "engine", "mode": "live", "sources": ["r.acf329804ba043b7.source.3", "r.acf329804ba043b7.source.5", "r.acf329804ba043b7.source.6"]},
+      {"id": "renderer_visual", "check": "destination.png and every 1x and 3x cell of that capture, viewed with the host image tool, show the four facings rendered crisply (nearest) over the observation background, transparent around the robot, without resampling blur, cropping or misplacement.", "domain": "continuity", "mode": "visual", "sources": ["r.acf329804ba043b7.source.3", "r.acf329804ba043b7.source.5"]}
+    ]
+  }
+}
