@@ -18,9 +18,13 @@ pass 18/18 clean and 16/16 with plugin loading omitted. Earlier authentication
 blocks and both hosts' grader corrections remain preserved; preparation alone
 is not behavioral acceptance. [QOL-10 compact results and SC-08 recovery](../evidence/caller-result/README.md)
 now have a scoped 28/28 Codex outcome. The additional Claude trial retains partial
-artifacts after HTTP 429 and timeout, with no final caller report. The product
-[TODO](../TODO.md) takes CF-06 next while preserving that continuation/reliability
-exit; broader production and M1/M2 remain open.
+artifacts after HTTP 429 and timeout, with no final caller report. The task-first [capability/outcome matrix](../docs/CAPABILITY-OUTCOMES.md) connects
+these retained trials and later production outcomes to ordinary operation routes,
+tested versions, interventions and remaining limits. NF-04 qualifies that bounded
+documentation coverage; human acceptance remains a separate, unestablished outcome
+and does not gate further development. The product [TODO](../TODO.md) selects CF-08
+unknown submission/retrieval recovery next while preserving the unrelated Claude
+caller-result continuation. M1/M2 and broader M3 remain open.
 
 **Historical controlled milestone, 2026-11-05:** [PX-EVAL-004](delegated-asset-request.spec.md)
 tests the official PixelLab integration through a delegated generation request in

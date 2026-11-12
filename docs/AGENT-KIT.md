@@ -5,6 +5,9 @@ for assignment, selected asset, official request, review and delivery/resume. Th
 companion [hash/root/locator guide](../plugins/pixl/skills/pixl/references/identities-and-paths.md)
 explains the additive public `hash_domains` labels and runnable consumer examples.
 Both ship with the common skill; setup and advanced surfaces remain below.
+The [capability/outcome matrix](CAPABILITY-OUTCOMES.md) maps useful tasks to these
+routes, exact retained outcomes and remaining host/renderer limits. Human acceptance
+is separate from development qualification and does not halt the next development step.
 
 ## Set up a consumer project
 
@@ -110,11 +113,13 @@ for the current session; it is a different operation from parent-to-child
 delegation. The source checkout's `/pixl` and `claude --agent pixl` refer to its
 checked-in adapters. Local folder loading is described in [Claude's plugin guide](https://code.claude.com/docs/en/plugins/install).
 When adding local MCP, use the [session configuration below](#connect-the-local-runtime-for-one-session)
-without suppressing the existing official PixelLab connection. The fresh
-[complete and missing-registration trials](../evidence/readiness/README.md) record
-startup discovery and local MCP connection, but both stop at expired CLI
-authentication before model/child work. Their preparation checks do not qualify
-authenticated behavior; earlier Claude successes retain their own scenarios.
+without suppressing the existing official PixelLab connection. The [authenticated follow-ups](../evidence/readiness/20261110/RESULT.json) qualify
+the clean setup at 18/18 checks and intentionally omitted plugin loading at 16/16.
+The clean case loads the actual `pixl:pixl` child and returns source/library/readiness
+results; the omitted-plugin case reports the unavailable role without substituting
+a generic specialist. The [original expired-authentication attempts](../evidence/readiness/README.md#verification-and-native-results)
+remain preserved. These are scoped local setup outcomes, not provider authentication
+or general host-reliability qualification.
 
 ### Connect tools and start the assignment
 

@@ -202,9 +202,9 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-EVAL-003 — broaden outcome and recovery coverage
 
-- **Status:** planned; requires concrete fixtures or a separately authorized production brief.
+- **Status:** broader scenario/outcome qualification remains open. NF-04's [capability/outcome matrix](../docs/CAPABILITY-OUTCOMES.md) is complete as a bounded documentation increment; [fresh coverage/reference review](../evidence/capability-outcomes/README.md) is separate from retained native outcomes and unrecorded human acceptance. Next: CF-08 recovery, using existing consumers and controlled transport faults where appropriate. Human acceptance does not gate authorized development.
 - **Historical priority, 2026-11-05:** PX-EVAL-004 was selected ahead of this broader matrix and completed its controlled integration scope on November 7.
-- **Current priority, 2026-11-08:** follow the [overall work order](../TODO.md). Controlled uncertain-submission recovery and completed-project cold resumption now have PX-EVAL-005 evidence. Contract-change cold request mechanics now pass in both hosts, with source/criterion and authored-continuation failures retained. Full resumption conformance, routing and animation/tile/engine cases remain open; the broader matrix is not complete. Real consumer production remains PX-PROD-001.
+- **Historical priority, 2026-11-08:** follow the [overall work order](../TODO.md). Controlled uncertain-submission recovery and completed-project cold resumption now have PX-EVAL-005 evidence. Contract-change cold request mechanics now pass in both hosts, with source/criterion and authored-continuation failures retained. Full resumption conformance, routing and animation/tile/engine cases remain open; the broader matrix is not complete. Real consumer production remains PX-PROD-001.
 - **WHO:** maintainer supplies controlled pressure cases; actual production uses the
   chosen provider, project owner and target engine.
 - **WHAT:** execute the six unattempted catalog cases: language development, production

@@ -107,7 +107,9 @@ NF-03 now implements a read-only bootstrap/CLI/MCP report that keeps installatio
 - Unknown remote submissions, retrieval interruption and publication concurrency recover without losing evidence or causing duplicate submissions. Controlled faults and real provider outcomes are labeled separately.
 - A capability/outcome matrix names documented-only operations, tested host/renderer scopes, guided interventions and remaining uncertainty. Knowledge retrieval improves relevant decisions without displacing caller authority or the host's existing expertise.
 
-**Next execution — NF-04:** assemble the capability/outcome matrix from retained native/provider/art/renderer evidence and exact tested versions. Name controlled versus actual operations, source authority, guided interventions and remaining coverage; this records qualified scope without closing broader milestones or replacing the unrelated Claude QOL-10 continuation.
+**NF-04 bounded complete:** the [task-first capability/outcome matrix](docs/CAPABILITY-OUTCOMES.md) now maps public operations, advertised domains, hosts and renderers to exact retained evidence and limits. [Fresh documentation qualification](evidence/capability-outcomes/README.md) is separate from historical native/art outcomes and separately unrecorded human acceptance. No human approval is required to proceed with authorized development.
+
+**Next execution — CF-08:** recover unknown remote outcomes, known jobs and partially retrieved artifacts through the useful existing workflow, with identity preserved and no duplicate charge-producing dispatch caused by interruption. Use controlled faults where appropriate; TM-03 supports the relevant boundaries. This continues M4 without closing M1/M2, broader M3/TM-08 or the unrelated Claude QOL-10 continuation.
 
 **Work source:** [M4 backlog](SHELVED.md#m4--demonstrated-domain-judgment-and-recovery). New operation recipes follow demonstrated needs.
 

@@ -1,0 +1,169 @@
+"""Read-only NF-04 reference/coverage audit; write only a fresh requested receipt.
+
+This checks an explicitly reviewed inventory. It neither discovers semantic claims
+automatically nor re-grades historical native, provider, visual or human outcomes.
+Run from any directory; the script is retained beside its immutable coverage input.
+"""
+
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+HERE = Path(__file__).resolve().parent
+DOCUMENTS = [
+    'README.md', 'TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/IDENTIFIED.md',
+    'docs/AGENT-KIT.md', 'docs/CAPABILITY-OUTCOMES.md', 'evaluations/README.md',
+    'evaluations/TODO.spec.md', 'evidence/capability-outcomes/README.md',
+]
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def anchors(path):
+    text = path.read_text(encoding='utf-8-sig')
+    ids = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', text))
+    seen = {}
+    for heading in re.findall(r'^#{1,6}\s+(.+?)\s*#*$', text, re.M):
+        slug = re.sub(r'[^\w\s-]', '', heading.lower()).replace(' ', '-')
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        ids.add(slug + (f'-{count}' if count else ''))
+    return ids
+
+
+def resolve_pointer(value, pointer):
+    for token in pointer.lstrip('/').split('/'):
+        key = token.replace('~1', '/').replace('~0', '~')
+        value = value[int(key)] if isinstance(value, list) else value[key]
+    return value
+
+
+def git(*args):
+    return subprocess.check_output(['git', '-C', str(ROOT), *args], text=True, encoding='utf-8').strip()
+
+
+def audit(output):
+    coverage_path = HERE / 'coverage.json'
+    coverage = json.loads(coverage_path.read_text(encoding='utf-8'))
+    checks = []
+
+    def check(name, passed, detail):
+        checks.append({'name': name, 'passed': bool(passed), 'detail': detail})
+
+    identity_rows = [coverage['matrix'], *coverage['sources'], *coverage['evidence']]
+    for row in identity_rows:
+        path = ROOT / row['path']
+        check('pinned:' + row['path'], path.is_file() and sha(path) == row['sha256'],
+              {'expected': row['sha256'], 'observed': sha(path) if path.is_file() else None})
+
+    matrix = ROOT / coverage['matrix']['path']
+    matrix_anchors = anchors(matrix)
+    claim_ids = [claim['id'] for claim in coverage['claims']]
+    check('unique_claim_ids', len(claim_ids) == len(set(claim_ids)), claim_ids)
+    source_ids = {row['id'] for row in coverage['sources']}
+    used_sources = set()
+    for claim in coverage['claims']:
+        selected_sources = set(claim['source_ids'])
+        used_sources.update(selected_sources)
+        check('claim:' + claim['id'], claim['matrix_anchor'] in matrix_anchors
+              and bool(selected_sources) and selected_sources <= source_ids
+              and claim['human_acceptance'] == 'not_recorded', claim)
+    check('all_reviewed_sources_mapped', used_sources == source_ids, sorted(used_sources))
+    check('human_acceptance_separate', coverage['human_acceptance'] == {
+        'status': 'not_recorded', 'development_gate': False}, coverage['human_acceptance'])
+
+    matrix_text = matrix.read_text(encoding='utf-8')
+    printed = set(re.findall(r'(?<![0-9a-f])[0-9a-f]{64}(?![0-9a-f])', matrix_text))
+    recorded = {row['sha256'] for row in coverage['printed_identity_bindings']}
+    check('all_printed_identities_bound', printed == recorded, len(printed))
+    for binding in coverage['printed_identity_bindings']:
+        observations = []
+        for field in binding['receipt_fields']:
+            data = json.loads((ROOT / field['path']).read_text(encoding='utf-8-sig'))
+            observations.append(resolve_pointer(data, field['pointer']))
+        check('printed_identity:' + binding['sha256'], bool(observations)
+              and all(value == binding['sha256'] for value in observations), binding['receipt_fields'])
+
+    link_count = 0
+    for name in DOCUMENTS:
+        path = ROOT / name
+        body = path.read_text(encoding='utf-8-sig')
+        # Example shell/code may construct Markdown using placeholder variables;
+        # those strings are not rendered documentation links.
+        body = re.sub(r'(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)', '', body)
+        for target in re.findall(r'\]\(([^)]+)\)', body):
+            if re.match(r'[a-zA-Z][a-zA-Z0-9+.-]*:', target):
+                continue
+            local, _, fragment = unquote(target).partition('#')
+            destination = (path.parent / local).resolve() if local else path
+            link_count += 1
+            # The first audit's own link becomes valid when the requested report
+            # is exclusively created below. No other future target is excused.
+            exists = destination.exists() or (destination == output and not fragment)
+            valid_anchor = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check('link:' + name + ':' + target, exists and valid_anchor, {'target': target})
+
+    identified = (ROOT / 'docs/IDENTIFIED.md').read_text(encoding='utf-8')
+    shelved = (ROOT / 'SHELVED.md').read_text(encoding='utf-8')
+    findings = re.findall(r'^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s', identified, re.M)
+    backlog = re.findall(r'^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]', shelved, re.M)
+    check('workflow_findings_once', len(findings) == len(set(findings)) == 50
+          and len(backlog) == len(set(backlog)) == 50 and set(findings) == set(backlog),
+          {'findings': findings, 'backlog': backlog})
+    for name in ('TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/IDENTIFIED.md'):
+        text = (ROOT / name).read_text(encoding='utf-8')
+        check('active_cycle:' + name, coverage['cycle'] in text and 'CF-08' in text,
+              'Retained active cycle and selected next finding')
+
+    baseline = coverage['baseline_commit']
+    changed = git('diff', '--name-only', baseline, '--').splitlines()
+    prior_evidence = [p for p in changed if p.startswith('evidence/')
+                      and not p.startswith('evidence/capability-outcomes/')]
+    production = [p for p in changed if p.startswith(('pixl/', 'plugins/', '.agents/', '.claude/', 'spec/', 'training/', 'knowledge/'))]
+    check('prior_evidence_unchanged', not prior_evidence, prior_evidence)
+    check('runtime_profile_skills_bundle_unchanged', not production, production)
+    whitespace = subprocess.run(['git', '-C', str(ROOT), '-c', 'core.whitespace=cr-at-eol',
+                                 'diff', '--check', baseline, '--', *DOCUMENTS],
+                                capture_output=True, text=True, encoding='utf-8')
+    check('authored_document_whitespace', whitespace.returncode == 0, whitespace.stdout + whitespace.stderr)
+
+    return {
+        'version': 1, 'observed_at': datetime.now(UTC).isoformat(),
+        'scope': 'Documentation reference/coverage/identity audit only; no native/provider/art regrading or human acceptance',
+        'status': 'pass' if all(c['passed'] for c in checks) else 'fail',
+        'baseline_commit': baseline, 'observed_head': git('rev-parse', 'HEAD'),
+        'audit_source_sha256': sha(Path(__file__)),
+        'coverage_sha256': sha(coverage_path),
+        'matrix_sha256': sha(matrix),
+        'documents': [{'path': p, 'sha256': sha(ROOT / p)} for p in DOCUMENTS],
+        'counts': {'claims': len(claim_ids), 'reviewed_sources': len(source_ids),
+                   'retained_evidence_files': len(coverage['evidence']),
+                   'printed_identities': len(printed), 'local_links': link_count,
+                   'checks': len(checks), 'passed': sum(c['passed'] for c in checks)},
+        'checks': checks,
+        'not_run': ['Full verifier', 'Native host trials', 'Provider generation', 'New artistic/engine/human acceptance'],
+    }
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out', required=True, type=Path)
+    args = parser.parse_args()
+    output = args.out.resolve()
+    if output.exists():
+        parser.error('Output exists; choose a fresh path to preserve the prior audit')
+    result = audit(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open('x', encoding='utf-8', newline='\n') as handle:
+        json.dump(result, handle, ensure_ascii=False, indent=2)
+        handle.write('\n')
+    print(json.dumps({'status': result['status'], **result['counts']}))
+    raise SystemExit(0 if result['status'] == 'pass' else 1)
