@@ -1,0 +1,74 @@
+{
+  "reviewer": "development assistant",
+  "scope": "Review of actual native reports plus byte comparison with previously viewed stills; not human acceptance",
+  "prior_review": {
+    "path": "maintainer-observation-01.json",
+    "sha256": "b1fc87c804fdce1a78c555c29f5d32d7e6106aa2b647a6699c5c9a5bd26d13f7"
+  },
+  "comparisons": [
+    {
+      "codex": {
+        "path": "codex-01/outputs/terrain-01/capture/island-3x-destination.png",
+        "sha256": "64266cbe8b472a5122b7dd2d14c288fbdcc514c9a75230d11263351d3a41926e"
+      },
+      "claude": {
+        "path": "claude-01/outputs/terrain-01/capture/island-3x-destination.png",
+        "sha256": "64266cbe8b472a5122b7dd2d14c288fbdcc514c9a75230d11263351d3a41926e"
+      },
+      "same_bytes": true
+    },
+    {
+      "codex": {
+        "path": "codex-01/outputs/animation-01/capture/screen-idle-3x-0.png",
+        "sha256": "20ec7cd954935f08fb7e97876eda1fc0aa3f3bd4d6c2004583745bc135138dfc"
+      },
+      "claude": {
+        "path": "claude-01/outputs/animation-01/capture/screen-idle-3x-0.png",
+        "sha256": "20ec7cd954935f08fb7e97876eda1fc0aa3f3bd4d6c2004583745bc135138dfc"
+      },
+      "same_bytes": true
+    },
+    {
+      "codex": {
+        "path": "codex-01/outputs/animation-01/capture/screen-idle-3x-2.png",
+        "sha256": "4c6b4b9590178819c3f4d15cd7a146b9bcb1fba7bc6724207342715b7ee45a7a"
+      },
+      "claude": {
+        "path": "claude-01/outputs/animation-01/capture/screen-idle-3x-2.png",
+        "sha256": "4c6b4b9590178819c3f4d15cd7a146b9bcb1fba7bc6724207342715b7ee45a7a"
+      },
+      "same_bytes": true
+    }
+  ],
+  "reports": {
+    "codex": {
+      "SPECIALIST-RESULT.json": {
+        "path": "codex-01/outputs/SPECIALIST-RESULT.json",
+        "sha256": "c863e8b77ed202b9cb0c44e7e795facadff9f60af4d5c503d708b6f9b6770fae"
+      },
+      "CALLER-RESULT.json": {
+        "path": "codex-01/outputs/CALLER-RESULT.json",
+        "sha256": "b33aaae5a43d1e51f7b6b002a6145f2e8ef9c05784c7a9173e1c4057b6dbd88c"
+      }
+    },
+    "claude": {
+      "SPECIALIST-RESULT.json": {
+        "path": "claude-01/outputs/SPECIALIST-RESULT.json",
+        "sha256": "10a8c0077187d700ff81335f2ad994149b6adf2e843501b5002206137c70a52b"
+      },
+      "CALLER-RESULT.json": {
+        "path": "claude-01/outputs/CALLER-RESULT.json",
+        "sha256": "fc4656dd020316a36fab1aa10395dc9ead22b0aa5d2b7f78492946e64b286f90"
+      }
+    }
+  },
+  "outcome": "Both native specialists/callers correctly identify the two controlled pixel faults and scope corrections to affected members. No revised art or acceptance is created.",
+  "precision_limit": {
+    "report": "claude-01/outputs/SPECIALIST-RESULT.json",
+    "field": "findings F1 likely_correction",
+    "observed": "The correct NW64px repaint is described alongside an imprecise green bbox [0,0,16,16] minus NW/SW phrase. After that specified repaint the green bbox would be [8,0,16,16].",
+    "consequence": "Retain the original phrase; bounded defect recognition is supported, blanket numerical/artistic correctness is not."
+  },
+  "human_acceptance": "not_recorded",
+  "CF-09": "open actual-art revision"
+}

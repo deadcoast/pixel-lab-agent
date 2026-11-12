@@ -1,0 +1,57 @@
+"""Retain exact native input bytes after proving they still match preparation."""
+import argparse
+import hashlib
+import json
+import zipfile
+from pathlib import Path
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def retain(attempt):
+    attempt = attempt.resolve()
+    record = json.loads((attempt / "record.json").read_bytes())
+    for name in ("identity.json", "launch.json"):
+        if sha(attempt / name) != record["recorded_files"][name]:
+            raise ValueError("Native receipt changed: " + name)
+    identity = json.loads((attempt / "identity.json").read_bytes())
+    root = Path(json.loads((attempt / "launch.json").read_bytes())["cwd"]).resolve()
+    paths = {}
+    for name, digest in identity["inputs"].items():
+        path = (root / name).resolve()
+        if not path.is_relative_to(root) or not path.is_file() or sha(path) != digest:
+            raise ValueError("Prepared input changed or unavailable: " + name)
+        paths[name] = path
+    archive = attempt / "consumer-inputs.zip"
+    receipt = attempt / "consumer-inputs.json"
+    if archive.exists() or receipt.exists():
+        raise ValueError("Keep earlier retention; use fresh evidence")
+    with zipfile.ZipFile(archive, "x", zipfile.ZIP_DEFLATED) as bundle:
+        for name, path in sorted(paths.items()):
+            data = path.read_bytes()
+            if hashlib.sha256(data).hexdigest() != identity["inputs"][name]:
+                raise ValueError("Input changed during retention: " + name)
+            bundle.writestr(name, data)
+    with zipfile.ZipFile(archive) as bundle:
+        actual = {name: hashlib.sha256(bundle.read(name)).hexdigest() for name in bundle.namelist()}
+        if actual != identity["inputs"] or len(bundle.namelist()) != len(actual):
+            raise ValueError("Archived input inventory mismatch")
+    value = {"scope": "Post-run exact preparation-byte retention; no reconstruction or acceptance",
+             "pass": True, "identity_sha256": sha(attempt / "identity.json"),
+             "record_sha256": sha(attempt / "record.json"), "source_sha256": sha(Path(__file__)),
+             "archive": {"path": archive.name, "sha256": sha(archive)},
+             "files": actual, "file_count": len(actual)}
+    with receipt.open("x", encoding="utf-8") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+    return {"attempt": str(attempt), "pass": True, "files": len(actual)}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempts", nargs="+", type=Path)
+    args = parser.parse_args()
+    for attempt in args.attempts:
+        print(json.dumps(retain(attempt)))

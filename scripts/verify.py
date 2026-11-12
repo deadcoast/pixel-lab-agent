@@ -106,6 +106,7 @@ def _verify(summary, run, stage):
         *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/plar-project/renderer").iterdir()) if p.is_file()),
         *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/consumer-execution").rglob("*")) if p.is_file() and "__pycache__" not in p.parts),
         *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/delegation/renderer").iterdir()) if p.is_file()),
+        *(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "examples/domain-consumer-project").rglob("*")) if p.is_file() and "__pycache__" not in p.parts),
         "spec/consumer-execution.md",
         *(row["path"] for row in inventory["documents"]),
     ):

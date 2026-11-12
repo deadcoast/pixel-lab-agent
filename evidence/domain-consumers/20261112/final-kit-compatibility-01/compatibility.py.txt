@@ -1,0 +1,372 @@
+"""Replay the final shipped kit locally; this is not another native/model/art trial.
+
+Run only after both native attempts have ended and the final package is frozen.
+The only consumer writes allowed are fresh work/domain-consumers/final-kit-replay-01
+outputs. Existing native outputs, installed kits, pixels, sources and production
+records are inventoried before and after. No provider or acceptance operation runs.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import signal
+import subprocess
+import time
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+SERIES = Path(__file__).resolve().parent
+ROOT = SERIES.parents[2]
+DEFAULT_PYTHON = ROOT / "build/readiness-setup-01/runtime/Scripts/python.exe"
+REPLAY = "work/domain-consumers/final-kit-replay-01"
+INPUTS = "work/domain-consumer-inputs"
+PROFILES = {"terrain": "tile-neighborhood", "animation": "sprite-animation"}
+PROFILE_FILES = {"capture.mjs", "server.mjs", "view.mjs", "index.html", "check.py", "observation.py"}
+LIMITATIONS = [
+    "Local final-kit compatibility replay on the two existing controlled consumers.",
+    "No new native host, named role, model behavior, visual inspection or artistic proof.",
+    "No production records, acceptance, provider submissions or generated art are created.",
+    "Native trial evidence remains bound to its archived original kit; this report records the final-kit differences separately.",
+    "M1/M2 and broader M3/M4 remain open; human acceptance remains separate.",
+]
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def sha(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        while block := stream.read(1024 * 1024):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write(path, value):
+    with Path(path).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2, ensure_ascii=False, allow_nan=False)
+        stream.write("\n")
+
+
+def ref(path):
+    path = Path(path).resolve()
+    return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def child(root, name):
+    require(isinstance(name, str) and "\\" not in name and ":" not in name
+            and not Path(name).is_absolute()
+            and all(part not in ("", ".", "..") for part in name.split("/")),
+            "Expected canonical relative path")
+    requested = root / name
+    require(requested.resolve() == requested and requested.is_relative_to(root),
+            "Redirected or escaped path: " + name)
+    return requested
+
+
+def inventory(root):
+    """Include all preexisting files and directories, including bytecode caches."""
+    files, directories, total = {}, [], 0
+    for path in sorted(root.rglob("*")):
+        require(not path.is_symlink() and path.resolve() == path, "Redirected inventory entry")
+        name = path.relative_to(root).as_posix()
+        if path.is_dir():
+            directories.append(name)
+        else:
+            require(path.is_file(), "Nonregular inventory entry")
+            total += path.stat().st_size
+            require(len(files) < 50000 and total <= 1024 ** 3, "Inventory exceeds its bound")
+            files[name] = sha(path)
+    return {"files": files, "directories": directories}
+
+
+def changes(before, after, allowed):
+    changed = [name for name, digest in before["files"].items()
+               if name in after["files"] and after["files"][name] != digest]
+    removed = sorted(set(before["files"]) - set(after["files"]))
+    removed_directories = sorted(set(before["directories"]) - set(after["directories"]))
+    added = sorted(set(after["files"]) - set(before["files"]))
+    added_directories = sorted(set(after["directories"]) - set(before["directories"]))
+    unexpected = [name for name in added + added_directories
+                  if name != allowed and not name.startswith(allowed + "/")]
+    return {"changed": changed, "removed": removed, "removed_directories": removed_directories,
+            "added": added, "added_directories": added_directories, "unexpected": unexpected,
+            "preserved": not (changed or removed or removed_directories or unexpected)}
+
+
+def package_identity(package):
+    complete = inventory(package)
+    files = {name: digest for name, digest in complete["files"].items()
+             if "__pycache__" not in Path(name).parts}
+    manifest = read(package / "bundle-manifest.json")
+    declared = {}
+    for row in [*manifest["files"], *manifest.get("generated_files", [])]:
+        require(row["path"] not in declared or declared[row["path"]] == row["sha256"],
+                "Conflicting package manifest entries")
+        declared[row["path"]] = row["sha256"]
+    require(set(files) == set(declared) | {"bundle-manifest.json"}, "Package manifest closure differs")
+    require(all(files.get(name) == digest for name, digest in declared.items()),
+            "Package manifest byte identities differ")
+    return {"root": str(package), "manifest": ref(package / "bundle-manifest.json"),
+            "files": files}, complete
+
+
+def load_attempt(name):
+    attempt = SERIES / name
+    retained = {key: ref(attempt / (key + ".json"))
+                for key in ("launch", "identity", "record", "runtime-environment")}
+    launch, identity, record = [read(attempt / (key + ".json"))
+                                for key in ("launch", "identity", "record")]
+    for key in ("launch", "identity", "runtime-environment"):
+        require(retained[key]["sha256"] == record["recorded_files"].get(key + ".json"),
+                "Native receipt differs from recorded identity: " + key)
+    require(record.get("returncode") == 0 and record.get("execution_status") == "host_completed_ungraded",
+            "Native attempt has not completed: " + name)
+    consumer = Path(launch["cwd"]).resolve()
+    require(consumer == Path(identity["consumer"]).resolve() and consumer.is_dir(),
+            "Native consumer identity differs")
+    runtime = read(attempt / "runtime-environment.json")
+    require(Path(runtime["executable"]).resolve() == DEFAULT_PYTHON.resolve(),
+            "Native isolated Python differs from selected DEFAULT_PYTHON")
+    require(not (consumer / REPLAY).exists(), "Fresh replay directory already exists: " + name)
+    before = inventory(consumer)
+    require(all(before["files"].get(key) == value for key, value in identity["inputs"].items()),
+            "Native preparation inputs changed before replay: " + name)
+    require(all(before["files"].get(".pixl/" + key) == value
+                for key, value in identity["baseline_production"].items()),
+            "Native production baseline changed before replay: " + name)
+    require(sha(Path(identity["package"]["path"])) == identity["package"]["sha256"],
+            "Original native kit identity changed")
+    return {"name": name, "consumer": consumer, "identity": identity,
+            "references": retained, "before": before}
+
+
+def run_cli(command, consumer, destination, timeout):
+    stdout, stderr = destination / "stdout.txt", destination / "stderr.txt"
+    environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+    started = time.monotonic()
+    receipt = {"command": command, "cwd": str(consumer), "timeout_seconds": timeout,
+               "started_at": datetime.now(UTC).isoformat(), "status": "failed"}
+    cleanup = {"attempted": False, "process_reaped": False, "tree_stop_confirmed": None, "errors": []}
+    process = None
+    try:
+        with stdout.open("xb") as out, stderr.open("xb") as err:
+            options = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {"start_new_session": True}
+            process = subprocess.Popen(command, cwd=consumer, env=environment, stdout=out, stderr=err, **options)
+            receipt["pid"] = process.pid
+            try:
+                process.wait(timeout=timeout)
+                receipt["status"] = "complete" if process.returncode == 0 else "failed"
+            except subprocess.TimeoutExpired:
+                receipt["status"] = "timeout"
+    except (OSError, subprocess.SubprocessError) as error:
+        receipt["error"] = str(error)
+    finally:
+        if process is not None and process.poll() is None:
+            cleanup["attempted"] = True
+            cleanup["tree_stop_confirmed"] = False
+            try:
+                if os.name == "nt":
+                    stopped = subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                                             capture_output=True, timeout=15, check=False,
+                                             creationflags=subprocess.CREATE_NO_WINDOW)
+                    cleanup["tree_stop_confirmed"] = stopped.returncode == 0
+                    cleanup["tree_stop"] = {"returncode": stopped.returncode,
+                        "stdout": stopped.stdout.decode("utf-8", errors="replace"),
+                        "stderr": stopped.stderr.decode("utf-8", errors="replace")}
+                else:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    cleanup["tree_stop_confirmed"] = True
+            except (OSError, subprocess.SubprocessError) as error:
+                cleanup["errors"].append("Owned tree stop: " + str(error))
+            # Reap the direct process even when tree cleanup fails or times out.
+            try:
+                if process.poll() is None:
+                    process.kill()
+                process.wait(timeout=10)
+            except (OSError, subprocess.SubprocessError) as error:
+                cleanup["errors"].append("Direct process kill/reap: " + str(error))
+        cleanup["process_reaped"] = process is None or process.poll() is not None
+        receipt["returncode"] = process.returncode if process is not None else None
+        receipt["owned_process_cleanup"] = cleanup
+        receipt["cleanup_scope"] = "This process receipt cannot establish browser/server/profile cleanup; the fixed renderer receipt must confirm each."
+        receipt.update(elapsed_seconds=round(time.monotonic() - started, 3))
+        for name, path in (("stdout", stdout), ("stderr", stderr)):
+            if path.is_file():
+                receipt[name] = ref(path)
+        write(destination / "process.json", receipt)
+    return receipt
+
+
+def audit_operation(consumer, output, config, result):
+    require(result.get("status") == "complete" and result.get("files_verified") is True,
+            "Public operation did not complete with exact verified files")
+    require(result.get("automatic_acceptance") is False and result.get("state_written") is False
+            and result.get("state_changed") is False, "Operation changed state or claimed acceptance")
+    require(result.get("renderer_executed") is True and result["cleanup"]["complete"] is True,
+            "Renderer execution/cleanup not complete")
+    capture = read(output / "capture/capture.json")
+    launch = read(output / "capture/launch.json")
+    execution = read(output / "capture/execution.json")
+    check = read(output / "check.json")
+    require(execution["status"] == "complete" and execution["renderer_executed"] is True,
+            "Actual capture incomplete")
+    for cleanup in (execution["cleanup"], result["cleanup"]["renderer"]):
+        require(cleanup.get("complete") is True and all(cleanup.get(key) is True
+                for key in ("browser_closed", "server_closed", "profile_removed")),
+                "A renderer cleanup subflag is incomplete")
+    require(not capture["errors"], "Capture recorded browser errors")
+    require(check["pass"] is True and check["status"] == "pass", "Independent checker did not pass")
+    require(config == capture["config"] == launch["config"] == read(output / "config.json"),
+            "Exact requested configuration differs")
+    domain = "terrain" if config["profile"] == "tile-neighborhood-v1" else "animation"
+    require(capture[domain] == launch[domain], "Captured contract differs from independent launch snapshot")
+    required = {"renderer/index.html", "renderer/view.mjs", "consumer/" + config["modules"][domain]}
+    required.update("consumer/" + value for value in config["destinations"].values())
+    if domain == "animation":
+        required.add("config")
+    require(required <= set(capture["served_files"]), "Required served resources missing")
+    for key in required:
+        if key == "config":
+            expected = sha(output / "config.json")
+        else:
+            group, name = key.split("/", 1)
+            expected = sha(child(consumer if group == "consumer" else output / "renderer", name))
+        require(capture["served_files"][key] == expected, "Served resource differs: " + key)
+    require(set(capture["renderer_files"]) == PROFILE_FILES, "Renderer closure differs")
+    for name, digest in capture["renderer_files"].items():
+        require(sha(child(output / "renderer", name)) == digest, "Captured renderer bytes differ")
+    for reference in [*result["requested_inputs"].values(), *result["artifacts"].values(),
+                      result["observation"], result["bundle"]]:
+        require(sha(child(consumer, reference["path"])) == reference["sha256"], "Operation reference hash differs")
+    imported = read(child(consumer, result["import_result"]))
+    require(imported["automatic_acceptance"] is False and imported["candidate"] == "delivery.candidate",
+            "NF-06 import identity or acceptance differs")
+    require(imported["bundle"] == result["bundle"], "NF-06 import bundle differs")
+    return {"pass": True, "cleanup": execution["cleanup"], "summary_counts": result["check_summary"],
+            "controlled_views": len(capture["views"]), "playbacks": len(capture.get("playbacks", [])),
+            "required_served_files": sorted(required), "launch_contract_equal": True,
+            "exact_files_verified": True, "automatic_acceptance": False}
+
+
+def replay(attempt, package, output):
+    consumer, identity = attempt["consumer"], attempt["identity"]
+    destination = output / attempt["name"]
+    destination.mkdir()
+    write(destination / "before.json", attempt["before"])
+    result = {"consumer": str(consumer), "native_attempt": attempt["references"], "domains": {}, "pass": False}
+    try:
+        for domain, profile_folder in PROFILES.items():
+            retained = destination / domain
+            retained.mkdir()
+            config_path = child(consumer, f"{INPUTS}/{domain}-config.json")
+            require(sha(config_path) == identity["configs"][domain]["sha256"], "Native config changed")
+            config = read(config_path)
+            operation_relative = f"{REPLAY}/{domain}"
+            operation = child(consumer, operation_relative)
+            state = child(consumer, f".pixl/assets/{domain}/state.px")
+            command = [str(DEFAULT_PYTHON), "-B", str(package / "scripts/pixl.py"), "consumer-execute",
+                       str(state), "delivery.candidate", str(config_path), "--root", str(consumer), "--out", operation_relative]
+            print(f"Replaying {attempt['name']} {domain}", flush=True)
+            entry = {"config": ref(config_path), "state_before": ref(state), "public_command": command}
+            result["domains"][domain] = entry
+            process = run_cli(command, consumer, retained, config["timeout_seconds"] + 60)
+            entry["process"] = ref(retained / "process.json")
+            if operation.exists():
+                closure = inventory(operation)
+                shutil.copytree(operation, retained / "output")
+                require(inventory(retained / "output") == closure, "Retained output closure differs")
+                write(retained / "output-inventory.json", closure)
+                entry["retained_output_inventory"] = ref(retained / "output-inventory.json")
+            require(process["status"] == "complete", "Public CLI failed: " + domain)
+            public = read(retained / "stdout.txt")
+            actual = read(operation / "result.json")
+            # The public CLI adds only these presentation labels to the raw saved result.
+            labels = {"state_hash": "canonical_state_sha256", "binding_hash": "candidate_bindings_sha256"}
+            require(public == {**actual, "hash_domains": labels},
+                    "Actual stdout differs from saved result plus exact hash-domain presentation")
+            entry["public_hash_domains"] = labels
+            entry["actual_result"] = ref(operation / "result.json")
+            entry["retained_result"] = ref(retained / "output/result.json")
+            entry["audit"] = audit_operation(consumer, operation, config, actual)
+            expected_profile = package / "resources/examples/consumer-execution" / profile_folder
+            require(all(sha(operation / "renderer" / name) == sha(expected_profile / name)
+                        for name in PROFILE_FILES), "Replay did not use final package renderer")
+            require(ref(state) == entry["state_before"], "Production state changed")
+        result["pass"] = True
+    except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
+        result["error"] = str(error)
+    finally:
+        after = inventory(consumer)
+        write(destination / "after.json", after)
+        preservation = changes(attempt["before"], after, REPLAY)
+        write(destination / "preservation.json", preservation)
+        result["preservation"] = ref(destination / "preservation.json")
+        result["preexisting_consumer_inventory_preserved"] = preservation["preserved"]
+        result["pass"] = result["pass"] and preservation["preserved"]
+        write(destination / "result.json", result)
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--package", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    require(args.package.is_absolute() and args.out.is_absolute(), "Use absolute package and output paths")
+    package, output = args.package.resolve(), args.out.resolve()
+    require(package.is_dir() and DEFAULT_PYTHON.is_file(), "Final package or isolated Python unavailable")
+    require(not output.exists(), "Output must be fresh")
+    require(not output.is_relative_to(package), "Evidence output cannot mutate the package")
+    attempts = [load_attempt(name) for name in ("codex-01", "claude-01")]
+    require(all(not output.is_relative_to(a["consumer"]) for a in attempts), "Evidence output must be outside consumers")
+    kit, package_before = package_identity(package)
+    output.mkdir(parents=True, exist_ok=False)
+    shutil.copyfile(__file__, output / "compatibility.py.txt")
+    write(output / "final-kit.json", kit)
+    shutil.copyfile(package / "bundle-manifest.json", output / "final-bundle-manifest.json")
+    with zipfile.ZipFile(output / "final-kit.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for name in kit["files"]:
+            archive.write(child(package, name), name)
+    differences = {}
+    for attempt in attempts:
+        native = attempt["identity"]["package_files"]
+        differences[attempt["name"]] = {"native_manifest": attempt["identity"]["package"],
+            "files": {name: {"native": native.get(name), "final": kit["files"].get(name)}
+                      for name in sorted(set(native) | set(kit["files"]))
+                      if native.get(name) != kit["files"].get(name)}}
+    write(output / "kit-differences.json", differences)
+    report = {"version": 1, "scope": "local-final-kit-compatibility", "pass": False,
+              "started_at": datetime.now(UTC).isoformat(), "final_kit": ref(output / "final-kit.json"),
+              "final_kit_archive": ref(output / "final-kit.zip"), "kit_differences": ref(output / "kit-differences.json"),
+              "script": ref(output / "compatibility.py.txt"), "python": ref(DEFAULT_PYTHON),
+              "limitations": LIMITATIONS, "attempts": {}}
+    try:
+        for attempt in attempts:
+            result = replay(attempt, package, output)
+            report["attempts"][attempt["name"]] = {"pass": result["pass"],
+                "result": ref(output / attempt["name"] / "result.json")}
+        report["pass"] = all(value["pass"] for value in report["attempts"].values())
+    finally:
+        report["package_preserved"] = inventory(package) == package_before
+        report["native_receipts_preserved"] = all(sha(Path(value["path"])) == value["sha256"]
+            for attempt in attempts for value in attempt["references"].values())
+        report["pass"] = report["pass"] and report["package_preserved"] and report["native_receipts_preserved"]
+        report["ended_at"] = datetime.now(UTC).isoformat()
+        write(output / "result.json", report)
+    print(json.dumps({"pass": report["pass"], "result": ref(output / "result.json")}))
+    return 0 if report["pass"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

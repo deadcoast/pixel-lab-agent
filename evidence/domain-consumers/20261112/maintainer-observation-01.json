@@ -1,0 +1,41 @@
+{
+  "reviewer": "development assistant",
+  "scope": "Actual retained PNG still inspection; no subjective live playback or human acceptance",
+  "images": [
+    {
+      "path": "codex-01/outputs/terrain-01/capture/island-3x-destination.png",
+      "sha256": "64266cbe8b472a5122b7dd2d14c288fbdcc514c9a75230d11263351d3a41926e"
+    },
+    {
+      "path": "codex-01/outputs/animation-01/capture/screen-idle-3x-0.png",
+      "sha256": "20ec7cd954935f08fb7e97876eda1fc0aa3f3bd4d6c2004583745bc135138dfc"
+    },
+    {
+      "path": "codex-01/outputs/animation-01/capture/screen-idle-3x-2.png",
+      "sha256": "4c6b4b9590178819c3f4d15cd7a146b9bcb1fba7bc6724207342715b7ee45a7a"
+    }
+  ],
+  "findings": [
+    {
+      "domain": "terrain",
+      "observation": "The island left edge has two outward green teeth. The authored binary vertex grid requires northwest water in tile6. The image shows the controlled corner material fault.",
+      "bounded_correction": "Restore only tile6 northwest diagnostic quadrant; preserve correct tile7 and other tiles."
+    },
+    {
+      "domain": "animation",
+      "observation": "The third pose sits two source pixels below pose0 at the same declared pivot/anchor. At3x this is six display pixels. Correct rectangle placement does not satisfy planted-floor intent.",
+      "bounded_correction": "Move only frame2 art up two pixels; retain arm intent, other frames, timing and metadata."
+    }
+  ],
+  "visual_continuity": "controlled faults observed",
+  "art_revised": false,
+  "provider_work": false,
+  "human_acceptance": "not_recorded",
+  "milestones_open": [
+    "M1",
+    "M2",
+    "broader M3",
+    "broader M4"
+  ],
+  "next": "CF09 useful actual-art revision with appropriate source/reference intent"
+}

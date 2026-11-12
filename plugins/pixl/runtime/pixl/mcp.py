@@ -52,7 +52,7 @@ TOOLS = [
     ),
     (
         "pixl_consumer_execute",
-        "Execute the fixed shipped queue-motion consumer profile in an isolated local browser using exact family member bytes. Retain source identities, actual frame/wrap and preference-switch observations, checks, partial failures and NF06 evidence. Requires local Node/Chromium; no installation, provider action, source rewrite, verdict or artistic acceptance. Isolation is not an OS security sandbox.",
+        "Execute a fixed shipped queue-motion-v1, sprite-animation-v1 or tile-neighborhood-v1 consumer profile in an isolated local browser using exact family member bytes. Retain source identities, actual profile-specific playback or neighborhood observations, checks, partial failures and NF06 evidence. Requires local Node/Chromium; no installation, provider action, source rewrite, verdict or artistic acceptance. Isolation is not an OS security sandbox.",
         schema({"path": STR, "candidate_id": STR, "config": CONSUMER_EXECUTION_SCHEMA, "out": STR,
                 "node": STR, "browser": STR}, ["path", "candidate_id", "config", "out"]),
     ),

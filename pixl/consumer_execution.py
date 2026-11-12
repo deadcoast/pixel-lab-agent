@@ -1,4 +1,4 @@
-"""Execute the fixed, trusted queue consumer profile and retain bounded receipts.
+"""Execute fixed, trusted consumer profiles and retain bounded receipts.
 
 This is process/profile isolation, not an OS sandbox. No production records or
 artistic verdicts are written by this operation.
@@ -36,19 +36,47 @@ def _object(fields: Json) -> Json:
 PATH = {"type": "string", "minLength": 1, "maxLength": 1024}
 MODULE_PATH = {**PATH, "pattern": r"^src/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_.-]+\.(?:js|mjs|ts)$"}
 DESTINATION_PATH = {**PATH, "pattern": r"^assets/"}
-CONFIG_SCHEMA = _object({
+PROFILE_RESOURCES = {
+    "queue-motion-v1": "queue-motion",
+    "sprite-animation-v1": "sprite-animation",
+    "tile-neighborhood-v1": "tile-neighborhood",
+}
+_COMMON_FIELDS = {
     "version": {"type": "integer", "const": 1},
-    "profile": {"const": "queue-motion-v1"},
-    "modules": _object({"state": MODULE_PATH, "view": MODULE_PATH}),
     "destinations": {"type": "object", "minProperties": 1, "maxProperties": 1024,
                      "propertyNames": {"minLength": 1}, "additionalProperties": DESTINATION_PATH},
     "scales": {"type": "array", "minItems": 1, "maxItems": 4, "uniqueItems": True,
                "items": {"type": "integer", "minimum": 1, "maximum": 16}},
+    "timeout_seconds": {"type": "integer", "minimum": 5, "maximum": 180},
+}
+_MOTION_FIELDS = {
     "observed_wraps": {"type": "integer", "minimum": 1, "maximum": 10},
     "phase_timeout_ms": {"type": "integer", "minimum": 1000, "maximum": 30000},
-    "hold_ms": {"type": "integer", "minimum": 100, "maximum": 5000},
-    "timeout_seconds": {"type": "integer", "minimum": 5, "maximum": 180},
-})
+}
+PROFILE_SCHEMAS = {
+    "queue-motion-v1": _object({**_COMMON_FIELDS,
+        "profile": {"const": "queue-motion-v1"},
+        "modules": _object({"state": MODULE_PATH, "view": MODULE_PATH}),
+        **_MOTION_FIELDS, "hold_ms": {"type": "integer", "minimum": 100, "maximum": 5000}}),
+    "sprite-animation-v1": _object({**_COMMON_FIELDS,
+        "profile": {"const": "sprite-animation-v1"},
+        "modules": _object({"animation": MODULE_PATH}), **_MOTION_FIELDS}),
+    "tile-neighborhood-v1": _object({**_COMMON_FIELDS,
+        "profile": {"const": "tile-neighborhood-v1"},
+        "modules": _object({"terrain": MODULE_PATH})}),
+}
+# The public object remains visibly closed, while each branch requires exactly
+# its own fields. A tile consumer does not invent queue modules or motion values.
+CONFIG_SCHEMA = {
+    "type": "object",
+    "properties": {**_COMMON_FIELDS, **_MOTION_FIELDS,
+        "profile": {"enum": list(PROFILE_SCHEMAS)},
+        "modules": {"oneOf": [schema["properties"]["modules"] for schema in PROFILE_SCHEMAS.values()]},
+        "hold_ms": PROFILE_SCHEMAS["queue-motion-v1"]["properties"]["hold_ms"]},
+    "required": [*_COMMON_FIELDS, "profile", "modules"],
+    "additionalProperties": False,
+    "oneOf": list(PROFILE_SCHEMAS.values()),
+}
 _Validator = validators.extend(Draft202012Validator, type_checker=Draft202012Validator.TYPE_CHECKER.redefine(
     "integer", lambda _, value: type(value) is int))
 
@@ -121,8 +149,9 @@ def _configuration(root: Path, config: Json) -> Json:
         _require(name.startswith("src/") and path.suffix in {".js", ".mjs", ".ts"},
                  "modules must be consumer-relative js/mjs/ts files under src", "consumer_config")
         _hash(path)
-    _require(len(set(config["modules"].values())) == 2,
-             "state and view modules must be distinct", "consumer_config")
+    if config["profile"] == "queue-motion-v1":
+        _require(len(set(config["modules"].values())) == 2,
+                 "state and view modules must be distinct", "consumer_config")
     for name in config["destinations"].values():
         _path(root, name)
     _require(len(set(config["destinations"].values())) == len(config["destinations"]),
@@ -245,7 +274,7 @@ def _read_json(path: Path) -> Json:
     return value
 
 
-def _check_summary(check: Json) -> Json:
+def _check_summary(check: Json, profile: str = "queue-motion-v1") -> Json:
     """Publish counts without copying images, transition samples or frame arrays."""
     facts = check.get("facts")
     _require(isinstance(facts, dict), "checker facts are missing", "consumer_check")
@@ -258,17 +287,37 @@ def _check_summary(check: Json) -> Json:
     phases = facts.get("phases")
     _require(isinstance(phases, dict) and len(phases) <= 4, "invalid checker phase summary", "consumer_check")
     assert isinstance(phases, dict)
+    allowed_phases = {
+        "queue-motion-v1": {"normal-start", "reduced", "normal-restored", "initially-reduced"},
+        "sprite-animation-v1": {"playback"},
+        "tile-neighborhood-v1": set(),
+    }
+    _require(profile in allowed_phases, "unknown checker profile", "consumer_check")
+    if profile == "sprite-animation-v1":
+        _require(set(phases) == {"playback"}, "sprite animation needs observed playback", "consumer_check")
+    if profile == "tile-neighborhood-v1":
+        _require(summary["clock_checks"] == 0, "static tile observations do not claim clock checks", "consumer_check")
     for name, value in phases.items():
-        _require(name in {"normal-start", "reduced", "normal-restored", "initially-reduced"} and isinstance(value, dict),
+        _require(name in allowed_phases[profile] and isinstance(value, dict),
                  "invalid checker phase", "consumer_check")
         counts = value.get("counts", {})
         _require(isinstance(counts, dict) and len(counts) <= 16, "invalid checker consumer counts", "consumer_check")
+        if profile == "sprite-animation-v1":
+            _require(value.get("status") == "observed" and type(value.get("sample_count")) is int
+                     and 0 < value["sample_count"] <= 10000000 and bool(counts),
+                     "sprite playback summary is not observed", "consumer_check")
         rows = {}
         for consumer, count in counts.items():
             _require(isinstance(consumer, str) and len(consumer) <= 128 and isinstance(count, dict),
                      "invalid checker consumer count", "consumer_check")
             frames = count.get("frames", [])
             _require(isinstance(frames, list), "invalid checker frame count", "consumer_check")
+            if profile == "sprite-animation-v1":
+                _require(0 < len(frames) <= 16 and all(type(frame) is int and 0 <= frame < 16 for frame in frames)
+                         and len(set(frames)) == len(frames)
+                         and all(type(count.get(k)) is int and 0 <= count[k] <= 10000000
+                                 for k in ("transitions", "wraps", "skips")),
+                         "invalid sprite playback counts", "consumer_check")
             rows[consumer] = {"distinct_frames": len(frames), **{k: count.get(k) for k in ("transitions", "wraps", "skips")}}
         summary["phases"][name] = {"status": value.get("status"), "sample_count": value.get("sample_count"), "counts": rows}
     _require(len(_json(summary)) <= 32768, "checker summary exceeds 32 KiB", "consumer_check")
@@ -363,12 +412,13 @@ def execute(state_path: Path, root: Path, candidate_id: str, config: Json, out: 
             _write(directory / name, value)
         _write(directory / "inputs.json", {"consumer_sources": sources, "destinations": destinations,
                                           "state_file_sha256": hashlib.sha256(state_bytes).hexdigest()})
-        profile = service.resource_root() / "examples/consumer-execution/queue-motion"
+        profile_name = config["profile"]
+        profile = service.resource_root() / "examples/consumer-execution" / PROFILE_RESOURCES[profile_name]
         provenance = []
         for name in PROFILE_FILES:
             source = profile / name
             if not source.is_file():
-                result.update(status="unavailable", error={"code": "consumer_profile", "detail": "installed queue-motion-v1 profile is incomplete: " + name})
+                result.update(status="unavailable", error={"code": "consumer_profile", "detail": "installed " + profile_name + " profile is incomplete: " + name})
                 break
             digest = _hash(source)
             copied = directory / "renderer" / name
@@ -390,8 +440,9 @@ def execute(state_path: Path, root: Path, candidate_id: str, config: Json, out: 
             "python": {"path": sys.executable, "version": sys.version}, "browser": browser_path})
         if phase("node-version", [node_path, "--version"])["status"] != "complete":
             return result
+        capability_key = "queueMotionCapabilities" if profile_name == "queue-motion-v1" else "consumerCapabilities"
         capability = phase("node-capabilities", [node_path, "-e",
-            "const m=require('node:module'); const ok=typeof m.stripTypeScriptTypes==='function' && typeof WebSocket==='function' && typeof fetch==='function'; console.log(JSON.stringify({node:process.version,queueMotionCapabilities:ok})); if(!ok)process.exit(3)"])
+            "const m=require('node:module'); const ok=typeof m.stripTypeScriptTypes==='function' && typeof WebSocket==='function' && typeof fetch==='function'; console.log(JSON.stringify({node:process.version," + capability_key + ":ok})); if(!ok)process.exit(3)"])
         if capability["status"] != "complete":
             if capability["status"] == "failed":
                 result.update(status="unavailable", error={"code": "consumer_capability", "detail": "Node needs built-in stripTypeScriptTypes, WebSocket and fetch"})
@@ -427,8 +478,8 @@ def execute(state_path: Path, root: Path, candidate_id: str, config: Json, out: 
             return result
         check = _read_json(directory / "check.json")
         _require(check.get("status") == "pass" and check.get("pass") is True,
-                 "consumer structural and observed-motion checks did not pass", "consumer_check")
-        result["check_summary"] = _check_summary(check)
+                 "consumer structural and profile observation checks did not pass", "consumer_check")
+        result["check_summary"] = _check_summary(check, config["profile"])
         if phase("observation", [sys.executable, str(directory / "renderer/observation.py"), "--project", str(root),
                                  "--capture", str(directory / "capture"), "--context", str(directory / "review-context.json"),
                                  "--renderer", str(directory / "renderer"), "--destinations", str(directory / "destinations.json"),

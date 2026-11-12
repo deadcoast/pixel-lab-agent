@@ -1,0 +1,416 @@
+"""Independent TM-08 native consumer proofs; visual findings remain separately assessed."""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import re
+import zipfile
+from pathlib import Path
+
+from evaluations.domain_consumer_case import INPUTS, KIT, PROFILES, WORK, config, state
+from evaluations.grade_artistic_revision import confined
+from evaluations.grade_caller_result import mcp_attempts
+from evaluations.grade_consumer_execution import (
+    PROFILE_FILES,
+    report_reference,
+    selected_identity,
+    summary,
+)
+from evaluations.grade_integration_change import (
+    bundle_errors,
+    complete_file_proof,
+    image_views,
+    operation_proof,
+)
+from evaluations.grade_named_codex_role import rows
+from evaluations.grade_plar_coverage import native_read_proof
+from evaluations.grade_provider_recovery import native as recovery_native
+from evaluations.grade_provider_recovery import reference, verified_journals
+from evaluations.grade_readiness import semantic_result
+from evaluations.host_trials import inventory, sha
+from evaluations.native_trial_records import verify_inputs
+from evaluations.request_review_trials import ROOT
+from pixl import candidate_review, codec, service
+
+RESOURCES = {"terrain": "tile-neighborhood", "animation": "sprite-animation"}
+CANDIDATE = "delivery.candidate"
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def operations(report: dict) -> dict:
+    value = report["operations"]
+    if not isinstance(value, dict) or set(value) != set(PROFILES):
+        raise ValueError("Report must name exactly terrain and animation operations")
+    if any(not isinstance(item, dict) for item in value.values()):
+        raise ValueError("Each operation needs an exact artifact reference")
+    return {domain: report_reference(item, "result") for domain, item in value.items()}
+
+
+def child_identity(value, host):
+    """Refuse conflicting report aliases before binding to actual native events."""
+    if isinstance(value, str):
+        return value if value else None
+    if not isinstance(value, dict):
+        return None
+    names = {value[k] for k in ("id", "agent_id", "child_id", "canonical_task", "canonical_path", "task_name") if k in value}
+    roles = {value[k] for k in ("agent_type", "subagent_type", "role") if k in value}
+    if len(names) != 1 or roles != {"pixl" if host == "codex" else "pixl:pixl"}:
+        return None
+    if host == "codex" and value.get("fork_turns", "none") != "none":
+        return None
+    selected = selected_identity(value, host)
+    return selected if selected in names else next(iter(names))
+
+
+def _blocks(row):
+    message = row.get("message", {})
+    content = message.get("content", []) if isinstance(message, dict) else []
+    return [block for block in content if isinstance(block, dict)] if isinstance(content, list) else []
+
+
+def _event(row):
+    return {key: row.get(key) for key in ("file", "line", "type", "subtype")}
+
+
+def _mapping(row, key):
+    value = row.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _tag(text, name):
+    found = re.findall(r"<" + name + r">(.*?)</" + name + r">", text, re.DOTALL)
+    return found[0] if len(found) == 1 else None
+
+
+def claude_async_completion(stdout, parent, children, selected, session):
+    """Bind async completion to host events and the real child's final message.
+
+    This generalizes the retained CF-08 asynchronous-completion audit. Authored
+    parent prose or a successful background launch alone can never qualify.
+    """
+    if not selected or not session:
+        return []
+    finals = [row for journal in children for row in journal
+              if row.get("type") == "assistant" and row.get("agentId") == selected
+              and row.get("sessionId") == session and row.get("isSidechain") is True
+              and _mapping(row, "message").get("stop_reason") == "end_turn"]
+    if not finals:
+        return []
+    final = finals[-1]
+    final_text = "\n".join(block["text"] for block in _blocks(final) if block.get("type") == "text")
+    if not final_text:
+        return []
+    for index, call_row in enumerate(stdout):
+        if call_row.get("type") != "assistant" or call_row.get("session_id") != session:
+            continue
+        for call in _blocks(call_row):
+            if (call.get("type") != "tool_use" or call.get("name") != "Agent"
+                    or call.get("input", {}).get("subagent_type") != "pixl:pixl"
+                    or call.get("input", {}).get("run_in_background") is not True):
+                continue
+            call_id = call.get("id")
+            later = stdout[index + 1:]
+            launches = [row for row in later if row.get("type") == "user" and row.get("session_id") == session
+                        and _mapping(row, "tool_use_result").get("status") == "async_launched"
+                        and row["tool_use_result"].get("isAsync") is True
+                        and row["tool_use_result"].get("agentId") == selected
+                        and any(b.get("type") == "tool_result" and b.get("tool_use_id") == call_id
+                                and not b.get("is_error", False) for b in _blocks(row))]
+            starts = [row for row in later if row.get("type") == "system" and row.get("subtype") == "task_started"
+                      and row.get("session_id") == session and row.get("task_id") == selected
+                      and row.get("tool_use_id") == call_id and row.get("subagent_type") == "pixl:pixl"
+                      and row.get("is_backgrounded") is True and row.get("run_id")]
+            if not launches or not starts:
+                continue
+            for start in starts:
+                run_id = start["run_id"]
+                updates = [row for row in later if row.get("type") == "system" and row.get("subtype") == "task_updated"
+                           and row.get("session_id") == session and row.get("task_id") == selected
+                           and row.get("run_id") == run_id and row.get("patch", {}).get("status") == "completed"]
+                notices = [row for row in later if row.get("type") == "system" and row.get("subtype") == "task_notification"
+                           and row.get("session_id") == session and row.get("task_id") == selected
+                           and row.get("tool_use_id") == call_id and row.get("run_id") == run_id
+                           and row.get("status") == "completed" and row.get("summary") == final_text]
+                parent_calls = [row for row in parent if row.get("type") == "assistant"
+                                and row.get("sessionId") == session and call in _blocks(row)]
+                parent_launches = [row for row in parent if row.get("type") == "user" and row.get("sessionId") == session
+                                   and _mapping(row, "toolUseResult").get("status") == "async_launched"
+                                   and row["toolUseResult"].get("agentId") == selected
+                                   and any(b.get("type") == "tool_result" and b.get("tool_use_id") == call_id
+                                           and not b.get("is_error", False) for b in _blocks(row))]
+                parent_notices = []
+                for row in parent:
+                    text = row.get("message", {}).get("content")
+                    if (row.get("type") == "user" and row.get("sessionId") == session and row.get("isSidechain") is False
+                            and row.get("promptSource") == "system" and row.get("turnOrigin") == "task_notification"
+                            and row.get("origin") == {"kind": "task-notification", "producer": "session-task", "runId": run_id}
+                            and isinstance(text, str) and text.startswith("<task-notification>\n") and text.endswith("</task-notification>")
+                            and _tag(text, "task-id") == selected and _tag(text, "tool-use-id") == call_id
+                            and _tag(text, "status") == "completed" and _tag(text, "result") == final_text):
+                        parent_notices.append(row)
+                terminals = [row for row in later if row.get("type") == "result" and row.get("subtype") == "success"
+                             and row.get("session_id") == session and row.get("terminal_reason") == "completed"
+                             and row.get("is_error") is False and row.get("subagent_stats", {}).get("completed", 0) >= 1
+                             and row.get("subagent_stats", {}).get("failed") == 0]
+                if not all((updates, notices, parent_calls, parent_launches, parent_notices, terminals)):
+                    continue
+                if not (stdout.index(start) < stdout.index(updates[0]) < stdout.index(notices[0]) < stdout.index(terminals[-1])
+                        and stdout.index(launches[0]) < stdout.index(updates[0])
+                        and parent.index(parent_calls[0]) < parent.index(parent_launches[0]) < parent.index(parent_notices[0])):
+                    continue
+                return [{"mechanism": "bound_async_host_completion", "agent_id": selected, "call_id": call_id, "run_id": run_id,
+                         "session_id": session, "events": [_event(row) for row in
+                         (call_row, launches[0], start, updates[0], notices[0], final, parent_notices[0], terminals[-1])]}]
+    return []
+
+
+def native(attempt, root, launch, continuation, caller):
+    selected = child_identity(caller.get("native_child"), launch["host"])
+    if not selected:
+        raise ValueError("Missing or contradictory selected child identity")
+    traces = recovery_native(attempt, root, launch, continuation, {**caller, "native_child": selected})
+    if launch["host"] == "claude":
+        child_rows = [row for journal in traces["children"] for row in journal if "agentId" in row]
+        if not child_rows or any(row["agentId"] != selected or row.get("sessionId") != continuation["session_id"] for row in child_rows):
+            raise ValueError("Selected Claude transcript belongs to another child or session")
+        parent_ref = continuation.get("retained_transcripts", {}).get("parent")
+        parent = rows(reference(attempt, parent_ref)) if parent_ref else []
+        if not traces["named"]:
+            proof = claude_async_completion(traces["parent"][0], parent, traces["children"], selected, continuation["session_id"])
+            role = any(c.get("id", c.get("agent_id")) == selected and c.get("role") == "pixl:pixl"
+                       for c in continuation.get("children", []))
+            traces.update(named=bool(proof) and role, named_proof=proof)
+    return traces
+
+
+def frozen_recheck(root, identity, result, domain):
+    """Bind every copied checker dependency to the installed frozen kit first."""
+    capture_path = reference(root, result["artifacts"]["capture/capture.json"])
+    out = capture_path.parent.parent
+    provenance = read(reference(root, result["artifacts"]["renderer-sources.json"]))
+    if len(provenance) != len(PROFILE_FILES) or {Path(item["copy"]).name for item in provenance} != PROFILE_FILES:
+        raise ValueError("Incomplete or duplicate frozen renderer closure")
+    for item in provenance:
+        name = Path(item["copy"]).name
+        relative = f"resources/examples/consumer-execution/{RESOURCES[domain]}/{name}"
+        resource = (root / KIT / relative).resolve()
+        copied = reference(root, {"path": item["copy"], "sha256": item["sha256"]})
+        if (Path(item["resource"]).resolve() != resource or copied != out / "renderer" / name
+                or sha(resource) != item["sha256"] or identity["package_files"].get(relative) != item["sha256"]):
+            raise ValueError("Renderer differs from exact frozen installed profile: " + name)
+    spec = importlib.util.spec_from_file_location("tm08_frozen_" + domain, out / "renderer/check.py")
+    module = importlib.util.module_from_spec(spec)
+    # No bytecode is added to retained evidence; all six source files are bound above.
+    exec(compile((out / "renderer/check.py").read_bytes(), str(out / "renderer/check.py"), "exec"), module.__dict__)  # noqa: S102
+    checked = module.check(root, capture_path.parent, renderer=out / "renderer")
+    return checked, read(capture_path), out
+
+
+def authored_contract(root, domain):
+    """Read this controlled fixture's literal JSON export without executing JS."""
+    text = (root / config(domain)["modules"][domain]).read_text(encoding="utf-8")
+    prefix = "export const " + domain + " = "
+    function = "tileFor" if domain == "terrain" else "frameAt"
+    if not text.startswith(prefix):
+        raise ValueError("Unexpected controlled source export")
+    value, end = json.JSONDecoder().raw_decode(text[len(prefix):])
+    if not text[len(prefix) + end:].startswith(";\n\nexport function " + function + "("):
+        raise ValueError("Unexpected controlled source boundary")
+    return value
+
+
+def viewing_coverage(capture, domain, observed, named):
+    """Each required contextual canvas or its checked screenshot must be viewed."""
+    descriptors = capture[domain]
+    if domain == "terrain":
+        expected = {(item["id"], scale) for item in descriptors["neighborhoods"] for scale in config(domain)["scales"]}
+        key = lambda view: (view["neighborhood"], view["scale"])
+    else:
+        expected = {(item["id"], frame, scale) for item in descriptors["clips"]
+                    for frame in range(len(item["frames"])) for scale in config(domain)["scales"]}
+        key = lambda view: (view["clip"], view["frame"], view["scale"])
+    covered, missing = set(), []
+    for view in capture["views"]:
+        hashes = {view[field]["sha256"] for field in ("image", "screenshot")}
+        if hashes & observed & named:
+            covered.add(key(view))
+        else:
+            missing.append(key(view))
+    return {"pass": bool(expected) and covered == expected and not missing,
+            "required": sorted(expected), "covered": sorted(covered), "missing": missing,
+            "scope": "Actual image-tool views of frozen-checker-bound canvases or screenshots; no subjective live-playback or artistic acceptance claim."}
+
+
+def completed_image_views(journals, root):
+    """A requested or failed Codex image view is not evidence of viewing."""
+    filtered = []
+    for journal in journals:
+        complete = []
+        for row in journal:
+            payload = row.get("payload", {})
+            item = payload.get("item", row.get("item", {}))
+            if item.get("type") in ("ImageView", "image_view"):
+                completed = (row.get("type") == "event_msg" and payload.get("type") == "item_completed"
+                             or row.get("type") == "item.completed")
+                if not completed or item.get("status") not in (None, "completed"):
+                    continue
+            complete.append(row)
+        filtered.append(complete)
+    # The shared reader also requires successful paired Claude image results.
+    return image_views(filtered, root)
+
+
+def artifact_checks(root, identity, result, domain):
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": domain + ":" + name, "pass": bool(passed), "evidence": evidence})
+    context = candidate_review.context(service.load_document(root / state(domain)), root, CANDIDATE)
+    check("current_candidate_bindings", all(result.get(k) == context[k] for k in ("candidate", "state_hash", "binding_hash"))
+          and result.get("manifest") == context["candidate_file"] and result.get("profile") == PROFILES[domain])
+    check("complete_execution_without_acceptance", result.get("status") == "complete" and result.get("renderer_executed") is True
+          and result.get("files_verified") is True and result.get("cleanup", {}).get("complete") is True
+          and all(result.get(k) is False for k in ("state_changed", "state_written", "automatic_acceptance")))
+    for item in result["artifacts"].values():
+        reference(root, item)
+    raw = read(confined(root, result["result_path"]))
+    check("public_result_equals_retained_operation", result in (raw, service.describe_result("consumer_execute", raw)))
+    checked, capture, out = frozen_recheck(root, identity, result, domain)
+    check("captured_contract_equals_exact_authored_source", capture[domain] == authored_contract(root, domain))
+    executed = read(reference(root, result["artifacts"]["capture/execution.json"]))
+    check("actual_owned_browser_server_profile_cleanup", executed.get("renderer_executed") is True
+          and executed.get("status") == "complete" and executed.get("cleanup", {}).get("complete") is True
+          and all(executed.get("cleanup", {}).get(key) is True for key in ("browser_closed", "server_closed", "profile_removed"))
+          and not executed.get("cleanup", {}).get("errors") and capture.get("errors") == [])
+    served = {"renderer/index.html", "renderer/view.mjs", "consumer/" + config(domain)["modules"][domain]}
+    served.update("consumer/" + name for name in config(domain)["destinations"].values())
+    if domain == "animation":
+        served.add("config")
+    check("actual_required_display_module_and_assets_served", served <= set(capture["served_files"]),
+          {"missing": sorted(served - set(capture["served_files"]))})
+    check("exact_requested_configuration", read(out / "config.json") == config(domain) == capture["config"])
+    recorded = read(reference(root, result["artifacts"]["check.json"]))
+    check("frozen_checker_reproduces_pass_and_counts", checked == recorded and checked.get("pass") is True,
+          {"facts": checked.get("facts"), "failures": checked.get("failures")})
+    check("compact_counts_equal_raw_checked_evidence", result.get("check_summary") == summary(checked["facts"]))
+    if domain == "terrain":
+        check("static_neighborhood_evidence", checked["facts"]["clock_checks"] == 0 and checked["facts"]["phases"] == {}
+              and len(capture["terrain"]["neighborhoods"]) == 2 and len(capture["views"]) == 4)
+    else:
+        clips = capture["animation"]["clips"]
+        check("authored_loop_and_one_shot_live_playback", {clip["loop"] for clip in clips} == {True, False}
+              and len({frame["duration_ms"] for clip in clips for frame in clip["frames"]}) > 1
+              and set(checked["facts"]["phases"]) == {"playback"} and checked["facts"]["clock_checks"] > 0)
+    imported = read(confined(root, result["import_result"]))
+    observation = read(reference(root, result["artifacts"]["observation.json"]))
+    errors = bundle_errors(root, observation, imported, context)
+    check("complete_transitive_nf06_bundle", not errors, errors)
+    check("exact_imported_observation_and_bundle", result["observation"] == imported["observation"] and result["bundle"] == imported["bundle"])
+    if domain == "terrain":
+        check("static_report_has_no_motion", observation["motion"] == [])
+    receipts = [{**phase, "record": read(confined(root, phase["receipt"]))} for phase in result["phases"]]
+    check("all_fixed_process_phases_complete", [item["phase"] for item in receipts] == ["node-version", "node-capabilities", "capture", "check", "observation"]
+          and all(item["status"] == item["record"]["status"] == "complete"
+                  and item["returncode"] == item["record"]["returncode"] == 0 for item in receipts))
+    return checks, capture
+
+
+def _grade(attempt):
+    launch, identity, continuation, record = [read(attempt / name) for name in ("launch.json", "identity.json", "continuation.json", "record.json")]
+    for name in ("launch.json", "identity.json", "continuation.json", "stdout.jsonl"):
+        reference(attempt, {"path": name, "sha256": record["recorded_files"][name]})
+    reference(attempt, record["continuation"])
+    verify_inputs(continuation)
+    verified_journals(attempt, continuation)
+    root = Path(launch["cwd"]).resolve()
+    caller = read(root / WORK / "CALLER-RESULT.json")
+    specialist_path = reference(root, caller["specialist_result"])
+    specialist = read(specialist_path)
+    if specialist_path != root / WORK / "SPECIALIST-RESULT.json":
+        raise ValueError("Caller did not name the assigned specialist report")
+    operation_refs = operations(specialist)
+    caller_refs = operations(caller)
+    traces = native(attempt, root, launch, continuation, caller)
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+    current = inventory(root, ("__pycache__",))
+    drift = [name for name, digest in identity["inputs"].items() if current.get(name) != digest]
+    additions = [name for name in current if name not in identity["inputs"] and not name.startswith(WORK + "/")]
+    unchanged = not drift and not additions and inventory(root / ".pixl") == identity["baseline_production"]
+    check("exact_inputs_production_and_only_assigned_additions", unchanged, {"changed_or_missing": drift, "unexpected_additions": additions})
+    check("frozen_installed_kit_preserved", inventory(root / KIT, ("__pycache__",)) == identity["package_files"])
+    check("external_consumer", not root.is_relative_to(ROOT) and not ROOT.is_relative_to(root))
+    check("actual_named_child_completed", traces["named"], traces["named_proof"])
+    check("child_loaded_complete_common_profile_and_skill", all(value["loaded"] for value in traces["loading"].values()), traces["loading"])
+    guide = root / KIT / "skills/pixl/references/consumer-execution.md"
+    guide_proof = complete_file_proof(traces["children"], guide) or native_read_proof(traces["children"], guide)
+    check("child_loaded_complete_execution_workflow", bool(guide_proof), guide_proof)
+    source_paths = ["BRIEF.md", "src/terrain.ts", "src/animation.ts"]
+    source_paths += [f"{INPUTS}/{domain}-{suffix}.json" for domain in PROFILES for suffix in ("config", "context")]
+    source_proofs = {name: complete_file_proof(traces["children"], root / name)
+                     or native_read_proof(traces["children"], root / name) for name in source_paths}
+    check("child_read_source_authority_and_actual_inputs", all(source_proofs.values()), source_proofs)
+    check("caller_read_exact_specialist_report", bool(complete_file_proof(traces["parent"], specialist_path)
+          or native_read_proof(traces["parent"], specialist_path)))
+    captures = {}
+    for domain, ref in operation_refs.items():
+        path = reference(root, ref)
+        result = semantic_result(read(path))
+        domain_checks, captures[domain] = artifact_checks(root, identity, result, domain)
+        checks.extend(domain_checks)
+        proof = operation_proof(traces["children"], root, "pixl_consumer_execute", ref)
+        check(domain + ":child_used_public_operation", bool(proof), proof)
+        check(domain + ":caller_read_exact_complete_operation", reference(root, caller_refs[domain]) == path
+              and bool(complete_file_proof(traces["parent"], path) or native_read_proof(traces["parent"], path)))
+    for actor, journals, report in (("child", traces["children"], specialist), ("caller", traces["parent"], caller)):
+        views = completed_image_views(journals, root)
+        named = {sha(reference(root, ref)) for ref in report["viewed_images"]}
+        for domain, capture in captures.items():
+            coverage = viewing_coverage(capture, domain, set(views), named)
+            check(actor + ":viewed_all_" + domain + "_contexts_at_both_scales", coverage["pass"], {**coverage, "observed": views})
+        check(actor + ":reported_no_acceptance_and_limits", unchanged and report.get("production_unchanged") is True
+              and report.get("acceptance_created") is False and bool(report.get("limitations")) and bool(report.get("next_action")))
+        path = root / WORK / ("SPECIALIST-RESULT.json" if actor == "child" else "CALLER-RESULT.json")
+        check(actor + ":retained_report_matches_consumer", sha(path) == sha(attempt / "outputs" / path.name))
+    prohibited = [call for call in mcp_attempts(traces["journals"]) if str(call["server"]).replace("-", "_") != "pixl_local"]
+    check("no_recorded_remote_provider_tool_attempt", not prohibited, prohibited)
+    check("native_attempt_finished_naturally", continuation.get("status") == "finished" and continuation.get("returncode") == 0
+          and continuation.get("interruption_reason") is None and record.get("returncode") == 0)
+    return {"version": 1, "status": "pass" if all(item["pass"] for item in checks) else "fail",
+            "passed": sum(item["pass"] for item in checks), "total": len(checks), "checks": checks,
+            "host": launch["host"], "native_parent": traces["session"], "native_child": traces["child"],
+            "scope": "Exact controlled TM-08 consumers, fixed browser execution and actual native reading/image views. Findings need separate assessment; no generated-art revision, artistic/human acceptance or M1/M2/broader M3/M4 closure.",
+            "inputs": {name: sha(attempt / name) for name in ("launch.json", "identity.json", "continuation.json", "record.json")},
+            "grader_sha256": sha(Path(__file__))}
+
+
+def grade(attempt):
+    try:
+        return _grade(Path(attempt).resolve())
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError, StopIteration, codec.PixlError, zipfile.BadZipFile) as error:
+        return {"version": 1, "status": "fail", "passed": 0, "total": 1,
+                "checks": [{"check": "required_evidence_readable", "pass": False, "evidence": f"{type(error).__name__}: {error}"}]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempt", type=Path)
+    parser.add_argument("--out", "--output", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        parser.error("Preserve earlier grades; choose a fresh output")
+    result = grade(args.attempt)
+    with args.out.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    return result["status"] != "pass"
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

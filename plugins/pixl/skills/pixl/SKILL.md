@@ -35,7 +35,7 @@ Use the [intake and representative-sample operation](references/intake-sample.md
 
 Keep requirement authority through each translation: explicit user/project constraints, observations and proposals remain distinct in the provider request and review criteria. Read [the artistic-authority checks](references/artistic-authority.md) when deriving aesthetic restrictions or auditing a contradictory approach; the retained examples are conditional guidance.
 
-Use [isolated consumer execution](references/consumer-execution.md) when the actual consumer implements the shipped queue-motion profile. It retains exact delivered files, observed frames/wraps and reduced-motion switches without hand-written launch logic; visual judgment and acceptance remain explicit.
+Use [isolated consumer execution](references/consumer-execution.md) when the actual consumer implements a shipped queue-motion, sprite-animation or tile-neighborhood profile. It retains exact delivered pixels, declared placement, observed timing or tile mappings without hand-written launch logic. Choose the profile from the actual consumer contract; visual continuity, useful revision and acceptance remain explicit.
 
 Use the [candidate inspection operation](references/inspection.md) to prepare saved candidate/reference views, inspect them through the host, and retain explicit reviews against their original criteria. Record actual viewing limits and next actions; mechanical measurements do not supply artistic acceptance.
 

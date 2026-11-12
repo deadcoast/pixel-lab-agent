@@ -1,7 +1,8 @@
 # Fixed consumer execution
 
-`consumer-execute` / `pixl_consumer_execute` runs the shipped `queue-motion-v1`
-profile against a current retained family candidate. It copies the renderer into
+`consumer-execute` / `pixl_consumer_execute` runs a fixed shipped consumer profile
+against a current retained family candidate. The supported profiles are
+`queue-motion-v1`, `sprite-animation-v1` and `tile-neighborhood-v1`. It copies the renderer into
 a fresh project-relative attempt, runs its headless capture and checks, then
 imports a passing report through the existing [destination observation
 contract](destination-observation.md). The result provides an observation ready
@@ -41,7 +42,9 @@ Unsupported or missing capabilities produce a retained `unavailable` result.
 Python helpers use the same Python interpreter as the PIXL operation.
 
 `CONFIG_SCHEMA` in `pixl/consumer_execution.py` is the closed version-1 schema.
-Every field below is required; there are no omitted-field defaults:
+Each profile has its own closed field and module inventory. Every field in its
+example is required; there are no omitted-field defaults. The existing queue
+configuration and behavior remain unchanged:
 
 ```json
 {
@@ -70,12 +73,14 @@ manifest member before execution and after capture/import. Destination paths
 must be unique. Mapping a different package member or stale candidate is a
 preflight refusal, not a failed art review.
 
-`modules.state` and `modules.view` are distinct canonical paths under `src/`,
-with `.js`, `.mjs`, or `.ts` suffixes. Directory names contain ASCII letters,
+Module values are canonical paths under `src/`, with `.js`, `.mjs`, or `.ts`
+suffixes. Directory names contain ASCII letters,
 digits, underscores or hyphens; filenames additionally allow dots. The operation
 snapshots the entire confined `src` tree, including transitive inputs, with a
 limit of 512 files and 64 MiB. It rejects additions, removals or byte changes
-during the attempt. The fixed queue adapter expects `stateAfter` from the state
+during the attempt. Each profile requires its exact module keys; there are no
+dummy queue modules for sprites or tiles. The queue profile's `modules.state`
+and `modules.view` must be distinct. Its fixed adapter expects `stateAfter` from the state
 module, and `statusVisuals`, `statusCell`, `compactStatus`, `display`,
 `reducedMotionQuery`, `motionPreference` and `frameAt` from the view module.
 `display` supplies cell geometry, frame timing, nearest filtering and background;
@@ -91,16 +96,68 @@ For normal animation this profile's checker expects
 consumer-selected held frame. That sequence is this queue profile's contract,
 not a universal animation or artistic rule.
 
+The sprite profile uses one animation module:
+
+```json
+{
+  "version": 1,
+  "profile": "sprite-animation-v1",
+  "modules": {"animation": "src/animation.ts"},
+  "destinations": {"hero.sheet.output": "assets/hero.png"},
+  "scales": [1, 3],
+  "observed_wraps": 2,
+  "phase_timeout_ms": 10000,
+  "timeout_seconds": 90
+}
+```
+
+It expects the exports `animation` and `frameAt(clipId, elapsedMs)`. `animation`
+supplies `viewport`, `background`, `sampling: "nearest"` and one to four `clips`.
+Each clip owns its ID, label, loop flag, anchor and one to sixteen frames. Each
+frame supplies an ID, actual asset path, source rectangle, positive integer
+duration and pivot. `frameAt` must honor those authored durations, wrap looping
+clips and clamp one-shot clips to their terminal frame. These are the selected
+adapter's source contract, not prescribed art dimensions, frame counts or equal
+timing. Controlled frame views expose source rectangles and pivot placement;
+separate live browser playback records actual observed transitions, requested
+wraps for loops and terminal arrival for one-shot clips. It does not invent a
+queue state machine or reduced-motion hold contract. See the
+[sprite source contract](../examples/consumer-execution/sprite-animation/README.md).
+
+The tile profile uses one terrain module and has no motion fields:
+
+```json
+{
+  "version": 1,
+  "profile": "tile-neighborhood-v1",
+  "modules": {"terrain": "src/terrain.ts"},
+  "destinations": {"terrain.corner.output": "assets/corner.png"},
+  "scales": [1, 3],
+  "timeout_seconds": 90
+}
+```
+
+It expects the exports `terrain` and `tileFor(corners)`. `terrain` supplies tile
+geometry, background, nearest sampling, the authored `nw/ne/se/sw` corner order,
+sixteen indexed tile paths and explicit neighborhood vertex grids. The adapter
+checks actual neighborhood placement against this source contract and compares
+painted pixels with the delivered tiles at each requested scale. Corner weights
+and neighborhood arrangements belong to this contract; they are not universal
+tile-art conventions. Static tile evidence has `clock_checks: 0`, `phases: {}`
+and no invented playback observations. See the
+[tile source contract](../examples/consumer-execution/tile-neighborhood/README.md).
+
 | Field | Constraint |
 | --- | --- |
 | `scales` | One to four unique integers, each 1–16 |
-| `observed_wraps` | Integer 1–10; counts observed transitions rather than guessed elapsed cycles |
-| `phase_timeout_ms` | Integer 1,000–30,000 per playback phase |
-| `hold_ms` | Integer 100–5,000 for reduced-motion hold observations |
+| `observed_wraps` | Queue/sprite only; integer 1–10, counting observed transitions rather than guessed elapsed cycles |
+| `phase_timeout_ms` | Queue/sprite only; integer 1,000–30,000 per playback phase |
+| `hold_ms` | Queue only; integer 100–5,000 for reduced-motion hold observations |
 | `timeout_seconds` | Integer 5–180 shared subprocess deadline |
 
 Booleans and floating-point spellings are not accepted as integer values. Extra
-configuration fields are rejected. The timeout bounds subprocess work, including
+configuration fields, including another profile's fields or module keys, are
+rejected. The timeout bounds subprocess work, including
 Node probes, capture, checker and report bridge; local preflight, retention and
 bounded cleanup happen around that deadline. A requested phase sequence may need
 more time than its deadline, in which case its partial evidence remains available.
@@ -116,7 +173,10 @@ and copies exactly these installed resource files into `out/renderer`:
 `capture.mjs`, `server.mjs`, `view.mjs`, `index.html`, `check.py`, `observation.py`.
 
 `service.resource_root()` selects those resources for source checkout, installed
-wheel or plugin execution. Original resource paths and copied byte hashes are
+wheel or plugin execution. The fixed profile registry maps the three profile IDs
+to `examples/consumer-execution/queue-motion`, `sprite-animation` and
+`tile-neighborhood`, respectively. It never falls back to a different profile or
+accepts a caller-supplied runner. Original resource paths and copied byte hashes are
 retained in `renderer-sources.json`. Both original and copied identities are
 rechecked; an edited installed profile or retained copy invalidates the attempt.
 
@@ -147,7 +207,7 @@ browser versions. Logs and raw frame payloads remain in files instead of growing
 the operation response.
 
 The capture retains raw `capture/capture.json`, PNGs and
-`capture/execution.json`, including incomplete phases. The fixed checker covers
+`capture/execution.json`, including incomplete phases. The queue checker covers
 full and compact consumers at configured scales, exact delivered assets, actual
 painted frames, observed wraps, normal playback, switching to reduced motion,
 restoring normal playback and an initially reduced session. `check.json` retains
@@ -170,6 +230,10 @@ also contains `check_summary`, `bundle`, `import_result` and a ready
 `observation`. The summary contains pixel/source/clock check totals and per-phase
 sample counts with each consumer's distinct observed frame count, transitions,
 wraps and skips; detailed samples remain in the referenced files.
+Queue summaries retain the existing normal/reduced/restored/initially-reduced
+phases. Sprite summaries use one `playback` phase, with at most sixteen
+clip/scale rows. Tile summaries retain zero clock checks and no motion phases.
+None changes saved `.px` syntax, production records or acceptance semantics.
 
 | Status | Meaning |
 | --- | --- |
@@ -207,4 +271,4 @@ that all descendants or profile files were cleaned.
 Synthetic pipeline and owned-process tests establish orchestration, retention,
 failure handling and cleanup mechanics. Real headless consumer runs and native
 caller qualification are separate evidence. None of these closes M1, M2 or
-broader M3, or substitutes for explicit visual/artistic and consumer acceptance.
+broader M3/M4, or substitutes for explicit visual/artistic and consumer acceptance.
