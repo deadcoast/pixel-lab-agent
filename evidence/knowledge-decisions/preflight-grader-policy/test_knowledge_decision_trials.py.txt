@@ -1,0 +1,166 @@
+"""Preservation boundaries and concrete import-decision errors for TM-09 trials."""
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+import stat
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+from unittest.mock import patch
+
+from evaluations import knowledge_decision_trials as case
+from evaluations.host_trials import inventory, sha, write_json
+
+
+class KnowledgeArchiveTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name)
+
+    def archive(self, name="src/animation.ts", data=b"original", *, symlink=False):
+        archive, receipt = self.base / "case.zip", self.base / "inventory.json"
+        with zipfile.ZipFile(archive, "w") as stream:
+            info = zipfile.ZipInfo(name)
+            if symlink:
+                info.external_attr = (stat.S_IFLNK | 0o777) << 16
+            stream.writestr(info, data)
+        write_json(receipt, {"sha256": sha(archive), "files": {name: hashlib.sha256(data).hexdigest()}})
+        return archive, receipt
+
+    def test_archive_and_member_drift_fail_before_any_extraction(self):
+        archive, receipt = self.archive()
+        self.assertEqual(case.verified_archive(archive, receipt), {"src/animation.ts": b"original"})
+        expected = json.loads(receipt.read_bytes())
+        expected["sha256"] = "0" * 64
+        write_json(receipt, expected)
+        with self.assertRaisesRegex(ValueError, "archive identity"):
+            case.verified_archive(archive, receipt)
+        expected["sha256"] = sha(archive)
+        expected["files"]["src/animation.ts"] = "0" * 64
+        write_json(receipt, expected)
+        with self.assertRaisesRegex(ValueError, "member identity"):
+            case.verified_archive(archive, receipt)
+        self.assertFalse((self.base / "src").exists())
+
+    def test_matching_inventory_cannot_authorize_escape_or_symlink(self):
+        for name, symlink in (("../escape", False), ("/absolute", False), ("C:/drive", False),
+                              ("dir\\escape", False), ("link", True)):
+            with self.subTest(name=name):
+                archive, receipt = self.archive(name, symlink=symlink)
+                # Windows zipfile may normalize a backslash before our member-set check.
+                with self.assertRaisesRegex(ValueError, "Unsafe|member set"):
+                    case.verified_archive(archive, receipt)
+
+    def test_uninventoried_members_rejected(self):
+        archive, receipt = self.archive()
+        with zipfile.ZipFile(archive, "a") as stream:
+            stream.writestr("unexpected", b"extra")
+        expected = json.loads(receipt.read_bytes())
+        expected["sha256"] = sha(archive)
+        write_json(receipt, expected)
+        with self.assertRaisesRegex(ValueError, "member set"):
+            case.verified_archive(archive, receipt)
+
+    def test_existing_attempt_preserved_without_setup(self):
+        destination = self.base / "attempt"
+        destination.mkdir()
+        (destination / "retained.txt").write_bytes(b"failed evidence")
+        before = inventory(destination)
+        with (patch.object(case, "verified_archive", return_value={}),
+              patch.object(case.readiness_case, "prepare") as prepare,
+              self.assertRaisesRegex(ValueError, "fresh attempt")):
+            case.prepare(destination, "codex", self.base / "python.exe")
+        prepare.assert_not_called()
+        self.assertEqual(inventory(destination), before)
+
+
+class ExternalKnowledgeKitTests(unittest.TestCase):
+    def test_fresh_kit_moves_outside_project_and_all_host_paths_follow(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary).resolve()
+            root, attempt = base / "consumer", base / "attempt"
+            old = root / case.readiness_case.KIT
+            old.mkdir(parents=True)
+            attempt.mkdir()
+            (old / "identity.txt").write_text("immutable kit", encoding="utf-8")
+            new = attempt / "installed pixl"
+            for name in ("launch.json", "identity.json", "mcp.json"):
+                write_json(attempt / name, {"direct": str(old / "scripts/pixl.py"),
+                                           "json_arg": "mcp=" + json.dumps([str(old / "scripts/pixl.py")]),
+                                           "posix": old.as_posix()})
+            role = root / ".codex/agents/pixl.toml"
+            wrapper = root / ".agents/skills/pixl/SKILL.md"
+            for file in (role, wrapper):
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_text(old.as_posix(), encoding="utf-8")
+            self.assertEqual(case.relocate_kit(root, attempt), new)
+            self.assertFalse(old.exists())
+            self.assertFalse(new.is_relative_to(root))
+            self.assertEqual((new / "identity.txt").read_text(), "immutable kit")
+            for name in ("launch.json", "identity.json", "mcp.json"):
+                value = json.loads((attempt / name).read_bytes())
+                self.assertEqual(value["direct"], str(new / "scripts/pixl.py"))
+                self.assertEqual(json.loads(value["json_arg"].removeprefix("mcp=")), [str(new / "scripts/pixl.py")])
+                self.assertEqual(value["posix"], new.as_posix())
+            self.assertEqual(role.read_text(), new.as_posix())
+            self.assertEqual(wrapper.read_text(), new.as_posix())
+
+    def test_existing_external_kit_is_not_replaced(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary).resolve()
+            root, attempt = base / "consumer", base / "attempt"
+            for directory in (root / case.readiness_case.KIT, attempt / "installed pixl"):
+                directory.mkdir(parents=True)
+                (directory / "retain").write_bytes(str(directory).encode())
+            before = inventory(base)
+            with self.assertRaisesRegex(ValueError, "fresh kit"):
+                case.relocate_kit(root, attempt)
+            self.assertEqual(inventory(base), before)
+
+
+class KnowledgeDecisionCardTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        (self.root / "src").mkdir()
+        (self.root / "src/animation.ts").write_text("export const animation = " + json.dumps({
+            "clips": [{"frames": [{"duration_ms": d} for d in [800, 120, 160, 120, 400]]}]}) + ";", encoding="utf-8")
+        self.card = {"import_decision": {"verdict": "retain_authored", "durations_ms": [800, 120, 160, 120, 400],
+                        "total_ms": 1600, "boundary_times_ms": case.TIMES,
+                        "boundary_frames": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0]},
+                     "transfer_decisions": [{"id": name, "disposition": disposition, "reason": "Bounded explicit review"}
+                         for name, disposition in [("provider_uniform_timing", "reject"), ("css_blur_translation", "reject"),
+                                                   ("source_example_durations", "reject"), ("event_audio_engine", "defer")]],
+                     "production_unchanged": True, "acceptance_created": False, "retrospective_causality_claimed": False,
+                     "limitations": ["No historical causal proof"], "authority_notes": ["Assignment owns timing"], "next_action": "Retain authored import timing"}
+
+    def test_uniform_preview_adoption_fails_actual_contract_comparison(self):
+        self.assertTrue(all(case.decision_checks(self.card, self.root).values()))
+        wrong = copy.deepcopy(self.card)
+        wrong["import_decision"].update(verdict="adopt_uniform", durations_ms=[100] * 5, total_ms=500)
+        self.assertFalse(case.decision_checks(wrong, self.root)["authored_timeline_preserved"])
+
+    def test_loop_end_and_unsupported_event_claims_are_not_accepted(self):
+        wrong = copy.deepcopy(self.card)
+        wrong["import_decision"]["boundary_frames"][-1] = 4
+        wrong["transfer_decisions"][-1]["disposition"] = "support"
+        checks = case.decision_checks(wrong, self.root)
+        self.assertFalse(checks["actual_boundaries"])
+        self.assertFalse(checks["explicit_transfer_dispositions"])
+
+    def test_missing_or_retrospective_acceptance_assertions_fail(self):
+        for key, value in (("acceptance_created", True), ("production_unchanged", False),
+                           ("retrospective_causality_claimed", True), ("limitations", [])):
+            with self.subTest(key=key):
+                wrong = copy.deepcopy(self.card)
+                wrong[key] = value
+                self.assertFalse(case.decision_checks(wrong, self.root)["scoped_report_limits"])
+
+
+if __name__ == "__main__":
+    unittest.main()

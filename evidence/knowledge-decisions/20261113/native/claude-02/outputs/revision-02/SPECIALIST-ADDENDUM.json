@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "kind": "guided maintainer follow-up addendum to the TM-09 specialist decision; not a fresh unassisted pass and not a repeat of the research",
+  "written_at": "2026-11-13",
+  "specialist_identity": {
+    "role": "PIXL pixel-art production specialist, same session as the predecessor report",
+    "invoked_as": "pixl:pixl agent (Claude Agent SDK subagent)",
+    "model_as_observed": "claude-fable-5-1 (Fable 5.1) as reported by the harness"
+  },
+  "predecessor_report": {
+    "path": "work/knowledge-decisions/SPECIALIST-RESULT.json",
+    "sha256": "5e56c5b745dd981bfd4e0f4412f55e0238c3980943765b4eb46b060c85f82d26"
+  },
+  "inputs_unchanged": [
+    {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"},
+    {"path": "assets/robot-idle/east-0.png", "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4"},
+    {"path": "assets/robot-idle/east-1.png", "sha256": "4bfaae2a2cc54dc87141ebb3f4b656cf0ca7db71b03a263981ebd185ba6463da"},
+    {"path": "assets/robot-idle/east-2.png", "sha256": "982b48b43debde04a2d251603cdd691d92fd951850010e706bdd0f3b19718da1"},
+    {"path": "assets/robot-idle/east-3.png", "sha256": "4bfaae2a2cc54dc87141ebb3f4b656cf0ca7db71b03a263981ebd185ba6463da"},
+    {"path": "assets/robot-idle/east-4.png", "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4"},
+    {"path": "work/cf09-production-01/returned/east-0.png", "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4"},
+    {"path": "work/cf09-production-01/returned/east-1.png", "sha256": "2b23feb713f4f65e862d98189b48d9db3ba4cdb4e2ec0cb245ecf12ea03e9fdc"},
+    {"path": "work/cf09-production-01/returned/east-2.png", "sha256": "d9b4e569fd3d021804ad2e6c30c1a13791b69876b4fa441bd6955f452cc15f57"},
+    {"path": "work/cf09-production-01/returned/east-3.png", "sha256": "d08555869ec717c8fba8af9cdfb79844c97c17a0294a855ac3e8389600168a20"},
+    {"path": "work/cf09-production-01/returned/east-4.png", "sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4"}
+  ],
+  "calculation_method": "In-memory only: `python -I -` with a standard-library PNG decoder (same logic as the retained work/knowledge-decisions/scratch/contact-mask.py) reading the unchanged PNGs listed above and printing to stdout; rest/pulse arithmetic by hand from the unchanged src/animation.ts durations and the unadopted proposal. No new files outside revision-02/.",
+  "corrections": [
+    {
+      "id": "rest_pose_hold",
+      "original_scope": "SPECIALIST-RESULT.json import_decision.uniform_proposal.differences: 'rest frame 0 shown 100 ms instead of 800 ms; pulse window 300 ms every 500 ms instead of 400 ms every 1600 ms'; and methods[frame-timing].decision: '... repeated every 500 ms with a 100 ms rest'. Those sentences equated frame 0's declared hold with the visible resting pose.",
+      "corrected_finding": "Frames 0 and 4 are byte-identical (71b35089...), so the visible resting pose is the contiguous run frame 4 + frame 0 across the 4->0 wrap, not frame 0's hold alone. Authored: frame-0 hold 800 ms, frame-4 hold 400 ms, contiguous visible rest 1200 ms, active pulse (frames 1-3) 400 ms, loop 1600 ms, rest fraction 0.75, pulse fraction 0.25. Uniform proposal: frame-0 hold 100 ms, frame-4 hold 100 ms, contiguous visible rest 200 ms, active pulse 300 ms, loop 500 ms, rest fraction 0.40, pulse fraction 0.60. The corrected contrast is therefore 'visible rest 200 ms instead of 1200 ms, and the pulse becomes the majority of the loop (60%) instead of a quarter', which still contradicts the brief's long resting pose and brief occasional pulse. The reject-uniform / retain_authored decision is preserved; only the explanation is corrected.",
+      "evidence": [
+        {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"},
+        {"path": "work/knowledge-inputs/IMPORT-PROPOSAL.json", "sha256": "ffdf777f3f0122f23c7e9c5158ced12228ecf2ac823bd3a4b7635bc2b1d18c66"},
+        {"path": "work/knowledge-decisions/scratch/frame-at-output.json", "sha256": "62e4f9967aff6ae3964fad2306e8121385df9f56ae4678de84de54e85076739f"},
+        {"path": "work/knowledge-decisions/ops/04-knowledge-frame-timing.json", "sha256": "8c6e820217bd8eb3cfe867671927ff3db7ec2a3c5a9e5ae5531d49e523a0e0cf"}
+      ]
+    },
+    {
+      "id": "mask_differences",
+      "original_scope": "SPECIALIST-RESULT.json methods[animation-anchors].decision and authority_notes.actual_observations: 'masks differed from frame 0 by 27/63/12 px'; methods[silhouette-readability].applicability: 'raw was 27/63/12 px' described next to 'for every transition'. The 27/63/12 numbers are baseline-vs-frame-0 alpha-mask XOR counts (scratch/contact-mask-raw-returned.json mask_diff_pixels_vs_frame0), not adjacent-transition counts; the original also quoted adjacent colour-change counts for the delivered set (4/6/6/4/0) without labelling the metric.",
+      "corrected_finding": "Two metrics, recomputed from the actual pixels and kept distinct. (a) Alpha-mask XOR vs frame 0 (baseline): raw [0,27,63,12,0]; corrected [0,0,0,0,0]. (b) Alpha-mask XOR per adjacent transition 0->1,1->2,2->3,3->4,4->0: raw [27,38,55,12,0]; corrected [0,0,0,0,0]. (c) Changed-pixel counts including colour (RGBA, transparent normalised) vs frame 0: raw [0,42,77,14,0]; corrected [0,4,10,4,0]. (d) RGBA changed per adjacent transition: raw [42,52,69,14,0]; corrected [4,6,6,4,0]. So the original 27/63/12 figures were correct as baseline alpha differences; the adjacent alpha differences for the raw set are 27/38/55/12/0 and should be used for transition statements. The delivered set has zero silhouette change under both metrics and only cyan<->navy colour changes (4/6/6/4 per transition, 0 across the wrap). Conclusions are unchanged.",
+      "evidence": [
+        {"path": "work/knowledge-decisions/scratch/contact-mask-raw-returned.json", "sha256": "5ab27646775fef9047ba82bfbc44cefff20c0c12ac8ed17e70f79b9758a7865c"},
+        {"path": "work/knowledge-decisions/scratch/contact-mask-delivered.json", "sha256": "e2b4b3072319e52c66a48ed24d2d08fe2d151f4fdbf86260faf6b6d33a026f89"},
+        {"path": "work/knowledge-decisions/scratch/contact-mask.py", "sha256": "e115291c9d881c013a1ad4d8d04748e7a3faeabd989b51876d7c2c1742309f91"},
+        {"path": "work/knowledge-decisions/ops/10-source-anchors-deep-1552-1573.json", "sha256": "f8f55a0235379e2efec213ac1f7cb2938803fece97cd3d9f740b0f43ba09c53c"},
+        {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"}
+      ]
+    },
+    {
+      "id": "human_acceptance_boundary",
+      "original_scope": "SPECIALIST-RESULT.json next_action: 'The remaining acceptance step is a human review of the corrected east-idle in continuous playback ...'; methods[animation-anchors].next_action: 'a continuous-playback human review of R2/R3 remains the open acceptance step'; methods[silhouette-readability].next_action: 'Human review ... is the remaining readability/acceptance step'. That wording framed human review as the next development gate.",
+      "corrected_finding": "Accepted CF-09 development state stays delivered as it is. Human acceptance is a separate, unrecorded matter; it is not the next development gate and is not a reason to withhold or condition this decision, and this addendum requests no approval and creates no acceptance. Useful continuation: retain the existing corrected assets (east-0..4 hashes above) and the authored adapter (src/animation.ts, 06970e83...) unchanged; the sprite-animation-v1 browser destination already has its own retained import/timing/contact/sampling/loop evidence (corrected-capture-01 and corrected-check-01). Any future destination or engine is qualified only by its own actual import, timing, contact, sampling and loop observations against the same assets and durations.",
+      "evidence": [
+        {"path": "CF-09-ROBOT-IDLE.md", "sha256": "c310753ac2ea2e659446780e313014b015c8a1f4fcacaef6e681a4b8119673ef"},
+        {"path": "work/knowledge-inputs/criteria.json", "sha256": "fe62a8db34bcba598198fd9468b48029d8c7cdda7f1e83fb9daafb6e2175c8f5"},
+        {"path": "work/cf09-production-01/corrected-check-01.json", "sha256": "28b21cc8c1abf48421ccbabf823deacf22bfa27a4c2e56b62fa348493efa1396"},
+        {"path": "work/cf09-production-01/corrected-capture-01/capture.json", "sha256": "cc3be1e722f20ca3fa75c3fc5047676129bdbea412e70a1c717ab67b9010b77a"}
+      ]
+    },
+    {
+      "id": "report_layout",
+      "original_scope": "SPECIALIST-RESULT.json import_decision stored the five frame-start boundaries under boundary_times_ms ([0,800,920,1080,1200,1600]) with boundary_frames as an object, and put the eleven requested sample times under evaluated_times_ms / authored_frame_at; the executed check IDs were under methods[*].proof.executed_check_id rather than a single proof_check_ids map.",
+      "corrected_finding": "Layout clarified below: import_decision.boundary_times_ms is exactly [0,799,800,919,920,1079,1080,1199,1200,1599,1600] and boundary_frames is the ordered list of actual frameAt indices for the authored timing, with the uniform proposal's list alongside; proof_check_ids maps each method to its executed receipt check, explicitly distinct from the methods' proposed POC recipes. No source, proof meaning or decision changes.",
+      "evidence": [
+        {"path": "work/knowledge-decisions/scratch/frame-at-output.json", "sha256": "62e4f9967aff6ae3964fad2306e8121385df9f56ae4678de84de54e85076739f"},
+        {"path": "work/knowledge-decisions/scratch/frame-at.mjs", "sha256": "ddec3ac886d5a5452459befb39b0f39772adaa2d1d9451d685463ae0d13d0494"},
+        {"path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json", "sha256": "8e392d8cfe6a131e0ff68bde0865bffc87a025b03cc1351ff3939a9a79fbc9f6"},
+        {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"},
+        {"path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json", "sha256": "cd6ce2d4fe2ea33cd627d8f8ed78469d84c61f93ec6a851f93431421130b79f4"}
+      ]
+    }
+  ],
+  "import_decision": {
+    "verdict": "retain_authored",
+    "uniform_proposal_rejected": true,
+    "durations_ms": [800, 120, 160, 120, 400],
+    "total_ms": 1600,
+    "boundary_times_ms": [0, 799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600],
+    "boundary_frames": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0],
+    "frame_start_times_ms": [0, 800, 920, 1080, 1200],
+    "interval_semantics": "half-open [start,end) per frame; frameAt applies elapsed % 1600 for the looping clip then `at < duration_ms`",
+    "uniform_proposal_contrast": {
+      "durations_ms": [100, 100, 100, 100, 100],
+      "total_ms": 500,
+      "boundary_times_ms": [0, 799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600],
+      "boundary_frames": [0, 2, 3, 4, 4, 0, 0, 1, 2, 0, 1],
+      "frame_start_times_ms": [0, 100, 200, 300, 400],
+      "times_differing_from_authored": [799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600]
+    },
+    "source_unchanged": {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"}
+  },
+  "proof_check_ids": {
+    "receipt": {"E_ur": "evidence/art-methods/poc-report.json", "E_dg": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294", "E_at": "2026-11-13T20:15:49.136637+00:00"},
+    "animation-anchors": {"executed_check_id": "shading-drift-mask", "proposed_poc_recipe_not_executed": "three 16x16 frames with foot anchor (8,14) and a (9,14) mutant (timeline-fixture)", "receipt_slice": {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"}},
+    "frame-timing": {"executed_check_id": "frame-boundaries", "proposed_poc_recipe_not_executed": "A,B,C at 80/40/120 ms sampled at 0,79,80,119,120,239,240 plus an impact event firing once per loop; only the frame-selection part is in the executed receipt, event dispatch is excluded by its limitation", "receipt_slice": {"path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json", "sha256": "8e392d8cfe6a131e0ff68bde0865bffc87a025b03cc1351ff3939a9a79fbc9f6"}},
+    "silhouette-readability": {"executed_check_id": "key-silhouette-landmarks", "proposed_poc_recipe_not_executed": "16x16 key with mask/colour views on three backgrounds plus a negative example; the receipt reports landmark counts and native/4x views only", "receipt_slice": {"path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json", "sha256": "cd6ce2d4fe2ea33cd627d8f8ed78469d84c61f93ec6a851f93431421130b79f4"}}
+  },
+  "rest_measurements": {
+    "basis": "frames 0 and 4 are byte-identical (71b35089...); visible rest = frame 4 hold + frame 0 hold contiguous across the 4->0 wrap; pulse = frames 1-3",
+    "authored": {"frame0_hold_ms": 800, "frame4_hold_ms": 400, "visible_rest_ms": 1200, "pulse_ms": 400, "loop_ms": 1600, "rest_fraction": 0.75, "pulse_fraction": 0.25},
+    "uniform_proposal": {"frame0_hold_ms": 100, "frame4_hold_ms": 100, "visible_rest_ms": 200, "pulse_ms": 300, "loop_ms": 500, "rest_fraction": 0.4, "pulse_fraction": 0.6}
+  },
+  "mask_measurements": {
+    "metric_definitions": {
+      "alpha_xor": "count of pixels whose opacity (alpha>0) differs between the two frames",
+      "rgba_changed": "count of pixels whose RGBA differs between the two frames, with fully transparent pixels normalised to (0,0,0,0); includes colour-only changes"
+    },
+    "corrected_delivered": {
+      "frames": ["assets/robot-idle/east-0.png", "assets/robot-idle/east-1.png", "assets/robot-idle/east-2.png", "assets/robot-idle/east-3.png", "assets/robot-idle/east-4.png"],
+      "baseline_vs_frame0_alpha_xor": [0, 0, 0, 0, 0],
+      "baseline_vs_frame0_rgba_changed": [0, 4, 10, 4, 0],
+      "adjacent_alpha_xor": {"0->1": 0, "1->2": 0, "2->3": 0, "3->4": 0, "4->0": 0},
+      "adjacent_rgba_changed": {"0->1": 4, "1->2": 6, "2->3": 6, "3->4": 4, "4->0": 0}
+    },
+    "raw_returned": {
+      "frames": ["work/cf09-production-01/returned/east-0.png", "work/cf09-production-01/returned/east-1.png", "work/cf09-production-01/returned/east-2.png", "work/cf09-production-01/returned/east-3.png", "work/cf09-production-01/returned/east-4.png"],
+      "baseline_vs_frame0_alpha_xor": [0, 27, 63, 12, 0],
+      "baseline_vs_frame0_rgba_changed": [0, 42, 77, 14, 0],
+      "adjacent_alpha_xor": {"0->1": 27, "1->2": 38, "2->3": 55, "3->4": 12, "4->0": 0},
+      "adjacent_rgba_changed": {"0->1": 42, "1->2": 52, "2->3": 69, "3->4": 14, "4->0": 0}
+    },
+    "note": "Measurements only; they do not accept artistic quality. The original 27/63/12 figures were baseline alpha XOR values and remain correct under that label."
+  },
+  "production_unchanged": true,
+  "acceptance_created": false,
+  "human_acceptance": "separate, unrecorded",
+  "retrospective_causality_claimed": false,
+  "limitations": [
+    "This addendum is a guided maintainer follow-up answering four named concerns; it is not a fresh unassisted pass and it reuses the first run's retrievals rather than repeating them.",
+    "First-run limitations retained: no continuous live playback watched (stills plus retained tick/sample records); no PixelLab connection, so the provider image identity and duration semantics were not re-queried; the executed POC receipts are offline pixl/poc.py fixtures proving only their own checks; the browser fixture qualifies no other engine and event/audio semantics are untested; the scratch frameAt evaluation re-implements the adapter logic by hand while the retained captures observe the actual adapter; whole-file closure sources were retained as identities, not re-read line by line.",
+    "Output-scope facts about the first run: it wrote only SPECIALIST-RESULT.json, ops/*.json (via result_path) and scratch/* under work/knowledge-decisions/; it wrote nothing to /tmp, the kit, assets, src or .pixl state. One harness-side artifact exists outside the consumer that the specialist did not author deliberately: the Bash tool persisted an oversized directory-listing output to the harness transcript folder under C:/Users/ryanf/.claude/projects/ during the first run. One first-run pixl_context call failed (plar_path misuse) and wrote no file.",
+    "This addendum's calculations ran in memory; the stdout numbers are transcribed here together with the exact input path/sha256 list, so they are re-runnable but not retained as a separate output file.",
+    "This review cannot prove that knowledge retrieval caused CF-09's earlier repair; pixel counts and fixture passes cannot accept artistic quality."
+  ],
+  "next_action": "Retain the existing corrected assets (east-0..4 hashes above) and the authored adapter unchanged; treat the sprite-animation-v1 browser evidence as the qualification for that destination only. Qualify any future destination or engine with its own actual import, timing, contact, sampling and loop observations before use. No human approval is requested and no acceptance is created; human acceptance, M1/M2 and broader M3/M4 remain open and separate."
+}

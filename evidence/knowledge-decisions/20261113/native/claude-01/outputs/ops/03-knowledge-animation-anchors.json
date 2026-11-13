@@ -1,0 +1,48 @@
+{
+  "id": "animation-anchors",
+  "title": "Track contacts and review loop closure",
+  "applies_to": [
+    "walk cycles",
+    "idle loops",
+    "weapon actions"
+  ],
+  "requires": [
+    "Named anchors, ground line and expected contact intervals"
+  ],
+  "procedure": [
+    "Track contact-point coordinates independently from each frame's crop rectangle.",
+    "Use onion-skin or difference views to compare adjacent poses and last-to-first transition.",
+    "Permit displacement where the action demands it; lock only specified contacts."
+  ],
+  "checks": [
+    "Required planted contacts remain fixed through their contact interval.",
+    "The loop boundary obeys the same motion policy as internal transitions."
+  ],
+  "pitfalls": [
+    "A moving root can coexist with a visually planted foot only after world-space compensation.",
+    "A low pixel-difference score does not prove a convincing animation."
+  ],
+  "sources": [
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "start": 476,
+      "end": 500
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "start": 1552,
+      "end": 1573
+    }
+  ],
+  "poc": {
+    "kind": "timeline-fixture",
+    "procedure": [
+      "Create three 16x16 frames with a foot anchor at (8,14), varying only a body highlight.",
+      "Mutate the final frame's anchor to (9,14) and inspect last-to-first displacement."
+    ],
+    "acceptance": [
+      "Original has zero foot displacement on every transition.",
+      "Mutant reports a one-pixel contact jump."
+    ]
+  }
+}

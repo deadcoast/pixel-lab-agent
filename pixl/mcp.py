@@ -111,8 +111,8 @@ TOOLS = [
     ),
     (
         "pixl_context",
-        "Retrieve complete task context (default; fail rather than truncate byte budget), or view=authoring for current contracts, literal criteria, source retrieval links, nominees and pending jobs without proof/history payloads. Authoring is an index, not acceptance.",
-        schema({"path": STR, "focus": STR, "budget": INT, "view": {"enum": ["complete", "authoring"]}, "plar_path": STR, "asset_id": STR}, ["path", "focus"]),
+        "Retrieve complete context (fail rather than truncate byte budget). scope=project (default) reads consumer state; scope=library reads an installed-resource-relative path such as knowledge/library.px, with its complete method/source/proof closure. Library context is read-only knowledge, not project adoption. Project-only view=authoring indexes current contracts, literal criteria, sources, nominees and pending jobs without proof/history payloads; it is not acceptance.",
+        schema({"path": STR, "focus": STR, "budget": INT, "scope": {"enum": ["project", "library"]}, "view": {"enum": ["complete", "authoring"]}, "plar_path": STR, "asset_id": STR}, ["path", "focus"]),
     ),
     (
         "pixl_ready",

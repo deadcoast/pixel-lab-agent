@@ -1,0 +1,51 @@
+"""Retain a finished TM-09 consumer without modifying its inputs or prior evidence."""
+import argparse
+import hashlib
+import json
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def retain(attempt):
+    launch = json.loads((attempt / "launch.json").read_bytes())
+    record = json.loads((attempt / "record.json").read_bytes())
+    continuation = json.loads((attempt / "continuation.json").read_bytes())
+    if continuation["status"] != "finished":
+        raise ValueError("Wait for the native attempt to finish")
+    root = Path(launch["cwd"]).resolve()
+    archive, receipt = attempt / "consumer-final.zip", attempt / "consumer-final-inventory.json"
+    if archive.exists() or receipt.exists():
+        raise ValueError("Preserve prior snapshots; choose a fresh attempt")
+    files = {}
+    with zipfile.ZipFile(archive, "x", zipfile.ZIP_DEFLATED) as output:
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or "__pycache__" in path.parts:
+                continue
+            if path.is_symlink() or not path.resolve().is_relative_to(root):
+                raise ValueError("Snapshot member escapes the consumer")
+            name, data = path.relative_to(root).as_posix(), path.read_bytes()
+            output.writestr(name, data)
+            files[name] = sha(data)
+    current = {p.relative_to(root).as_posix(): sha(p.read_bytes()) for p in root.rglob("*")
+               if p.is_file() and "__pycache__" not in p.parts}
+    result = {"observed_at": datetime.now(UTC).isoformat(), "status": "pass" if current == files else "fail",
+              "archive": archive.name, "sha256": sha(archive.read_bytes()), "bytes": archive.stat().st_size,
+              "files": files, "consumer": str(root), "unchanged_during_snapshot": current == files,
+              "native_returncode": record["returncode"], "script_sha256": sha(Path(__file__).read_bytes()),
+              "scope": "Durable exact consumer bytes only; native and semantic grades remain separate."}
+    with receipt.open("x", encoding="utf-8", newline="\n") as output:
+        output.write(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({"attempt": str(attempt), "status": result["status"], "files": len(files), "bytes": result["bytes"]}))
+    if result["status"] != "pass":
+        raise ValueError("Consumer changed during snapshot; retain this failure")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("attempt", type=Path)
+    retain(parser.parse_args().attempt.resolve())

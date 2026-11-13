@@ -9,6 +9,7 @@ from . import assets, catalog, codec, graph, jobs, store
 from .codec import PixlError
 
 RESULT_EXPORT_TOOLS = {
+    "pixl_sources", "pixl_knowledge", "pixl_source",
     "pixl_context", "pixl_request_review", "pixl_review_context", "pixl_candidate_review",
     "pixl_family", "pixl_family_snapshot", "pixl_plar_handoff", "pixl_destination_import", "pixl_consumer_execute",
 }
@@ -430,10 +431,20 @@ def _call(name, args, root):
     if name == "pixl_validate":
         return inspect_document(path("path"), root)
     if name in ("pixl_context", "pixl_ready", "pixl_impact"):
+        context_root = root
+        context_path = None
         if name == "pixl_context":
+            scope = args.get("scope", "project")
+            if scope not in ("project", "library"):
+                raise PixlError("context_scope", scope)
             view = args.get("view", "complete")
             if view not in ("complete", "authoring"):
                 raise PixlError("context_view", view)
+            if scope == "library":
+                if view != "complete" or args.get("plar_path") is not None or args.get("asset_id") is not None:
+                    raise PixlError("context_scope", "library scope supports complete context only; authoring and PLAR selections belong to the project")
+                context_root = resource_root()
+                context_path = graph.confined(context_root, args["path"])
             if view == "authoring":
                 from .authoring_context import report
 
@@ -442,20 +453,23 @@ def _call(name, args, root):
                 return report(path("path"), args["focus"], root, args.get("plar_path"), args.get("asset_id"))
             if args.get("plar_path") is not None or args.get("asset_id") is not None:
                 raise PixlError("context_view", "selection arguments require view=authoring")
-        doc = load_document(path("path"))
-        graph.validate(doc, root)
+        doc = load_document(context_path if context_path is not None else path("path"))
+        graph.validate(doc, context_root)
         if name == "pixl_ready":
             return {"ready": workflow(path("path"), root)["ready"] if doc.format == 2 else graph.ready(doc), "hash": codec.digest(doc)}
         if name == "pixl_impact":
             return {"affected": graph.impact(doc, args["id"])}
         packet = graph.context(doc, args["focus"], args.get("budget"))
         wire = codec.encode(packet)
-        return {
+        result = {
             "wire": wire.decode("utf-8"),
             "bytes": len(wire),
             "hash": codec.digest(doc),
             "revision": doc.revision,
         }
+        if scope == "library":
+            result.update(scope="library", root=str(context_root))
+        return result
     if name == "pixl_init":
         return store.initialize(
             path("store"), root=root, name=args.get("name", "PIXL project")

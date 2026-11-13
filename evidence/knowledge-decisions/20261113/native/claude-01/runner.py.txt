@@ -1,0 +1,461 @@
+"""TM-09: fresh knowledge-supported import decisions over retained actual art.
+
+The copied CF-09 outcome stays immutable. These trials qualify current retrieval,
+applicability and a useful cold-resume decision; they do not re-credit the old art
+or establish that retrieval caused its historical correction.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import shutil
+import stat
+import tomllib
+import zipfile
+from pathlib import Path, PurePosixPath
+
+from evaluations import readiness_case
+from evaluations.grade_caller_result import bind_exports, mcp_attempts
+from evaluations.grade_domain_consumers import (
+    child_identity,
+    claude_async_completion,
+    completed_image_views,
+)
+from evaluations.grade_integration_change import complete_file_proof, operation_proof
+from evaluations.grade_named_codex_role import own_rows, rows
+from evaluations.grade_plar_coverage import claude_completion, native_read_proof
+from evaluations.grade_provider_recovery import reference, verified_journals
+from evaluations.grade_readiness import (
+    claude_loading_proof,
+    codex_role_proof,
+    native_calls,
+    semantic_result,
+)
+from evaluations.host_trials import inventory, sha, write_json
+from evaluations.native_trial_records import reference as absolute_reference
+from evaluations.native_trial_records import verify_inputs
+from evaluations.request_review_trials import ROOT, run
+from pixl import codec, graph
+
+WORK = "work/knowledge-decisions"
+INPUTS = "work/knowledge-inputs"
+ART = ROOT / "evidence/domain-art-revision/20261112/production-01"
+METHODS = ("animation-anchors", "frame-timing", "silhouette-readability")
+# These publish production state, adoption, reviews or retained production data.
+# Other local reads are valid cold-resume work, not a hidden tool-count restriction.
+MUTATING_TOOLS = {
+    "pixl_init", "pixl_intake", "pixl_commit", "pixl_retain_library",
+    "pixl_candidate_review", "pixl_inspection_prepare", "pixl_inspection_review",
+    "pixl_production_plan", "pixl_stage_prepare", "pixl_task_complete",
+    "pixl_plar_save", "pixl_plar_prepare", "pixl_plar_handoff", "pixl_family_snapshot",
+    "pixl_job_prepare", "pixl_job_dispatch", "pixl_job_observe", "pixl_job_import",
+}
+TIMES = [0, 799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600]
+VIEWS = [f"{INPUTS}/{kind}/inspection-light-{scale}.png" for kind in ("returned", "corrected-02") for scale in ("1x", "8x")]
+VIEWS += [f"work/cf09-production-01/{phase}-capture-01/live-east-idle-{scale}x-2.png"
+          for phase in ("raw", "corrected") for scale in (1, 3)]
+
+
+def read(path):
+    return json.loads(Path(path).read_bytes())
+
+
+def verified_archive(archive: Path, receipt: Path) -> dict[str, bytes]:
+    """Validate the complete frozen archive before publishing any project bytes."""
+    expected = read(receipt)
+    if sha(archive) != expected["sha256"]:
+        raise ValueError("Retained CF-09 archive identity changed")
+    with zipfile.ZipFile(archive) as source:
+        names = source.namelist()
+        if len(names) != len(set(names)) or set(names) != set(expected["files"]):
+            raise ValueError("Archive member set differs from retained inventory")
+        result = {}
+        for item in source.infolist():
+            name = PurePosixPath(item.filename)
+            if (name.is_absolute() or ".." in name.parts or "\\" in item.filename
+                    or ":" in item.filename or stat.S_ISLNK(item.external_attr >> 16)):
+                raise ValueError("Unsafe archive member")
+            data = source.read(item)
+            if hashlib.sha256(data).hexdigest() != expected["files"][item.filename]:
+                raise ValueError("Archive member identity changed")
+            result[item.filename] = data
+        return result
+
+
+def replace_location(value, before: Path, after: Path):
+    if isinstance(value, dict):
+        return {key: replace_location(item, before, after) for key, item in value.items()}
+    if isinstance(value, list):
+        return [replace_location(item, before, after) for item in value]
+    if isinstance(value, str):
+        for old, new in ((str(before).replace("\\", "\\\\"), str(after).replace("\\", "\\\\")),
+                         (str(before), str(after)), (before.as_posix(), after.as_posix())):
+            value = value.replace(old, new)
+    return value
+
+
+def relocate_kit(root: Path, destination: Path) -> Path:
+    old, kit = (root / readiness_case.KIT).resolve(), (destination / "installed pixl").resolve()
+    if old.parent != root.resolve() or kit.parent != destination.resolve() or kit.exists() or kit.is_relative_to(root.resolve()):
+        raise ValueError("Expected fresh kit outside the consumer")
+    # Both absolute endpoints are verified owned preparation paths before moving.
+    shutil.move(str(old), str(kit))
+    for name in ("launch.json", "identity.json", "mcp.json"):
+        path = destination / name
+        if path.exists():
+            write_json(path, replace_location(read(path), old, kit))
+    for path in [root / ".codex/agents/pixl.toml", *root.glob(".agents/skills/*/SKILL.md")]:
+        if path.is_file():
+            path.write_text(replace_location(path.read_text(encoding="utf-8"), old, kit), encoding="utf-8")
+    return kit
+
+
+def declaration(root: Path) -> dict:
+    text = (root / "src/animation.ts").read_text(encoding="utf-8")
+    prefix = "export const animation = "
+    at = text.index(prefix) + len(prefix)
+    value, _ = json.JSONDecoder().raw_decode(text[at:])
+    return value
+
+
+def frame_at(durations, time):
+    at = max(time, 0) % sum(durations)
+    for index, duration in enumerate(durations):
+        if at < duration:
+            return index
+        at -= duration
+    raise ValueError("Invalid timeline")
+
+
+def instructions(root: Path, kit: Path, host: str) -> str:
+    role = "pixl" if host == "codex" else "pixl:pixl"
+    return f"""# TM-09: decide how to resume/import the actual delivered idle
+
+This is a NEW read-only decision over retained CF-09 art, not a new art revision.
+Use the actual named `{role}` specialist (Codex: agent_type="pixl", fork_turns="none")
+and wait for its completion. Installed kit: `{kit.as_posix()}`. It is deliberately
+outside consumer `{root.as_posix()}`. Only local PIXL MCP is configured.
+Keep every input, art file, source, production record and kit unchanged. Write only
+under `{WORK}`. No provider calls, installation, credentials/global/memory changes,
+state acceptance or repainting. Human acceptance and M1/M2/broader M3/M4 stay open.
+
+Specialist reads the complete installed skills/pixl/SKILL.md,
+resources/agent/PROFILE.md and skills/pixl/references/knowledge.md, then
+CF-09-ROBOT-IDLE.md, src/animation.ts, {INPUTS}/IMPORT-PROPOSAL.json,
+{INPUTS}/provider-inspect.json, {INPUTS}/criteria.json, and the raw/corrected capture/check files under
+work/cf09-production-01. The proposal is an unadopted import shortcut, not an owner
+requirement: should the retained provider preview's uniform100ms timing replace
+the project's authored sequence? Also decide how to check fixed contact without
+treating equal pivots as proof, and whether CSS blur/translation or source-example
+durations transfer to this robot. Defer unsupported event/audio/other-engine claims.
+
+Use actual MCP pixl_sources, pixl_knowledge (index and all three methods:
+{', '.join(METHODS)}), pixl_context with scope="library",
+path="knowledge/library.px", focus="k.<method>", and complete dependency closure.
+Retrieve every cited method.sources range using pixl_source scope="library" with
+the discovered source hash. Read the actual executed POC entries from the context
+E.ur receipt (matching E.dg) using exact source slices too. The method's proposed
+poc recipe is not necessarily the executed receipt. Save each actual operation
+through its result_path under {WORK}; retain full returned data, not transcription.
+Use the explicit library-context MCP route; do not copy the library into the
+consumer or replace that call with CLI/shell parsing. Tool schema discovery and
+small read-only calculations are allowed. Do not omit dependency closure for budget.
+
+View these exact actual PNGs through an image tool (not path listings):
+{chr(10).join('- '+name for name in VIEWS)}
+The native/light views cover every raw/final frame; actual1x/3x destination samples
+show frame2 in context. Retained capture timing establishes recorded playback;
+viewing its stills does not mean continuous motion was watched live in this trial.
+
+Write {WORK}/SPECIALIST-RESULT.json containing:
+- operations: list of {{tool,arguments,result:{{path,sha256}}}} for every saved MCP result;
+- methods: one row per unprefixed method ID (for example animation-anchors), with
+  method, question, applicability (holds/unknown/
+  unsuitable facts), disposition (support/adapt/reject/defer), decision, authority,
+  proof (executed check_id and limits), evidence refs, next_action;
+- import_decision: verdict (retain_authored, reject_uniform or adopt_uniform),
+  durations_ms, total_ms, boundary_times_ms,
+  boundary_frames. Evaluate times {json.dumps(TIMES)} against the actual adapter.
+  Contrast the proposed uniform timeline; do not change the authored source;
+- transfer_decisions: rows for provider_uniform_timing, css_blur_translation,
+  source_example_durations, event_audio_engine, each with id (that exact name),
+  disposition (support/adapt/reject/defer) and reason;
+- authority_notes distinguishing explicit assignment choices, source suggestions,
+  actual observations and specialist construction choices. Light-background
+  inspection originated as expert curation and is now explicitly required by this
+  assignment; neither fact makes the library source prescribe that diagnostic.
+- viewed_images exact path/sha refs, production_unchanged=true,
+  acceptance_created=false, retrospective_causality_claimed=false, limitations,
+  and next_action. State that this new review cannot prove retrieval caused CF09's
+  earlier repair. Pixel counts and fixture passes cannot accept artistic quality.
+
+Caller independently reads the COMPLETE specialist report, all saved operation
+results, the actual assignment/adapter/proposal, actual POC receipt entries and
+capture checks. View the same required PNGs. Compare exact source bytes/hash/ranges,
+method conditions, context closure and executed POC limits with this fresh decision.
+Write {WORK}/CALLER-RESULT.json with native_child (actual id/role), specialist_result
+ref, operations (same exact result refs), viewed_images, independent_checks,
+import_decision, transfer_decisions, authority_notes, production_unchanged=true,
+acceptance_created=false, retrospective_causality_claimed=false, limitations and
+next_action. Do not change accepted CF09 state or rerun generation to make counts.
+Every ref is {{"path":"consumer-relative/path","sha256":"actual digest"}}.
+"""
+
+
+def prepare(destination: Path, host: str, python: Path, *, package=None, consumer=None) -> Path:
+    archive, receipt = ART / "consumer-final.zip", ART / "consumer-final-inventory.json"
+    files = verified_archive(archive, receipt)
+    if destination.exists():
+        raise ValueError("Use a fresh attempt")
+    root = readiness_case.prepare(destination, host, "clean", python.resolve(), package=package, consumer=consumer)
+    destination = destination.resolve()
+    kit = relocate_kit(root, destination)
+    for name, data in files.items():
+        path = (root / name).resolve()
+        if not path.is_relative_to(root):
+            raise ValueError("Archive path escaped prepared consumer")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    for kind in ("returned", "corrected-02"):
+        for scale in ("1x", "8x"):
+            path = root / INPUTS / kind / f"inspection-light-{scale}.png"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ART / kind / path.name, path)
+    shutil.copyfile(ART / "workbench-inspect.json", root / INPUTS / "provider-inspect.json")
+    shutil.copyfile(ROOT / "evidence/knowledge-decisions/criteria.json", root / INPUTS / "criteria.json")
+    write_json(root / INPUTS / "IMPORT-PROPOSAL.json", {
+        "status": "unadopted evaluation proposal; not an owner requirement",
+        "question": "Should a cold import replace authored timing with provider-preview metadata?",
+        "proposal": {"durations_ms": [100] * 5, "total_ms": 500},
+        "basis": "Actual retained workbench inspection reports uniform100ms preview durations",
+        "provider_observation": {"path": f"{INPUTS}/provider-inspect.json", "sha256": sha(root / INPUTS / "provider-inspect.json")},
+        "scope": "Read-only support/reject/defer decision; no source/art/production mutation"})
+    guidance = f"Explicit TM-09 native evaluation. Complete KNOWLEDGE-DECISIONS.md. Consumer {root.as_posix()}; installed kit {kit.as_posix()}. Keep inputs unchanged; write only {WORK}. No provider or credential access."
+    for name in ("AGENTS.md", "SESSION.md"):
+        (root / name).write_text(guidance + "\n", encoding="utf-8")
+    (root / "KNOWLEDGE-DECISIONS.md").write_text(instructions(root, kit, host), encoding="utf-8")
+    (root / WORK).mkdir(parents=True, exist_ok=False)
+    (destination / "prompt.txt").write_text(guidance + "\nUse the actual named specialist and complete KNOWLEDGE-DECISIONS.md.\n", encoding="utf-8")
+    launch = read(destination / "launch.json")
+    launch.update(case="knowledge-decisions", artifact_roots=[WORK])
+    write_json(destination / "launch.json", launch)
+    identity = read(destination / "identity.json")
+    identity.update(case="knowledge-decisions", kit=str(kit), package_files=inventory(kit),
+                    inputs=inventory(root, ("__pycache__",)), baseline_production=inventory(root / ".pixl"),
+                    actual_art_archive=absolute_reference(archive), actual_art_inventory=absolute_reference(receipt),
+                    brief=absolute_reference(root / "CF-09-ROBOT-IDLE.md"), runner=absolute_reference(Path(__file__)),
+                    isolation={**identity["isolation"], "library_outside_consumer": True})
+    if (root / ".codex/agents/pixl.toml").is_file():
+        identity["configured_role"] = absolute_reference(root / ".codex/agents/pixl.toml")
+    write_json(destination / "identity.json", identity)
+    (destination / "runner.py.txt").rename(destination / "setup-runner.py.txt")
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+    return root
+
+
+def retain(destination: Path):
+    identity, launch = read(destination / "identity.json"), read(destination / "launch.json")
+    root = Path(launch["cwd"])
+    if (destination / "preservation.json").exists() or (destination / "outputs").exists():
+        raise ValueError("Retain a fresh continuation instead of replacing evidence")
+    if (root / WORK).is_dir():
+        shutil.copytree(root / WORK, destination / "outputs")
+    current = inventory(root, ("__pycache__",))
+    write_json(destination / "preservation.json", {
+        "changed_or_missing": [n for n, d in identity["inputs"].items() if current.get(n) != d],
+        "unexpected_additions": [n for n in current if n not in identity["inputs"] and not n.startswith(WORK + "/")],
+        "production_unchanged": inventory(root / ".pixl") == identity["baseline_production"],
+        "kit_unchanged": inventory(Path(identity["kit"]), ("__pycache__",)) == identity["package_files"]})
+
+
+def native(attempt, root, kit, launch, continuation, caller):
+    journals = verified_journals(attempt, continuation)
+    record = read(attempt / "record.json")
+    stdout = rows(reference(attempt, {"path": "stdout.jsonl", "sha256": record["recorded_files"]["stdout.jsonl"]}))
+    selected, session = child_identity(caller.get("native_child"), launch["host"]), continuation["session_id"]
+    if not selected:
+        raise ValueError("Missing or contradictory actual named child")
+    if launch["host"] == "codex":
+        parent = next((j for j in journals if j and j[0].get("payload", {}).get("id") == session), [])
+        role = tomllib.loads((root / ".codex/agents/pixl.toml").read_text(encoding="utf-8"))["developer_instructions"]
+        proof = codex_role_proof(journals, session, selected, role)
+        ids = {c["id"] for c in proof["selected_children"]}
+        children = [[j[0], *own_rows(j, session, cold=True)] for j in journals if j and j[0].get("payload", {}).get("id") in ids]
+        named = proof["loaded"] and proof["completed"]
+        loading = {p: {"loaded": bool(complete_file_proof(children, kit / p))} for p in ("skills/pixl/SKILL.md", "resources/agent/PROFILE.md")}
+        proof = {k: v for k, v in proof.items() if k != "child_text"}
+    else:
+        parent = [r for r in stdout if not r.get("parent_tool_use_id") and not r.get("agent_id")]
+        child_path = reference(attempt, continuation["retained_transcripts"][selected])
+        children = [j for j in journals if j and Path(j[0]["file"]) == child_path]
+        proof = claude_completion(parent, selected)
+        if not proof:
+            parent_journal = rows(reference(attempt, continuation["retained_transcripts"]["parent"]))
+            proof = claude_async_completion(stdout, parent_journal, children, selected, session)
+        named = bool(proof) and any(c.get("id", c.get("agent_id")) == selected and c.get("role") == "pixl:pixl" for c in continuation.get("children", []))
+        loading = claude_loading_proof(children, kit)
+    return {"parent": [parent], "children": children, "journals": journals + [stdout],
+            "named": named, "named_proof": proof, "loading": loading, "child": selected, "session": session}
+
+
+def decision_checks(report, root):
+    """Check concrete card values; prose authority/causality needs semantic review."""
+    durations = [f["duration_ms"] for f in declaration(root)["clips"][0]["frames"]]
+    card = report.get("import_decision", {})
+    transfer = {row.get("id"): row for row in report.get("transfer_decisions", [])}
+    return {
+        "authored_timeline_preserved": card.get("verdict") in ("retain_authored", "reject_uniform") and card.get("durations_ms") == durations and card.get("total_ms") == sum(durations),
+        "actual_boundaries": card.get("boundary_times_ms") == TIMES and card.get("boundary_frames") == [frame_at(durations, t) for t in TIMES],
+        "explicit_transfer_dispositions": all(transfer.get(k, {}).get("disposition") == v and transfer[k].get("reason") for k, v in {
+            "provider_uniform_timing": "reject", "css_blur_translation": "reject", "source_example_durations": "reject", "event_audio_engine": "defer"}.items()),
+        "scoped_report_limits": report.get("production_unchanged") is True and report.get("acceptance_created") is False and report.get("retrospective_causality_claimed") is False and bool(report.get("limitations")) and bool(report.get("next_action")) and bool(report.get("authority_notes")),
+    }
+
+
+def prohibited_attempts(journals):
+    """Permit legitimate local inspection; retain actual publication/provider attempts."""
+    return [call for call in mcp_attempts(journals)
+            if str(call["server"]).replace("-", "_") != "pixl_local"
+            or call["tool"] in MUTATING_TOOLS]
+
+
+def _grade(attempt: Path):
+    launch, identity, continuation, record = [read(attempt / name) for name in ("launch.json", "identity.json", "continuation.json", "record.json")]
+    for name in ("launch.json", "identity.json", "continuation.json", "stdout.jsonl"):
+        reference(attempt, {"path": name, "sha256": record["recorded_files"][name]})
+    reference(attempt, record["continuation"])
+    verify_inputs(continuation)
+    root, kit = Path(launch["cwd"]).resolve(), Path(identity["kit"]).resolve()
+    caller = read(root / WORK / "CALLER-RESULT.json")
+    specialist_path = reference(root, caller["specialist_result"])
+    specialist = read(specialist_path)
+    traces = native(attempt, root, kit, launch, continuation, caller)
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+    current = inventory(root, ("__pycache__",))
+    drift = [n for n, d in identity["inputs"].items() if current.get(n) != d]
+    additions = [n for n in current if n not in identity["inputs"] and not n.startswith(WORK + "/")]
+    check("exact_inputs_production_preserved", not drift and not additions and inventory(root / ".pixl") == identity["baseline_production"], {"drift": drift, "unexpected": additions})
+    check("frozen_kit_outside_consumer", not kit.is_relative_to(root) and not (root / readiness_case.KIT).exists() and inventory(kit, ("__pycache__",)) == identity["package_files"])
+    check("consumer_outside_repository", not root.is_relative_to(ROOT) and not ROOT.is_relative_to(root))
+    check("actual_named_child_completed", traces["named"], traces["named_proof"])
+    check("complete_profile_and_skill_loaded", all(x["loaded"] for x in traces["loading"].values()), traces["loading"])
+    guide = kit / "skills/pixl/references/knowledge.md"
+    check("knowledge_workflow_loaded", bool(complete_file_proof(traces["children"], guide) or native_read_proof(traces["children"], guide)))
+    methods = {m["id"]: m for m in read(kit / "resources/knowledge/pixel-art.json")["methods"] if m["id"] in METHODS}
+    library = codec.parse((kit / "resources/knowledge/library.px").read_bytes())
+    calls = bind_exports([{**c, "server": "pixl_local"} for c in native_calls(traces["children"])], root)
+    operations = specialist["operations"]
+    check("caller_preserves_exact_operation_refs", [(x.get("tool"), x.get("result")) for x in caller.get("operations", [])]
+          == [(x.get("tool"), x.get("result")) for x in operations])
+    check("specialist_exact_assigned_report", specialist_path == root / WORK / "SPECIALIST-RESULT.json")
+    source_slices, knowledge_seen, context_seen, proof_text = set(), set(), set(), ""
+    source_inventory_seen = index_seen = False
+    operation_valid = True
+    for operation in operations:
+        ref, tool, arguments = operation["result"], operation["tool"], operation["arguments"]
+        saved = semantic_result(read(reference(root, ref)))
+        proof = operation_proof(traces["children"], root, tool, ref)
+        matched = [c for c in calls if c["tool"] == tool and c["success"] and all(c["arguments"].get(k) == v for k, v in arguments.items())]
+        operation_valid &= bool(proof and matched)
+        for actor, journals in (("caller", traces["parent"]),):
+            check(actor + ":read:" + ref["path"], bool(complete_file_proof(journals, reference(root, ref)) or native_read_proof(journals, reference(root, ref))))
+        if tool == "pixl_knowledge" and arguments.get("method") in methods:
+            method = arguments["method"]
+            operation_valid &= saved == methods[method]
+            knowledge_seen.add(method)
+        elif tool == "pixl_knowledge" and not arguments.get("method"):
+            index_seen = {m["id"] for m in saved.get("methods", [])} >= set(METHODS)
+        elif tool == "pixl_sources":
+            source_inventory_seen = saved.get("files_verified") is True and Path(saved.get("root", "")).resolve() == (kit / "resources").resolve()
+        elif tool == "pixl_context":
+            method = arguments.get("focus", "").removeprefix("k.")
+            if method in methods:
+                expected = codec.encode(graph.context(library, "k." + method)).decode("utf-8")
+                operation_valid &= arguments.get("scope") == "library" and arguments.get("path") == "knowledge/library.px" and saved.get("wire") == expected and saved.get("scope") == "library"
+                context_seen.add(method)
+        elif tool == "pixl_source" and arguments.get("scope") == "library":
+            source = (kit / "resources" / arguments["path"]).resolve()
+            if not source.is_relative_to((kit / "resources").resolve()):
+                raise ValueError("Escaping library source reference")
+            start, end = arguments["start"], arguments["end"]
+            text = "".join(source.read_bytes().decode("utf-8-sig").splitlines(keepends=True)[start - 1:end])
+            operation_valid &= saved.get("text") == text and saved.get("sha256") == sha(source) == arguments["expect"] and saved.get("start") == start and saved.get("end") == end
+            source_slices.add((arguments["path"], start, end))
+            if arguments["path"] == "evidence/art-methods/poc-report.json":
+                proof_text += text
+    check("all_operations_bound_to_actual_successful_mcp_results", operation_valid and bool(operations))
+    check("installed_source_inventory_and_method_index_observed", source_inventory_seen and index_seen)
+    check("all_three_current_method_definitions", knowledge_seen == set(METHODS))
+    check("all_three_complete_library_mcp_contexts", context_seen == set(METHODS))
+    citations = {(s["path"], s["start"], s["end"]) for m in methods.values() for s in m["sources"]}
+    check("every_cited_source_range_retrieved", all(any(p == path and a <= start and b >= end for p, a, b in source_slices) for path, start, end in citations))
+    poc = read(kit / "resources/evidence/art-methods/poc-report.json")
+    used = [row for row in poc["checks"] if set(row.get("method_ids", [])) & set(METHODS)]
+    check("actual_executed_poc_rows_retrieved", all(row["id"] in proof_text and row["limitations"] in proof_text for row in used))
+    method_rows = {row["method"]: row for row in specialist.get("methods", [])}
+    check("decision_linked_method_records", len(specialist.get("methods", [])) == len(METHODS) and set(method_rows) == set(METHODS) and all(all(row.get(k) for k in ("question", "applicability", "disposition", "decision", "authority", "proof", "evidence", "next_action")) for row in method_rows.values()))
+    check("executed_proof_identity_not_proposed_recipe", all(method_rows.get(method, {}).get("proof", {}).get("check_id") in {
+        row["id"] for row in used if method in row["method_ids"]} for method in METHODS))
+    for actor, journals, report in (("specialist", traces["children"], specialist), ("caller", traces["parent"], caller)):
+        for name, value in decision_checks(report, root).items():
+            check(actor + ":" + name, value)
+        views = completed_image_views(journals, root)
+        named = {sha(reference(root, ref)) for ref in report.get("viewed_images", [])}
+        check(actor + ":actual_images_viewed", all(sha(root / name) in set(views) & named for name in VIEWS))
+        check(actor + ":original_assignment_adapter_proposal_read", all(complete_file_proof(journals, root / name) or native_read_proof(journals, root / name) for name in ("CF-09-ROBOT-IDLE.md", "src/animation.ts", f"{INPUTS}/IMPORT-PROPOSAL.json")))
+        report_path = root / WORK / ("SPECIALIST-RESULT.json" if actor == "specialist" else "CALLER-RESULT.json")
+        check(actor + ":report_retained", sha(report_path) == sha(attempt / "outputs" / report_path.name))
+    check("caller_read_specialist_result", bool(complete_file_proof(traces["parent"], specialist_path) or native_read_proof(traces["parent"], specialist_path)))
+    prohibited = prohibited_attempts(traces["journals"])
+    check("no_recorded_provider_or_mutation_tool", not prohibited, prohibited)
+    check("native_attempt_finished_naturally", continuation.get("status") == "finished" and continuation.get("returncode") == record.get("returncode") == 0 and continuation.get("interruption_reason") is None)
+    return {"version": 1, "status": "pass" if all(c["pass"] for c in checks) else "fail", "passed": sum(c["pass"] for c in checks), "total": len(checks), "checks": checks,
+            "host": launch["host"], "native_child": traces["child"], "grader_sha256": sha(Path(__file__)),
+            "scope": "Native retrieval, exact source/context/proof identities, unchanged real-art inputs and concrete cold-import decision values. Semantic authority and usefulness require separate review; no new art, historical causality or human acceptance."}
+
+
+def grade(attempt: Path):
+    try:
+        return _grade(Path(attempt).resolve())
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError, StopIteration, codec.PixlError, zipfile.BadZipFile) as error:
+        return {"version": 1, "status": "fail", "passed": 0, "total": 1,
+                "checks": [{"check": "required_evidence_readable", "pass": False,
+                            "evidence": f"{type(error).__name__}: {error}"}]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    actions = parser.add_subparsers(dest="action", required=True)
+    prep = actions.add_parser("prepare")
+    prep.add_argument("destination", type=Path)
+    prep.add_argument("--host", required=True, choices=("codex", "claude"))
+    prep.add_argument("--python", required=True, type=Path)
+    prep.add_argument("--package", type=Path)
+    prep.add_argument("--consumer", type=Path)
+    for action in ("run", "retain", "grade"):
+        item = actions.add_parser(action)
+        item.add_argument("destination", type=Path)
+        if action == "run":
+            item.add_argument("--timeout", type=float)
+        if action == "grade":
+            item.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    if args.action == "prepare":
+        print(prepare(args.destination, args.host, args.python, package=args.package, consumer=args.consumer))
+    elif args.action == "run":
+        run(args.destination, timeout=args.timeout)
+    elif args.action == "retain":
+        retain(args.destination)
+    else:
+        if args.out.exists():
+            raise ValueError("Preserve prior grades; choose a fresh output")
+        result = grade(args.destination)
+        write_json(args.out, result)
+        print(json.dumps({k: result[k] for k in ("status", "passed", "total")}))
+
+
+if __name__ == "__main__":
+    main()

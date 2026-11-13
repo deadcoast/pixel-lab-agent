@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "assignment": "TM-09: new read-only decision over retained CF-09 art; no art revision, provider call, state acceptance or source change",
+  "written_at": "2026-11-13",
+  "specialist_identity": {
+    "role": "PIXL pixel-art production specialist (profile resources/agent/PROFILE.md of the installed kit)",
+    "invoked_as": "pixl:pixl agent (Claude Agent SDK subagent, subagent_type pixl:pixl; skill pixl:pixl loaded from the installed kit)",
+    "model_as_observed": "claude-fable-5-1 (Fable 5.1), as reported by the harness environment; not independently verifiable from inside the session",
+    "host": "Claude Code harness on Windows 11; only the local pixl-local MCP server configured; no PixelLab provider connection or credentials",
+    "kit_root": "C:/github/pixel-lab-agent/evidence/knowledge-decisions/20261113/native/claude-01/installed pixl",
+    "consumer_root": "C:/Users/ryanf/AppData/Local/Temp/pixl readiness claude clean l_sz01tb/consumer"
+  },
+  "read_inputs": [
+    {"path": "KNOWLEDGE-DECISIONS.md", "note": "assignment; read completely"},
+    {"path": "CF-09-ROBOT-IDLE.md", "sha256": "c310753ac2ea2e659446780e313014b015c8a1f4fcacaef6e681a4b8119673ef"},
+    {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"},
+    {"path": "work/knowledge-inputs/IMPORT-PROPOSAL.json", "sha256": "ffdf777f3f0122f23c7e9c5158ced12228ecf2ac823bd3a4b7635bc2b1d18c66"},
+    {"path": "work/knowledge-inputs/provider-inspect.json", "sha256": "b4a63f0f947de68a9034c6d1c1566dad6761d8219ad8e033e842b65147cfa230"},
+    {"path": "work/knowledge-inputs/criteria.json", "sha256": "fe62a8db34bcba598198fd9468b48029d8c7cdda7f1e83fb9daafb6e2175c8f5"},
+    {"path": "work/cf09-production-01/raw-check-01.json", "sha256": "28b21cc8c1abf48421ccbabf823deacf22bfa27a4c2e56b62fa348493efa1396"},
+    {"path": "work/cf09-production-01/corrected-check-01.json", "sha256": "28b21cc8c1abf48421ccbabf823deacf22bfa27a4c2e56b62fa348493efa1396"},
+    {"path": "work/cf09-production-01/raw-capture-01/capture.json", "sha256": "2f5329d9f98752c0acea3b002b2c021987cf0b5dfb28e0d447917442e3c963d7"},
+    {"path": "work/cf09-production-01/corrected-capture-01/capture.json", "sha256": "cc3be1e722f20ca3fa75c3fc5047676129bdbea412e70a1c717ab67b9010b77a"},
+    {"path": "work/cf09-production-01/08-raw-capture.command.json", "note": "capture.mjs run, returncode 0"},
+    {"path": "work/cf09-production-01/08-raw-capture.stdout.txt", "note": "status complete, cleanup complete"},
+    {"path": "work/cf09-production-01/09-raw-check.command.json", "note": "check.py run, returncode 0"},
+    {"path": "work/cf09-production-01/09-raw-check.stdout.txt", "note": "status pass"},
+    {"path": "work/cf09-production-01/13-corrected-capture.command.json", "note": "capture.mjs run, returncode 0"},
+    {"path": "work/cf09-production-01/13-corrected-capture.stdout.txt", "note": "status complete, cleanup complete"},
+    {"path": "work/cf09-production-01/14-corrected-check.command.json", "note": "check.py run, returncode 0"},
+    {"path": "work/cf09-production-01/14-corrected-check.stdout.txt", "note": "status pass"},
+    {"path": "<kit>/skills/pixl/SKILL.md", "note": "read completely via skill load"},
+    {"path": "<kit>/resources/agent/PROFILE.md", "note": "read completely"},
+    {"path": "<kit>/skills/pixl/references/knowledge.md", "note": "read completely"}
+  ],
+  "operations": [
+    {"tool": "pixl_sources", "arguments": {"result_path": "work/knowledge-decisions/ops/01-sources.json"}, "result": {"path": "work/knowledge-decisions/ops/01-sources.json", "sha256": "caea7272d1f03ca3d3f9f6ab4ec4e7cb989279da3afd69237d849b8c451168f4"}},
+    {"tool": "pixl_knowledge", "arguments": {"result_path": "work/knowledge-decisions/ops/02-knowledge-index.json"}, "result": {"path": "work/knowledge-decisions/ops/02-knowledge-index.json", "sha256": "cc15925a9421e2adfce9445732be5c7389f2439463084be4cc4a29865f6e726f"}},
+    {"tool": "pixl_knowledge", "arguments": {"method": "animation-anchors", "result_path": "work/knowledge-decisions/ops/03-knowledge-animation-anchors.json"}, "result": {"path": "work/knowledge-decisions/ops/03-knowledge-animation-anchors.json", "sha256": "99b9f9ecaad98362a7734af097b8a7646c91c6f202383c23f3e43c5f0af0ddfd"}},
+    {"tool": "pixl_knowledge", "arguments": {"method": "frame-timing", "result_path": "work/knowledge-decisions/ops/04-knowledge-frame-timing.json"}, "result": {"path": "work/knowledge-decisions/ops/04-knowledge-frame-timing.json", "sha256": "8c6e820217bd8eb3cfe867671927ff3db7ec2a3c5a9e5ae5531d49e523a0e0cf"}},
+    {"tool": "pixl_knowledge", "arguments": {"method": "silhouette-readability", "result_path": "work/knowledge-decisions/ops/05-knowledge-silhouette-readability.json"}, "result": {"path": "work/knowledge-decisions/ops/05-knowledge-silhouette-readability.json", "sha256": "84099ec6ecd0c6a7b5642dc1e05e61163253da1f619f3c1bc6610d3fa112c396"}},
+    {"tool": "pixl_context", "arguments": {"scope": "library", "path": "knowledge/library.px", "focus": "k.animation-anchors", "result_path": "work/knowledge-decisions/ops/06b-context-animation-anchors.json"}, "result": {"path": "work/knowledge-decisions/ops/06b-context-animation-anchors.json", "sha256": "dd216f46bcb283450f948b1060dd7ff8cceb7f75182950ee3a66442400d7535e"}, "returned_state_hash": "105e70d2125fbf0dc31a9614e40b682305dfed104ace3c4738d329e4a37edb21", "closure": "complete: K, E, 5 S (2 cited ranges + 3 whole-file), 8 C and 8 X fixture records; 7902 wire bytes, no budget narrowing"},
+    {"tool": "pixl_context", "arguments": {"scope": "library", "path": "knowledge/library.px", "focus": "k.frame-timing", "result_path": "work/knowledge-decisions/ops/07-context-frame-timing.json"}, "result": {"path": "work/knowledge-decisions/ops/07-context-frame-timing.json", "sha256": "1b7ba7fbf29abc61b55b0c764737ff6d6eda1a0a7c52a5dbbc91698f66cc396b"}, "returned_state_hash": "105e70d2125fbf0dc31a9614e40b682305dfed104ace3c4738d329e4a37edb21", "closure": "complete: K, E, 5 S (2 cited ranges + 3 whole-file), 8 C and 8 X fixture records; 7835 wire bytes, no budget narrowing"},
+    {"tool": "pixl_context", "arguments": {"scope": "library", "path": "knowledge/library.px", "focus": "k.silhouette-readability", "result_path": "work/knowledge-decisions/ops/08-context-silhouette-readability.json"}, "result": {"path": "work/knowledge-decisions/ops/08-context-silhouette-readability.json", "sha256": "bb29b0a66c6dc19e49fbed42446c1acec1385e36e8f5ea4c49c56b540730acaa"}, "returned_state_hash": "105e70d2125fbf0dc31a9614e40b682305dfed104ace3c4738d329e4a37edb21", "closure": "complete: K, E, 6 S (3 cited ranges + 3 whole-file), 8 C and 8 X fixture records; 8877 wire bytes, no budget narrowing"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "expect": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "start": 476, "end": 500, "result_path": "work/knowledge-decisions/ops/09-source-anchors-deep-476-500.json"}, "result": {"path": "work/knowledge-decisions/ops/09-source-anchors-deep-476-500.json", "sha256": "5be95e811b972b531e7b4c1d57114a793e15b008909570387946eb9bbd7176d2"}, "cited_by": "animation-anchors (S @s6f9fa2b06515984fcc7d)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "expect": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "start": 1552, "end": 1573, "result_path": "work/knowledge-decisions/ops/10-source-anchors-deep-1552-1573.json"}, "result": {"path": "work/knowledge-decisions/ops/10-source-anchors-deep-1552-1573.json", "sha256": "f8f55a0235379e2efec213ac1f7cb2938803fece97cd3d9f740b0f43ba09c53c"}, "cited_by": "animation-anchors (S @s8682999509ca423faf7b)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "expect": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "start": 869, "end": 905, "result_path": "work/knowledge-decisions/ops/11-source-timing-deep-869-905.json"}, "result": {"path": "work/knowledge-decisions/ops/11-source-timing-deep-869-905.json", "sha256": "5337f4473ed039823ee41d3bea65aad97c8903e825ba53487daab61ee6257354"}, "cited_by": "frame-timing (S @s2b7b40856e5ec960ea14)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-ASSETS.md", "expect": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900", "start": 948, "end": 960, "result_path": "work/knowledge-decisions/ops/12-source-timing-assets-948-960.json"}, "result": {"path": "work/knowledge-decisions/ops/12-source-timing-assets-948-960.json", "sha256": "01569fbe7acd9daaedb0b64d1cce699e2763481752925cd9f3927339e4d17d00"}, "cited_by": "frame-timing (S @sb09f91a3c2434f03bc07)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "expect": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "start": 857, "end": 867, "result_path": "work/knowledge-decisions/ops/13-source-silhouette-deep-857-867.json"}, "result": {"path": "work/knowledge-decisions/ops/13-source-silhouette-deep-857-867.json", "sha256": "7a3a7dcbe1d9bdb2d9da43d4a176f417189261a6ac2c03d4c8aee09bbaa87bf7"}, "cited_by": "silhouette-readability (S @s91009133fa6defac6c1c)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "expect": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "start": 1563, "end": 1573, "result_path": "work/knowledge-decisions/ops/14-source-silhouette-deep-1563-1573.json"}, "result": {"path": "work/knowledge-decisions/ops/14-source-silhouette-deep-1563-1573.json", "sha256": "d710a382559cadd72bbe5abf10a43318360a126397ac378c7f85a865833619f3"}, "cited_by": "silhouette-readability (S @sd2842ec93cd5ec691f7b)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "training/original-docs/PIXEL-ART-ASSETS.md", "expect": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900", "start": 11, "end": 15, "result_path": "work/knowledge-decisions/ops/15-source-silhouette-assets-11-15.json"}, "result": {"path": "work/knowledge-decisions/ops/15-source-silhouette-assets-11-15.json", "sha256": "ab47874b809c2fb4bf703a59ab8c224155b6fc342bcb06b7debebf1b77e703ad"}, "cited_by": "silhouette-readability (S @s2fbbfc61e7b755afc530)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "evidence/art-methods/poc-report.json", "expect": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294", "start": 1, "end": 15, "result_path": "work/knowledge-decisions/ops/16-poc-report-header-1-15.json"}, "result": {"path": "work/knowledge-decisions/ops/16-poc-report-header-1-15.json", "sha256": "b3cd8d07d73c5f326ddde74b634b52cb758b0521768d9cee6f272eab5559fcd9"}, "note": "E.ur receipt header; expect equals E.dg of all three E records; local sha256sum of the kit file matched"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "evidence/art-methods/poc-report.json", "expect": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294", "start": 341, "end": 370, "result_path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json"}, "result": {"path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json", "sha256": "8e392d8cfe6a131e0ff68bde0865bffc87a025b03cc1351ff3939a9a79fbc9f6"}, "note": "executed check frame-boundaries (E.nm 'Bounded reference POC: frame-boundaries' for frame-timing)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "evidence/art-methods/poc-report.json", "expect": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294", "start": 453, "end": 477, "result_path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json"}, "result": {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"}, "note": "executed check shading-drift-mask (E.nm 'Bounded reference POC: shading-drift-mask' for animation-anchors)"},
+    {"tool": "pixl_source", "arguments": {"scope": "library", "path": "evidence/art-methods/poc-report.json", "expect": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294", "start": 1086, "end": 1117, "result_path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json"}, "result": {"path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json", "sha256": "cd6ce2d4fe2ea33cd627d8f8ed78469d84c61f93ec6a851f93431421130b79f4"}, "note": "executed check key-silhouette-landmarks (E.nm 'Bounded reference POC: key-silhouette-landmarks' for silhouette-readability)"}
+  ],
+  "failed_operations": [
+    {"tool": "pixl_context", "arguments": {"path": "<consumer root>", "scope": "library", "plar_path": "knowledge/library.px", "focus": "k.animation-anchors", "result_path": "work/knowledge-decisions/ops/06-context-animation-anchors.json"}, "error": "{\"error\": \"context_scope\", \"detail\": \"context_scope: library scope supports complete context only; authoring and PLAR selections belong to the project\", \"category\": \"unclassified\"}", "cause": "specialist passed the library file through plar_path instead of path; no result file was written", "recovery": "retried with path=knowledge/library.px and fresh result_path 06b-context-animation-anchors.json (saved above)"}
+  ],
+  "unsaved_read_only_operations": [
+    {"tool": "pixl_asset_check", "arguments": {"path": "assets/robot-idle/east-0.png", "alpha": "binary"}, "inline_result": {"sha256": "71b35089965b6457f505d569f4fc89fbcc2521bf188aa43f836dc207c3771fb4", "width": 32, "height": 32, "visible_pixels": 255, "visible_colors": 2, "fractional_alpha_pixels": 0, "opaque_components": 1, "visible_bbox": [11, 3, 22, 28], "visual_quality_verified": false, "engine_import_verified": false}},
+    {"tool": "pixl_asset_check", "arguments": {"path": "assets/robot-idle/east-1.png", "alpha": "binary"}, "inline_result": {"sha256": "4bfaae2a2cc54dc87141ebb3f4b656cf0ca7db71b03a263981ebd185ba6463da", "width": 32, "height": 32, "visible_pixels": 255, "visible_colors": 2, "fractional_alpha_pixels": 0, "opaque_components": 1, "visible_bbox": [11, 3, 22, 28], "visual_quality_verified": false, "engine_import_verified": false}},
+    {"tool": "pixl_asset_check", "arguments": {"path": "assets/robot-idle/east-2.png", "alpha": "binary"}, "inline_result": {"sha256": "982b48b43debde04a2d251603cdd691d92fd951850010e706bdd0f3b19718da1", "width": 32, "height": 32, "visible_pixels": 255, "visible_colors": 2, "fractional_alpha_pixels": 0, "opaque_components": 1, "visible_bbox": [11, 3, 22, 28], "visual_quality_verified": false, "engine_import_verified": false}},
+    {"tool": "shell sha256sum / wc / python -I / node (read-only)", "note": "file digests, POC report line count (1765) and kit-file digest check, capture.json structure extraction and scratch calculations; no kit or consumer file outside work/knowledge-decisions was written"}
+  ],
+  "scratch_artifacts": [
+    {"path": "work/knowledge-decisions/scratch/frame-at.mjs", "sha256": "ddec3ac886d5a5452459befb39b0f39772adaa2d1d9451d685463ae0d13d0494", "note": "re-implementation of the frameAt adapter logic with hand-copied durations; imports nothing from the consumer"},
+    {"path": "work/knowledge-decisions/scratch/frame-at-output.json", "sha256": "62e4f9967aff6ae3964fad2306e8121385df9f56ae4678de84de54e85076739f"},
+    {"path": "work/knowledge-decisions/scratch/contact-mask.py", "sha256": "e115291c9d881c013a1ad4d8d04748e7a3faeabd989b51876d7c2c1742309f91", "note": "pure-stdlib PNG decoder; measures per-frame alpha mask, lowest opaque row/columns and cyan extent"},
+    {"path": "work/knowledge-decisions/scratch/contact-mask-delivered.json", "sha256": "e2b4b3072319e52c66a48ed24d2d08fe2d151f4fdbf86260faf6b6d33a026f89"},
+    {"path": "work/knowledge-decisions/scratch/contact-mask-raw-returned.json", "sha256": "5ab27646775fef9047ba82bfbc44cefff20c0c12ac8ed17e70f79b9758a7865c"},
+    {"path": "work/knowledge-decisions/scratch/capture-playback-extract.json", "sha256": "88a4517f799bb590e086b583e22195f2b1e22d2237fa2a2487802c52c00015eb", "note": "extract of samples/ticks/view asset hashes from both retained capture.json files"}
+  ],
+  "library_identity": {
+    "resource_root": "C:/github/pixel-lab-agent/evidence/knowledge-decisions/20261113/native/claude-01/installed pixl/resources",
+    "files_verified": true,
+    "state_hash_returned_by_context": "105e70d2125fbf0dc31a9614e40b682305dfed104ace3c4738d329e4a37edb21",
+    "sources": {
+      "deep-research": {"path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md", "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28", "lines": 1713},
+      "asset-archive": {"path": "training/original-docs/PIXEL-ART-ASSETS.md", "sha256": "450a335ed6563a7f4a5cc380f2bbe72f98b70e532ac2c8d16a679bcc545d4900", "lines": 16070}
+    },
+    "executed_receipt": {
+      "E_ur": "evidence/art-methods/poc-report.json",
+      "E_dg": "acca9ee675b7409c7af3ed31e2a0a42a6e457b7e00cfa5414dba86faa4375294",
+      "E_at": "2026-11-13T20:15:49.136637+00:00",
+      "E_md": "local",
+      "E_rs": "pass",
+      "report_scope": "offline_reference_fixtures",
+      "implementation_sha256": "02a02bc89ae5a0d65955714c23b05f54cffc4bf901fef100ec5ace6db42923a1 (pixl/poc.py, S @s0d4c84c1f64ae48044b9)",
+      "note": "The receipt's observed_at (2026-11-13T20:15Z) is later than both retained CF-09 captures (2026-11-12T23:05Z and 23:11Z). The three E records share one report digest; each names a different executed check."
+    }
+  },
+  "methods": [
+    {
+      "method": "animation-anchors",
+      "title": "Track contacts and review loop closure",
+      "question": "How should fixed lower contact of the retained east-idle be checked without treating the constant pivot [16,28] (and anchor [24,34]) as proof?",
+      "applicability": {
+        "holds": [
+          "applies_to includes idle loops; east-idle is a looping idle (loop=true).",
+          "Requirement 'named anchors, ground line and expected contact intervals' holds in adapted form: the brief names the lower contact edge, a constant pivot [16,28], anchor [24,34] and 'planted' for the whole loop (contact interval = entire 1600 ms loop). The ground line is the lowest opaque source row 27 (viewport row 33, directly above anchor y=34).",
+          "Procedure 'track contact-point coordinates independently from each frame's crop rectangle' is applicable and was applied: contact measured from pixels, not from rect/pivot metadata.",
+          "Check 'loop boundary obeys the same motion policy as internal transitions' is testable: east-4 and east-0 are byte-identical (71b35089...), so the 4->0 wrap has zero pixel change while internal transitions change only cyan pixels (0->1: 4 px, 1->2: 6 px, 2->3: 6 px, 3->4: 4 px, 4->0: 0 px)."
+        ],
+        "unknown": [
+          "Whether the pulse reads as convincing motion when watched continuously (R2); only stills and recorded tick transitions were reviewed in this trial.",
+          "Human acceptance; unrecorded."
+        ],
+        "unsuitable": [
+          "Source 476-500 is about rig pivots/sockets for multi-part rigs (Unity pixel-unit pivots, socket JSON). The robot has no limbs or rig; only the general point 'pivots in logical pixel coordinates' transfers, and the consumer already does that. The socket contract does not transfer.",
+          "The method's proposed POC (three 16x16 frames with a foot anchor at (8,14) and a mutant at (9,14)) was not what executed; the executed receipt is shading-drift-mask, a mask-preservation fixture shared with the shading-drift method.",
+          "Foot/ground vocabulary: this robot has no feet or wheels; 'contact' is the body's lower edge."
+        ]
+      },
+      "disposition": "adapt",
+      "decision": "Check fixed contact by measurement, not metadata: (1) decode each delivered frame and compare the full alpha mask to frame 0 (delivered: identical in all five frames, diff 0 px); (2) record the lowest opaque row and its column extent per frame (delivered: row 27, columns 11-20, width 10 in all five); (3) confirm the destination placement is unchanged (both retained captures record anchor [24,34] and pivot [16,28] for every sample, so a fixed source mask implies fixed destination contact at [8,6]+mask); (4) confirm the wrap transition 4->0 changes nothing. Constant pivots are a precondition only: the raw returned frames had the same constant pivot yet their masks differed from frame 0 by 27/63/12 px, the top opaque row moved 3->4->6 and frame 2's bottom row narrowed to columns 11-19, so equal pivots cannot prove planted contact.",
+      "authority": "Source suggestion (contact tracking independent of crop; D_t decomposition by silhouette/shade); explicit assignment (R3: lower contact planted without compensating pivot changes; constant pivot/anchor are CF-09 decisions, not universal rules); actual observations (mask and contact-row measurements above; capture anchor/pivot per sample); specialist construction (choice of 'lowest opaque row + column extent + whole-mask equality' as the contact metric).",
+      "proof": {
+        "executed_check_id": "shading-drift-mask",
+        "receipt": {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"},
+        "observed": {"changed_pixels": 2, "same_silhouette": true, "highlight_areas": [2, 2]},
+        "limits": "Receipt text: 'Proves mask preservation in this idle fixture, not a convincing breathing action or general world-space foot planting.' It ran against pixl/poc.py fixtures, not this robot; it does not establish CF-09 contact, motion quality or acceptance. The method's proposed timeline-fixture POC is not evidenced by this receipt."
+      },
+      "evidence": [
+        {"path": "work/knowledge-decisions/ops/03-knowledge-animation-anchors.json", "sha256": "99b9f9ecaad98362a7734af097b8a7646c91c6f202383c23f3e43c5f0af0ddfd"},
+        {"path": "work/knowledge-decisions/ops/06b-context-animation-anchors.json", "sha256": "dd216f46bcb283450f948b1060dd7ff8cceb7f75182950ee3a66442400d7535e"},
+        {"path": "work/knowledge-decisions/ops/09-source-anchors-deep-476-500.json", "sha256": "5be95e811b972b531e7b4c1d57114a793e15b008909570387946eb9bbd7176d2"},
+        {"path": "work/knowledge-decisions/ops/10-source-anchors-deep-1552-1573.json", "sha256": "f8f55a0235379e2efec213ac1f7cb2938803fece97cd3d9f740b0f43ba09c53c"},
+        {"path": "work/knowledge-decisions/ops/18-poc-shading-drift-mask-453-477.json", "sha256": "9e08405a31b14f285a2ad0d9e8ed8ed6a4bcac59ffd7c30f2b6fad78a689d666"},
+        {"path": "work/knowledge-decisions/scratch/contact-mask-delivered.json", "sha256": "e2b4b3072319e52c66a48ed24d2d08fe2d151f4fdbf86260faf6b6d33a026f89"},
+        {"path": "work/knowledge-decisions/scratch/contact-mask-raw-returned.json", "sha256": "5ab27646775fef9047ba82bfbc44cefff20c0c12ac8ed17e70f79b9758a7865c"},
+        {"path": "work/knowledge-decisions/scratch/capture-playback-extract.json", "sha256": "88a4517f799bb590e086b583e22195f2b1e22d2237fa2a2487802c52c00015eb"}
+      ],
+      "next_action": "Keep the delivered frames and placement unchanged. For any future revision of east-1..3, rerun the mask/contact-row measurement against the unchanged anchor/pivot and view the sequence in the destination; a continuous-playback human review of R2/R3 remains the open acceptance step."
+    },
+    {
+      "method": "frame-timing",
+      "title": "Author duration and event semantics per frame",
+      "question": "Should the provider preview's uniform 100 ms per frame (total 500 ms) replace the authored durations [800,120,160,120,400] (total 1600 ms) on a cold import?",
+      "applicability": {
+        "holds": [
+          "applies_to includes sprite animation and idle loops.",
+          "Requirement 'ordered frame IDs, positive durations and loop or one-shot policy' holds: east-0..east-4, durations all positive, loop=true in src/animation.ts.",
+          "Procedure 'store durations explicitly rather than assuming uniform FPS' holds: durations are per-frame fields in the authored clip.",
+          "Procedure 'define half-open time intervals' holds in the actual adapter: frameAt uses `at < duration_ms`, giving [0,800)->0, [800,920)->1, [920,1080)->2, [1080,1200)->3, [1200,1600)->4 and wrap at 1600 via modulo.",
+          "Check 'playback reaches the expected frame at boundary times' was evaluated against the adapter logic (table in import_decision) and is consistent with the retained browser captures: observed transitions at ~800/816.7, 933.3, 1083.3, 1200/1216.6 and 1616.6 ms, i.e. within one ~16.7 ms animation-frame tick after each authored boundary, with 2 wraps, 10 transitions and 0 skips at both 1x and 3x in both captures.",
+          "Pitfall 'unspecified preview FPS must not overwrite authored durations' is the directly relevant guidance: the uniform [100 x5] comes from the workbench inspect text for image 01e5a451-2b3b-4249-b710-348c267a0ec9, not from the owner or the adapter."
+        ],
+        "unknown": [
+          "Whether the PixelLab durations field is a default preview rate or user-settable metadata for that image; no provider connection in this session, so it was not re-queried.",
+          "Perceived calmness of the 400 ms pulse window under continuous viewing (R2) is not established by boundary arithmetic."
+        ],
+        "unsuitable": [
+          "Procedure 'name anticipation, action, impact and settle events': the consumer has no event channel; naming is optional documentation here, not a requirement.",
+          "Source example cadence (80/50/33/100/33/50/120 ms) and the example JSON duration_ms 120 'settle' are illustrations of unequal cadence; their numbers do not transfer.",
+          "Source 948-960 is a CSS box-shadow demo keyframe (pulse 1.2s steps(1) infinite with blur(1.4px) and translate(-2px,2px) at 50%); its period and effects do not transfer."
+        ]
+      },
+      "disposition": "support",
+      "decision": "Retain the authored sequence [800,120,160,120,400] ms (1600 ms loop) and reject replacing it with uniform 5x100 ms. Under the actual frameAt adapter the two timelines select different frames at 10 of the 11 sampled times (all except t=0); the uniform timeline would compress the 400 ms pulse window (frames 1-3) into 300 ms repeated every 500 ms with a 100 ms rest, contradicting the brief's 'long resting pose and brief display pulse ... occasional idle signal'. The retained captures already evidence recorded playback under the authored durations; no capture evidences the uniform timeline.",
+      "authority": "Explicit assignment (CF-09: durations, pivot, anchor are this assignment's decisions; R2 requires playback under the declared unequal durations; R5 declared timing); source suggestion (explicit durations, half-open intervals, preview FPS must not overwrite authored durations); actual observations (provider inspect text, adapter code, scratch evaluation, capture tick transitions); specialist construction (treating <=16.7 ms RAF latency after each boundary as consistent with authored timing).",
+      "proof": {
+        "executed_check_id": "frame-boundaries",
+        "receipt": {"path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json", "sha256": "8e392d8cfe6a131e0ff68bde0865bffc87a025b03cc1351ff3939a9a79fbc9f6"},
+        "observed": {"frames": ["A", "A", "B", "B", "C", "C", "A"]},
+        "limits": "Receipt text: 'Tests looping frame selection with half-open intervals, not audiovisual synchronization or action-event dispatch.' It exercised the fixture implementation in pixl/poc.py with durations 80/40/120, not this consumer's frameAt. The method's proposed second acceptance ('impact event at 120 fires once per loop crossing') is not covered by the executed receipt. The consumer adapter was evaluated separately by the scratch re-implementation and by the retained browser captures."
+      },
+      "evidence": [
+        {"path": "work/knowledge-decisions/ops/04-knowledge-frame-timing.json", "sha256": "8c6e820217bd8eb3cfe867671927ff3db7ec2a3c5a9e5ae5531d49e523a0e0cf"},
+        {"path": "work/knowledge-decisions/ops/07-context-frame-timing.json", "sha256": "1b7ba7fbf29abc61b55b0c764737ff6d6eda1a0a7c52a5dbbc91698f66cc396b"},
+        {"path": "work/knowledge-decisions/ops/11-source-timing-deep-869-905.json", "sha256": "5337f4473ed039823ee41d3bea65aad97c8903e825ba53487daab61ee6257354"},
+        {"path": "work/knowledge-decisions/ops/12-source-timing-assets-948-960.json", "sha256": "01569fbe7acd9daaedb0b64d1cce699e2763481752925cd9f3927339e4d17d00"},
+        {"path": "work/knowledge-decisions/ops/17-poc-frame-boundaries-341-370.json", "sha256": "8e392d8cfe6a131e0ff68bde0865bffc87a025b03cc1351ff3939a9a79fbc9f6"},
+        {"path": "work/knowledge-decisions/scratch/frame-at-output.json", "sha256": "62e4f9967aff6ae3964fad2306e8121385df9f56ae4678de84de54e85076739f"},
+        {"path": "work/knowledge-decisions/scratch/capture-playback-extract.json", "sha256": "88a4517f799bb590e086b583e22195f2b1e22d2237fa2a2487802c52c00015eb"},
+        {"path": "work/knowledge-inputs/provider-inspect.json", "sha256": "b4a63f0f947de68a9034c6d1c1566dad6761d8219ad8e033e842b65147cfa230"},
+        {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"}
+      ],
+      "next_action": "Do not change src/animation.ts. If any importer reads provider frame metadata, treat its durations as preview information and map onto the authored durations; if a different engine is targeted, produce that engine's own boundary observation."
+    },
+    {
+      "method": "silhouette-readability",
+      "title": "Evaluate identity using silhouette and target backgrounds",
+      "question": "Does the retained idle keep the robot's identity landmarks (rigid navy body, top post, narrow cyan front edge) readable at native scale and in the destination, and what do the light-background views show?",
+      "applicability": {
+        "holds": [
+          "applies_to 'characters' fits the robot actor.",
+          "Requirement 'intended viewing scale, representative backgrounds and identity landmarks' holds: 1x native and nearest 3x in a #172336 viewport (assignment), light-background enlargement (now required by CF-09), landmarks named by the brief.",
+          "Cited cluster constraint 'changes sprite volume without corresponding pose change' (857-867) is directly relevant: delivered frames keep 255 opaque pixels and one component in every frame; the raw returned frames changed opaque volume 255->228->198->245 with no pose change.",
+          "Cited 'large D_silhouette is suspicious for a subtle idle' (1563-1573) is relevant: delivered D_silhouette = 0 for every transition; raw was 27/63/12 px.",
+          "Check 'named identity landmarks remain visible at the target size': visually inspected stills show the post, body and cyan edge present in all five corrected frames at 1x light, 8x light, and in the 1x/3x dark destination sample (frame 2, the shortest cyan state of 5 rows at x=21, rows 16-20)."
+        ],
+        "unknown": [
+          "Readability under continuous motion and on a busy background (the method's optional third background) were not observed; the brief does not require a busy background.",
+          "Human acceptance of the pulse's expressiveness."
+        ],
+        "unsuitable": [
+          "Procedure 'render a flat opaque mask before detailing' concerns authoring a new asset; the art already exists, so the mask was measured rather than pre-rendered.",
+          "Source 11-15 (ASSETS) is an uppercase UI brief about an [E] interaction-key prompt; it supports 'clarity at game size' only in a general sense and prescribes nothing for this robot.",
+          "The method itself states its mask/multi-background sequence is a curated expert diagnostic proposal, not something the cited passages prescribe.",
+          "The executed key fixture (hole/shaft/teeth) proves its own landmark checks, not this robot's identity."
+        ]
+      },
+      "disposition": "adapt",
+      "decision": "Use the selected views that answer the CF-09 question: native 1x and 3x destination samples on #172336, and the 8x light-background sheets. On those views the corrected set keeps a steady silhouette with the cyan column at x=21 contracting symmetrically toward row 18 (rows 11-25 -> 13-23 -> 16-20 -> 13-23 -> 11-25) and navy replacing the shortened cyan; the raw returned set instead shows the top edge dropping (rows 3->4->6) and the body narrowing at frame 2, which the brief forbids (R1). Light-background inspection is retained as a required CF-09 diagnostic; the exact pulse extents (which rows contract) remain a scoped specialist construction choice from the earlier production, not an owner requirement.",
+      "authority": "Explicit assignment (R1 landmarks; light-background inspection now required by CF-09-ROBOT-IDLE.md; additional scales do not replace native judgment); source suggestion (cluster constraints, silhouette-change decomposition); expert curation inside the method (mask/multi-background sequence); actual observations (measured masks/colors; viewed stills); specialist construction (view selection; using cyan row extent as the pulse metric).",
+      "proof": {
+        "executed_check_id": "key-silhouette-landmarks",
+        "receipt": {"path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json", "sha256": "cd6ce2d4fe2ea33cd627d8f8ed78469d84c61f93ec6a851f93431421130b79f4"},
+        "observed": {"positive": {"hole": true, "shaft": true, "teeth": 2}, "negative": {"hole": false, "shaft": true, "teeth": 1}},
+        "limits": "Receipt text: 'Checks specified geometric landmarks and generates native/4x views. Visual recognition, background readability and final artistic acceptance require inspection; no such judgment is inferred from the counts.' A 16x16 key fixture; not this robot, not its backgrounds."
+      },
+      "evidence": [
+        {"path": "work/knowledge-decisions/ops/05-knowledge-silhouette-readability.json", "sha256": "84099ec6ecd0c6a7b5642dc1e05e61163253da1f619f3c1bc6610d3fa112c396"},
+        {"path": "work/knowledge-decisions/ops/08-context-silhouette-readability.json", "sha256": "bb29b0a66c6dc19e49fbed42446c1acec1385e36e8f5ea4c49c56b540730acaa"},
+        {"path": "work/knowledge-decisions/ops/13-source-silhouette-deep-857-867.json", "sha256": "7a3a7dcbe1d9bdb2d9da43d4a176f417189261a6ac2c03d4c8aee09bbaa87bf7"},
+        {"path": "work/knowledge-decisions/ops/14-source-silhouette-deep-1563-1573.json", "sha256": "d710a382559cadd72bbe5abf10a43318360a126397ac378c7f85a865833619f3"},
+        {"path": "work/knowledge-decisions/ops/15-source-silhouette-assets-11-15.json", "sha256": "ab47874b809c2fb4bf703a59ab8c224155b6fc342bcb06b7debebf1b77e703ad"},
+        {"path": "work/knowledge-decisions/ops/19-poc-key-silhouette-landmarks-1086-1117.json", "sha256": "cd6ce2d4fe2ea33cd627d8f8ed78469d84c61f93ec6a851f93431421130b79f4"},
+        {"path": "work/knowledge-inputs/corrected-02/inspection-light-8x.png", "sha256": "afe56828ed23b2198cde31d9caca374e871f03d5c27582b7152892513438ee49"},
+        {"path": "work/knowledge-inputs/returned/inspection-light-8x.png", "sha256": "a1306df5aab9de895e01f587ca97cd331a20406827a1340a93cdff9b5b71be8d"},
+        {"path": "work/knowledge-decisions/scratch/contact-mask-delivered.json", "sha256": "e2b4b3072319e52c66a48ed24d2d08fe2d151f4fdbf86260faf6b6d33a026f89"}
+      ],
+      "next_action": "No art change. Human review of the corrected set in continuous playback on the dark destination plus the light 8x sheet is the remaining readability/acceptance step; a busy-background view is optional and not an owner requirement."
+    }
+  ],
+  "import_decision": {
+    "verdict": "retain_authored",
+    "also_means": "reject_uniform: the proposed uniform 5x100 ms replacement is rejected; the authored source is unchanged",
+    "durations_ms": [800, 120, 160, 120, 400],
+    "total_ms": 1600,
+    "boundary_times_ms": [0, 800, 920, 1080, 1200, 1600],
+    "boundary_frames": {"0": 0, "800": 1, "920": 2, "1080": 3, "1200": 4, "1600": 0},
+    "interval_semantics": "half-open [start,end) per frame; frameAt uses `at < duration_ms` after `elapsed % 1600` for the looping clip",
+    "evaluated_times_ms": [0, 799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600],
+    "authored_frame_at": {"0": 0, "799": 0, "800": 1, "919": 1, "920": 2, "1079": 2, "1080": 3, "1199": 3, "1200": 4, "1599": 4, "1600": 0},
+    "uniform_proposal": {
+      "durations_ms": [100, 100, 100, 100, 100],
+      "total_ms": 500,
+      "boundary_times_ms": [0, 100, 200, 300, 400, 500],
+      "frame_at": {"0": 0, "799": 2, "800": 3, "919": 4, "920": 4, "1079": 0, "1080": 0, "1199": 1, "1200": 2, "1599": 0, "1600": 1},
+      "times_differing_from_authored": [799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600],
+      "differences": "10 of 11 sampled times select a different frame; loop length 500 ms vs 1600 ms; rest frame 0 shown 100 ms instead of 800 ms; pulse window 300 ms every 500 ms instead of 400 ms every 1600 ms"
+    },
+    "evaluation_method": "scratch re-implementation of the adapter logic (work/knowledge-decisions/scratch/frame-at.mjs, run with node v25.8.1) with hand-copied durations, cross-checked by hand; the consumer source was not imported or modified",
+    "recorded_playback_evidence": "Both retained captures (raw 2026-11-12T23:05:26Z, corrected 2026-11-12T23:11:03Z; HeadlessChrome 157) record the authored durations and constant pivots in their animation block and observe transitions 0->1->2->3->4->0 at ~800-816.7, 933.3, 1083.3, 1200-1216.6, 1616.6 ms and again one loop later (~2416.6, 2533.2, 2683.2, 2816.5, 3216.5 ms): 2 wraps, 10 transitions, 0 skips at 1x and 3x. This is recorded playback under the authored timing, not a live viewing in this trial, and no capture evidences the uniform timeline.",
+    "source_unchanged": {"path": "src/animation.ts", "sha256": "06970e83e6559068d5f90434a8ec0455322e039db244f29259a3881055d8cf63"}
+  },
+  "transfer_decisions": [
+    {
+      "id": "provider_uniform_timing",
+      "disposition": "reject",
+      "reason": "The [100,100,100,100,100] ms durations are preview metadata reported by the pixelart_workbench inspect text for image 01e5a451-2b3b-4249-b710-348c267a0ec9 (observed 2026-11-12 through a Codex-credential trial; not re-queried here because no provider connection exists). The owner's CF-09 assignment and the actual adapter author [800,120,160,120,400]; the frame-timing method's own pitfall says unspecified preview FPS must not overwrite authored durations; under the adapter the uniform timeline selects a different frame at 10 of 11 evaluated times and turns an occasional 400 ms pulse per 1600 ms into a 300 ms pulse every 500 ms. Nothing in the proposal is an owner requirement."
+    },
+    {
+      "id": "css_blur_translation",
+      "disposition": "reject",
+      "reason": "Source lines 948-960 of PIXEL-ART-ASSETS.md are a CSS box-shadow demo (`pulse 1.2s steps(1) infinite` with `blur(1.4px)` and `translate(-2px, 2px)` at 50%). The brief forbids camera movement and moving contact, requires nearest sampling, transparent 32x32 frames and the minimal navy/cyan treatment; the delivered frames have exactly two colors and zero fractional-alpha pixels. Blur would add intermediate colors/alpha and translation would move the planted contact; the 1.2 s period is the demo's value, not the project's."
+    },
+    {
+      "id": "source_example_durations",
+      "disposition": "reject",
+      "reason": "The example cadence 80/50/33/100/33/50/120 ms and the example frame record with duration_ms 120 (PIXEL-ART-DEEP-RESEARCH.md 869-905) illustrate the principle that unequal durations carry weight. The principle supports keeping the authored unequal sequence (see frame-timing disposition 'support'); the example numbers themselves do not transfer and must not become project values. The authored [800,120,160,120,400] stays."
+    },
+    {
+      "id": "event_audio_engine",
+      "disposition": "defer",
+      "reason": "Event naming/dispatch (anticipation, impact, settle), audio synchronization and behaviour in any engine other than the sprite-animation-v1 browser fixture have no evidence here: the consumer has no event channel; the executed frame-boundaries receipt explicitly excludes audiovisual synchronization and action-event dispatch; the method's 'impact event fires once per loop' acceptance belongs to the proposed POC, not the executed receipt; the retained capture checks state that the browser fixture does not qualify another target engine. These claims stay unsupported until their own actual observations exist."
+    }
+  ],
+  "authority_notes": {
+    "explicit_assignment_choices": [
+      "CF-09-ROBOT-IDLE.md: five 32x32 transparent frames; east-0 must be the accepted CF-10 East (71b35089...); durations [800,120,160,120,400]; pivot [16,28]; viewport [48,40]; anchor [24,34]; background #172336; nearest sampling; sprite-animation-v1 at 1x and 3x with at least two wraps; no ground shadow, camera movement, blink, breathing, new anatomy; criteria R1-R7.",
+      "CF-09-ROBOT-IDLE.md explicitly requires inspecting enlarged art on a light background as well as the dark destination; the brief states these values are this assignment's decisions, not universal pixel-art rules.",
+      "KNOWLEDGE-DECISIONS.md (TM-09) explicitly requires this read-only decision, the three methods, library-scope context, exact source slices, the eight PNG views and the result layout."
+    ],
+    "source_suggestions": [
+      "frame-timing: explicit per-frame durations, half-open intervals, event naming, preview FPS must not overwrite authored durations; example cadence numbers are illustrations.",
+      "animation-anchors: track contact coordinates independently of crop rectangles; low pixel difference does not prove convincing animation; decompose D_t into silhouette/shade/detail/FX.",
+      "silhouette-readability: cluster constraints (no volume change without pose change; flicker vs geometric motion); the flat-mask and light/dark/busy background sequence is the method's own curated expert diagnostic, which the cited passages do not prescribe.",
+      "Rig pivot/socket discipline (476-500) and the CSS demo (948-960) are source content that does not transfer to this robot."
+    ],
+    "actual_observations": [
+      "Delivered frames: east-0/east-4 = 71b35089..., east-1/east-3 = 4bfaae2a..., east-2 = 982b48b4...; each 32x32, 255 opaque pixels, two colors #25354a/#56b5bc, one component, bbox [11,3,22,28]; identical alpha masks; lowest opaque row 27 at columns 11-20; cyan column x=21 rows 11-25 / 13-23 / 16-20 / 13-23 / 11-25.",
+      "Raw returned frames (work/cf09-production-01/returned): east-1 = 2b23feb7..., east-2 = d9b4e569..., east-3 = d0855586...; opaque 228/198/245; top opaque row 4/6/4; mask diff vs frame 0 of 27/63/12 px; frame 2 bottom row columns 11-19; cyan column moved to x=20/19/21 and reached row 27.",
+      "raw-check-01.json and corrected-check-01.json are byte-identical (28b21cc8...) and both pass with 42 pixel checks, 14 source checks, 388 clock checks, 2 wraps, 10 transitions, 0 skips per scale; the raw capture's view assets are the raw hashes and the corrected capture's view assets are the delivered hashes.",
+      "Live sample index 2 in both captures is frame 2 (east-2) at ~933.3 ms, so the live-east-idle-1x-2/3x-2 PNGs show frame 2 in the dark destination.",
+      "provider-inspect.json reports 'canvas: 32x32, 5 frame(s), durations [100, 100, 100, 100, 100] ms' and a 2-color palette for image 01e5a451-2b3b-4249-b710-348c267a0ec9 (host_credential_source codex, native_host_trial false).",
+      "Library: files_verified true; context state hash 105e70d2...; E.dg acca9ee6... equals the local digest of evidence/art-methods/poc-report.json (1765 lines); receipt observed_at 2026-11-13T20:15:49Z."
+    ],
+    "specialist_construction_choices": [
+      "Measuring 'planted contact' as lowest-opaque-row plus column extent plus whole-mask equality per frame, and the pulse as cyan row extent; these are this review's measurement choices, not owner rules.",
+      "Selecting the 1x/3x dark destination samples and 8x light sheets as the views answering R1-R3; not adding a busy-background view.",
+      "Treating transitions observed within one ~16.7 ms animation tick after each authored boundary as consistent with the authored timing.",
+      "The specific pulse extents authored in the earlier CF-09 correction (rows 13-23 and 16-20) remain that production's scoped specialist construction, not an owner requirement; they are preserved here, not re-decided.",
+      "Light-background inspection: originated as expert curation (the silhouette-readability method's own procedure step) and is now explicitly required by CF-09-ROBOT-IDLE.md; neither fact makes the cited library sources prescribe that diagnostic."
+    ]
+  },
+  "viewed_images": [
+    {"path": "work/knowledge-inputs/returned/inspection-light-1x.png", "sha256": "a575e66eb34f217cd9b2b4a6330a0167fc7be6e46b30f8b7b32ef319e080707e"},
+    {"path": "work/knowledge-inputs/returned/inspection-light-8x.png", "sha256": "a1306df5aab9de895e01f587ca97cd331a20406827a1340a93cdff9b5b71be8d"},
+    {"path": "work/knowledge-inputs/corrected-02/inspection-light-1x.png", "sha256": "4473812f540e72e8718178840caca219393d60fc2f6ba540ee8e590796140a9b"},
+    {"path": "work/knowledge-inputs/corrected-02/inspection-light-8x.png", "sha256": "afe56828ed23b2198cde31d9caca374e871f03d5c27582b7152892513438ee49"},
+    {"path": "work/cf09-production-01/raw-capture-01/live-east-idle-1x-2.png", "sha256": "77a7da72ae106d174c0a5e1c3bc59e561419421ab29e45f0c3075548347d3e9e"},
+    {"path": "work/cf09-production-01/raw-capture-01/live-east-idle-3x-2.png", "sha256": "ba5b083dfc43f0cf933ff50e5cce2bec91a91ed90c95f37ef500a1d827df151a"},
+    {"path": "work/cf09-production-01/corrected-capture-01/live-east-idle-1x-2.png", "sha256": "8ee63bacaa9eb1798dcbc66b246f1526a2490a6e0ecd5ed743fd17175d84ca17"},
+    {"path": "work/cf09-production-01/corrected-capture-01/live-east-idle-3x-2.png", "sha256": "f4f1f1ee275c2042baec9334e04a861c9e7d5f1449934cf00b02a5b696fbe037"}
+  ],
+  "viewing_notes": [
+    "All eight PNGs were rendered through the image-reading tool (Read) and inspected as stills; digests computed with sha256sum.",
+    "returned/inspection-light-8x: five frames on light grey; body top edge drops in frames 1-3 and the body narrows at frame 2; cyan edge shifts position; this is the silhouette bob the brief forbids.",
+    "corrected-02/inspection-light-8x: five frames with identical body outline and post; cyan edge contracts toward its vertical centre and returns; navy fills the shortened portion; no alpha holes visible.",
+    "The 1x light sheets are legible but tiny; they confirm presence of the post, body and cyan edge at native scale, not fine detail.",
+    "raw-capture-01 live 1x-2/3x-2 and corrected-capture-01 live 1x-2/3x-2 show frame 2 in the #172336 viewport; in the corrected 3x sample the shortened cyan reads as a short mid-height mark on the steady body; the raw 3x sample shows the shifted body of the raw frame 2.",
+    "Retained capture timing (ticks/samples) establishes recorded playback under the authored durations; viewing these stills does not mean continuous motion was watched live in this trial."
+  ],
+  "production_unchanged": true,
+  "acceptance_created": false,
+  "retrospective_causality_claimed": false,
+  "statements": [
+    "This new review cannot prove that knowledge retrieval caused CF-09's earlier repair; the raw-to-corrected correction was recorded on 2026-11-12 and the library receipt consulted today is dated 2026-11-13T20:15Z. No causal attribution is made.",
+    "Pixel counts, mask measurements, boundary arithmetic and fixture passes cannot accept artistic quality: the raw and corrected check files are byte-identical passes even though the raw frames fail R1 visually, which demonstrates the fixture's blindness to that failure.",
+    "No provider call, installation, credential/global/memory change, state acceptance, commit, task completion or repainting was performed. Only files under work/knowledge-decisions/ were written.",
+    "Human acceptance remains unrecorded; M1/M2 and broader M3/M4 remain open."
+  ],
+  "limitations": [
+    "No continuous live playback was watched in this trial; motion judgments rest on stills plus retained tick/sample records.",
+    "No PixelLab connection: the provider image identity and the meaning of its reported durations were not re-queried.",
+    "The executed POC receipts (frame-boundaries, shading-drift-mask, key-silhouette-landmarks) are offline fixtures of pixl/poc.py; they prove their own stated checks only and nothing about this robot.",
+    "The sprite-animation-v1 browser fixture does not qualify any other engine; event/audio semantics are untested.",
+    "The scratch frameAt evaluation re-implements the adapter logic by hand rather than importing the TypeScript module; the retained browser captures are the observations of the actual adapter.",
+    "Whole-file closure sources (pixl/poc.py, knowledge/applicability.json, knowledge/pixel-art.json) were retained as identities in the saved contexts but not re-read line by line; only the cited line ranges and the executed receipt entries were sliced."
+  ],
+  "next_action": "Caller verifies this report against the saved operation files, the adapter, the proposal and the capture checks, then writes CALLER-RESULT.json. Production stays as delivered: authored timing retained, frames and placement unchanged. The remaining acceptance step is a human review of the corrected east-idle in continuous playback at 1x/3x on the dark destination together with the light 8x sheet; any other engine needs its own import observation before it is qualified."
+}

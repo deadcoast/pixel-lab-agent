@@ -1,0 +1,49 @@
+{
+  "id": "frame-timing",
+  "title": "Author duration and event semantics per frame",
+  "applies_to": [
+    "sprite animation",
+    "attacks",
+    "idle loops",
+    "UI feedback"
+  ],
+  "requires": [
+    "Ordered frame IDs, positive durations and loop or one-shot policy"
+  ],
+  "procedure": [
+    "Store durations explicitly rather than assuming uniform FPS.",
+    "Name anticipation, action, impact and settle events where relevant.",
+    "Define half-open time intervals so event and frame boundaries have no ambiguity."
+  ],
+  "checks": [
+    "Every duration is positive and playback reaches the expected frame at boundary times.",
+    "One-shot terminal states and looping wrap behavior are explicit."
+  ],
+  "pitfalls": [
+    "More frames do not automatically improve weight or readability.",
+    "Unspecified preview FPS must not overwrite authored durations."
+  ],
+  "sources": [
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "start": 869,
+      "end": 905
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-ASSETS.md",
+      "start": 948,
+      "end": 960
+    }
+  ],
+  "poc": {
+    "kind": "timeline-fixture",
+    "procedure": [
+      "Use frames A,B,C with durations 80,40,120 milliseconds and a looping total of 240.",
+      "Sample t=0,79,80,119,120,239,240 using half-open intervals."
+    ],
+    "acceptance": [
+      "Frame IDs are A,A,B,B,C,C,A.",
+      "An impact event at 120 fires once per loop crossing."
+    ]
+  }
+}

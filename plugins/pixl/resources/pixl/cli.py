@@ -27,6 +27,7 @@ def parser():
     q.add_argument("focus")
     q.add_argument("--budget", type=int)
     q.add_argument("--view", choices=("complete", "authoring"), default="complete")
+    q.add_argument("--scope", choices=("project", "library"), default="project", help="Library scope resolves a relative path under installed resources; --root remains the consumer root for result export.")
     q.add_argument("--plar", dest="plar_path")
     q.add_argument("--asset", dest="asset_id")
     q.add_argument("--root")
@@ -328,6 +329,14 @@ def main(argv=None):
             output = report(a.root, a.packet, a.asset_id, a.plar, a.plan, a.job, a.comparison, a.view, a.against_plan)
         elif cmd == "validate":
             output = service.inspect_document(a.path, a.root)
+        elif cmd == "context" and a.scope == "library":
+            output = service.call("pixl_context", {
+                "path": a.path, "focus": a.focus, "scope": "library", "view": a.view,
+                **({"budget": a.budget} if a.budget is not None else {}),
+                **({"plar_path": a.plar_path} if a.plar_path is not None else {}),
+                **({"asset_id": a.asset_id} if a.asset_id is not None else {}),
+            }, a.root or Path.cwd())
+            binary = output["wire"].encode("utf-8")
         elif cmd == "context" and a.view == "authoring":
             if a.root is None:
                 raise PixlError("authoring_context", "--root is required for authoring context")

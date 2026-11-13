@@ -1,0 +1,1319 @@
+# PixelLab MCP Tools - AI Assistant Guide
+
+> Generate pixel art assets directly from your AI coding assistant using the Model Context Protocol (MCP)
+
+You have access to PixelLab's MCP tools for creating game-ready pixel art. This guide explains what tools are available and how to use them effectively.
+
+## ⚠️ IMPORTANT: These are MCP tools, not REST endpoints
+
+- If you see PixelLab tools available (like `create_character`, `animate_character`), use them directly
+- If you don't see these tools, tell the user MCP isn't configured - don't try curl or v2 API
+- Tool names may be prefixed (`mcp__pixellab__create_character`) or bare (`create_character`) depending on client
+- Download URLs like `/mcp/characters/{id}/download` are the only direct HTTP endpoints
+
+## What is PixelLab MCP?
+
+PixelLab MCP (also called "Vibe Coding") lets you generate pixel art characters, animations, and tilesets while coding. The tools are non-blocking - they return job IDs immediately and process in the background (typically 2-5 minutes).
+
+## Other PixelLab Interfaces
+
+If users mention these, they're using different PixelLab interfaces:
+- **Web interfaces**: Character Creator, Map Workshop, Simple Creator (visual tools at pixellab.ai)
+- **Editor plugins**: Aseprite extension, Pixelorama integration
+- **API v1**: Legacy REST endpoints (deprecated)
+- **API v2**: Modern REST API for programmatic usage
+  - Documentation: https://api.pixellab.ai/v2/llms.txt
+  - You can use these endpoints directly via HTTP requests when writing code
+  - Same functionality as MCP but through REST calls
+  - Useful for: batch processing, custom integrations, live in-game asset generation
+  - Also useful when you need endpoints not available as MCP tools (use at own risk - MCP tools are made for easy AI usage)
+
+Note: Characters and tilesets created via MCP will appear in Character Creator and Map Workshop web interfaces respectively (if using the same account).
+
+## MCP/Vibe Coding Setup
+
+1. Get your API token at https://api.pixellab.ai/mcp
+2. Configure your AI assistant (Cursor, Claude Code, VS Code, etc.)
+3. Start generating game assets while coding
+
+### MCP Configuration
+```json
+{
+  "mcpServers": {
+    "pixellab": {
+      "url": "https://api.pixellab.ai/mcp",
+      "transport": "http",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_TOKEN"
+      }
+    }
+  }
+}
+```
+
+## Key Concepts
+
+### Non-Blocking Operations
+All creation tools return immediately with job IDs:
+- Submit request → Get job ID instantly
+- Process runs in background (2-5 minutes)
+- Check status with corresponding `get_*` tool
+- Download when ready (UUID serves as access key)
+- **No authentication for downloads**: Share download links freely - UUID acts as the key
+
+### Workflow Pattern
+```python
+# 1. Create (returns immediately)
+result = create_character(description='wizard', n_directions=8)
+character_id = result.character_id
+
+# 2. Queue animations immediately (no waiting!)
+animate_character(character_id, 'walk')
+animate_character(character_id, 'idle')
+
+# 3. Check status later
+status = get_character(character_id)
+```
+
+### Connected Tilesets
+Create seamless terrain transitions by chaining tilesets:
+```python
+# First tileset returns base_tile_ids immediately
+t1 = create_topdown_tileset('ocean', 'beach')
+
+# Chain next tileset using base tile ID (no waiting!)
+t2 = create_topdown_tileset('beach', 'grass', lower_base_tile_id=t1.beach_base_id)
+```
+
+## Available Tools
+
+### Character & Animation Tools
+
+**💡 Tips:**
+- Characters are stored permanently and can be reused
+- Animations can be queued immediately after character creation
+- 4 directions: south, west, east, north
+- 8 directions: adds south-east, north-east, north-west, south-west
+- Canvas size is total area; character will be ~60% of canvas height
+
+#### `create_character`
+Queue character creation. Returns immediately with character ID. Use get_character to check status.
+
+**Examples:**
+```python
+# Humanoid character (default)
+create_character(
+    description='brave knight with shining armor',
+    n_directions=8,
+    size=48,
+    proportions='{"type": "preset", "name": "heroic"}'
+)
+
+# Quadruped character
+create_character(
+    description='orange tabby cat',
+    body_type='quadruped',
+    template='cat',  # bear, cat, dog, horse, lion
+    n_directions=8,
+    size=48
+)
+```
+
+**Parameters:**
+- `description`: str (required) — Character appearance (e.g., 'cute wizard with blue robes' or 'orange tabby cat')
+- `name`: Optional[str] (optional) [default: None] — Character name for reference (e.g., 'Blue Wizard', 'Tabby Cat')
+- `body_type`: Literal["humanoid", "quadruped"] (optional) [default: humanoid] — Body type. "humanoid" for bipedal characters (people, robots). "quadruped" for 4-legged animals - requires `template` parameter. Available quadruped templates: `bear`, `cat`, `dog`, `horse`, `lion`
+- `template`: Optional[str] (optional) [default: None] — Quadruped template to use (required when body_type='quadruped'). Available: `bear`, `cat`, `dog`, `horse`, `lion`. Ignored for humanoid body type.
+- `mode`: Literal["standard", "pro", "v3"] (optional) [default: standard] — Generation mode. "standard" uses template-based skeleton generation (cheaper, 1 generation). "pro" uses AI reference-based generation for higher quality (costs 20-40 generations depending on size, always 8 directions). "v3" produces the highest quality output (costs 2-9 generations depending on size, always 8 directions) and is the only mode that accepts reference_image_base64 (rotate an existing sprite). Pro mode ignores n_directions, outline, shading, detail, text_guidance_scale, and proportions. v3 mode ignores n_directions (always 8), shading, proportions, and text_guidance_scale.
+- `n_directions`: Literal[4, 8] (optional) [default: 8] — Number of directional views (4 or 8). Ignored in pro mode (always 8).
+- `reference_image_base64`: Optional[str] (optional) [default: None] — South-facing character sprite (PNG base64, max 256x256). Requires mode="v3": rotates this exact sprite into 8 directions — the right tool for turning an existing character sprite into a full rotating character (do NOT use create_8_direction_object for characters). The image defines identity and style; description guides the rotation; outline/detail hints are ignored. Output size defaults to the reference's own dimensions unless size is set. PREFER reference_image_url for anything above ~32x32 — MCP clients routinely truncate large inline base64.
+- `style_character_id`: Optional[str] (optional) [default: None] — ID of one of your existing 8-direction characters to use as the style reference (mode="pro" only). Its 8 directional sprites guide the new character's style in every direction. The style character must be completed with 8 directions, and size must be at least its sprite content size — the job fails fast with the required size otherwise.
+- `reference_image_url`: Optional[str] (optional) [default: None] — Alternative to reference_image_base64: an https URL to the south-facing sprite PNG (mode="v3" only). PREFER THIS for anything but tiny sprites — inline base64 is often cut off mid-string by MCP clients, which corrupts the image. Give a url OR a base64, not both.
+- `proportions`: Optional[str] (optional) [default: {"type": "preset", "name": "default"}] — Character body proportions as JSON string (humanoid only, ignored for quadrupeds). PRESET: Use built-in proportions like '{"type": "preset", "name": "chibi"}' (options: default, chibi, cartoon, stylized, realistic_male, realistic_female, heroic). CUSTOM: Define exact values like '{"type": "custom", "head_size": 1.5, "arms_length": 0.8, "legs_length": 0.9, "shoulder_width": 0.7, "hip_width": 0.8}' (all values 0.5-2.0)
+- `size`: Optional[int] (optional) [default: None] — Character size in pixels (default 48). Max 128 for standard/pro mode; up to 256 for mode="v3". Standard mode expands the generation canvas. Pro mode stores rotations on a shared square canvas at least this large. V3 from scratch sends this as the requested square generation size; with a v3 reference image, omitted size uses the reference dimensions and a supplied size is advisory.
+- `outline`: Optional[Literal["single color black outline", "single color outline", "selective outline", "lineless"]] (optional) [default: single color black outline] — Outline style hint (soft guidance — the model may not follow exactly). Ignored in pro mode.
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading"]] (optional) [default: basic shading] — Shading hint (soft guidance — the model may not follow exactly). Ignored in pro and v3 modes.
+- `detail`: Optional[Literal["low detail", "medium detail", "high detail"]] (optional) [default: medium detail] — Detail level hint (soft guidance — the model may not follow exactly). Ignored in pro mode.
+- `text_guidance_scale`: float (optional) [default: 8.0] — How closely to follow the text description (higher=more faithful). Default 8.0.
+- `view`: Literal["low top-down", "high top-down", "side", "oblique"] (optional) [default: low top-down] — Camera angle. "low top-down" (~20° from above, classic 3/4 RPG), "high top-down" (~35° steeper angle), "side" (eye-level), "oblique" (BETA: 3/4 oblique projection, max 128px, 4-dir only, standard mode only).
+
+#### `create_character_state`
+Queue a state (variant) of an existing character. The new character keeps
+the source's identity, body type, and proportions, with the edit applied
+consistently across all 4 or 8 rotations. Auto-waits up to 30s for the
+source to complete.
+Cost: 20-40 generations — the tier is resolved from the canvas at generation
+Generation time: ~1-5 minutes (async). Poll with get_character(character_id).
+
+**Examples:**
+```python
+# Humanoid character (default)
+create_character(
+    description='brave knight with shining armor',
+    n_directions=8,
+    size=48,
+    proportions='{"type": "preset", "name": "heroic"}'
+)
+
+# Quadruped character
+create_character(
+    description='orange tabby cat',
+    body_type='quadruped',
+    template='cat',  # bear, cat, dog, horse, lion
+    n_directions=8,
+    size=48
+)
+```
+
+**Parameters:**
+- `character_id`: str (required) — Source character UUID to create a state of
+- `edit_description`: str (required) — Edit instructions describing the new state (e.g. 'sitting down', 'wearing red armor', 'fighting pose').
+- `seed`: Optional[int] (optional) [default: None]
+- `state_name`: Optional[str] (optional) [default: None] — Name for the new state (e.g. 'Sitting', 'Red Armor'). Defaults to the edit description truncated to 20 characters.
+- `use_color_palette_from_reference`: bool (optional) [default: False] — Snap the edited rotations to the source character's existing color palette so the new state stays color-consistent with the original. Do not enable when the edit is meant to introduce new colors.
+- `override_width`: Optional[int] (optional) [default: None] — Optional larger canvas WIDTH for the state — reach for it when the edit adds something big (a weapon, wings) needing room beyond the character's tight canvas. Multiple of 4, no smaller than the source width. Pair with override_height; omit both to keep the source size.
+- `override_height`: Optional[int] (optional) [default: None] — Optional larger canvas HEIGHT for the state (see override_width). Multiple of 4, no smaller than the source height.
+
+#### `animate_character`
+Queue animation for a character. Returns immediately with job IDs. ~2-4 min.
+
+**Example:**
+```python
+animate_character(
+    character_id='uuid-from-create',
+    template_animation_id='walking',  # Check tool description for full list
+    action_description='walking proudly'  # optional customization
+)
+```
+
+**Parameters:**
+- `character_id`: str (required) — Character UUID from create_character
+- `template_animation_id`: Optional[str] (optional) [default: None] — Template animation ID. Required for template-based animations (1 generation/direction). Omit for custom animations that use action_description instead — defaults to v3 mode (cost scales with canvas×frames: ~1 gen/direction for sprites ≤96px, but e.g. 128px≈2/dir, 160px≈4/dir, 256px≈8/dir). Humanoid animations: `backflip`, `breathing-idle`, `cross-punch`, `crouched-walking`, `crouching`, `drinking`, `falling-back-death`, `fight-stance-idle-8-frames`, `fireball`, `flying-kick`, `front-flip`, `getting-up`, `high-kick`, `hurricane-kick`, `jumping-1`, `jumping-2`, `lead-jab`, `leg-sweep`, `picking-up`, `pull-heavy-object`, `pushing`, `roundhouse-kick`, `running-4-frames`, `running-6-frames`, `running-8-frames`, `running-jump`, `running-slide`, `sad-walk`, `scary-walk`, `surprise-uppercut`, `taking-punch`, `throw-object`, `two-footed-jump`, `walk`, `walk-1`, `walk-2`, `walking`, `walking-10`, `walking-2`, `walking-3`, `walking-4`, `walking-4-frames`, `walking-5`, `walking-6`, `walking-6-frames`, `walking-7`, `walking-8`, `walking-8-frames`, `walking-9`. Quadruped animations vary by template - use get_character() to see available animations.
+- `action_description`: Optional[str] (optional) [default: None] — Custom action description focusing on the movement or pose only (e.g., 'walking stealthily', 'walking quickly', 'running', 'jumping', 'casting spell'). Avoid environmental details like locations or objects. If not provided, uses default for template_animation_id.
+- `animation_name`: Optional[str] (optional) [default: None] — Custom name for this animation, stored as display_name. If you are appending to an existing animation_group_id, PASS THE GROUP'S EXISTING NAME — it is NOT inherited. Omitting it leaves the new directions with no display_name, so get_character falls back to the animation type and the group looks renamed (e.g. a group called 'delver_cape_walk' starts showing as 'walking-8-frames').
+- `animation_group_id`: Optional[UUID] (optional) [default: None] — Append these directions to an EXISTING animation group instead of starting a new one. Pass the [group: ...] id shown by get_character(). Use this to fill in missing directions of an animation you already started (e.g. a rate-limited call that only landed 5/8 directions) so they stay one group. Pass animation_name too, repeating the group's existing name — it is not inherited, and omitting it makes the group appear renamed. Omit animation_group_id to mint a fresh group. Must belong to this character.
+- `directions`: Optional[list[str]] (optional) [default: None] — Specific directions to animate (e.g., ['south', 'east']). Valid values: south, north, east, west, south-east, south-west, north-east, north-west. If not provided: template mode animates all character directions, custom mode animates south only.
+- `ai_freedom`: int (optional) [default: 0] — AI freedom (0-900). TEMPLATE MODE ONLY — ignored in v3 and pro modes. Higher values let the AI deviate more from the template skeleton pose. 0 = rigid template following.
+- `mode`: Optional[Literal["template", "v3", "pro"]] (optional) [default: None] — Custom-animation engine. "template": skeleton from template_animation_id (1 gen/direction). "v3" (default when no template_animation_id): custom animation from action_description with frame_count control, cheap, one job per direction. "pro": sequential multi-direction generation that uses completed sides as reference (20-40 gen/direction, requires confirm_cost), best for highly detailed characters. Auto-detected: template if template_animation_id is given, else v3.
+- `frame_count`: int (optional) [default: 8] — Number of animation frames (4-16, must be even). Honored ONLY in v3 mode. In 'pro' mode frame_count is IGNORED — the frame count is fixed by character size (≤64px → 16 frames, >64px → 4 frames), so a large character always yields 4 frames regardless of this value. In 'template' mode the template's own frame count is used.
+- `confirm_cost`: bool (optional) [default: False] — Only for pro custom animations (mode="pro"). NEVER set to true on first call. First call without it to see the cost, then show the cost to the user. Only set to true after the user explicitly confirms they want to spend the generations. Not needed for template or v3 animations.
+- `custom_start_frame_base64`: Optional[str] (optional) [default: None] — Optional custom starting pose for the animation (mode='v3' only). When omitted, the character's rotation image for the chosen direction is used as the start. Subject to v3's 256x256 maximum.
+
+REQUIRES A SINGLE DIRECTION. Pass directions=[<one cardinal>] (one of: south, south-west, west, north-west, north, north-east, east, south-east), or omit directions to default to south. If the user has not said which direction the animation is for, ask them — do not pick one arbitrarily.
+
+Not compatible with mode='template' or mode='pro'.
+- `end_frame_base64`: Optional[str] (optional) [default: None] — Optional target pose to interpolate toward (mode='v3' only). Providing this enables interpolation mode: the model animates between the start frame (rotation image or custom_start_frame_base64) and this end frame. Dimensions must match the start frame.
+
+REQUIRES A SINGLE DIRECTION (see custom_start_frame_base64). Not compatible with mode='template' or mode='pro'.
+- `custom_start_frame_url`: Optional[str] (optional) [default: None] — Alternative to custom_start_frame_base64: an https URL to the start-frame PNG (mode='v3' only). PREFER THIS for large images — inline base64 is often truncated by MCP clients (cut off mid-string), which corrupts the image. A URL avoids that. Give a url OR a base64, not both, for the same frame.
+- `end_frame_url`: Optional[str] (optional) [default: None] — Alternative to end_frame_base64: an https URL to the end-frame PNG (mode='v3' only). PREFER THIS for large images to avoid inline-base64 truncation. Give a url OR a base64, not both, for the same frame.
+- `keep_first_frame`: bool (optional) [default: True] — Keep the reference frame as frame 0 of the stored animation (mode='v3' only). Set false to store exactly frame_count generated frames — the reference start frame is stripped, so frame_count=8 stores 8 frames instead of 9. Not compatible with mode='template' or mode='pro'.
+
+#### `get_character`
+Get character details, rotation URLs, animations, and download link.
+Branches by status: processing (progress+ETA), failed (error+retry), completed (full data).
+
+**Parameters:**
+- `character_id`: str (required) — Character UUID to retrieve
+- `include_preview`: bool (optional) [default: True] — Include preview image of south direction
+
+#### `list_characters`
+List your characters with status. Returns compact one-line-per-character format.
+Use get_character(character_id) for full details on any character.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10] — Maximum number of characters to return
+- `offset`: int (optional) [default: 0] — Number of characters to skip
+- `tags`: Optional[str] (optional) [default: None] — Comma-separated tags to filter by (ANY match). Example: 'wizard,fire'
+- `search`: Optional[str] (optional) [default: None] — Filter by name, case-insensitive. Matches the name shown here and the description it was created from, so 'wizard' finds 'old wizard with a staff'.
+
+#### `delete_character`
+Delete a character and all its associated data. Immediate — this cannot be
+undone (any in-flight generation jobs for it are wasted).
+
+**Parameters:**
+- `character_id`: str (required) — Character UUID to delete
+
+#### `update_character_tags`
+Replace ALL tags on a character (set operation, free, synchronous).
+
+**Parameters:**
+- `character_id`: str (required) — Character UUID whose tags to replace
+- `tags`: list[str] (required) — Full replacement tag list (max 20 tags, 50 chars each; whitespace trimmed, case-insensitive dedup). Empty list clears all tags.
+
+### Top-Down Tileset Tools
+
+**💡 Wang Tileset System:**
+- Creates 16 tiles covering all corner combinations (25 at transition_size=1.0)
+- Perfect for seamless terrain transitions
+- Use base_tile_ids to chain multiple tilesets
+- tile_size: typically 16x16 or 32x32 pixels
+- transition_size: 0=sharp, 0.25=medium, 0.5=wide blend, 1.0=full-tile cliff (25 tiles, 4x8 sheet, wall fills the cell below the boundary; match by pattern_4x4 — 4 wall tiles share corners with a twin)
+
+#### `create_topdown_tileset`
+Generate a Wang tileset for top-down game maps with corner-based autotiling.
+Cost: standard mode is 1-4 generations, usually 3 or 4 — NOT 1. (Measured
+Generation time: ~100 seconds (async processing)
+
+**Example (chained tilesets):**
+```python
+# Ocean → Beach → Grass → Forest
+t1 = create_topdown_tileset('ocean water', 'sandy beach')
+t2 = create_topdown_tileset('sandy beach', 'green grass',
+                           lower_base_tile_id=t1.beach_base_id)
+t3 = create_topdown_tileset('green grass', 'dense forest',
+                           lower_base_tile_id=t2.grass_base_id)
+```
+
+**Parameters:**
+- `lower_description`: str (required) — Lower terrain type (e.g., 'ocean water', 'dirt path')
+- `upper_description`: str (required) — Upper/elevated terrain type (e.g., 'sandy beach', 'grass')
+- `transition_size`: float (optional) [default: 0.0] — Size of terrain transition. Often affects the height difference between terrains (0.0, 0.25, 0.5, or 1.0 for full tile transition)
+- `transition_description`: Optional[str] (optional) [default: None] — Blending between terrains (optional, recommended when transition_size > 0, e.g. 'wet sand with foam')
+- `tile_size`: dict[str, int] (optional) [default: {'width': 16, 'height': 16}] — Tile dimensions as {"width": N, "height": N}, OR a bare int N for a square tile (same shape create_tiles_pro accepts). 16 or 32 for standard; 64 requires mode='pro'.
+- `mode`: Literal["standard", "pro"] (optional) [default: standard] — Generation pipeline. "standard": classic Wang tileset (16 or 32px). "pro": newer corner-pair pipeline supporting 16/32/64px plus its OWN shape controls (spread_x, slope_size, raggedness) — these are not shape_style, and mode='pro' with shape_style is rejected. Experimental.
+- `shape_style`: Optional[Literal["square", "round"]] (optional) [default: None] — Optional terrain-boundary geometry, mode='standard' ONLY — passing it with mode='pro' is rejected. Use 'square' for stepped corners or 'round' for circular arcs. When supplied, transition_size is continuous from 0 to 1 and values above 0.5 use a 4x8 sheet.
+- `enhance`: bool (optional) [default: True] — shape_style tilesets only (ignored otherwise). AI-enhances the terrain descriptions at the chosen detail/shading levels and picks matching base colours before generation. The stored tileset keeps the enhanced text; your original prompts are kept in its metadata.
+- `spread_x`: float (optional) [default: 0.5] — Pro only. Boundary spread between terrains (0=steep, 1=gradual).
+- `slope_size`: float (optional) [default: 0.0] — Pro only. Slope on N/W/E sides as a fraction of wall height.
+- `raggedness`: float (optional) [default: 0.0] — Pro only. Terrain boundary noise (0=smooth, 1=rough).
+- `outline`: Optional[Literal["single color outline", "selective outline", "lineless"]] (optional) [default: None] — Outline style
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading", "highly detailed shading"]] (optional) [default: None] — Shading style
+- `detail`: Optional[Literal["low detail", "medium detail", "highly detailed"]] (optional) [default: None] — Detail level
+- `view`: Literal["low top-down", "high top-down"] (optional) [default: high top-down] — Camera angle
+- `tile_strength`: float (optional) [default: 1.0] — Pattern consistency
+- `lower_base_tile_id`: Optional[str] (optional) [default: None] — ID of existing tile to use as lower terrain reference. Use to create connected tilesets
+- `upper_base_tile_id`: Optional[str] (optional) [default: None] — ID of existing tile to use as upper terrain reference. Use to create connected tilesets
+- `tileset_adherence`: float (optional) [default: 100.0] — Structure strictness and adherence to reference image
+- `tileset_adherence_freedom`: float (optional) [default: 500.0] — Structure flexibility, higher values means more flexibility
+- `text_guidance_scale`: float (optional) [default: 8.0] — Prompt adherence strength
+
+#### `get_topdown_tileset`
+Get a topdown Wang tileset by ID. Returns status, download links, base tile IDs for chaining, and an example map image.
+
+**Parameters:**
+- `tileset_id`: str (required) — The UUID of the topdown tileset to retrieve
+
+#### `list_topdown_tilesets`
+List your top-down Wang tilesets. One line per tileset with status.
+Use get_topdown_tileset(tileset_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10] — Maximum number of tilesets to return
+- `offset`: int (optional) [default: 0] — Number of tilesets to skip
+
+#### `delete_topdown_tileset`
+Delete a tileset by ID.
+
+**Parameters:**
+- `tileset_id`: str (required) — The UUID of the tileset to delete
+
+### Sidescroller Tileset Tools
+
+**💡 2D Platformer Tips:**
+- Designed for side-view perspective (not top-down)
+- Creates 16 tiles with transparent backgrounds
+- Platform tiles have flat surfaces for gameplay
+- Use `transition_description` for decorative top layers
+- Chain tilesets using `base_tile_id` for consistency
+
+#### `create_sidescroller_tileset`
+Generate a sidescroller tileset for 2D platformer games with side-view perspective.
+Cost: 2 or 3 generations — NOT 1. (Measured over 1,186 prod charges: mean
+Generation time: ~100 seconds (async processing)
+
+**Example (platform variety):**
+```python
+# Stone → Wood → Metal platforms
+stone = create_sidescroller_tileset(
+    lower_description='stone brick',
+    transition_description='moss and vines'
+)
+wood = create_sidescroller_tileset(
+    lower_description='wooden planks',
+    transition_description='grass',
+    base_tile_id=stone.base_tile_id
+)
+```
+
+**Parameters:**
+- `lower_description`: str (required) — Platform/center material (e.g., 'stone brick', 'wooden planks', 'metal grating')
+- `transition_description`: str (required) — Platform surface/top layer (e.g., 'grass', 'snow cover', 'moss')
+- `transition_size`: float (optional) [default: 0.0] — Size of terrain transition. Controls how much of the surface layer appears (0.0 = no surface layer, 0.25 = light surface layer, 0.5 = heavy surface layer)
+- `tile_size`: dict[str, int] (optional) [default: {'width': 16, 'height': 16}] — Tile dimensions as {"width": N, "height": N}, OR a bare int N for a square tile (same shape create_tiles_pro accepts). 16 or 32 pixels.
+- `outline`: Optional[Literal["single color outline", "selective outline", "lineless"]] (optional) [default: None] — Outline style
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading", "highly detailed shading"]] (optional) [default: None] — Shading style
+- `detail`: Optional[Literal["low detail", "medium detail", "highly detailed"]] (optional) [default: None] — Detail level
+- `tile_strength`: float (optional) [default: 1.0] — Pattern consistency
+- `base_tile_id`: Optional[str] (optional) [default: None] — ID of existing tile to use as reference. Use to create connected tilesets
+- `tileset_adherence`: float (optional) [default: 100.0] — Structure strictness and adherence to reference image
+- `tileset_adherence_freedom`: float (optional) [default: 500.0] — Structure flexibility, higher values means more flexibility
+- `text_guidance_scale`: float (optional) [default: 8.0] — Prompt adherence strength
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation
+
+#### `get_sidescroller_tileset`
+Get a sidescroller tileset by ID. Returns status, download links, and tile count.
+Sidescroller tilesets are for 2D platformer games with transparent backgrounds.
+
+**Parameters:**
+- `tileset_id`: str (required) — ID of the sidescroller tileset to retrieve
+
+#### `list_sidescroller_tilesets`
+List your sidescroller (platformer) tilesets. One line per tileset with status.
+Use get_sidescroller_tileset(tileset_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 20] — Maximum number of tilesets to return
+- `offset`: int (optional) [default: 0] — Number of tilesets to skip
+
+#### `delete_sidescroller_tileset`
+Delete a sidescroller tileset by ID.
+
+**Parameters:**
+- `tileset_id`: str (required) — The UUID of the sidescroller tileset to delete
+
+### Isometric Tile Tools
+
+**💡 Isometric Design Tips:**
+- Creates individual 3D-looking tiles for game assets
+- Sizes above 24px produce better quality (32px recommended)
+- `tile_shape` controls thickness: thin (~10%), thick (~25%), block (~50%)
+- Perfect for blocks, items, terrain pieces, buildings
+- Use consistent settings across tiles for cohesive look
+
+#### `create_isometric_tile`
+Create an isometric tile. Returns immediately with tile ID.
+Use get_isometric_tile to check status and retrieve the result (~1-3 min).
+
+**Examples:**
+```python
+# Terrain tiles
+grass = create_isometric_tile('grass on top of dirt', size=32)
+stone = create_isometric_tile('stone brick wall with moss', size=32)
+
+# Game objects
+chest = create_isometric_tile(
+    description='wooden treasure chest with gold trim',
+    tile_shape='block',  # Full height for objects
+    detail='highly detailed'
+)
+```
+
+**Parameters:**
+- `description`: str (required) — Text description of the tile (e.g., 'grass on top of dirt')
+- `size`: int (optional) [default: 32] — Tile canvas size in pixels (16-64). Sizes above 24px often produce better quality results.
+- `tile_shape`: Literal["thick tile", "thin tile", "block"] (optional) [default: block] — Tile thickness. Thicker tiles allow more height variation in game maps. thin tile: ~10% canvas height, thick tile: ~25% height, block: ~50% height.
+- `outline`: Optional[Literal["single color outline", "selective outline", "lineless"]] (optional) [default: lineless] — Outline style (weakly guiding).
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading", "highly detailed shading"]] (optional) [default: basic shading] — Shading complexity (weakly guiding).
+- `detail`: Optional[Literal["low detail", "medium detail", "highly detailed"]] (optional) [default: medium detail] — Detail level (weakly guiding).
+- `text_guidance_scale`: float (optional) [default: 8.0] — How closely to follow the text description (1.0-20.0)
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation
+
+#### `get_isometric_tile`
+Get an isometric tile by ID. Returns tile image and metadata if completed, or progress if processing.
+
+**Parameters:**
+- `tile_id`: str (required) — The UUID of the isometric tile to retrieve
+
+#### `list_isometric_tiles`
+List your isometric tiles. One line per tile with status.
+Use get_isometric_tile(tile_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10] — Maximum number of tiles to return
+- `offset`: int (optional) [default: 0] — Number of tiles to skip
+
+#### `delete_isometric_tile`
+Delete an isometric tile by ID. Only the owner can delete their own tiles.
+
+**Parameters:**
+- `tile_id`: str (required) — The UUID of the isometric tile to delete
+
+### Object Tools
+
+**💡 Tips:**
+- Objects support 1-direction (single view) or 8-direction (full rotation)
+- Multi-frame objects go through a review step — select your favorites
+- Objects can be animated after creation
+
+#### `create_map_object`
+Create a pixel art object with transparent background. ~30-90s. Returns object ID immediately.
+
+**Parameters:**
+- `description`: str (required) — Object description (e.g., 'wooden barrel', 'stone fountain')
+- `width`: Optional[int] (optional) [default: None] — Canvas width in pixels (required for basic mode, auto-detected from background_image if provided)
+- `height`: Optional[int] (optional) [default: None] — Canvas height in pixels (required for basic mode, auto-detected from background_image if provided)
+- `view`: Literal["low top-down", "high top-down", "side"] (optional) [default: high top-down] — Camera angle
+- `outline`: Optional[Literal["single color outline", "selective outline", "lineless"]] (optional) [default: single color outline] — Outline style
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading"]] (optional) [default: medium shading] — Shading complexity
+- `detail`: Optional[Literal["low detail", "medium detail", "high detail"]] (optional) [default: medium detail] — Detail level
+- `background_image`: Optional[str] (optional) [default: None] — Background image for style matching (optional). Format: {"type": "base64", "base64": "..."}. File paths are not supported (server cannot read local files). If provided without inpainting config, uses default: oval 60%.
+- `inpainting`: Optional[str] (optional) [default: None] — Inpainting configuration as JSON string (optional). DEFAULT: If background_image provided but this omitted, uses oval 0.6. Options: {"type": "oval", "fraction": 0.3} for auto oval mask, {"type": "rectangle", "fraction": 0.5} for auto rectangle mask, {"type": "mask", "mask_image": "base64..."} for custom mask. Mask convention: WHITE (255) = area where AI generates, BLACK (0) = frozen/preserved context. Fraction is 0.05-0.95 (how much of background the shape covers).
+
+#### `get_map_object`
+Get map object status and data. Returns image if completed.
+The object is permanent — place it on a map with place_map_object.
+Retries saving finished pixels when B2 or database persistence failed.
+
+**Parameters:**
+- `object_id`: str (required) — Object ID to retrieve
+
+#### `create_1_direction_object`
+Queue a 1-direction object (20-40 generations, ~30-90s). Returns object_id immediately.
+
+**Parameters:**
+- `description`: str (required) — Object description (e.g., 'wooden barrel', 'forest mushroom')
+- `size`: Optional[int] (optional) [default: None] — Square image size in pixels (min 16, max 256). Defaults to 64 when omitted. Cannot be set together with style_images — when style_images are provided, the largest style image determines the output size. The effective size also determines how many candidate objects are produced in one shot (≤42→64, ≤85→16, ≤170→4, else 1). Multi-object results enter 'review' status — call get_object to inspect, then select_object_frames or dismiss_review to finalize.
+- `view`: Literal["top-down", "sidescroller"] (optional) [default: top-down] — View. NOTE: 1-direction uses top-down/sidescroller; create_8_direction_object and create_map_object use a different set (low top-down / high top-down / side).
+- `style_images`: list[StyleReferenceImage] (required) — Style reference images, PNG/JPEG base64 (max 256x256 px each). Each image: {"base64": "<png-data>", "format": "png"}. The maximum count depends on `size`: ≤85 → 8, ≤170 → 4, else → 1. When empty, a default style is used based on `view`. Note: this is NOT the same as reference_image on tileset tools (which is a small 16x16/32x32 texture).
+- `item_descriptions`: Optional[list[str]] (optional) [default: None] — Per-object descriptions when `size` produces multiple objects. Length must not exceed the object count derived from `size`. Supplying FEWER is allowed and does NOT shrink the grid: the remaining slots are generated from `description`, so they come back as extra objects in the same style, not as variations of the items you listed. One description at size=48 therefore returns 16 objects, only the first of which is the one you named.
+
+#### `create_8_direction_object`
+Queue an 8-direction object rendered from 8 angles (20-40 generations, ~2-4 min).
+Returns object_id immediately. Use get_object to check status.
+For single-direction objects, use create_1_direction_object instead.
+
+**Parameters:**
+- `description`: str (required) — Object description (e.g., 'wooden barrel', 'stone fountain')
+- `size`: Optional[int] (optional) [default: None] — Square image size in pixels (min 24, max 168 — below 24 the eight angles stop being distinguishable, so use create_1_direction_object for 16px). Defaults to 64 when omitted. Cannot be set together with reference_image_base64 or style_image_base64 — in those cases the image dimensions determine the output size.
+- `view`: Literal["low top-down", "high top-down", "side"] (optional) [default: low top-down] — Camera angle.
+- `reference_image_base64`: Optional[str] (optional) [default: None] — Reference image of an OBJECT/item — generates 8 rotations from it. Works well for props (barrels, chests). NOTE: identity transfer is unreliable for CHARACTER/humanoid sprites — the reference sits in the center of a grid of placeholder characters and can lose the salience contest, so the output may resemble a generic character instead. For a character sprite, use create_character(mode="v3", reference_image_base64=...) instead — that pipeline reproduces the input faithfully. Mutually exclusive with style_image_base64.
+- `style_image_base64`: Optional[str] (optional) [default: None] — Style reference — generates a new object matching the description with the style of this image. Mutually exclusive with reference_image_base64.
+- `style_object_id`: Optional[str] (optional) [default: None] — ID of one of your existing 8-direction objects to use as the style reference. Its 8 directional sprites guide the new object's style in every direction. The style object must be completed with 8 directions, and size must be at least its sprite content size — the job fails fast with the required size otherwise.
+
+#### `get_object`
+Get object details. Branches by status:
+- processing: progress + ETA
+- review: candidate frame URLs + inline previews
+- completed: rotation URLs, animations, download link
+- failed: error + retry hint
+
+**Parameters:**
+- `object_id`: str (required) — Object UUID to retrieve
+- `include_preview`: bool (optional) [default: True] — Embed preview image (south for 8-dir, candidates for review).
+
+#### `list_objects`
+List your objects with status and progress. One line per object.
+Use get_object(object_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10]
+- `offset`: int (optional) [default: 0]
+- `tags`: Optional[str] (optional) [default: None] — Comma-separated tags to filter by (matches ANY tag).
+- `status_filter`: Optional[str] (optional) [default: None] — Filter by status: completed, review, pending, processing, failed.
+- `search`: Optional[str] (optional) [default: None] — Filter by name, case-insensitive. Matches the name shown here and the description it was created from, so 'chest' finds 'treasure chest'.
+
+#### `animate_object`
+Add an animation to an existing object. Returns one queued job per direction
+submitted; each job takes ~30-60s.
+Cost warning: when generating on a subscription, mode='pro' costs 20-40
+
+**Parameters:**
+- `object_id`: str (required) — Object UUID to animate (must be a completed object).
+- `mode`: Literal["pro", "v3"] (optional) [default: v3] — Which animation mode to use. Prefer 'v3' (default) — it usually produces higher quality results than 'pro', and is cheaper. Use 'pro' only when its different stylistic output is specifically needed.
+
+Cost warning: when generating on a subscription, 'pro' mode costs 20-40 generations per direction (160-320 for a full 8-direction animation).
+- `animation_description`: Optional[str] (optional) [default: None] — Describe the animation, e.g. 'walking cheerfully'. Required when creating a new animation; can be omitted when adding directions to an existing animation via animation_group_id (the existing description is inherited).
+- `directions`: Optional[list[Literal["south", "south-west", "west", "north-west", "north", "north-east", "east", "south-east"]]] (optional) [default: None] — Which directions to animate.
+- Do NOT pass `directions` for 1-direction objects. They always animate the single internal direction; passing this returns an error.
+- For 8-direction objects, omit `directions` to animate all 8 cardinals on a new animation, or — when extending an existing animation via `animation_group_id` — to fill in only the cardinals not yet generated. You usually don't need to compute the missing set yourself; passing `animation_group_id` alone is enough. If you do pass `directions` explicitly, it must be a subset of the cardinals.
+- `frame_count`: Optional[int] (optional) [default: None] — Frames per direction. Independent per-direction — you do NOT need to match the frame_count of existing directions when extending an animation. Just omit this and use the per-mode default.
+
+- mode='v3': any even number 4-16 (default 8). Note: v3 stores the input reference frame alongside the generated ones (unless keep_first_frame=false), so frame_count=8 stores 9 frames total (and that's what get_object reports). To extend a v3 animation that get_object shows as frame_count=9, just omit this field — the default produces a matching 9-frame output.
+- mode='pro' depends on object canvas (longest side):
+  - canvas ≤ 64px → 16 frames (only)
+  - canvas ≤ 128px → 4, 9, or 16 frames
+  - canvas ≤ 170px → 9 frames (only)
+  - canvas larger than 170px → pro not supported (use mode='v3')
+  - default: smallest available count for the canvas size
+- `animation_group_id`: Optional[UUID] (optional) [default: None] — Mostly only relevant for 8-direction objects: pass the animation_group_id of an existing animation (from get_object) to add more directions to it. Omit to create a new animation; the new animation_group_id is returned so subsequent calls can extend it.
+- `display_name`: Optional[str] (optional) [default: None] — Optional name for the animation, shown in the UI and used when exporting.
+- `replace_existing`: bool (optional) [default: False] — Set true to regenerate a direction that has already been animated in this animation. Without this, re-animating the same direction returns an error.
+- `confirm_cost`: bool (optional) [default: False] — Only for pro animations (mode="pro"). NEVER set to true on first call. First call without it to see the cost, then show the cost to the user. Only set to true after the user explicitly confirms they want to spend the generations. Not needed for v3 animations.
+- `custom_start_frame_base64`: Optional[str] (optional) [default: None] — Optional custom starting pose for the animation (mode='v3' only). When omitted, the object's idle frame for the chosen direction is used as the start. When provided, the image's dimensions become the canvas for the animation (subject to v3's 256x256 maximum).
+
+REQUIRES EXACTLY ONE DIRECTION.
+- 8-direction objects: ASK the user which direction the animation should be for before calling this tool. Do NOT pick a direction yourself, and do NOT default to south. The eight options are: south, south-west, west, north-west, north, north-east, east, south-east. Pass the user's choice as directions=[<that direction>].
+- 1-direction objects: do not pass `directions` at all; the single internal direction is auto-resolved.
+
+Not compatible with mode='pro'.
+- `end_frame_base64`: Optional[str] (optional) [default: None] — Target pose to interpolate toward (mode='v3' only). The model animates between the start frame (idle or custom_start_frame_base64) and this end frame. Dimensions must match the start frame. Same single-direction requirement as custom_start_frame_base64. Not compatible with mode='pro'.
+- `keep_first_frame`: bool (optional) [default: True] — Keep the input reference frame as frame 0 of the stored animation (mode='v3' only). Set false to store exactly frame_count generated frames — the reference start frame is stripped, so frame_count=8 stores 8 frames instead of 9. Not compatible with mode='pro'.
+
+#### `create_object_state`
+Queue a state (variant) of an existing object. Auto-waits up to 30s for the
+source object to complete. Returns a new object ID grouped with the source
+via group_id.
+
+**Parameters:**
+- `object_id`: str (required) — Source object UUID to create a state of
+- `edit_description`: str (required) — Edit instructions (e.g., 'add moss', 'make it golden').
+- `seed`: Optional[int] (optional) [default: None]
+- `state_name`: Optional[str] (optional) [default: None] — Name for the new state (e.g. 'Mossy', 'Golden'). Defaults to the edit description truncated to 20 characters.
+
+#### `delete_object`
+Permanently delete an object, its rotations/frames, animations, tags,
+project assignments, and storage files. Immediate — this cannot be undone.
+
+**Parameters:**
+- `object_id`: str (required) — Object UUID to delete
+
+#### `update_object_tags`
+Replace ALL tags on an object (set operation, free, synchronous).
+
+**Parameters:**
+- `object_id`: str (required) — Object UUID whose tags to replace
+- `tags`: list[str] (required) — Full replacement tag list (max 20 tags, 50 chars each; whitespace trimmed, case-insensitive dedup). Empty list clears all tags.
+
+#### `select_object_frames`
+Promote selected frames of a review object to individual completed objects.
+
+**Parameters:**
+- `object_id`: str (required) — Review-status object UUID
+- `indices`: list[int] (required) — 0-based indices of frames to keep. Each becomes a separate completed 1-direction object.
+- `common_tag`: Optional[str] (optional) [default: None] — Optional tag applied to every newly-created object.
+
+#### `dismiss_review`
+Discard a review-status object and delete all its candidate frames.
+Used when none of the consistent-style candidates are worth keeping.
+
+**Parameters:**
+- `object_id`: str (required) — Review-status object UUID to discard
+
+#### `place_map_object`
+Place an object or character on a map at a terrain cell.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `x`: int (required) — Terrain cell to centre the object on, as in get_map
+- `y`: int (required) — Terrain cell to centre the object on, as in get_map
+- `object_id`: Optional[str] (optional) [default: None] — Object UUID from list_objects (or create_map_object)
+- `character_id`: Optional[str] (optional) [default: None] — Character UUID from list_characters
+- `direction`: Optional[str] (optional) [default: None] — Facing for a character (south, north, east...). Leave unset for objects — most have a single sprite and it is picked automatically.
+- `layer`: Optional[int] (optional) [default: None] — Draw order; higher is on top. Defaults to the next layer.
+- `show`: bool (optional) [default: True] — Return a rendered image of the placement
+
+#### `list_map_objects`
+List the objects and characters placed on a map, with their cell positions.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `search`: Optional[str] (optional) [default: None] — Filter by name, case-insensitive
+- `limit`: int (optional) [default: 50] — Max rows to return
+- `offset`: int (optional) [default: 0] — Pagination offset
+
+#### `move_map_object`
+Move a placed object or character to a different cell.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `placement_id`: str (required) — Placement id from list_map_objects
+- `x`: int (required) — Cell to re-centre it on, as in get_map
+- `y`: int (required) — Cell to re-centre it on, as in get_map
+- `show`: bool (optional) [default: True] — Return a rendered image of the result
+
+#### `remove_map_object`
+Remove a placed object or character from a map.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `placement_id`: str (required) — Placement id from list_map_objects
+
+### Chat & Agent Tools
+
+**💡 Tips:**
+- Send messages to the PixelLab game-building agent
+- Agent can build games, create assets, deploy projects
+- `chat_send_message` blocks until the agent finishes (30s-5min typical)
+- Omit `conversation_id` to start a new conversation
+
+#### `chat_list_conversations`
+List your chat conversations. Excludes branches. Shows processing status.
+
+**Parameters:**
+- `limit`: int (optional) [default: 20] — Max conversations to return
+- `offset`: int (optional) [default: 0] — Pagination offset
+- `project_id`: Optional[str] (optional) [default: None] — Filter by project ID
+
+#### `chat_get_messages`
+Get messages from a conversation. Strips HTML from assistant responses.
+
+**Parameters:**
+- `conversation_id`: str (required) — Conversation ID
+- `limit`: int (optional) [default: 30] — Max messages to return
+- `offset`: int (optional) [default: 0] — Pagination offset
+
+#### `chat_send_message`
+Send a message and get the agent's response.
+Creates a conversation if needed. Blocks until the agent finishes (up to 10 min).
+
+**Parameters:**
+- `content`: str (required) — Message to send to the agent
+- `conversation_id`: Optional[str] (optional) [default: None] — Conversation ID. Omit to create a new conversation.
+- `project_id`: Optional[str] (optional) [default: None] — Project ID (used when creating a new conversation)
+
+### Sandbox Tools (Code Execution)
+
+**💡 Tips:**
+- Create isolated dev environments for building games
+- Each session has Node.js, TypeScript, git
+- Deploy games to *.dev.pixellab.run URLs
+
+#### `sandbox_create_session`
+Create a sandbox session and return initial workspace state.
+
+**Parameters:**
+- `project_id`: str (required)
+- `branch_name`: str (optional) [default: main]
+
+#### `sandbox_destroy_session`
+Destroy a sandbox session.
+
+**Parameters:**
+- `session_id`: str (required)
+- `sync`: bool (optional) [default: True]
+
+#### `sandbox_bash`
+Execute a shell command.
+
+**Parameters:**
+- `session_id`: str (required)
+- `command`: str (required)
+- `timeout`: int (optional) [default: 300]
+
+#### `sandbox_run`
+Run JS in the sandbox with a typed file/shell API (Code Mode).
+
+**Parameters:**
+- `session_id`: str (required)
+- `code`: str (required)
+
+#### `sandbox_read`
+Read a file.
+
+**Parameters:**
+- `session_id`: str (required)
+- `path`: str (required)
+- `offset`: Optional[int] (optional) [default: None]
+- `limit`: Optional[int] (optional) [default: None]
+
+#### `sandbox_write`
+Write a file.
+
+**Parameters:**
+- `session_id`: str (required)
+- `path`: str (required)
+- `content`: str (required)
+- `force`: bool (optional) [default: True]
+
+#### `sandbox_edit`
+Edit a file via search-and-replace.
+
+**Parameters:**
+- `session_id`: str (required)
+- `path`: str (required)
+- `old_string`: str (required)
+- `new_string`: str (required)
+
+#### `sandbox_sync`
+Sync git to B2 storage.
+
+**Parameters:**
+- `session_id`: str (required)
+
+#### `sandbox_deploy_worker`
+Build and deploy a Cloudflare Worker for a project.
+
+**Parameters:**
+- `session_id`: str (required)
+- `project_slug`: str (required)
+- `project_id`: str (required)
+
+#### `sandbox_undeploy`
+Delete S3 objects for a deployed branch and invalidate the CloudFront distribution.
+
+**Parameters:**
+- `project_slug`: str (required)
+- `branch_name`: str (optional) [default: main]
+
+#### `sandbox_playtest`
+Run a visual playtest of a deployed game.
+
+**Parameters:**
+- `session_id`: str (required)
+- `instruction`: str (required)
+- `preview_url`: str (required)
+
+#### `sandbox_read_image`
+Read an image from a sandbox session and get a vision model analysis.
+
+**Parameters:**
+- `session_id`: str (required) — Sandbox session ID.
+- `path`: str (required) — Path to the image file in the sandbox (e.g. 'game/assets/player.png').
+- `question`: str (optional) [default: Describe this image in detail.] — What to analyze about the image — be specific (e.g. 'Is the player sprite facing south?', 'What colors are used in this tileset?').
+
+### Other Tools
+
+#### `add_to_project`
+Let a game project use a character, object or tileset you already own.
+
+**Parameters:**
+- `project_id`: str (required) — The game project, from list_projects
+- `asset_id`: str (required) — A character, object or tileset you own — the id from list_characters, list_objects or list_topdown_tilesets
+
+#### `delete_animation`
+Delete animations from a character or object. Removes storage files and database rows.
+Use get_character()/get_object() first to see available animations. Omit direction to
+delete all directions at once. For objects, animation_group_id (from get_object) can
+be passed instead of animation_type.
+
+**Parameters:**
+- `character_id`: str (required) — Character or object UUID
+- `animation_type`: Optional[str] (optional) [default: None] — Animation name to delete. Characters: animation type (e.g. 'walk', 'idle', 'attack'), see get_character(). Objects: the animation name shown by get_object(). Required unless animation_group_id is provided.
+- `direction`: Optional[str] (optional) [default: None] — Specific direction to delete (e.g. 'south'). Omit to delete all directions of this animation.
+- `animation_group_id`: Optional[UUID] (optional) [default: None] — Animation group UUID, shown by get_character()/get_object() as [group: ...]. Selects one animation unambiguously (preferred over animation_type when a name repeats); deletes all its directions unless direction is set.
+
+#### `create_ui_asset`
+Queue a pixel-art UI panel (20-40 generations, ~30-90s). Returns ui_asset_id immediately.
+Omit `pieces` for a default rounded-rect panel. Use get_ui_asset to check status.
+
+**Parameters:**
+- `description`: str (required) — Style of the UI panel (e.g. 'wooden RPG panel with gold trim')
+- `width`: int (optional) [default: 256] — Output width in px (192–688). Max is aspect-gated, NOT freely combinable: square ≤512×512, 16:9 ≤688×384, 9:16 ≤384×688, 4:3 ≤600×448, 3:4 ≤448×600. E.g. 688×512 is rejected (resolves to 4:3, max 600×448) — use 688×384 or 512×512.
+- `height`: int (optional) [default: 256] — Output height in px (192–688). Max is aspect-gated (see width): the two axis maxes cannot be combined — 688 only with a 16:9/9:16 partner (688×384 or 384×688), 512 only as a square (512×512).
+- `color_palette`: Optional[str] (optional) [default: None] — Optional palette hint (e.g. 'brown and gold')
+- `style_image_base64`: Optional[str] (optional) [default: None] — Optional style reference image (base64 PNG/JPEG, ideally <=1024px per side). The panel matches its palette, pixel scale, outlines and shading — the strongest way to make UI fit an existing game. Only the art style is copied, never its content or layout.
+- `no_background`: bool (optional) [default: True] — Remove background after generation
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible output
+- `name`: Optional[str] (optional) [default: None] — Friendly name for the saved asset
+- `project_id`: Optional[str] (optional) [default: None] — Optional PixelLab project ID to assign the finished UI asset to
+- `elements`: Optional[list[str]] (optional) [default: None] — Named UI element types to scaffold the panel from (auto-positioned, no coords needed). Available: button, icon_button, toolbar, tab, panel, window, health_bar, avatar, triangle, pentagon, hexagon, octagon. Combine with `pieces` for custom shapes; omit both for a default panel.
+- `pieces`: Optional[list[UiPieceRect | UiPieceCircle | UiPiecePolygon]] (optional) [default: None] — Advanced shape template (validated). Each piece needs a unique `id`, a `kind`, and an optional `label`. Allowed kinds: rounded_rect {x,y,w,h,radius}, circle {x,y,r}, polygon {x,y,r,sides,phase}. Coords are on a virtual editor canvas — longer side 0–512, shorter side scaled to the output aspect (a 16:9 panel uses a 512×288 coordinate grid, not the output size). Omit for a default full-canvas panel.
+
+#### `get_ui_asset`
+Get UI panel details. Processing → progress; completed → image URL + download.
+
+**Parameters:**
+- `ui_asset_id`: str (required) — UI asset UUID to retrieve
+- `include_preview`: bool (optional) [default: True] — Embed the panel image inline.
+
+#### `list_ui_assets`
+List your UI panels with status. One line per asset.
+Use get_ui_asset(ui_asset_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10]
+- `offset`: int (optional) [default: 0]
+
+#### `delete_ui_asset`
+Permanently delete a UI panel (and, for a template, its split elements + their
+states) plus the backing image files. Immediate — this cannot be undone.
+
+**Parameters:**
+- `ui_asset_id`: str (required) — UI asset UUID to delete
+
+#### `agent_help`
+Ask for help using PixelLab MCP tools, workflows, or features.
+A knowledge agent searches our docs and returns a concise answer.
+
+**Parameters:**
+- `question`: str (required) — What you need help with (tools, workflows, billing, features, deployment). Include the context you are working in. Max 2000 characters.
+
+#### `agent_feedback`
+Report feedback about MCP tools. Use this when something is hard to use,
+confusing, broken, or could be improved. Feedback helps us make the tools better.
+
+**Parameters:**
+- `tool_name`: str (required) — Which MCP tool the feedback is about (e.g., 'create_character', 'get_object')
+- `feedback_type`: Literal["bug", "confusing", "suggestion", "missing_feature"] (required) — Type of feedback.
+- `message`: str (required) — What's wrong or what could be improved. Be specific.
+
+#### `create_tiles_pro`
+Create pixel art tiles (pro).
+Generation time: ~15-30 seconds (async processing)
+
+**Parameters:**
+- `description`: str (required) — Text description of the tiles. For best control, number each tile: '1). grass tile 2). stone tile 3). lava tile'.
+- `tile_type`: Literal["hex", "hex_pointy", "isometric", "oblique", "octagon", "square_topdown"] (optional) [default: isometric] — Shape of the tiles. hex: flat-top hexagonal, hex_pointy: pointy-top hexagonal, isometric: diamond/rhombus, oblique: true square top with the depth extruded diagonally down-right at 45 degrees (tile_feature='tileset' or 'building' only), octagon: 8-sided polygon, square_topdown: square at angle.
+- `tile_size`: int (optional) [default: 32] — Tile size in pixels (16-128). 32px is recommended for most use cases.
+- `tile_height`: Optional[int] (optional) [default: None] — Tile height in pixels for non-square tiles (e.g., 128 for 64x128). Omit to compute from tile_type geometry and view angle.
+- `tile_view`: Literal["top-down", "high top-down", "low top-down", "side"] (optional) [default: low top-down] — View angle controlling tile depth. top-down: no depth, high top-down: ~15%, low top-down: ~30%, side: ~50%.
+- `tile_view_angle`: Optional[float] (optional) [default: None] — Continuous view angle in degrees (0-90). Overrides tile_view when provided. 0=side, 90=top-down.
+- `tile_depth_ratio`: Optional[float] (optional) [default: None] — Tile depth/thickness ratio (0.0-1.0). Controls vertical depth. Overrides default from tile_view.
+- `tile_flat_top_px`: Optional[int] (optional) [default: None] — Isometric top/bottom cap width: 2px classic or 4px modern. Only used when tile_type='isometric'.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation
+- `style_images`: Optional[list[dict]] (optional) [default: None] — Style reference tiles as JSON array. When provided, tiles match the style and dimensions of these references. Shape controls (tile_type, tile_size, tile_view, etc.) are ignored. Format: [{"base64": "...", "width": 64, "height": 80}, ...]
+- `style_options`: Optional[str] (optional) [default: None] — Options for what to copy from style images, as JSON. Format: {"color_palette": true, "outline": true, "detail": true, "shading": true}
+- `outline_mode`: Literal["outline", "segmentation"] (optional) [default: outline] — Tile outline mode. "outline" = gray shading with outlines (default). "segmentation" = RED/BLUE color zones without outlines — produces cleaner tiles with no outline artifacts.
+- `tile_feature`: Optional[Literal["tileset"]] (optional) [default: None] — Set to "tileset" to generate a connectable TERRAIN TRANSITION instead of independent tiles: a 16-tile corner set for isometric/square_topdown/oblique, or a 32-tile coastline for hex/hex_pointy. Describe it as a transition ("grass to water") — the first terrain is the main one. Returns per-tile placement rules (see get_tiles_pro). Cannot be combined with style_images. For square top-down transitions, create_topdown_tileset is the dedicated tileset model and adds transition width, per-terrain reference images and style matching. For paths use create_path_tiles; for walls/floors use create_building_kit.
+- `oblique_lean`: Optional[float] (optional) [default: None] — Oblique tilesets only: horizontal shear per pixel of depth. 0.5 = classic cabinet (~27 degrees), 1.0 = a full 45 degree diagonal (default).
+
+#### `create_path_tiles`
+Create a connectable PATH/ROAD tile set (18 configs).
+
+**Parameters:**
+- `description`: str (required) — Ground and path, e.g. "grass with a dirt road" or "stone floor with a mosaic walkway". Describe both — the set renders the path over the ground.
+- `tile_type`: Literal["square_topdown", "isometric"] (optional) [default: square_topdown] — Tile shape. square_topdown: square tiles at an angle. isometric: diamond/rhombus.
+- `tile_size`: int (optional) [default: 32] — Tile size in pixels. square_topdown requires exactly 32; isometric accepts 48-96.
+- `tile_view_angle`: Optional[float] (optional) [default: None] — Camera elevation in degrees (0=side, 90=straight down).
+- `tile_depth_ratio`: Optional[float] (optional) [default: None] — Tile thickness as a fraction of tile size.
+- `outline_mode`: Literal["outline", "segmentation"] (optional) [default: outline] — "outline" = gray shading with outlines. "segmentation" = color zones, cleaner seamless edges.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation
+
+#### `create_building_kit`
+Create a BUILDING KIT — floor, connectable walls, doorways, pillar, stairs.
+
+**Parameters:**
+- `wall_description`: str (required) — Wall material, e.g. "stone brick walls" or "weathered timber walls".
+- `floor_description`: str (required) — Floor material, e.g. "wooden plank floor" or "flagstone floor".
+- `tile_type`: Literal["isometric", "square_topdown", "oblique"] (optional) [default: isometric] — Projection. isometric: diamond lattice. square_topdown: plain square grid. oblique: true square top with walls sheared down-right at 45 degrees.
+- `tile_size`: int (optional) [default: 32] — Tile size in pixels. isometric requires 32-96; square_topdown and oblique accept 16-96.
+- `wall_tiles`: int (optional) [default: 2] — Wall height in tiles (1-3).
+- `floor2_description`: Optional[str] (optional) [default: None] — Upper-storey / roof surface material. Defaults to the wall material.
+- `layout`: Optional[Literal["grid", "materials"]] (optional) [default: None] — grid: each shaped piece is painted individually (richer; isometric default). materials: flat swatches are painted and pieces rendered from them (more consistent; default for square_topdown/oblique).
+- `wall_angle`: Optional[float] (optional) [default: None] — square_topdown only: wall storey height as its own camera angle, decoupled from the ground pitch.
+- `oblique_lean`: Optional[float] (optional) [default: None] — Wall shear per pixel of height. 0.5 = classic cabinet (~27 degrees), 1.0 = a full 45 degree diagonal.
+- `tile_view_angle`: Optional[float] (optional) [default: None] — Camera elevation in degrees.
+- `outline_mode`: Literal["outline", "segmentation"] (optional) [default: outline] — "outline" = gray shading with outlines. "segmentation" = color zones, cleaner seamless edges.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation
+
+#### `get_tiles_pro`
+Get tiles pro by ID. Returns tile data and storage URLs if completed, or progress if processing.
+
+**Parameters:**
+- `tile_id`: str (required) — The UUID of the tiles pro to retrieve
+
+#### `list_tiles_pro`
+List your tiles (pro). One line per tile with status.
+Use get_tiles_pro(tile_id) for full details.
+
+**Parameters:**
+- `limit`: int (optional) [default: 10] — Maximum number of tiles to return
+- `offset`: int (optional) [default: 0] — Number of tiles to skip
+
+#### `delete_tiles_pro`
+Delete tiles pro by ID. Only the owner can delete their own tiles.
+
+**Parameters:**
+- `tile_id`: str (required) — The UUID of the tiles pro to delete
+
+#### `create_portrait_character`
+Convert between a portrait and a character sprite (pro).
+Generation time: ~30-80 seconds (async processing)
+
+**Parameters:**
+- `image`: Optional[str] (optional) [default: None] — Input image as base64-encoded PNG. PREFER image_url because MCP/LLM clients can alter or truncate opaque base64 tool arguments.
+- `image_url`: Optional[str] (optional) [default: None] — Public HTTPS URL or data URL for the input image. Prefer this over image so the original bytes do not pass through the model.
+- `direction`: Literal["portrait_to_character", "character_to_portrait"] (optional) [default: portrait_to_character] — portrait_to_character: portrait in → full-body character sprite out. character_to_portrait: character in → bust portrait out.
+- `view`: Literal["low top-down", "high top-down", "side"] (optional) [default: low top-down] — Camera angle. low top-down: classic 3/4 RPG. high top-down: steeper. side: eye-level sidescroller.
+- `result_size`: Literal[16, 32, 48, 64, 128, 160] (optional) [default: 64] — Output sprite size in pixels. Cost: 16/32/48/64 = 20 generations (1K); 128/160 render at 2K for extra detail = 25 generations.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+
+#### `get_portrait_character`
+Get a portrait ↔ character result by job id.
+
+**Parameters:**
+- `job_id`: str (required) — The job id returned by create_portrait_character.
+
+#### `set_character_portrait`
+Attach a bust portrait to a character (no generation, free).
+
+**Parameters:**
+- `character_id`: str (required) — Character to attach the portrait to.
+- `image`: Optional[str] (optional) [default: None] — Portrait as base64-encoded PNG. Square is ideal; a non-square image is centred on a transparent square canvas.
+- `from_job_id`: Optional[str] (optional) [default: None] — Instead of `image`: the job id of a completed create_portrait_character run. The sprite is copied straight across, so it never has to pass through your context.
+
+#### `create_vocal_animation`
+Generate a talking mouth-position set ("visemes") for a character's portrait.
+Generation time: ~2-5 minutes (async processing)
+
+**Parameters:**
+- `character_id`: Optional[str] (optional) [default: None] — Character to generate the expression for; it must already have a portrait, and the finished set is saved onto it so later calls only need the character id. Mutually exclusive with `image`.
+- `image`: Optional[str] (optional) [default: None] — Generate from this portrait PNG (base64) instead, without a character. Nothing is stored: the mouth positions come back from get_vocal_animation and you pass that job id to create_talking_gif. Use this when the user only has a portrait. Mutually exclusive with `character_id`. Max 256x256.
+- `mood`: Literal["neutral", "happy", "angry", "sad", "surprised"] (optional) [default: neutral] — Expression baked into the face (brows/eyes/cheeks). The mouth shapes are the same across moods. One call per mood; each is stored as its own row of the character's vocal grid.
+- `viseme_count`: Literal[3, 5, 7, 12] (optional) [default: 7] — How many mouth positions to generate. 3 = minimal (tiny portraits), 5 = basic, 7 = recommended, 12 = high quality (large close-ups). Must match across moods for the same character.
+- `no_background`: bool (optional) [default: True] — Cut out the background so frames are transparent PNGs — usually what you want for compositing over a game scene.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+
+#### `get_vocal_animation`
+Check a vocal-animation job and see which mouth positions have landed.
+
+**Parameters:**
+- `job_id`: str (required) — The job id returned by create_vocal_animation.
+
+#### `create_talking_gif`
+Turn text into a talking GIF using a character's existing mouth positions.
+
+**Parameters:**
+- `text_to_speak`: str (required) — The line of dialogue to lip-sync. Mouth shapes are derived from the letters, so any language using the latin alphabet works.
+- `character_id`: Optional[str] (optional) [default: None] — Character with a vocal animation. Mutually exclusive with `from_job_id`.
+- `from_job_id`: Optional[str] (optional) [default: None] — Use a portrait-only set instead: the job id from create_vocal_animation(image=...). Mutually exclusive with `character_id`. Available for 8 hours after that job finished.
+- `mood`: Optional[Literal["neutral", "happy", "angry", "sad", "surprised"]] (optional) [default: None] — Which generated expression to talk with. Defaults to the character's first available expression.
+- `frame_ms`: int (optional) [default: 90] — Milliseconds per mouth position (~90ms reads as natural speech; raise it for a slower delivery). GIF stores delays in 10ms steps, so this is rounded to the nearest 10 and the response reports what was actually used.
+- `hold_ms`: int (optional) [default: 600] — Pause on the closed mouth at the end so a looping GIF has a beat between takes.
+
+#### `get_lip_sync`
+Get the lip-sync frame plan for a line of dialogue — for animating in a game.
+
+**Parameters:**
+- `character_id`: str (required) — Character with a vocal animation (see create_vocal_animation). This tool is character-only on purpose: it hands the engine a spritesheet URL to load, and a portrait-only set has no stored spritesheet — for that case use create_talking_gif(from_job_id=...) instead.
+- `text_to_speak`: str (required) — The line of dialogue to lip-sync.
+- `mood`: Optional[Literal["neutral", "happy", "angry", "sad", "surprised"]] (optional) [default: None] — Which generated expression to use. Defaults to the character's first available expression.
+- `frame_ms`: int (optional) [default: 90] — Milliseconds to hold each mouth position.
+- `hold_ms`: int (optional) [default: 600] — Extra time on the final closed mouth.
+
+#### `create_font`
+Create a pixel-art font (pro).
+Generation time: ~30-80 seconds (async processing)
+
+**Parameters:**
+- `description`: str (required) — Style description of the font, e.g. 'warm orange arcade font'.
+- `weight`: Literal["Bold", "Regular"] (optional) [default: Regular] — Stroke weight. Guides glyph thickness.
+- `glyph_px`: Literal[8, 16, 32, 64] (optional) [default: 16] — Native glyph resolution in pixels (real bitmap size per glyph).
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `font_name`: Optional[str] (optional) [default: None] — Explicit font family name; defaults to '{description} {weight}'.
+
+#### `get_font`
+Get a font result by job id.
+
+**Parameters:**
+- `job_id`: str (required) — The job id returned by create_font.
+
+#### `create_image_pixflux`
+Generate a freeform pixel-art image from text (no character/object rig).
+Cost: 1 generation. Generation time: ~10-40 seconds (async).
+
+**Parameters:**
+- `description`: str (required) — What to draw (e.g. 'cute dragon', 'health potion bottle').
+- `width`: Optional[int] (optional) [default: None] — Canvas width in pixels. Defaults to the init_image width, or 128 when there is no init_image. The 16px floor is per-axis: the TOTAL area must still be at least 32x32=1024px, so 16x16 is rejected while 16x64 is fine.
+- `height`: Optional[int] (optional) [default: None] — Canvas height in pixels. Defaults to the init_image height, or 128 when there is no init_image. See width for the area rule.
+- `no_background`: Optional[bool] (optional) [default: None] — Return the subject on a transparent background. Use True for sprites/items, False for scenes and backgrounds. Unset with an init_image follows that image; unset without one means False.
+- `view`: Optional[Literal["side", "low top-down", "high top-down"]] (optional) [default: None] — Camera angle (weakly guiding).
+- `direction`: Optional[Literal["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"]] (optional) [default: None] — Which way the subject faces (weakly guiding).
+- `isometric`: bool (optional) [default: False] — Draw in isometric projection (weakly guiding).
+- `outline`: Optional[Literal["single color black outline", "single color outline", "selective outline", "lineless"]] (optional) [default: None] — Outline style (weakly guiding).
+- `shading`: Optional[Literal["flat shading", "basic shading", "medium shading", "detailed shading", "highly detailed shading"]] (optional) [default: None] — Shading style (weakly guiding).
+- `detail`: Optional[Literal["low detail", "medium detail", "highly detailed"]] (optional) [default: None] — Detail level (weakly guiding).
+- `text_guidance_scale`: float (optional) [default: 8.0] — How literally to follow the description. Higher = more literal.
+- `init_image_base64`: Optional[str] (optional) [default: None] — Base64 PNG to start from (img2img). Must be exactly width x height — omit width/height to adopt its size.
+- `init_image_url`: Optional[str] (optional) [default: None] — Alternative to init_image_base64: an https (or data:) URL to the init PNG. PREFER THIS for anything but a tiny sprite. Give one, not both.
+- `init_image_strength`: int (optional) [default: 150] — How much of init_image is PRESERVED — the opposite of the usual img2img 'strength'. Higher = closer to the input: 500 barely changes it, 300 is subtle, 150 (default) is a real edit, ~50 keeps only the composition.
+- `color_image_base64`: Optional[str] (optional) [default: None] — Base64 PNG whose colors become a forced palette. Any size — only its colors are read.
+- `color_image_url`: Optional[str] (optional) [default: None] — Alternative to color_image_base64: an https (or data:) URL to the palette PNG. Give one, not both.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `create_image_pixen`
+Generate a freeform pixel-art image with the Pixen model.
+Cost: 1 generation. Generation time: ~10-40 seconds (async).
+
+**Parameters:**
+- `description`: str (required) — What to draw (e.g. 'ornate iron key', 'mossy stone wall').
+- `width`: int (optional) [default: 128] — Canvas width in pixels. Must be a multiple of 4; width must equal height when either side is below 32.
+- `height`: int (optional) [default: 128] — Canvas height in pixels. Must be a multiple of 4; height must equal width when either side is below 32.
+- `no_background`: bool (optional) [default: False] — Return the subject on a transparent background. True for sprites and items, False for scenes.
+- `view`: Optional[Literal["side", "low top-down", "high top-down"]] (optional) [default: None] — Camera angle (weakly guiding).
+- `direction`: Optional[Literal["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"]] (optional) [default: None] — Which way the subject faces (weakly guiding).
+- `outline`: Optional[Literal["single color black outline", "single color outline", "selective outline", "lineless"]] (optional) [default: None] — Outline style (weakly guiding).
+- `detail`: Optional[Literal["low detail", "medium detail", "highly detailed"]] (optional) [default: None] — Detail level (weakly guiding).
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `create_image_pro`
+Generate pixel art with the Pro model — best quality, several candidates.
+Cost: 20-40 generations. Generation time: ~1-10 minutes (async).
+
+**Parameters:**
+- `description`: str (required) — What to draw (e.g. 'ornate iron key with a ruby inlay').
+- `width`: int (optional) [default: 128] — Canvas width. Max depends on aspect ratio (512x512 square, 688x384 for 16:9).
+- `height`: int (optional) [default: 128] — Canvas height. Max depends on aspect ratio.
+- `no_background`: bool (optional) [default: True] — Return subjects on a transparent background. Defaults True — pro is normally used for assets. Set False for scenes and backdrops.
+- `reference_images`: Optional[list[dict]] (optional) [default: None] — Up to 4 LABELLED reference images, as a JSON array. Each entry takes a "url" (preferred) OR a "base64": [{"url": "https://...", "usage": "character base"}, {"url": "https://...", "usage": "outfit and armour"}]. The "usage" note tells the model what to take from each image, which is what makes combining several references work. Prefer urls here especially — four inline images in one argument is four times the payload, and MCP clients truncate large arguments. Sizes are read from the images.
+- `style_image_base64`: Optional[str] (optional) [default: None] — One image whose art style (palette, outline, detail, shading) the result should match. Use style_copy to narrow which of those apply.
+- `style_image_url`: Optional[str] (optional) [default: None] — Alternative to style_image_base64: an https (or data:) URL to the style PNG. PREFER THIS for anything but a tiny sprite. Give one, not both.
+- `style_copy`: Optional[list[str]] (optional) [default: None] — Which aspects to take from style_image_base64: any of color_palette, outline, detail, shading. Defaults to all four.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `get_image`
+Get a raw-image result by job id.
+
+**Parameters:**
+- `job_id`: str (required) — The job id returned by any raw-image tool (create_image_pixflux, create_image_pixen, create_image_pro, edit_image, edit_image_pixen, inpaint_image, animate_image, image_to_pixelart, unzoom_image, correct_pixelart, reduce_colors).
+- `index`: Optional[int] (optional) [default: None] — Return only this frame, inline. Use it to reach frames past the first few of a long animation without fetching a URL.
+
+#### `edit_image`
+Edit an existing image with a text instruction or a reference image (pro).
+Cost: 20-40 generations (billed by the whole frame grid, so a single
+Generation time: ~30-90 seconds (async). Poll with get_image(job_id).
+
+**Parameters:**
+- `images_base64`: Optional[list[str]] (optional) [default: None] — Base64 PNG(s) to edit — pass a one-element list for a single image. Several frames get the SAME edit applied consistently (useful for animation frames or a character's directions). Max 512x512 each. PREFER image_urls — MCP clients routinely truncate large inline base64.
+- `image_urls`: Optional[list[str]] (optional) [default: None] — Alternative to images_base64: https (or data:) URLs to the PNG(s) to edit, in the same one-per-frame list form. PREFER THIS for anything but tiny sprites. Give urls OR base64, not both.
+- `description`: Optional[str] (optional) [default: None] — What to change (e.g. 'add a red wizard hat', 'make the armor gold'). Required unless reference_image_base64 is given.
+- `reference_image_base64`: Optional[str] (optional) [default: None] — Base64 PNG to copy the appearance of (outfit/colors/details) onto the input images, keeping their pose. Switches the tool into reference mode; description then just refines the instruction.
+- `reference_image_url`: Optional[str] (optional) [default: None] — Alternative to reference_image_base64: an https (or data:) URL to the reference PNG. PREFER THIS for anything but a tiny sprite. Give one, not both.
+- `width`: Optional[int] (optional) [default: None] — Output width. Defaults to the first input image's width.
+- `height`: Optional[int] (optional) [default: None] — Output height. Defaults to the first input image's height.
+- `no_background`: Optional[bool] (optional) [default: None] — Background handling. Default (unset) follows the inputs: if any frame has transparency they all stay transparent, otherwise they stay opaque. Pass False to flatten a transparent input onto white.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `edit_image_pixen`
+Edit an image with a text instruction on the Pixen model (fast, 1 generation).
+Cost: 1 generation. Generation time: ~10-40 seconds (async).
+
+**Parameters:**
+- `description`: str (required) — What to change (e.g. 'give him a red cape', 'make the armor gold'). Same 1-500 bound the v2 endpoint enforces — an empty one would queue a job and spend a generation with nothing to edit towards.
+- `image_base64`: Optional[str] (optional) [default: None] — Base64 PNG to edit. Max 256px per side. PREFER image_url — MCP clients routinely truncate large inline base64.
+- `image_url`: Optional[str] (optional) [default: None] — Alternative to image_base64: an https (or data:) URL to the PNG to edit. PREFER THIS for anything but a tiny sprite. Give one, not both.
+- `width`: Optional[int] (optional) [default: None] — Output width. Output AREA must be at most 256x256 (65,536px), so 128x512 is fine but 320x320 is not. Defaults to the input image's width. The model re-renders at this size — it does not rescale.
+- `height`: Optional[int] (optional) [default: None] — Output height. Defaults to the input image's height.
+- `no_background`: Optional[bool] (optional) [default: None] — Background handling. Default (unset) follows the input: a transparent input stays transparent, an opaque one stays opaque.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `image_to_pixelart`
+Convert an image, render or photo into pixel art.
+Cost: 1 generation. Generation time: ~20-60 seconds (async).
+
+**Parameters:**
+- `image_base64`: Optional[str] (optional) [default: None] — Base64 PNG/JPEG of the image to convert. Any artwork, render or photo. PREFER image_url — MCP clients routinely truncate large inline base64.
+- `image_url`: Optional[str] (optional) [default: None] — Alternative to image_base64: an https (or data:) URL to the source image. PREFER THIS for anything but a tiny sprite. Give one, not both.
+- `output_width`: Optional[int] (optional) [default: None] — Width of the pixel art result. Defaults to a quarter of the source width. Keep the source's aspect ratio.
+- `output_height`: Optional[int] (optional) [default: None] — Height of the pixel art result. Defaults to a quarter of the source height.
+- `faithful`: bool (optional) [default: False] — Faithful mode. Stays true to the source instead of reinterpreting it as pixel art. Turn this on when the user wants THEIR artwork converted rather than a pixel-art take on it; pair it with a init_image_strength of 100-300.
+- `init_image_strength`: int (optional) [default: 0] — How strongly to start from the source image (img2img). 0 redraws from scratch using the source only as guidance; 100-300 keeps its composition and colors. Do NOT go higher to be 'more faithful' — past ~300 the model barely transforms the input and hands back the source rather than pixel art.
+- `text_guidance_scale`: float (optional) [default: 8.0] — How hard to push towards pixel-art style.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible output.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `unzoom_image`
+Downscale upscaled pixel art back onto its true pixel grid.
+Cost: 0.1 generations. Runs locally in under a second — poll once with
+
+**Parameters:**
+- `image_base64`: Optional[str] (optional) [default: None] — Base64 PNG/JPEG of the upscaled pixel art. PREFER image_url — MCP clients routinely truncate large inline base64, and unzoom inputs are big by definition.
+- `image_url`: Optional[str] (optional) [default: None] — Alternative to image_base64: an https (or data:) URL to the upscaled image. PREFER THIS. Give one, not both.
+- `quantize`: int (optional) [default: 0] — Palette handling for the result. 0 auto-detects a palette, -1 keeps every color the downsample produces, 2-256 quantizes to exactly that many colors.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `correct_pixelart`
+Clean up pixel art — sharpen edges, drop stray pixels, tighten the palette.
+Cost: 0.1 generations. Generation time: ~20-60 seconds (async).
+
+**Parameters:**
+- `images_base64`: Optional[list[str]] (optional) [default: None] — Base64 PNG(s) to clean up — pass a one-element list for a single image. All frames must be the same size. PREFER image_urls; MCP clients routinely truncate large inline base64.
+- `image_urls`: Optional[list[str]] (optional) [default: None] — Alternative to images_base64: https (or data:) URLs to the PNG(s), one per frame. PREFER THIS. Give urls OR base64, not both.
+- `strength`: float (optional) [default: 0.1] — How far the model may move from the art. 0.1 tidies stray pixels and edges; high values redraw more and can change details. Start low and only raise it if the art needs real repair.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `reduce_colors`
+Quantize images onto a smaller, shared palette.
+Cost: 0.1 generations. Runs locally in about a second — poll once with
+
+**Parameters:**
+- `images_base64`: Optional[list[str]] (optional) [default: None] — Base64 PNG(s) to quantize — pass a one-element list for a single image. All frames must be the same size. PREFER image_urls; MCP clients routinely truncate large inline base64.
+- `image_urls`: Optional[list[str]] (optional) [default: None] — Alternative to images_base64: https (or data:) URLs to the PNG(s), one per frame. PREFER THIS. Give urls OR base64, not both.
+- `num_colors`: Optional[int] (optional) [default: None] — Target number of colors. Omit to auto-detect a good palette size from the images. Cannot be combined with a palette image.
+- `palette_image_base64`: Optional[str] (optional) [default: None] — Base64 PNG whose colors become the palette (max 256 colors) — use it to force frames onto an existing game palette. Cannot be combined with num_colors.
+- `palette_image_url`: Optional[str] (optional) [default: None] — Alternative to palette_image_base64: an https (or data:) URL to the palette image. Give one, not both.
+- `dithering`: Literal["none", "2x2", "4x4", "8x8"] (optional) [default: none] — Ordered dithering matrix size. Larger matrices give smoother gradients at the cost of a busier look.
+- `dithering_strength`: float (optional) [default: 5.0] — How strongly to dither. Ignored when dithering is 'none'.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `inpaint_image`
+Regenerate one region of an image, keeping everything else pixel-identical.
+Cost: 20-40 generations (billed by image size).
+Generation time: ~30-90 seconds (async).
+
+**Parameters:**
+- `description`: str (required) — What should appear in the masked area (e.g. 'a clean four-finger hand holding a sword', 'plain grass, no object').
+- `image_base64`: Optional[str] (optional) [default: None] — Base64 PNG to repair. 32x32 to 512x512. Everything outside the mask is preserved exactly. PREFER image_url — MCP clients routinely truncate large inline base64, which corrupts the image.
+- `image_url`: Optional[str] (optional) [default: None] — Alternative to image_base64: an https (or data:) URL to the PNG to repair. PREFER THIS for anything but a tiny sprite — inline base64 is often cut off mid-string by MCP clients. Give one, not both.
+- `mask_x`: Optional[int] (optional) [default: None] — Left edge of the rectangular area to regenerate.
+- `mask_y`: Optional[int] (optional) [default: None] — Top edge of the rectangular area to regenerate.
+- `mask_width`: Optional[int] (optional) [default: None] — Width of the area to regenerate.
+- `mask_height`: Optional[int] (optional) [default: None] — Height of the area to regenerate.
+- `mask_image_base64`: Optional[str] (optional) [default: None] — Custom mask, same size as the image: WHITE = regenerate, BLACK = keep. Use instead of mask_x/y/width/height when the area isn't a rectangle.
+- `mask_image_url`: Optional[str] (optional) [default: None] — Alternative to mask_image_base64: an https (or data:) URL to the mask PNG. Give one, not both.
+- `crop_to_mask`: bool (optional) [default: True] — Confine generated content to the mask boundary for clean edges.
+- `no_background`: Optional[bool] (optional) [default: None] — Background handling. Default (unset) follows the input: a sprite with transparency stays transparent, an opaque image stays opaque. Pass False to flatten a transparent input onto white.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `animate_image`
+Animate any image from a text description of the motion.
+Cost scales with total pixels (a 64x64 8-frame animation is 1 generation, a
+
+**Parameters:**
+- `action`: str (required) — The motion (e.g. 'walking forward', 'flame flickering', 'chest opening'). Describe movement, not appearance.
+- `frame_count`: int (optional) [default: 8] — Frames to generate — must be EVEN. 4 for idle loops, 8 for walk/run, 16 for complex actions. Large frames allow fewer frames.
+- `first_frame_base64`: Optional[str] (optional) [default: None] — Base64 PNG to animate — the first frame. Max 256x256. PREFER first_frame_url; MCP clients routinely truncate large inline base64.
+- `first_frame_url`: Optional[str] (optional) [default: None] — Alternative to first_frame_base64: an https (or data:) URL to the first frame PNG. PREFER THIS. Give one, not both.
+- `last_frame_base64`: Optional[str] (optional) [default: None] — Optional final frame, same size as the first, to pin where the motion ends (interpolation instead of open-ended animation).
+- `last_frame_url`: Optional[str] (optional) [default: None] — Alternative to last_frame_base64: an https (or data:) URL to the final frame PNG. Give one, not both.
+- `no_background`: Optional[bool] (optional) [default: None] — Background handling. Default (unset) follows the first frame: a transparent sprite animates on transparency, an opaque image stays opaque.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `project_id`: Optional[str] (optional) [default: None] — Internal Game Builder project context; the finished image is linked after generation.
+
+#### `animate_image_pixminimax`
+Animate with text (PixMiniMax), tier 2 subscription or higher: animate any image from a motion description.
+Cost: priced by generation time, 12 generations for a 40-frame clip.
+
+**Parameters:**
+- `description`: str (required) — The motion (e.g. 'walking forward', 'flame flickering', 'chest opening'). Describe movement, not appearance.
+- `frame_count`: int (optional) [default: 8] — Frames to generate, a multiple of 4 from 4 to 40 at any size up to 256x256. 4 for idle loops, 8 for walk/run, 16+ for complex actions.
+- `first_frame_base64`: Optional[str] (optional) [default: None] — Base64 PNG to animate — the first frame. Max 256x256. PREFER first_frame_url; MCP clients routinely truncate large inline base64.
+- `first_frame_url`: Optional[str] (optional) [default: None] — Alternative to first_frame_base64: an https (or data:) URL to the first frame PNG. PREFER THIS. Give one, not both.
+- `last_frame_base64`: Optional[str] (optional) [default: None] — Optional final frame, same size as the first, to pin where the motion ends.
+- `last_frame_url`: Optional[str] (optional) [default: None] — Alternative to last_frame_base64: an https (or data:) URL to the final frame PNG. Give one, not both.
+- `no_background`: bool (optional) [default: True] — True (default) returns the frames on transparency; an opaque input is cut out of its first frame before animating. False keeps an opaque backdrop.
+- `seed`: Optional[int] (optional) [default: None] — Seed for reproducible generation.
+- `enhance_prompt`: bool (optional) [default: False] — True expands a short description ('shooting a bow') into a detailed PixMiniMax motion prompt before generating (+0.05 generations); the expanded text is returned.
+- `direction`: Optional[Literal["south", "north", "east", "west", "south-east", "south-west", "north-east", "north-west"]] (optional) [default: None] — Facing of the sprite (south = towards the camera), used with enhance_prompt to hold the facing and aim attacks that way. Omit to let the enhancer read it from the image.
+
+#### `create_map`
+Create an empty map seeded with a tileset and everything connected to it.
+
+**Parameters:**
+- `name`: str (required) — Name for the new map
+- `tileset_id`: str (required) — Tileset to seed the map from (from list_topdown_tilesets). Every tileset connected to it — same tile size, sharing a base tile id — is attached too, so their terrains are available to paint. A pair still needs its OWN tileset to blend: two terrains from the family with none between them render as black tiles, and view_map names any such pair with the call that fixes it.
+- `project_id`: Optional[str] (optional) [default: None] — Attach the map to this game project. Without it the map exists but never syncs into a project workspace, so a game cannot load it.
+
+#### `delete_map`
+Delete one of your maps. Immediate — there is no undo.
+
+**Parameters:**
+- `map_id`: str (required) — The map to delete, from list_maps
+
+#### `list_maps`
+List your maps, most recently edited first.
+
+**Parameters:**
+- `limit`: int (optional) [default: 20] — How many maps to return
+- `search`: Optional[str] (optional) [default: None] — Only maps whose name contains this (case-insensitive)
+- `offset`: int (optional) [default: 0] — Skip this many, to page deeper
+
+#### `get_map`
+Show a map as an ASCII grid, one character per terrain cell.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `x`: Optional[int] (optional) [default: None] — Crop: left edge, in terrain cells
+- `y`: Optional[int] (optional) [default: None] — Crop: top edge, in terrain cells
+- `width`: Optional[int] (optional) [default: None] — Crop width in cells
+- `height`: Optional[int] (optional) [default: None] — Crop height in cells
+
+#### `edit_map`
+Paint terrain on a map: rivers and roads with `path`, areas with `rect`.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `ops`: list[PathOp | RectOp] (required) — Paint operations, applied in order. Two shapes:
+  {"op":"path","terrain":"water","points":[[x,y],...],"width":3}
+  {"op":"rect","terrain":"grass","x":10,"y":4,"width":8,"height":6}
+Use terrain "none" to erase. Coordinates are terrain cells, as shown by get_map, and may be negative.
+- `dry_run`: bool (optional) [default: False] — Preview the result and warnings without saving
+- `show`: bool (optional) [default: False] — Also return a rendered IMAGE of the edited area. On by default whenever the edit brings in a terrain you have not seen rendered, or leaves tiles no tileset can draw.
+
+#### `view_map`
+Render the map to an image and return it, terrain and objects together.
+
+**Parameters:**
+- `map_id`: str (required) — Map UUID from list_maps
+- `x`: Optional[int] (optional) [default: None] — Crop: left edge, in terrain cells
+- `y`: Optional[int] (optional) [default: None] — Crop: top edge, in terrain cells
+- `width`: Optional[int] (optional) [default: None] — Crop width in cells
+- `height`: Optional[int] (optional) [default: None] — Crop height in cells
+
+#### `list_projects`
+List projects the user can access.
+
+#### `agent_list`
+List the deployed AI agents you own (the 'deploy your own agent' projects). Returns each
+agent's slug — pass it as `agent` to agent_inspect / agent_talk.
+
+#### `agent_inspect`
+Debug a deployed agent's LIVE runtime: its state, recent chat, LLM/tool traces (errors first,
+with the model's real input/output), and grown memory (journal/agenda/lessons/feedback). Use this
+to see what the agent ACTUALLY did before changing its source. `focus='traces'` zooms in on bad turns.
+
+**Parameters:**
+- `agent`: Optional[str] (optional) [default: None] — Agent slug (omit if you only have one)
+- `focus`: str (optional) [default: all] — all | state | messages | traces | memory
+
+#### `agent_talk`
+Send a message to a deployed agent (as its owner) and get its reply — to test how it responds
+while you're working on it. Goes through the agent's normal chat loop (so it may run its tools).
+
+**Parameters:**
+- `message`: str (required) — What to say to the agent
+- `agent`: Optional[str] (optional) [default: None] — Agent slug (omit if you only have one)
+
+#### `get_balance`
+Check your account balance: remaining credits (USD) and subscription generations.
+
+#### `search_knowledge`
+Search the Phaser/game dev knowledge base for tips, patterns, and code examples.
+
+**Parameters:**
+- `query`: str (required) — Search query — describe the Phaser/TypeScript/game dev topic you need help with (e.g. 'camera follow player', 'collision detection', 'map transitions').
+- `limit`: int (optional) [default: 3] — Max results to return.
+
+#### `cancel_job`
+Cancel a pending or processing background job.
+
+**Parameters:**
+- `job_id`: str (required) — Background job UUID to cancel.
+
+#### `list_jobs`
+List your active background jobs (pending + processing).
+
+**Parameters:**
+- `include_recent`: bool (optional) [default: False] — Include recently completed/failed jobs (last 30 min). Default: only active jobs.
+
+## Available Resources
+
+MCP also provides documentation resources:
+
+- `pixellab://docs/python/sidescroller-tilesets`
+  Quick Python implementation guide for PixelLab sidescroller tilesets
+- `pixellab://docs/godot/sidescroller-tilesets`
+  Complete Godot 4.x sidescroller tileset implementation guide with PixelLab MCP integration and headless GDScript converter
+- `pixellab://docs/unity/isometric-tilemaps-2d`
+  Complete Unity 2D isometric tilemap implementation guide with elevation support
+- `pixellab://docs/godot/isometric-tiles`
+  Complete Godot 4.x isometric tiles guide with PixelLab MCP integration and proper TileSet configuration
+- `pixellab://docs/godot/wang-tilesets`
+  Complete Godot 4.x Wang tileset implementation guide with PixelLab MCP integration and headless GDScript converter
+- `pixellab://docs/python/wang-tilesets`
+  Quick Python implementation guide for PixelLab Wang tilesets
+- `pixellab://docs/overview`
+  Complete PixelLab platform overview including all interfaces,
+MCP tools, and integration methods.
+
+## Tool Response Format
+
+All tools return status indicators:
+- ✅ Success - Operation completed
+- ⏳ Processing - Background job running
+- ❌ Error - Operation failed
+
+## Background Jobs
+
+Creation tools return immediately with job IDs.
+Use the corresponding `get_*` tool to check status.
+
+## Support & Resources
+
+- Setup Guide: https://pixellab.ai/vibe-coding
+- Discord Community: https://discord.gg/pBeyTBF8T7
+- API v2 Documentation: https://api.pixellab.ai/v2/llms.txt
+
+## About Vibe Coding
+
+Vibe Coding transforms game development by enabling AI assistants to generate production-ready pixel art assets on-demand while writing game code. Build complete games faster with AI as your art department and coding partner.
+
+---
+*Generated: 2026-09-10 21:35 - This documentation is auto-generated from FastMCP tool definitions.*

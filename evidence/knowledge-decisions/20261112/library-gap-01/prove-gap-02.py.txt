@@ -1,0 +1,134 @@
+"""Reproduce old installed-library isolation gap, then exercise the new source route.
+
+Direct local service calls only: this is not a native-host or provider trial.
+The old kit is frozen from the named committed tree, not current edited skills.
+"""
+import hashlib
+import io
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import zipfile
+from datetime import datetime, timezone
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def write(path, value):
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        stream.write(json.dumps(value, indent=2, ensure_ascii=False)+'\n')
+
+
+def observe(mode, repo, kit, consumer):
+    sys.path.insert(0, str(kit/'runtime' if mode == 'old' else repo))
+    from pixl import service
+    from pixl.codec import PixlError
+
+    assert pathlib.Path(service.__file__).resolve().is_relative_to(kit/'runtime' if mode == 'old' else repo/'pixl')
+    records=[]
+    def call(label, name, args, root):
+        row={'label':label,'tool':name,'arguments':args,'project_root':str(root)}
+        try:
+            row['result']=service.call(name,args,root)
+        except PixlError as error:
+            row['error']={'code':error.code,'detail':error.detail}
+        records.append(row)
+        return row
+
+    base={'path':'knowledge/library.px','focus':'k.animation-anchors'}
+    if mode == 'old':
+        relative=call('consumer relative library path','pixl_context',base,consumer)
+        absolute=call('consumer absolute installed library path','pixl_context',base|{'path':(kit/'resources/knowledge/library.px').as_posix()},consumer)
+        workaround=call('resource-root workaround','pixl_context',base,kit/'resources')
+        method=call('existing method detail works','pixl_knowledge',{'method':'animation-anchors'},consumer)
+        inventory=call('existing library source discovery works','pixl_sources',{},consumer)
+        source=method['result']['sources'][0]
+        identity=next(row for row in inventory['result']['documents'] if row['path']==source['path'])
+        excerpt=call('existing exact library source retrieval works','pixl_source',{
+            'path':source['path'],'scope':'library','expect':identity['sha256'],'start':source['start'],'end':source['end']},consumer)
+        assert relative['error']['code']=='file_read'
+        assert absolute['error']['code']=='path_escape'
+        assert workaround['result']['bytes']==7902
+        assert excerpt['result']['text']
+    else:
+        result=call('new explicit library scope','pixl_context',base|{'scope':'library'},consumer)
+        exported=call('new consumer-owned context export','pixl_context',base|{'scope':'library','result_path':'work/library-context.json'},consumer)
+        saved=consumer/exported['result']['result_path']
+        assert exported['result']['result_saved'] and saved.is_relative_to(consumer)
+        assert json.loads(saved.read_bytes())==result['result']
+        assert sha(saved.read_bytes())==exported['result']['result_sha256']
+    print(json.dumps({'observed_at':datetime.now(timezone.utc).isoformat(),'mode':mode,
+        'service_file':str(pathlib.Path(service.__file__).resolve()),
+        'service_sha256':sha(pathlib.Path(service.__file__).read_bytes()),
+        'native_host_execution':False,'provider_calls':0,'calls':records},ensure_ascii=False))
+
+
+def main():
+    evidence=pathlib.Path(__file__).resolve().parent
+    repo=evidence.parents[3]
+    if len(sys.argv)>1:
+        observe(sys.argv[1],repo,pathlib.Path(sys.argv[2]),pathlib.Path(sys.argv[3]))
+        return
+    commit='0e215f4b2c704481f6cd5c67c68d8940ae6d88b6'
+    work=repo/'build/tm09-library-gap-02'
+    work.mkdir(exist_ok=False)
+    kit=work/'kit';kit.mkdir()
+    consumer=work/'consumer';consumer.mkdir()
+    generated={str(p.relative_to(repo)):sha(p.read_bytes())
+        for folder in ('runtime','resources') for p in (repo/'plugins/pixl'/folder).rglob('*') if p.is_file()}
+    archive=subprocess.run(['git','-c','core.autocrlf=false','archive','--format=zip',commit+':plugins/pixl'],cwd=repo,capture_output=True,check=True).stdout
+    with (evidence/'old-kit-02.zip').open('xb') as stream:stream.write(archive)
+    inventory={}
+    with zipfile.ZipFile(io.BytesIO(archive)) as z:
+        for item in z.infolist():
+            if item.is_dir():continue
+            target=(kit/item.filename).resolve();assert target.is_relative_to(kit)
+            data=z.read(item);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+            inventory[item.filename]=sha(data)
+    entries=subprocess.run(['git','ls-tree','-rz',commit+':plugins/pixl'],cwd=repo,capture_output=True,check=True).stdout
+    expected={}
+    for entry in entries.split(b'\0'):
+        if not entry:continue
+        metadata,name=entry.split(b'\t',1);mode,kind,oid=metadata.decode().split()
+        assert kind=='blob'
+        expected[name.decode()]=oid
+    assert set(expected)==set(inventory)
+    for name,oid in expected.items():
+        data=(kit/name).read_bytes()
+        assert hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==oid,name
+    write(evidence/'old-kit-02-inventory.json',{'commit':commit,'archive':'old-kit-02.zip','sha256':sha(archive),
+        'files':inventory,'file_count':len(inventory),'origin':'Exact committed plugins/pixl tree; copied outside the fresh consumer'})
+    environment=dict(os.environ,PIXL_PLUGIN_ROOT=str(kit),PYTHONDONTWRITEBYTECODE='1')
+    environment.pop('PYTHONPATH',None)
+    observations={}
+    for mode in ('old','new'):
+        command=[sys.executable,'-B',str(pathlib.Path(__file__).resolve()),mode,str(kit),str(consumer)]
+        process=subprocess.run(command,cwd=consumer,env=environment,capture_output=True,encoding='utf-8')
+        write(evidence/(mode+'-02-invocation.json'),{'command':command,'cwd':str(consumer),'returncode':process.returncode,'stderr':process.stderr,'environment':{'PIXL_PLUGIN_ROOT':str(kit),'PYTHONDONTWRITEBYTECODE':'1'},'provider_calls':0})
+        assert process.returncode==0,process.stderr
+        observations[mode]=json.loads(process.stdout)
+        write(evidence/(mode+'-02-observations.json'),observations[mode])
+    old=observations['old']['calls'][2]['result'];new=observations['new']['calls'][0]['result']
+    assert old['wire']==new['wire'] and old['hash']==new['hash'] and old['bytes']==new['bytes']
+    assert all(sha((kit/name).read_bytes())==value for name,value in inventory.items())
+    assert all(sha((repo/name).read_bytes())==value for name,value in generated.items())
+    source_names=['pixl/service.py','pixl/cli.py','pixl/mcp.py','tests/test_library_context.py']
+    write(evidence/'result.json',{'status':'pass','observed_at':datetime.now(timezone.utc).isoformat(),
+        'old_commit':commit,'old_kit_sha256':sha(archive),'old_kit_files_unchanged':len(inventory),'committed_blob_identities_verified':len(expected),
+        'original_generated_files_unchanged':len(generated),
+        'old_consumer_relative_error':'file_read','old_consumer_absolute_error':'path_escape',
+        'existing_method_and_source_retrieval':'pass','resource_root_workaround_bytes':old['bytes'],
+        'new_consumer_library_scope':'pass','new_wire_sha256':sha(new['wire'].encode()),
+        'new_library_context_matches_old_workaround':True,'context_state_hash':new['hash'],
+        'consumer_export':observations['new']['calls'][1]['result'],
+        'new_source_hashes':{name:sha((repo/name).read_bytes()) for name in source_names},
+        'script_sha256':sha(pathlib.Path(__file__).read_bytes()),'native_host_execution':False,'provider_calls':0,
+        'limits':['Direct local service reproduction, not a native model trial.','New source implementation against the retained old resource bytes; not a final copied-kit qualification.','Context and source identity do not establish artistic acceptance or that retrieval caused prior CF09 repair.']})
+    print(json.dumps({'status':'pass','old_kit_files':len(inventory),'context_bytes':new['bytes'],'native_host_execution':False}))
+
+
+if __name__=='__main__':main()

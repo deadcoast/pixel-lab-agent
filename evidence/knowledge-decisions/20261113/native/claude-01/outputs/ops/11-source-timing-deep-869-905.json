@@ -1,0 +1,10 @@
+{
+  "text": "### Motion cadence matters more than raw frame count\n\nThe misconception to avoid is:\n\n> “Smooth animation = more unique frames.”\n\nPixel animation frequently derives weight from **unequal frame durations**.\n\nFor example:\n\n```text\nanticipation     80 ms\ncompression      50 ms\nlaunch           33 ms\nairborne         100 ms\nimpact           33 ms\nsettle           50 ms\nrest             120 ms\n```\n\nA tiny shading change held for 100 ms can communicate weight better than several evenly spaced interpolations.\n\nThe agent should therefore represent an animation frame as:\n\n```json\n{\n  \"image\": \"idle_03\",\n  \"duration_ms\": 120,\n  \"tags\": [\"settle\"],\n  \"subpixel_features\": {\n    \"shoulder_highlight\": \"ramp_down\",\n    \"head_outline\": \"pressure_right\"\n  }\n}\n```\n\nnot merely as `frameIndex`.\n",
+  "sha256": "7efc4789ca70dfd9964abc2bc1100af318306236400e3496f7a0a5654f725e28",
+  "start": 869,
+  "end": 905,
+  "bytes": 790,
+  "hash_domains": {
+    "sha256": "file_sha256"
+  }
+}

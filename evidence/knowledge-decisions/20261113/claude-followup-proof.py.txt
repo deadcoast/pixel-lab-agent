@@ -1,0 +1,319 @@
+"""Independent, read-only proof of the guided TM-09 Claude continuation.
+
+The original 29/52 grade and output-scope failure remain unchanged. This proof
+checks current evidence; it does not replace the separate semantic review.
+"""
+import argparse
+import hashlib
+import json
+import re
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+sys.path.insert(0, str(ROOT))
+
+from PIL import Image
+from evaluations.grade_integration_change import complete_file_proof
+from evaluations.grade_plar_coverage import native_read_proof, continuation_record
+from evaluations.host_trials import inventory
+from evaluations.knowledge_decision_trials import declaration, frame_at
+
+OLD = BASE / "native/claude-01"
+NEW = BASE / "native/claude-02"
+SESSION = "461c2169-1b48-452e-8715-2c9f3a24af66"
+CHILD = "a4a3a48b0561a918e"
+ALLOWED = "work/knowledge-decisions/revision-02/"
+TIMES = [0, 799, 800, 919, 920, 1079, 1080, 1199, 1200, 1599, 1600]
+EDGES = ["0->1", "1->2", "2->3", "3->4", "4->0"]
+PROOFS = {"animation-anchors": "shading-drift-mask", "frame-timing": "frame-boundaries",
+          "silhouette-readability": "key-silhouette-landmarks"}
+OLD_GRADE_SHA = "9fb553c77d1de231eb0b61843ca9d52d2b5623a0a8a4e6a05284556e1797ba0c"
+# Each command was read in full before inclusion. Unknown commands fail.
+REVIEWED_COMMANDS = {
+    "72e00671f72beff1c0a1f94fcd7ec2eb37a1daa0f7c16cc3a637a51c0e214932": "Caller Python via stdin reads PNGs/adapter, decodes pixels and computes timing in memory; prints JSON, opens input files rb only; no output redirection or filesystem mutation.",
+    "5c94dcfdffeaf38161560c362c637504e228659fd164161a6dcdf23456eddf3e": "Caller lists files, hashes retained inputs and pipes a current snapshot to diff against existing /tmp/tm09-before.sha. The /tmp access is read-only; 2>&1 redirects stderr to stdout, not a file.",
+    "619cbb4837a02a5b1e08940f5c173e62a0cb6cacfeab9db88bf6c8faaf5dbc31": "Caller Python via stdin reads both addenda and referenced bytes, validates JSON/hashes and prints checks; subsequent sha256sum/ls/find/diff/awk only read existing files and stdout. No new /tmp write.",
+    "3dc5483f6c02adf4e3bf262964ff41c078d337be1e103e3f85056d1e5305e258": "Specialist Python via stdin reads actual PNGs in rb mode and calculates baseline/adjacent alpha and RGBA differences in memory, printing JSON only.",
+    "e633d26ec5e53a55c024a75540178c0a229b825af2031cc389a2883f16f49aa7": "Specialist Python reads and validates its addendum, then sha256sum/find inspect retained files and timestamps. No filesystem mutation.",
+}
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha(path):
+    return digest(path.read_bytes())
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def reference(path):
+    return {"path": path.resolve().relative_to(ROOT).as_posix(), "sha256": sha(path),
+            "bytes": path.stat().st_size}
+
+
+def rows(path):
+    return [dict(json.loads(line), file=str(path.resolve()), line=index,
+                 line_sha256_without_newline=digest(line))
+            for index, line in enumerate(path.read_bytes().splitlines(), 1) if line.strip()]
+
+
+def blocks(row):
+    value = row.get("message", {}).get("content", [])
+    return value if isinstance(value, list) else []
+
+
+def one(values, label):
+    values = list(values)
+    if len(values) != 1:
+        raise ValueError(f"Expected one {label}, observed {len(values)}")
+    return values[0]
+
+
+def tag(text, name):
+    return one(re.findall("<" + name + ">(.*?)</" + name + ">", text, re.S), name)
+
+
+def event(row):
+    return {"path": Path(row["file"]).relative_to(ROOT).as_posix(), "line": row["line"],
+            "line_sha256_without_newline": row["line_sha256_without_newline"],
+            **{k: row[k] for k in ("type", "subtype", "session_id", "sessionId", "agentId",
+                "task_id", "run_id", "tool_use_id", "status", "origin") if k in row}}
+
+
+def confined(root, name):
+    path = (root / name).resolve()
+    if not path.is_relative_to(root):
+        raise ValueError("Consumer reference escaped root")
+    return path
+
+
+def ref_matches(root, value, expected=None):
+    path = confined(root, value["path"])
+    return sha(path) == value["sha256"] and (expected is None or path == expected)
+
+
+def first(mapping, *keys):
+    for key in keys:
+        if key in mapping:
+            return mapping[key]
+    raise KeyError("Missing semantic field: " + "/".join(keys))
+
+
+def sequence(value):
+    return [value[key] for key in EDGES] if isinstance(value, dict) else value
+
+
+def png_metrics(root, names):
+    frames = []
+    for name in names:
+        with Image.open(root / name) as image:
+            if image.size != (32, 32):
+                raise ValueError("Unexpected actual frame dimensions")
+            frames.append([tuple(pixel) if pixel[3] else (0, 0, 0, 0)
+                           for pixel in image.convert("RGBA").getdata()])
+    alpha = [[pixel[3] > 0 for pixel in frame] for frame in frames]
+    delta = lambda a, b: sum(x != y for x, y in zip(a, b, strict=True))
+    return {"frames": names,
+            "baseline_vs_frame0_alpha_xor": [delta(alpha[0], a) for a in alpha],
+            "baseline_vs_frame0_rgba_changed": [delta(frames[0], f) for f in frames],
+            "adjacent_alpha_xor": {edge: delta(alpha[i], alpha[(i + 1) % 5]) for i, edge in enumerate(EDGES)},
+            "adjacent_rgba_changed": {edge: delta(frames[i], frames[(i + 1) % 5]) for i, edge in enumerate(EDGES)}}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=BASE / "claude-followup-proof.json")
+    out = parser.parse_args().out.resolve()
+    if out.exists():
+        raise ValueError("Preserve prior receipts; use a fresh output")
+    continuation, record, identity = [read(NEW / name) for name in
+                                      ("continuation.json", "record.json", "identity.json")]
+    if continuation["status"] != "finished" or continuation.get("returncode") != 0:
+        raise ValueError("Wait for natural completion; this proof is not an in-progress grade")
+    root, kit = Path(identity["consumer"]).resolve(), Path(identity["kit"]).resolve()
+    specialist_path = root / ALLOWED / "SPECIALIST-ADDENDUM.json"
+    caller_path = root / ALLOWED / "CALLER-ADDENDUM.json"
+    specialist, caller = read(specialist_path), read(caller_path)
+    original_specialist = read(OLD / "outputs/SPECIALIST-RESULT.json")
+    original_caller = read(OLD / "outputs/CALLER-RESULT.json")
+    criteria = read(BASE / "claude-followup-criteria.json")
+    snapshot = read(NEW / "consumer-final-inventory.json")
+    old_parent_path, old_child_path = OLD / "native-transcripts/parent.jsonl", OLD / f"native-transcripts/{CHILD}.jsonl"
+    parent_path, child_path = NEW / "native-transcripts/parent.jsonl", NEW / f"native-transcripts/{CHILD}.jsonl"
+    parent, child, stdout = rows(parent_path), rows(child_path), rows(NEW / "stdout.jsonl")
+    old_parent_raw, old_child_raw = old_parent_path.read_bytes(), old_child_path.read_bytes()
+    parent_prefix = parent_path.read_bytes().startswith(old_parent_raw)
+    child_prefix = child_path.read_bytes().startswith(old_child_raw)
+    new_parent, new_child = parent[len(old_parent_raw.splitlines()):], child[len(old_child_raw.splitlines()):]
+    checks, native_events, reads, write_review = [], [], [], []
+
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+
+    input_paths = [NEW / n for n in ("launch.json", "identity.json", "continuation.json", "record.json", "stdout.jsonl",
+        "native-transcripts/parent.jsonl", f"native-transcripts/{CHILD}.jsonl", "consumer-final-inventory.json")]
+    input_paths += [OLD / n for n in ("continuation.json", "record.json", "independent-grade-01.json",
+        "outputs/SPECIALIST-RESULT.json", "outputs/CALLER-RESULT.json", "native-transcripts/parent.jsonl",
+        f"native-transcripts/{CHILD}.jsonl")]
+    input_paths += [BASE / "claude-followup-criteria.json", BASE / "claude-followup-prompt.txt"]
+    before = {str(p): sha(p) for p in input_paths}
+    _, continuation_identity = continuation_record(OLD, NEW, CHILD)
+    check("exact_same_parent_child_configuration_and_predecessor", continuation_identity["session_id"] == SESSION)
+    check("original_native_journals_are_exact_prefixes_of_continued_journals",
+          parent_prefix and child_prefix and new_parent and new_child,
+          {"old_parent_lines": len(old_parent_raw.splitlines()), "old_child_lines": len(old_child_raw.splitlines())})
+    check("same_child_without_replacement", [(c["id"], c["role"]) for c in continuation["children"]] == [(CHILD, "pixl:pixl")])
+    send_row, send = one(((r, b) for r in stdout for b in blocks(r)
+                         if b.get("type") == "tool_use" and b.get("name") == "SendMessage"
+                         and b.get("input", {}).get("to", b.get("input", {}).get("recipient")) == CHILD),
+                        "same-child SendMessage")
+    call_id = send["id"]
+    resume_result = one((r for r in stdout if r.get("type") == "user"
+                         and any(b.get("type") == "tool_result" and b.get("tool_use_id") == call_id
+                                 and not b.get("is_error") for b in blocks(r))), "successful native child resume")
+    check("successful_native_sendmessage_resumed_original_child", resume_result.get("tool_use_result", {}).get("success") is True
+          and resume_result["tool_use_result"].get("resumedAgentId") == CHILD)
+    start = one((r for r in stdout if r.get("subtype") == "task_started" and r.get("task_id") == CHILD
+                 and r.get("tool_use_id") == call_id), "continued named-child start")
+    run_id = start["run_id"]
+    update = one((r for r in stdout if r.get("subtype") == "task_updated" and r.get("task_id") == CHILD
+                  and r.get("run_id") == run_id and r.get("patch", {}).get("status") == "completed"), "continued child completion")
+    notice = one((r for r in stdout if r.get("subtype") == "task_notification" and r.get("task_id") == CHILD
+                  and r.get("run_id") == run_id and r.get("tool_use_id") == call_id and r.get("status") == "completed"), "continued child notification")
+    child_final = one((r for r in new_child if r.get("type") == "assistant" and r.get("agentId") == CHILD
+                       and r.get("message", {}).get("stop_reason") == "end_turn"), "continued child final")
+    child_text = one((b["text"] for b in blocks(child_final) if b.get("type") == "text"), "child final text")
+    parent_notice = one((r for r in new_parent if r.get("promptSource") == "system"
+                         and r.get("turnOrigin") == "task_notification" and r.get("origin", {}).get("runId") == run_id), "parent child-completion notification")
+    parent_text = parent_notice["message"]["content"]
+    for row in (send_row, resume_result, start, update, notice, child_final, parent_notice):
+        native_events.append(event(row))
+    check("actual_same_child_send_start_complete_and_exact_final_text",
+          all(r.get("session_id", r.get("sessionId")) == SESSION for r in
+              (send_row, start, update, notice, child_final, parent_notice))
+          and start["subagent_type"] == "pixl:pixl"
+          and tag(parent_text, "task-id") == CHILD and tag(parent_text, "tool-use-id") == call_id
+          and tag(parent_text, "status") == "completed" and child_text == notice["summary"] == tag(parent_text, "result")
+          and send_row["line"] < start["line"] < update["line"] < notice["line"],
+          {"call_id": call_id, "run_id": run_id, "final_text_sha256": digest(child_text.encode())})
+    check("natural_continuation_exit", record["returncode"] == continuation["returncode"] == 0
+          and continuation.get("interruption_reason") is None)
+    check("recorded_files_bind_retained_native_evidence", all(record["recorded_files"][name] == sha(NEW / name)
+          for name in ("launch.json", "identity.json", "continuation.json", "stdout.jsonl", "native-transcripts/parent.jsonl", f"native-transcripts/{CHILD}.jsonl")))
+    current = inventory(root, ("__pycache__",))
+    changed = [n for n, d in identity["inputs"].items() if current.get(n) != d]
+    additions = [n for n in current if n not in identity["inputs"]]
+    check("all_778_preceding_consumer_files_preserved", len(identity["inputs"]) == 778 and not changed, changed)
+    check("new_consumer_files_only_revision_02", bool(additions) and all(n.startswith(ALLOWED) for n in additions), additions)
+    check("production_and_all_248_kit_files_unchanged", inventory(root / ".pixl") == identity["baseline_production"]
+          and inventory(kit, ("__pycache__",)) == identity["package_files"] and len(identity["package_files"]) == 248)
+    check("snapshot_retains_exact_current_consumer", snapshot["status"] == "pass" and snapshot["files"] == current
+          and snapshot["sha256"] == sha(NEW / snapshot["archive"]))
+    check("original_failed_grade_is_unchanged", sha(OLD / "independent-grade-01.json") == OLD_GRADE_SHA
+          and read(OLD / "independent-grade-01.json")["passed"] == 29)
+    check("predecessor_and_current_addendum_references_exact", ref_matches(root, specialist["predecessor_report"], root / "work/knowledge-decisions/SPECIALIST-RESULT.json")
+          and ref_matches(root, caller["predecessor_report"], root / "work/knowledge-decisions/CALLER-RESULT.json")
+          and ref_matches(root, caller["specialist_addendum"], specialist_path)
+          and ref_matches(root, caller["original_specialist"], root / "work/knowledge-decisions/SPECIALIST-RESULT.json"))
+    core_operations = lambda values: [{k: row[k] for k in ("tool", "arguments", "result")} for row in values]
+    ref_operations = lambda values: [{k: row[k] for k in ("tool", "result")} for row in values]
+    check("exact_original_19_operation_refs_retained", len(caller["operations"]) == 19
+          and core_operations(caller["operations"]) == core_operations(original_specialist["operations"])
+          and ref_operations(caller["operations"]) == ref_operations(original_caller["operations"]),
+          "Tool/arguments/result match the original specialist; tool/result match the original caller. Optional commentary fields are not operation identity.")
+    for operation in caller["operations"]:
+        path = confined(root, operation["result"]["path"])
+        proof = native_read_proof([new_parent], path) or complete_file_proof([new_parent], path)
+        reads.append({"result": operation["result"], "proof": proof})
+        check("caller_complete_saved_read:" + operation["result"]["path"], bool(proof)
+              and ref_matches(root, operation["result"]), proof)
+    check("caller_complete_specialist_addendum_read", bool(native_read_proof([new_parent], specialist_path)
+          or complete_file_proof([new_parent], specialist_path)))
+    durations = [f["duration_ms"] for f in declaration(root)["clips"][0]["frames"]]
+    proposal = read(root / "work/knowledge-inputs/IMPORT-PROPOSAL.json")["proposal"]["durations_ms"]
+    corrected_names = [f"assets/robot-idle/east-{i}.png" for i in range(5)]
+    raw_names = [f"work/cf09-production-01/returned/east-{i}.png" for i in range(5)]
+    measures = {"corrected_delivered": png_metrics(root, corrected_names), "raw_returned": png_metrics(root, raw_names)}
+    rest = {name: {"frame0_hold_ms": values[0], "frame4_hold_ms": values[4],
+            "visible_rest_ms": values[4] + values[0], "pulse_ms": sum(values[1:4]), "loop_ms": sum(values)}
+            for name, values in (("authored", durations), ("uniform_proposal", proposal))}
+    check("rest_pose_identity_is_actual_equal_endpoint_bytes", sha(root / corrected_names[0]) == sha(root / corrected_names[4]))
+    check("recomputed_pixels_agree_with_predeclared_reference_facts",
+          measures["raw_returned"]["baseline_vs_frame0_alpha_xor"] == criteria["reference_facts"]["raw_alpha_vs_frame0"]
+          and sequence(measures["raw_returned"]["adjacent_alpha_xor"]) == criteria["reference_facts"]["raw_alpha_adjacent_including_wrap"]
+          and measures["corrected_delivered"]["baseline_vs_frame0_alpha_xor"] == criteria["reference_facts"]["corrected_alpha_vs_frame0"]
+          and sequence(measures["corrected_delivered"]["adjacent_alpha_xor"]) == criteria["reference_facts"]["corrected_alpha_adjacent_including_wrap"])
+    for actor, report, path in (("specialist", specialist, specialist_path), ("caller", caller, caller_path)):
+        card = report["import_decision"]
+        check(actor + ":actual_eleven_boundaries_and_authored_timing", card["durations_ms"] == durations
+              and card["total_ms"] == sum(durations) and card["verdict"] in ("retain_authored", "reject_uniform")
+              and card["boundary_times_ms"] == TIMES and card["boundary_frames"] == [frame_at(durations, t) for t in TIMES])
+        contrast = first(card, "uniform_proposal_contrast", "uniform_proposal")
+        check(actor + ":actual_uniform_contrast", contrast["durations_ms"] == proposal and contrast["total_ms"] == sum(proposal)
+              and contrast["boundary_times_ms"] == TIMES and contrast["boundary_frames"] == [frame_at(proposal, t) for t in TIMES])
+        proof_ids = {method: (value if isinstance(value, str) else first(value, "executed_check_id", "check_id"))
+                     for method, value in report["proof_check_ids"].items() if method in PROOFS}
+        check(actor + ":executed_proof_ids", proof_ids == PROOFS)
+        check(actor + ":rest_hold_pulse_and_loop_measurements", all(report["rest_measurements"][name][key] == value
+              for name, values in rest.items() for key, value in values.items()))
+        check(actor + ":independent_actual_pixel_metrics", all(sequence(report["mask_measurements"][name][key]) == sequence(value)
+              for name, values in measures.items() for key, value in values.items() if key != "frames"))
+        check(actor + ":no_acceptance_causality_or_human_gate", report["production_unchanged"] is True
+              and report["acceptance_created"] is False and report["retrospective_causality_claimed"] is False
+              and report["human_acceptance"] == "separate, unrecorded" and report["limitations"] and report["next_action"])
+        check(actor + ":exact_addendum_retained", sha(path) == sha(NEW / "outputs/revision-02" / path.name))
+    scope_text = json.dumps(caller["output_scope_finding"], ensure_ascii=False)
+    check("caller_explicitly_retains_four_prior_external_writes", all(name in scope_text for name in
+        ("/tmp/tm09-before.sha", "/tmp/tm09-frameat.mjs", "/tmp/tm09-after.sha", "/tmp/tm09-final.sha")), caller["output_scope_finding"])
+    for actor, journal in (("caller", new_parent), ("specialist", new_child)):
+        for row in journal:
+            if row.get("type") != "assistant":
+                continue
+            for block in blocks(row):
+                if block.get("type") != "tool_use":
+                    continue
+                tool, args = block.get("name"), block.get("input", {})
+                if tool in ("Write", "Edit"):
+                    path = confined(root, args["file_path"])
+                    allowed = path.is_relative_to(root / ALLOWED)
+                    write_review.append({"actor": actor, "tool": tool, "event": event(row), "path": str(path), "allowed": allowed})
+                elif tool == "Bash":
+                    command_sha = digest(args["command"].encode())
+                    review = REVIEWED_COMMANDS.get(command_sha)
+                    write_review.append({"actor": actor, "tool": tool, "event": event(row), "command_sha256": command_sha,
+                                         "review": review, "allowed": review is not None})
+                elif str(tool).startswith("mcp__"):
+                    write_review.append({"actor": actor, "tool": tool, "event": event(row),
+                                         "allowed": False, "review": "Additional MCP operation requires explicit review"})
+    check("new_phase_write_tools_and_shell_commands_reviewed", bool(write_review) and all(r["allowed"] for r in write_review), write_review)
+    check("audit_preserves_all_retained_inputs", all(sha(Path(p)) == value for p, value in before.items()))
+    result = {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+              "status": "pass" if all(c["pass"] for c in checks) else "fail",
+              "passed": sum(c["pass"] for c in checks), "total": len(checks), "checks": checks,
+              "native_parent": SESSION, "native_child": CHILD, "native_events": native_events,
+              "complete_saved_reads": reads, "independent_measurements": {"rest": rest, "pixels": measures},
+              "write_review": write_review, "inputs": [reference(p) for p in input_paths],
+              "reports": {"specialist": {"path": specialist_path.relative_to(root).as_posix(), "sha256": sha(specialist_path)},
+                          "caller": {"path": caller_path.relative_to(root).as_posix(), "sha256": sha(caller_path)}},
+              "audit_source": reference(Path(__file__).resolve()),
+              "scope": "Guided same-parent/same-child continuation, actual full saved-file reads, exact preservation and independent timing/pixel checks. Original29/52 and original output-scope violation remain historical failures.",
+              "limitations": ["Separate full-report semantic review determines authority, explanation and usefulness; this is not artistic or human acceptance.",
+                              "Write-scope review covers recorded explicit native tools and individually inspected shell commands, not an exhaustive operating-system syscall audit or host transcript/cache writes.",
+                              "No provider execution, new art, continuous playback, other-engine acceptance or past retrieval-causation claim.",
+                              "Human acceptance is separate and unrecorded; M1/M2 and broader M3/M4 remain open."]}
+    with out.open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, ensure_ascii=False, indent=2)
+        output.write("\n")
+    print(json.dumps({k: result[k] for k in ("status", "passed", "total", "native_parent", "native_child")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()

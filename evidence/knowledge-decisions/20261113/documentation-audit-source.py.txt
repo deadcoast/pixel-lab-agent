@@ -1,0 +1,110 @@
+"""Fresh TM-09 living-document links, IDs, open acceptance and historical-evidence preservation."""
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "0e215f4b2c704481f6cd5c67c68d8940ae6d88b6"
+CYCLE = "IDENTIFY-2026-11-09-01"
+DOCS = ["TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md",
+        "docs/CAPABILITY-OUTCOMES.md", "docs/AGENT-KIT.md", "docs/workflows/IDENTIFY.md",
+        "plugins/pixl/skills/pixl/references/knowledge.md", "evidence/knowledge-decisions/README.md"]
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def anchors(path):
+    body = path.read_text(encoding="utf-8-sig")
+    result = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', body))
+    seen = {}
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*#*$", body, re.M):
+        slug = re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        result.add(slug + (f"-{count}" if count else ""))
+    return result
+
+
+def audit(out):
+    checks = []
+    def check(name, passed, detail):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+    for name in DOCS:
+        path = ROOT / name
+        body = path.read_text(encoding="utf-8-sig")
+        body = re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)", "", body)
+        for target in re.findall(r"\]\(([^)]+)\)", body):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                continue
+            local, _, fragment = unquote(target).partition("#")
+            destination = (path.parent / local).resolve() if local else path
+            exists = destination.exists() or (destination == out and not fragment)
+            valid_anchor = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check(f"link:{name}:{target}", exists and valid_anchor, target)
+    findings = re.findall(r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s",
+                          (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]",
+                         (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    original_findings = re.findall(r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s",
+        subprocess.check_output(["git", "show", BASE + ":docs/IDENTIFIED.md"],
+                                cwd=ROOT, text=True, encoding="utf-8"), re.M)
+    check("fifty_original_ids", len(findings) == len(set(findings)) == 50 and
+          len(backlog) == len(set(backlog)) == 50 and
+          set(findings) == set(backlog) == set(original_findings),
+          {"findings": findings, "baseline": BASE})
+    for name in ("TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md"):
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("active_cycle:" + name, CYCLE in body and "TM-09" in body,
+              "Continue the existing cycle; this audit does not infer TM-09 acceptance")
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    sections = dict(re.findall(r"(?ms)^## (M[1-4]) [^\n]+\n(.*?)(?=^## |\Z)", plan))
+    for milestone in ("M1", "M2", "M3", "M4"):
+        status = re.search(r"^\*\*Status:\*\* ([^\n]+)", sections.get(milestone, ""), re.M)
+        text = status.group(1).split("**Existing work:")[0] if status else ""
+        check("milestone_remains_open:" + milestone,
+              bool(re.search(r"\b(open|active)\b", text, re.I)) and
+              not re.search(r"\b(closed|complete)\b", text, re.I), text)
+    for name in ("TODO.md", "docs/CAPABILITY-OUTCOMES.md", "evidence/knowledge-decisions/README.md"):
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("human_acceptance_separate:" + name,
+              bool(re.search(r"human acceptance.{0,120}(separate|unrecorded|not recorded)", body, re.I | re.S)),
+              "Documentation keeps human acceptance distinct; this is a wording check, not human acceptance")
+    changed = subprocess.check_output(
+        ["git", "diff", "--name-only", "--diff-filter=MDTR", BASE, "--", "evidence/"],
+        cwd=ROOT, text=True, encoding="utf-8").splitlines()
+    generated = {"evidence/test-results.json", "evidence/test-log.txt", "evidence/art-pocs.json",
+                 "evidence/art-methods/poc-report.json", "evidence/representation-benchmark.json",
+                 "evidence/wheel-check.json"}
+    historical = [name for name in changed if name not in generated]
+    check("historical_receipts_unchanged", not historical,
+          {"changed_historical_paths": historical, "baseline": BASE,
+           "generated_output_exceptions": sorted(generated),
+           "scope": "Existing tracked evidence only; new receipts are additions, never replacement passes"})
+    return {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+            "scope": "Read-only documentation references, original workflow IDs, open milestone/human-acceptance wording and historical receipt preservation; no native, artistic or product acceptance inference",
+            "source_sha256": sha(Path(__file__)), "baseline": BASE,
+            "documents": {name: sha(ROOT / name) for name in DOCS},
+            "status": "pass" if all(c["passed"] for c in checks) else "fail",
+            "passed": sum(c["passed"] for c in checks), "total": len(checks), "checks": checks}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Use a fresh report; preserve earlier audits")
+    result = audit(args.out.resolve())
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)

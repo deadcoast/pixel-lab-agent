@@ -1,6 +1,6 @@
 # PIXL development plan
 
-Cycle: **IDENTIFY-2026-11-09-01**. Status: **active; overall product incomplete**. Updated: **2026-11-12**.
+Cycle: **IDENTIFY-2026-11-09-01**. Status: **active; overall product incomplete**. Updated: **2026-11-13**.
 
 This plan translates the [current audit](docs/IDENTIFIED.md) and existing product requirements into milestone exits. It preserves the five outcome groups in [TODO](TODO.md), rather than replacing unfinished work with a new product direction. [SHELVED](SHELVED.md) holds the ordered findings; TODO records the work being executed and its actual results.
 
@@ -67,6 +67,8 @@ NF-03 now implements a read-only bootstrap/CLI/MCP report that keeps installatio
 
 **Work source:** [M2 backlog](SHELVED.md#m2--dependable-native-agent-to-agent-operation). Local fixtures can test deterministic failures; consequential native behavior needs native evidence.
 
+**Active next M2 group — QOL-10/SC-08:** current Claude execution and [retained-input verification](evidence/knowledge-decisions/20261113/next-continuation-preflight.json) remove the earlier availability dependency for this continuation. Preserve the original 0/1 grade and timeout, verify predecessor identities and support the observed asynchronous completion route in grading before resuming the persisted parent and latest actual child. This older scenario remains unfinished; TM-09 does not close it. If a new external block occurs, SC-06 is the next independent compatibility enabler; conditional proposals remain conditional.
+
 ## M3 — Source allocation through useful consumer production
 
 **Status:** partially demonstrated for the queue family; broader outcome open. **Existing work:** TODO group 3 and PX-PLAR-002; PX-PROD-001.
@@ -115,7 +117,9 @@ NF-03 now implements a read-only bootstrap/CLI/MCP report that keeps installatio
 
 **TM-08 bounded complete:** [animation and tile-neighborhood consumers](evidence/domain-consumers/README.md) add reusable declared contracts, actual browser observations and independent checks alongside the retained CF-10 robot renderer. Controlled native grades pass 49/49 each; final verification passes 1,212 tests plus one existing skip (74 new), 39 references and distribution probes; four final-kit replays pass. Exact kits/input archives, checker corrections, original adapter/source-drift/link-audit failures and separate proof tiers remain retained.
 
-**Bounded complete: CF-09 useful actual-art revision.** The [actual robot-idle outcome](evidence/domain-art-revision/README.md) demonstrates one real retained animation request, a genuine rejected middle-frame failure, one official guarded correction, independent specialist/caller acceptance, and exact five-frame delivery in the same authored 1×/3× consumer. The public family execution verifies exact served files and cleanup; current PLAR/handoff reports delivered with zero pending jobs. This is a bounded development art outcome, not new native-host or general domain-quality qualification. Next eligible: TM-09 decision-linked knowledge. Human acceptance, M1/M2 and broader M3/M4 remain open.
+**Bounded complete: CF-09 useful actual-art revision.** The [actual robot-idle outcome](evidence/domain-art-revision/README.md) demonstrates one real retained animation request, a genuine rejected middle-frame failure, one official guarded correction, independent specialist/caller acceptance, and exact five-frame delivery in the same authored 1×/3× consumer. The public family execution verifies exact served files and cleanup; current PLAR/handoff reports delivered with zero pending jobs. This is a bounded development art outcome, not new native-host or general domain-quality qualification. The later TM-09 decision outcome is recorded below. Human acceptance, M1/M2 and broader M3/M4 remain open.
+
+**Bounded complete: TM-09 knowledge retrieval tied to decisions.** Installed-library context and exact retrieval exports support a useful fresh import decision over retained CF-09 art, preserving authored timing and registration while keeping source examples and executed-proof limits distinct. Codex passes [51/51](evidence/knowledge-decisions/20261113/native/codex-01/independent-grade-01.json); Claude passes [53/53 through guided same-parent/same-child correction](evidence/knowledge-decisions/20261113/claude-followup-proof.json). Separate K1–K8 semantic reviews pass for Codex and the current guided Claude packet. The original Claude [29/52](evidence/knowledge-decisions/20261113/native/claude-01/independent-grade-01.json), separate [15/15 automatic-background completion proof](evidence/knowledge-decisions/20261113/claude-first-completion-proof.json), incomplete saved-file review, report/precision defects and four caller `/tmp` writes remain retained. [Full verification](evidence/verification-runs/20261113T201546.651476Z/result.json) passes 1,263 tests plus two Windows privilege skips (1,265 run; 33 new), 39 reference checks and distribution probes. No new art, historical repair-causation or general reliability claim follows. [Outcome, exact kits and A–E](evidence/knowledge-decisions/README.md) qualify one explicitly scoped decision, with accepted CF-09 art/state unchanged. Human acceptance, M1/M2 and broader M3/M4 remain open.
 
 **Work source:** [M4 backlog](SHELVED.md#m4--demonstrated-domain-judgment-and-recovery). New operation recipes follow demonstrated needs.
 

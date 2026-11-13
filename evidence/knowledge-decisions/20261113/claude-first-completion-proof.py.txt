@@ -1,0 +1,222 @@
+"""Read-only proof of retained Claude01 automatic-background completion.
+
+Select actual events by their linked identities, then report their line numbers.
+This supplements, and never replaces, the original 29/52 trial grade.
+"""
+import argparse
+import hashlib
+import json
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+ATTEMPT = BASE / "native/claude-01"
+SESSION = "461c2169-1b48-452e-8715-2c9f3a24af66"
+CHILD = "a4a3a48b0561a918e"
+FINAL_SHA256 = "e324d676ddf25a2e8d5e7c37e96d5f9ddd348a126c32786168a0da781d8f20a7"
+CHILD_FILE = f"native-transcripts/{CHILD}.jsonl"
+EXPECTED = {
+    "stdout.jsonl": "6a7d79cf731f4b9251cf20621fe7912450feb5d5fbf999cece1a31948ac0ec96",
+    "native-transcripts/parent.jsonl": "bac15251ac1d0cf4fa99bcb968d9173212e6f5bbb4197864050b4a1b95f8f61c",
+    CHILD_FILE: "b7f0a32ab1e0623de1bbd8e5aa74e0d207534eadfba2ea597e956d0b3f843bcc",
+    "continuation.json": "efcd82295f7907186ab979c2f312489ddfecd8d1cb06ed2a6afa0307f0dc9f20",
+    "record.json": "abc9cba3bda66b4414e132c65ce4b4fc392e0e4001a2d9499c3feb2fdfa15213",
+    "independent-grade-01.json": "9fb553c77d1de231eb0b61843ca9d52d2b5623a0a8a4e6a05284556e1797ba0c",
+    "outputs/CALLER-RESULT.json": "ca077a7a9ee6917b1b1b476ba5eb51bfadb7eaf4606e6552faeac0235c776d91",
+    "outputs/SPECIALIST-RESULT.json": "5e56c5b745dd981bfd4e0f4412f55e0238c3980943765b4eb46b060c85f82d26",
+}
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def reference(path):
+    data = path.read_bytes()
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(data), "bytes": len(data)}
+
+
+def blocks(row):
+    content = row.get("message", {}).get("content", [])
+    return content if isinstance(content, list) else []
+
+
+def one(items, description):
+    selected = list(items)
+    if len(selected) != 1:
+        raise ValueError(f"Expected one {description}; observed {len(selected)}")
+    return selected[0]
+
+
+def tag(text, name):
+    return one(re.findall(r"<" + name + r">(.*?)</" + name + r">", text, re.S), name)
+
+
+def tool_block(row, kind, identity):
+    return one((block for block in blocks(row)
+                if block.get("type") == kind
+                and block.get("id" if kind == "tool_use" else "tool_use_id") == identity),
+               kind + " block")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=BASE / "claude-first-completion-proof.json")
+    out = parser.parse_args().out.resolve()
+    if out.exists():
+        raise ValueError("Preserve the old receipt; use a fresh output")
+    raw = {name: (ATTEMPT / name).read_bytes() for name in EXPECTED}
+    if any(sha(raw[name]) != digest for name, digest in EXPECTED.items()):
+        raise ValueError("Retained audit inputs changed")
+    values = {name: ([json.loads(line) for line in data.splitlines()]
+                     if name.endswith(".jsonl") else json.loads(data)) for name, data in raw.items()}
+    stdout, parent, child = (values[name] for name in
+                            ("stdout.jsonl", "native-transcripts/parent.jsonl", CHILD_FILE))
+    continuation, record, grade, caller = (values[name] for name in
+        ("continuation.json", "record.json", "independent-grade-01.json", "outputs/CALLER-RESULT.json"))
+    selected_child = caller["native_child"]["agent_id"]
+    selected_role = caller["native_child"]["subagent_type"]
+    events = []
+
+    def select(name, predicate, description):
+        line, row = one(((line, row) for line, row in enumerate(values[name], 1) if predicate(row)), description)
+        observed = {key: row[key] for key in (
+            "type", "subtype", "session_id", "sessionId", "agentId", "uuid", "task_id",
+            "tool_use_id", "run_id", "status", "patch", "subagent_type", "is_backgrounded",
+            "origin", "promptSource", "turnOrigin", "terminal_reason", "is_error") if key in row}
+        events.append({"event": description, "input": name, "line": line,
+                       "line_sha256_without_newline": sha(raw[name].splitlines()[line - 1]),
+                       "observed": observed})
+        return line, row
+
+    launch_line, launch = select("stdout.jsonl", lambda row: row.get("type") == "user"
+        and isinstance(row.get("tool_use_result"), dict)
+        and row["tool_use_result"].get("agentId") == selected_child
+        and row["tool_use_result"].get("status") == "async_launched", "actual async launch")
+    result_block = one((b for b in blocks(launch) if b.get("type") == "tool_result"), "launch result block")
+    call_id = result_block["tool_use_id"]
+    call_line, call_row = select("stdout.jsonl", lambda row: row.get("type") == "assistant"
+        and any(b.get("type") == "tool_use" and b.get("name") == "Agent" and b.get("id") == call_id
+                for b in blocks(row)), "named Agent call")
+    call = tool_block(call_row, "tool_use", call_id)
+    start_line, start = select("stdout.jsonl", lambda row: row.get("type") == "system"
+        and row.get("subtype") == "task_started" and row.get("task_id") == selected_child
+        and row.get("tool_use_id") == call_id, "host background start")
+    run_id = start["run_id"]
+    update_line, update = select("stdout.jsonl", lambda row: row.get("type") == "system"
+        and row.get("subtype") == "task_updated" and row.get("task_id") == selected_child
+        and row.get("run_id") == run_id and row.get("patch", {}).get("status") == "completed",
+        "host task completion")
+    notice_line, notice = select("stdout.jsonl", lambda row: row.get("type") == "system"
+        and row.get("subtype") == "task_notification" and row.get("task_id") == selected_child
+        and row.get("tool_use_id") == call_id and row.get("run_id") == run_id
+        and row.get("status") == "completed", "host completion notification")
+    child_line, child_end = select(CHILD_FILE, lambda row: row.get("type") == "assistant"
+        and row.get("agentId") == selected_child and row.get("sessionId") == SESSION
+        and row.get("message", {}).get("stop_reason") == "end_turn", "actual child final")
+    child_text = one((b["text"] for b in blocks(child_end) if b.get("type") == "text"), "child final text")
+    parent_call_line, parent_call = select("native-transcripts/parent.jsonl", lambda row:
+        row.get("type") == "assistant" and any(b.get("type") == "tool_use"
+        and b.get("name") == "Agent" and b.get("id") == call_id for b in blocks(row)), "parent Agent call")
+    parent_launch_line, parent_launch = select("native-transcripts/parent.jsonl", lambda row:
+        row.get("type") == "user" and isinstance(row.get("toolUseResult"), dict)
+        and row["toolUseResult"].get("agentId") == selected_child
+        and row["toolUseResult"].get("status") == "async_launched", "parent async launch")
+    parent_notice_line, parent_notice = select("native-transcripts/parent.jsonl", lambda row:
+        row.get("type") == "user" and row.get("promptSource") == "system"
+        and row.get("turnOrigin") == "task_notification" and row.get("origin", {}).get("runId") == run_id,
+        "parent system completion notification")
+    notification = parent_notice["message"]["content"]
+    terminal_line, terminal = select("stdout.jsonl", lambda row: row.get("type") == "result"
+        and row.get("origin", {}).get("runId") == run_id, "terminal result for completed task")
+    failed = [row["check"] for row in grade["checks"] if not row["pass"]]
+    full_read_gaps = [name for name in failed if name.startswith("caller:read:")]
+    stats = terminal["subagent_stats"]
+    checks = {
+        "exact_retained_input_hashes_and_record_bindings": all(
+            record["recorded_files"][name] == EXPECTED[name] for name in
+            ("stdout.jsonl", "continuation.json", "native-transcripts/parent.jsonl", CHILD_FILE))
+            and record["continuation"]["sha256"] == EXPECTED["continuation.json"],
+        "same_selected_child_role_and_parent": selected_child == CHILD and selected_role == "pixl:pixl"
+            and continuation["session_id"] == SESSION and grade["native_child"] == CHILD
+            and [{"id": c["id"], "role": c["role"]} for c in continuation["children"]]
+                == [{"id": CHILD, "role": "pixl:pixl"}],
+        "parent_and_stdout_agent_calls_identical_with_background_argument_absent":
+            tool_block(parent_call, "tool_use", call_id) == call
+            and call["input"]["subagent_type"] == "pixl:pixl"
+            and "run_in_background" not in call["input"],
+        "actual_successful_async_launch_bound_to_same_call_and_child":
+            not result_block.get("is_error", False) and launch["tool_use_result"]["isAsync"] is True
+            and parent_launch["toolUseResult"] == launch["tool_use_result"]
+            and tool_block(parent_launch, "tool_result", call_id) == result_block,
+        "host_automatically_started_named_child_in_background": start["is_backgrounded"] is True
+            and start["subagent_type"] == "pixl:pixl"
+            and stats["requested"] == {"background": 0, "foreground": 0, "unset": 1}
+            and stats["started_in_background"] == 1,
+        "completion_update_and_notification_bind_same_task_call_and_run":
+            update["task_id"] == notice["task_id"] == start["task_id"] == CHILD
+            and update["run_id"] == notice["run_id"] == run_id
+            and notice["tool_use_id"] == start["tool_use_id"] == call_id,
+        "selected_native_events_bind_same_parent_session": all(row["session_id"] == SESSION
+            for row in (call_row, start, launch, update, notice, terminal))
+            and all(row["sessionId"] == SESSION for row in (parent_call, parent_launch, parent_notice, child_end)),
+        "retained_transcripts_match_recorder_identity":
+            continuation["retained_transcripts"][CHILD]["sha256"] == EXPECTED[CHILD_FILE]
+            and continuation["retained_transcripts"]["parent"]["sha256"] == EXPECTED["native-transcripts/parent.jsonl"],
+        "actual_child_ended_turn_in_selected_sidechain": child_end["isSidechain"] is True
+            and child_end["agentId"] == CHILD and child_end["message"]["stop_reason"] == "end_turn",
+        "parent_system_notification_binds_child_call_and_run": parent_notice["isSidechain"] is False
+            and parent_notice["origin"] == {"kind": "task-notification", "producer": "session-task", "runId": run_id}
+            and notification.startswith("<task-notification>\n") and notification.endswith("</task-notification>")
+            and tag(notification, "task-id") == CHILD and tag(notification, "tool-use-id") == call_id
+            and tag(notification, "status") == "completed",
+        "exact_final_text_matches_child_stdout_and_parent":
+            child_text == notice["summary"] == tag(notification, "result")
+            and sha(child_text.encode("utf-8")) == FINAL_SHA256,
+        "source_selected_events_have_expected_causal_order":
+            call_line < start_line < launch_line < update_line < notice_line < terminal_line
+            and parent_call_line < parent_launch_line < parent_notice_line and child_line > 0,
+        "natural_host_exit_with_one_completed_named_child": record["returncode"] == continuation["returncode"] == 0
+            and continuation["status"] == "finished" and continuation["interruption_reason"] is None
+            and terminal["subtype"] == "success" and terminal["terminal_reason"] == "completed"
+            and terminal["is_error"] is False and stats["spawned"] == stats["completed"] == 1
+            and stats["failed"] == 0 and stats["by_type"] == {"pixl:pixl": 1},
+        "original_failed_grade_and_nineteen_saved_read_gaps_remain":
+            grade["status"] == "fail" and grade["passed"] == 29 and grade["total"] == 52
+            and "actual_named_child_completed" in failed and len(full_read_gaps) == 19,
+        "all_retained_inputs_unchanged_by_audit": all((ATTEMPT / name).read_bytes() == data for name, data in raw.items()),
+    }
+    payload = {
+        "version": 1, "observed_at": datetime.now(UTC).isoformat(),
+        "status": "pass" if all(checks.values()) else "fail", "passed": sum(checks.values()),
+        "total": len(checks), "checks": checks, "host": "claude", "native_parent": SESSION,
+        "native_child": selected_child, "named_role": selected_role, "call_id": call_id, "run_id": run_id,
+        "final_text_sha256": sha(child_text.encode("utf-8")),
+        "inputs": {name: reference(ATTEMPT / name) for name in EXPECTED},
+        "audit_source": reference(Path(__file__).resolve()), "events": events,
+        "frozen_grade": {"path": reference(ATTEMPT / "independent-grade-01.json"),
+                         "status": grade["status"], "passed": grade["passed"], "total": grade["total"],
+                         "failed_checks_preserved": failed},
+        "scope": "Separate source-bound proof that Claude01's actual named child completed after the host "
+                 "automatically backgrounded an Agent call with run_in_background omitted. Original grade 29/52 "
+                 "and every original input remain unchanged. No new native call or replay was performed.",
+        "does_not_repair": ["Nineteen missing full saved-result reads in the original caller transcript",
+                            "Original report field-layout incompatibilities",
+                            "Original numerical wording and boundary-report defects",
+                            "Original /tmp output-scope failure"],
+        "limitations": ["The separate guided continuation is outside this proof.",
+                        "Completion is not instruction conformance or semantic/artistic acceptance.",
+                        "No provider, engine, historical repair-causation or human acceptance claim.",
+                        "M1/M2 and broader M3/M4 remain open."],
+    }
+    with out.open("x", encoding="utf-8", newline="\n") as handle:
+        json.dump(payload, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+    print(json.dumps({key: payload[key] for key in ("status", "passed", "total", "native_parent", "native_child", "call_id", "run_id", "final_text_sha256")}))
+    raise SystemExit(0 if payload["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()
