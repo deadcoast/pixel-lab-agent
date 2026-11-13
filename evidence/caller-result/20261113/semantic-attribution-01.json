@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-13T22:54:37.077349+00:00",
+  "status": "needs_correction",
+  "source": {
+    "path": "evidence/caller-result/20261113/semantic-attribution-source.py.txt",
+    "sha256": "2b0d080f6df302df61cb271de44d379557dd9a2624389c40f52f45278db6e906"
+  },
+  "supplements": {
+    "path": "evidence/caller-result/20261113/semantic-review-01.json",
+    "sha256": "090e6b68730f0691d8cdddd3aa0a71f870ff7c5ff43c717acac23176cf9560be"
+  },
+  "selected_resumed_child": "ab352c80d7f534aae",
+  "original_public_handoff_calls": [
+    {
+      "child": "ac98550e535c93d5a",
+      "file": "evidence/caller-result/20261110/native/claude-01/native-transcripts/ac98550e535c93d5a.jsonl",
+      "line": 163,
+      "call_id": "toolu_01Hp5BB5avWemyCtZ6ATi2Tk",
+      "view": "caller",
+      "result_path": "work/compact-caller/compact.json"
+    }
+  ],
+  "reports_reviewed": [
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/outputs/SPECIALIST-RESULT.json",
+      "sha256": "ce38956d5f3ddf73e0a5e543385fa5fde5fdc6a67d54f0895220ce809e734236"
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/outputs/CALLER-RESULT.json",
+      "sha256": "84fbf84a5ed0defa7430bbcc7b5e92b6eb7bd9c3e56a483ee3d9d1005b0de51b"
+    }
+  ],
+  "finding": "The original caller view was created by the earlier rate-limited child ac98550e535c93d5a. The retained latest child ab352c80d7f534aae later resumed and created the missing receipt/result, but did not make that original caller-view call. Its current activation text incorrectly attributes the session-1 compact result to itself. Shared artifact reuse does not establish authorship by the selected child.",
+  "required_followup": "Preserve old files and grades. Correct the attribution in a fresh specialist addendum and have the selected child reconcile/reaffirm the same snapshot via the public caller view at a fresh output path. A fresh parent report should consume that addendum and preserve the original error-detail defect while linking its exact correction.",
+  "scope": "Additional independent semantic finding after review01 was emitted. This supplement preserves review01 and does not replace the earlier timeout, failed grade, or native artifacts."
+}

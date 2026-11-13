@@ -1,0 +1,219 @@
+"""Independent review of the first resumed caller outcome, retaining its defects.
+
+Run from the repository with the selected Python and a fresh output path. This
+does not run the consumer or repair its reports. The command allowlist records
+manual review of every complete native command, including failed commands.
+"""
+import hashlib
+import json
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+sys.path.insert(0, str(ROOT))
+from evaluations.grade_integration_change import complete_file_proof
+from evaluations.grade_named_codex_role import rows
+from evaluations.grade_plar_coverage import native_read_proof
+from evaluations.host_trials import inventory
+
+OLD = ROOT / "evidence/caller-result/20261110/native/claude-01"
+NEW = BASE / "native/claude-02"
+CHILD = "ab352c80d7f534aae"
+COMMANDS = {
+    "64d8b8ceadb33741e3787da0ca231b76a3a9b2be43ae30dfdecc02e2f93ac49a": "Lists and hashes retained partial outputs, reads compact fields; stdout only.",
+    "e94b0a394936208f85b2800805a1d4151c9a97a3caef67222830b9bfb2f8cc9f": "Runs the preserved missing-capability helper against the local MCP server; writes protocol/stdout/stderr only under work/compact-caller and prints results.",
+    "cbcb73afd1e9bcbd13da3a97e510017cf474ce4a4e516a6907003e7f70ae78d2": "Copies the exact host-saved PLAR return into a fresh specialist output, reads/hashes it and compares prior return; host result access is read-only.",
+    "a34026b4b65ed0d61b57567502640f3e451c9d8a489dc0a60d8d2637af5e1c71": "Writes new error wrappers under assigned output and prints actual local tools/list. Manual unavailable error transcription has the separately recorded detail defect.",
+    "cfa9d4ae70f6b590352243fb9fe7a1ad41c5f68e11daef7e6113694ec76469da": "Writes new unknown error, precheck and recovery wrappers under assigned output; no provider operation or production mutation.",
+    "f0246ec700d5a661497701ce1d72271f9dedddf6a9959d027b74812e3d2ce457": "Reads existing details and prints selected fields; does not prove complete model-visible file review.",
+    "f761f0501fa7550cc049bdf8bdcbadb3c325d42564c01ea3085c9b14837b4aca": "Parses existing details and prints its complete compact JSON value for exact handoff arguments; no writes.",
+    "7a12fd2d6d97faaac88c76354ce905c85514b36fedeff3576c5c906b33b80ca7": "Prints receipt, verifies snapshot/common fields and reads/hashes current outputs; no writes.",
+    "155b3450ee1317742d4204bbc85276d5cb244188a1fd78ec5acaabd902f01d64": "Inspects portions of existing helper sources; read-only.",
+    "ca123d9084931b69ff90b359d6467bf8f280142ece2a39883ff3aff0af8de702": "Intended fresh specialist reconciliation/result under assigned output; shell quoting failed before completion. Failure remains in native log; later native Write/helper execution recovered.",
+    "6c8fde451277ffc54982853504a84ac826e15f0a415d66743b4fc8f27b09f85d": "Runs fully reviewed helper_result_02.py, which asserts target absence and writes only two fresh specialist reports; lists output.",
+    "070321857ffda1502f088754ffc2f9ae3356fe47d7a9afeffc1b1a240aacb39a": "Writes new invalid-authoring/stale-state error wrappers only under assigned output, using observed errors and prior details hash.",
+    "5a3f0945babefabac4fef00866e4dc187add01483e0096bfcf75b71b8a44003b": "Copies exact host-saved stale-recovery return to fresh assigned output; parses and compares returned identities.",
+    "3cf06b528dbd33aa29eda54fbe91a6d7f7bcf628ecc13f44627d107f23ce2835": "Copies exact refresh, creates/runs helper_source_reads.py against frozen local MCP for two read-only exact locator requests, saves fresh raw protocol and exact returned text under assigned output, prints full specialist result.",
+    "9713f4dd7e6630160493163e2aa7fbd96d7ce878269bfe329fda46f849e56fff": "Prints receipt and compares parsed refresh continuation identities to compact; no writes.",
+    "fbf4529bc6569344a99b2619b4d56081ffc4e94f27bc32c629187d5544d99f31": "Saves guarded public receipt result, creates/runs helper_caller_result.py; only new assigned outputs, no production changes.",
+    "8cc599063a0b1c4e2c893fa995c131827666cf12a6e63e8c86177c20c166fdc0": "Intended fresh verification script/report in assigned output; shell quoting failed. Failure remains; later native Write/helper execution recovered.",
+    "470291ea030fc2961be9f1502b0e95090c54e72072aae5608dac948b2493b339": "Runs fully reviewed helper_caller_verify.py: complete JSON parsing/hash checks and one fresh verification receipt; prints full CALLER-RESULT.json. Script checks alone do not prove all result bodies were visible to model.",
+    "0f8f6b1032297120234c62c0a486eef73dc454a7066a9c31b0a755bb3357484c": "Copies exact host-saved final validation into fresh output, parses fields and compares prior bytes; no production or configuration mutation.",
+}
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.resolve().relative_to(ROOT).as_posix(), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def blocks(row):
+    content = row.get("message", {}).get("content", [])
+    return content if isinstance(content, list) else []
+
+
+def main():
+    out = Path(sys.argv[1]).resolve()
+    if out.exists():
+        raise ValueError("Preserve prior review receipts")
+    launch = read(NEW / "launch.json")
+    root = Path(launch["cwd"])
+    work = root / "work/compact-caller"
+    caller = read(work / "CALLER-RESULT.json")
+    specialist = read(work / "SPECIALIST-RESULT.json")
+    compact = read(work / "compact.json")
+    preflight = read(BASE / "preflight-01.json")
+    old_parent = OLD / "native-transcripts/parent.jsonl"
+    parent_path = NEW / "native-transcripts/parent.jsonl"
+    old_child = OLD / f"native-transcripts/{CHILD}.jsonl"
+    child_path = NEW / f"native-transcripts/{CHILD}.jsonl"
+    parent = rows(parent_path)[len(rows(old_parent)):]
+    child = rows(child_path)[len(rows(old_child)):]
+    stdout = rows(NEW / "stdout.jsonl")
+    checks = []
+
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+
+    check("retained_parent_and_child_are_exact_prefixes",
+          parent_path.read_bytes().startswith(old_parent.read_bytes())
+          and child_path.read_bytes().startswith(old_child.read_bytes()))
+    old_drift = [name for name, digest in preflight["predecessor_evidence"].items()
+                 if not (OLD / name).is_file() or sha(OLD / name) != digest]
+    check("original_failed_trial_and_all_retained_evidence_unchanged", not old_drift, old_drift)
+    current = inventory(root, ("__pycache__",))
+    drift = [name for name, digest in preflight["consumer_before_resume"].items() if current.get(name) != digest]
+    added = [name for name in current if name not in preflight["consumer_before_resume"]]
+    check("all_4456_pre_resume_consumer_files_unchanged", len(preflight["consumer_before_resume"]) == 4456 and not drift, drift)
+    check("new_files_confined_to_assigned_output", len(added) == 29 and all(n.startswith("work/compact-caller/") for n in added), added)
+
+    scope_events, failures = [], []
+    uses = {}
+    for row in stdout:
+        for block in blocks(row):
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use":
+                tool, args = block["name"], block.get("input", {})
+                uses[block["id"]] = (row, block)
+                item = {"line": row["line"], "actor": row.get("agent_id", "parent"), "tool": tool}
+                if tool == "Bash":
+                    digest = hashlib.sha256(args["command"].encode()).hexdigest()
+                    item.update(command_sha256=digest, review=COMMANDS.get(digest), allowed=digest in COMMANDS)
+                elif tool == "Write":
+                    path = Path(args["file_path"]).resolve()
+                    item.update(path=str(path), allowed=path.is_relative_to(work)
+                                and path.name in {"helper_result_02.py", "helper_caller_verify.py"}
+                                and path.read_text(encoding="utf-8").replace("\r\n", "\n") == args["content"].replace("\r\n", "\n"))
+                elif tool == "SendMessage":
+                    item["allowed"] = args.get("to") == CHILD
+                else:
+                    item["allowed"] = tool in {
+                        "mcp__pixl-local__pixl_plar_read", "mcp__pixl-local__pixl_plar_handoff",
+                        "mcp__pixl-local__pixl_source", "mcp__pixl-local__pixl_validate",
+                        "mcp__pixl-unknown__pixl_jobs", "mcp__pixl-unknown__pixl_ready",
+                        "mcp__pixl-unknown__pixl_job_dispatch"}
+                scope_events.append(item)
+            elif block.get("type") == "tool_result" and block.get("is_error"):
+                use = uses.get(block.get("tool_use_id"))
+                if use and use[1]["name"] == "Bash":
+                    failures.append({"call_line": use[0]["line"], "result_line": row["line"], "error": block.get("content")})
+    check("every_native_command_and_write_reviewed_for_scope", bool(scope_events) and all(e["allowed"] for e in scope_events), scope_events)
+    check("two_recovered_shell_quoting_failures_retained", len(failures) == 2 and all("unexpected EOF" in f["error"] for f in failures), failures)
+
+    native_errors = {}
+    dispatch_results = []
+    for row in stdout:
+        for block in blocks(row):
+            if not isinstance(block, dict) or block.get("type") != "tool_result":
+                continue
+            use = uses.get(block.get("tool_use_id"))
+            if not use or not isinstance(block.get("content"), str):
+                continue
+            try:
+                value = json.loads(block["content"])
+            except ValueError:
+                continue
+            if isinstance(value, dict) and value.get("category"):
+                native_errors[value["category"]] = {"result": value, "line": row["line"]}
+            if use[1]["name"] == "mcp__pixl-unknown__pixl_job_dispatch":
+                dispatch_results.append({"args": use[1]["input"], "is_error": block.get("is_error"), "result": value, "line": row["line"]})
+    check("only_unknown_fixture_dispatch_attempt_was_rejected", len(dispatch_results) == 1
+          and dispatch_results[0]["args"]["job_id"] == "member.job"
+          and dispatch_results[0]["is_error"] is True
+          and dispatch_results[0]["result"]["category"] == "uncertain_remote_result", dispatch_results)
+    detail_comparison = []
+    for category, value in native_errors.items():
+        saved = read(root / caller["errors"][category]["path"])["original_error"]
+        detail_comparison.append({"category": category, "native_line": value["line"],
+                                  "exact": saved == value["result"], "native": value["result"], "saved": saved})
+    check("all_saved_native_error_details_are_exact", len(detail_comparison) == 4
+          and all(v["exact"] for v in detail_comparison), detail_comparison)
+
+    read_results = []
+    names = ["CALLER-RESULT.json", "SPECIALIST-RESULT.json", "compact.json", "receipt.json", "parent-receipt.json",
+             "details-read.json", "resume-read.json", "refresh.json", "stale-recovery.json", "unknown-recovery.json"]
+    names += sorted(p.relative_to(work).as_posix() for p in (work / "errors").glob("*.json"))
+    for name in names:
+        path = work / name
+        proof = native_read_proof([parent], path) or complete_file_proof([parent], path)
+        read_results.append({"path": "work/compact-caller/" + name, "sha256": sha(path), "complete_model_visible_saved_text": bool(proof), "proof": proof})
+    check("caller_consumed_complete_specialist_result_and_printed_complete_final_report",
+          all(item["complete_model_visible_saved_text"] for item in read_results[:2]), read_results[:2])
+    refs = []
+    def visit(value):
+        if isinstance(value, dict):
+            if set(value) == {"path", "sha256"}:
+                target = (root / value["path"]).resolve()
+                refs.append({**value, "matches": target.is_relative_to(root) and target.is_file() and sha(target) == value["sha256"]})
+            for v in value.values():
+                visit(v)
+        elif isinstance(value, list):
+            for v in value:
+                visit(v)
+    visit(caller)
+    check("caller_report_references_match_current_bytes", len(refs) == 19 and all(r["matches"] for r in refs), refs)
+    check("caller_preserves_partial_assignment_and_delivered_production", caller["assignment_status"] == "partial"
+          and caller["production_next"] == "delivered" and caller["production_delivery"]["complete"] is True)
+    check("caller_identifies_controlled_unknown_refusal_and_no_new_acceptance", caller["unknown_job_state"] == "unknown"
+          and "duplicate dispatch rejected" in caller["unknown_fixture"]["label"]
+          and "dispatch claim accepted" in caller["scope"] and "No provider call" in caller["scope"])
+    check("retained_integration_and_human_acceptance_are_separate", compact["caller"]["integration"]["status"] == "not_performed"
+          and "no fresh renderer or integration run; integration is retained evidence" in caller["unresolved"]
+          and "human acceptance remains separate" in caller["unresolved"]
+          and "M1/M2 and broader M3/M4 remain open" in caller["unresolved"])
+    check("historical_state_hash_interpretation_preserves_original_report", bool(specialist.get("interpretation_notes"))
+          and "historical canonical_state_sha256" in specialist["interpretation_notes"][0]
+          and sha(work / "SPECIALIST-REPORT.json") == "7390a062f174405010b9472c952bb7948aa7748684220bb3682650e700c9f303")
+
+    result = {
+        "version": 1, "observed_at": datetime.now(UTC).isoformat(),
+        "status": "pass" if all(c["pass"] for c in checks) else "fail", "passed": sum(c["pass"] for c in checks),
+        "total": len(checks), "checks": checks, "source": ref(Path(__file__)),
+        "inputs": [ref(NEW / n) for n in ("launch.json", "identity.json", "continuation.json", "stdout.jsonl", "outputs/CALLER-RESULT.json", "outputs/SPECIALIST-RESULT.json")],
+        "saved_file_visibility": read_results,
+        "semantic_findings": [
+            {"id": "SR-01", "status": "needs_correction", "finding": "The unavailable-observation original_error.detail was manually transcribed with fewer Windows backslashes than the native error. Code, category, recovery and identity remain accurate; exact original detail preservation is incomplete. Keep this report and first grade. Write a fresh exact error record and caller correction using the retained native event; do not normalize away the failure."},
+            {"id": "SR-02", "status": "qualified", "finding": "Both native_child objects name the same actual agent_id, but the specialist uses role:pixl and a human canonical_task label while the caller uses agent_type:pixl:pixl. Role qualification must use actual native events; dictionary equality is not the identity contract. The caller fork:none label is not separately established as a Claude host property."},
+            {"id": "SR-03", "status": "bounded_observation", "finding": "Parent consumed complete specialist and caller report text and a complete receipt. Other saved results were fully parsed and hashed by helper code, with actual local MCP observations and selected identities returned to the parent. This does not establish complete model-visible review of every saved JSON body. The frozen host redirects large PLAR responses to tool-result files; no fresh renderer/artistic verdict is inferred."},
+            {"id": "SR-04", "status": "useful_outcome_with_retained_defect", "finding": "The ordinary caller result distinguishes delivered reused art, partial reporting, stale plan history, no fresh integration, and separate unknown-job reconciliation. The caller accurately discloses the rejected duplicate dispatch; the unchanged old report's read-only language describes the earlier specialist observation."},
+        ],
+        "scope": "Independent first-resume semantic and output-scope review, not a replacement grade, host-wide qualification, new provider execution, artistic verdict, or human acceptance. Original failure, timeout, failed adapter grade and native shell failures remain retained."
+    }
+    with out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"], "output": str(out)}))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,859 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-13T22:53:48.008949+00:00",
+  "status": "fail",
+  "passed": 13,
+  "total": 14,
+  "checks": [
+    {
+      "check": "retained_parent_and_child_are_exact_prefixes",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "check": "original_failed_trial_and_all_retained_evidence_unchanged",
+      "pass": true,
+      "evidence": []
+    },
+    {
+      "check": "all_4456_pre_resume_consumer_files_unchanged",
+      "pass": true,
+      "evidence": []
+    },
+    {
+      "check": "new_files_confined_to_assigned_output",
+      "pass": true,
+      "evidence": [
+        "work/compact-caller/CALLER-RESULT.json",
+        "work/compact-caller/caller-validate-final.json",
+        "work/compact-caller/caller-verify-02.json",
+        "work/compact-caller/details-read.json",
+        "work/compact-caller/errors/invalid-authoring.json",
+        "work/compact-caller/errors/missing-capability.json",
+        "work/compact-caller/errors/stale-state.json",
+        "work/compact-caller/errors/unavailable-observation.json",
+        "work/compact-caller/errors/uncertain-remote.json",
+        "work/compact-caller/helper_caller_result.py",
+        "work/compact-caller/helper_caller_verify.py",
+        "work/compact-caller/helper_result_02.py",
+        "work/compact-caller/helper_source_reads.py",
+        "work/compact-caller/missing-capability-protocol.jsonl",
+        "work/compact-caller/missing-capability-protocol.stderr.txt",
+        "work/compact-caller/missing-capability-result.json",
+        "work/compact-caller/parent-receipt.json",
+        "work/compact-caller/receipt.json",
+        "work/compact-caller/refresh.json",
+        "work/compact-caller/resume-read.json",
+        "work/compact-caller/source-reads-protocol.jsonl",
+        "work/compact-caller/source-reads-protocol.stderr.txt",
+        "work/compact-caller/source-reads-summary.json",
+        "work/compact-caller/specialist-plar-read-02.json",
+        "work/compact-caller/specialist-reconcile.json",
+        "work/compact-caller/SPECIALIST-RESULT.json",
+        "work/compact-caller/stale-recovery.json",
+        "work/compact-caller/unknown-jobs-precheck.json",
+        "work/compact-caller/unknown-recovery.json"
+      ]
+    },
+    {
+      "check": "every_native_command_and_write_reviewed_for_scope",
+      "pass": true,
+      "evidence": [
+        {
+          "line": 4,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "64d8b8ceadb33741e3787da0ca231b76a3a9b2be43ae30dfdecc02e2f93ac49a",
+          "review": "Lists and hashes retained partial outputs, reads compact fields; stdout only.",
+          "allowed": true
+        },
+        {
+          "line": 11,
+          "actor": "parent",
+          "tool": "SendMessage",
+          "allowed": true
+        },
+        {
+          "line": 23,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "e94b0a394936208f85b2800805a1d4151c9a97a3caef67222830b9bfb2f8cc9f",
+          "review": "Runs the preserved missing-capability helper against the local MCP server; writes protocol/stdout/stderr only under work/compact-caller and prints results.",
+          "allowed": true
+        },
+        {
+          "line": 27,
+          "actor": "ab352c80d7f534aae",
+          "tool": "mcp__pixl-local__pixl_plar_read",
+          "allowed": true
+        },
+        {
+          "line": 31,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_source",
+          "allowed": true
+        },
+        {
+          "line": 35,
+          "actor": "ab352c80d7f534aae",
+          "tool": "Bash",
+          "command_sha256": "cbcb73afd1e9bcbd13da3a97e510017cf474ce4a4e516a6907003e7f70ae78d2",
+          "review": "Copies the exact host-saved PLAR return into a fresh specialist output, reads/hashes it and compares prior return; host result access is read-only.",
+          "allowed": true
+        },
+        {
+          "line": 39,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "a34026b4b65ed0d61b57567502640f3e451c9d8a489dc0a60d8d2637af5e1c71",
+          "review": "Writes new error wrappers under assigned output and prints actual local tools/list. Manual unavailable error transcription has the separately recorded detail defect.",
+          "allowed": true
+        },
+        {
+          "line": 45,
+          "actor": "parent",
+          "tool": "mcp__pixl-unknown__pixl_jobs",
+          "allowed": true
+        },
+        {
+          "line": 48,
+          "actor": "parent",
+          "tool": "mcp__pixl-unknown__pixl_job_dispatch",
+          "allowed": true
+        },
+        {
+          "line": 51,
+          "actor": "parent",
+          "tool": "mcp__pixl-unknown__pixl_jobs",
+          "allowed": true
+        },
+        {
+          "line": 54,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "cfa9d4ae70f6b590352243fb9fe7a1ad41c5f68e11daef7e6113694ec76469da",
+          "review": "Writes new unknown error, precheck and recovery wrappers under assigned output; no provider operation or production mutation.",
+          "allowed": true
+        },
+        {
+          "line": 60,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "f0246ec700d5a661497701ce1d72271f9dedddf6a9959d027b74812e3d2ce457",
+          "review": "Reads existing details and prints selected fields; does not prove complete model-visible file review.",
+          "allowed": true
+        },
+        {
+          "line": 69,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_plar_handoff",
+          "allowed": true
+        },
+        {
+          "line": 75,
+          "actor": "ab352c80d7f534aae",
+          "tool": "mcp__pixl-local__pixl_plar_handoff",
+          "allowed": true
+        },
+        {
+          "line": 77,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "f761f0501fa7550cc049bdf8bdcbadb3c325d42564c01ea3085c9b14837b4aca",
+          "review": "Parses existing details and prints its complete compact JSON value for exact handoff arguments; no writes.",
+          "allowed": true
+        },
+        {
+          "line": 90,
+          "actor": "ab352c80d7f534aae",
+          "tool": "Bash",
+          "command_sha256": "7a12fd2d6d97faaac88c76354ce905c85514b36fedeff3576c5c906b33b80ca7",
+          "review": "Prints receipt, verifies snapshot/common fields and reads/hashes current outputs; no writes.",
+          "allowed": true
+        },
+        {
+          "line": 93,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "155b3450ee1317742d4204bbc85276d5cb244188a1fd78ec5acaabd902f01d64",
+          "review": "Inspects portions of existing helper sources; read-only.",
+          "allowed": true
+        },
+        {
+          "line": 102,
+          "actor": "ab352c80d7f534aae",
+          "tool": "Bash",
+          "command_sha256": "ca123d9084931b69ff90b359d6467bf8f280142ece2a39883ff3aff0af8de702",
+          "review": "Intended fresh specialist reconciliation/result under assigned output; shell quoting failed before completion. Failure remains in native log; later native Write/helper execution recovered.",
+          "allowed": true
+        },
+        {
+          "line": 106,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_plar_handoff",
+          "allowed": true
+        },
+        {
+          "line": 108,
+          "actor": "ab352c80d7f534aae",
+          "tool": "Write",
+          "path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean jnw4uxrb\\consumer\\work\\compact-caller\\helper_result_02.py",
+          "allowed": true
+        },
+        {
+          "line": 114,
+          "actor": "ab352c80d7f534aae",
+          "tool": "Bash",
+          "command_sha256": "6c8fde451277ffc54982853504a84ac826e15f0a415d66743b4fc8f27b09f85d",
+          "review": "Runs fully reviewed helper_result_02.py, which asserts target absence and writes only two fresh specialist reports; lists output.",
+          "allowed": true
+        },
+        {
+          "line": 121,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "070321857ffda1502f088754ffc2f9ae3356fe47d7a9afeffc1b1a240aacb39a",
+          "review": "Writes new invalid-authoring/stale-state error wrappers only under assigned output, using observed errors and prior details hash.",
+          "allowed": true
+        },
+        {
+          "line": 123,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_plar_read",
+          "allowed": true
+        },
+        {
+          "line": 126,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "5a3f0945babefabac4fef00866e4dc187add01483e0096bfcf75b71b8a44003b",
+          "review": "Copies exact host-saved stale-recovery return to fresh assigned output; parses and compares returned identities.",
+          "allowed": true
+        },
+        {
+          "line": 138,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_source",
+          "allowed": true
+        },
+        {
+          "line": 156,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_source",
+          "allowed": true
+        },
+        {
+          "line": 158,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_plar_read",
+          "allowed": true
+        },
+        {
+          "line": 166,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "3cf06b528dbd33aa29eda54fbe91a6d7f7bcf628ecc13f44627d107f23ce2835",
+          "review": "Copies exact refresh, creates/runs helper_source_reads.py against frozen local MCP for two read-only exact locator requests, saves fresh raw protocol and exact returned text under assigned output, prints full specialist result.",
+          "allowed": true
+        },
+        {
+          "line": 171,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "9713f4dd7e6630160493163e2aa7fbd96d7ce878269bfe329fda46f849e56fff",
+          "review": "Prints receipt and compares parsed refresh continuation identities to compact; no writes.",
+          "allowed": true
+        },
+        {
+          "line": 174,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_plar_handoff",
+          "allowed": true
+        },
+        {
+          "line": 181,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "fbf4529bc6569344a99b2619b4d56081ffc4e94f27bc32c629187d5544d99f31",
+          "review": "Saves guarded public receipt result, creates/runs helper_caller_result.py; only new assigned outputs, no production changes.",
+          "allowed": true
+        },
+        {
+          "line": 190,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "8cc599063a0b1c4e2c893fa995c131827666cf12a6e63e8c86177c20c166fdc0",
+          "review": "Intended fresh verification script/report in assigned output; shell quoting failed. Failure remains; later native Write/helper execution recovered.",
+          "allowed": true
+        },
+        {
+          "line": 198,
+          "actor": "parent",
+          "tool": "Write",
+          "path": "C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean jnw4uxrb\\consumer\\work\\compact-caller\\helper_caller_verify.py",
+          "allowed": true
+        },
+        {
+          "line": 201,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "470291ea030fc2961be9f1502b0e95090c54e72072aae5608dac948b2493b339",
+          "review": "Runs fully reviewed helper_caller_verify.py: complete JSON parsing/hash checks and one fresh verification receipt; prints full CALLER-RESULT.json. Script checks alone do not prove all result bodies were visible to model.",
+          "allowed": true
+        },
+        {
+          "line": 207,
+          "actor": "parent",
+          "tool": "mcp__pixl-local__pixl_validate",
+          "allowed": true
+        },
+        {
+          "line": 208,
+          "actor": "parent",
+          "tool": "mcp__pixl-unknown__pixl_ready",
+          "allowed": true
+        },
+        {
+          "line": 211,
+          "actor": "parent",
+          "tool": "Bash",
+          "command_sha256": "0f8f6b1032297120234c62c0a486eef73dc454a7066a9c31b0a755bb3357484c",
+          "review": "Copies exact host-saved final validation into fresh output, parses fields and compares prior bytes; no production or configuration mutation.",
+          "allowed": true
+        }
+      ]
+    },
+    {
+      "check": "two_recovered_shell_quoting_failures_retained",
+      "pass": true,
+      "evidence": [
+        {
+          "call_line": 102,
+          "result_line": 104,
+          "error": "Exit code 2\n/usr/bin/bash: -c: line 56: unexpected EOF while looking for matching `''"
+        },
+        {
+          "call_line": 190,
+          "result_line": 191,
+          "error": "Exit code 2\n/usr/bin/bash: -c: line 44: unexpected EOF while looking for matching `''"
+        }
+      ]
+    },
+    {
+      "check": "only_unknown_fixture_dispatch_attempt_was_rejected",
+      "pass": true,
+      "evidence": [
+        {
+          "args": {
+            "store": ".pixl",
+            "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+            "job_id": "member.job"
+          },
+          "is_error": true,
+          "result": {
+            "error": "job_history",
+            "detail": "job_history: dispatch requires prepared intent without a remote identity",
+            "category": "uncertain_remote_result",
+            "recovery": {
+              "action": "reconcile_existing_job",
+              "detail": "Read the retained job and reconcile the same attempt on its originating connection. Do not dispatch or submit another request.",
+              "operation": "pixl_jobs",
+              "arguments": {
+                "path": ".pixl/state.px"
+              }
+            },
+            "identity": {
+              "job_id": "member.job",
+              "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "store": ".pixl",
+              "task_id": "member.task",
+              "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "job_state": "unknown"
+            }
+          },
+          "line": 49
+        }
+      ]
+    },
+    {
+      "check": "all_saved_native_error_details_are_exact",
+      "pass": false,
+      "evidence": [
+        {
+          "category": "unavailable_observation",
+          "native_line": 32,
+          "exact": false,
+          "native": {
+            "error": "operation",
+            "detail": "[Errno 2] No such file or directory: 'C:\\\\Users\\\\ryanf\\\\AppData\\\\Local\\\\Temp\\\\pixl readiness claude clean jnw4uxrb\\\\consumer\\\\work\\\\compact-caller\\\\intentionally-missing.txt'",
+            "category": "unavailable_observation",
+            "recovery": {
+              "action": "restore_observation",
+              "detail": "Restore access to the named local file or retain its unavailable status. Missing observation is not a failed or passing artistic check; do not repeat remote work to repair a read."
+            },
+            "identity": {
+              "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+              "path": "work/compact-caller/intentionally-missing.txt"
+            }
+          },
+          "saved": {
+            "error": "operation",
+            "detail": "[Errno 2] No such file or directory: 'C:\\Users\\ryanf\\AppData\\Local\\Temp\\pixl readiness claude clean jnw4uxrb\\consumer\\work\\compact-caller\\intentionally-missing.txt'",
+            "category": "unavailable_observation",
+            "recovery": {
+              "action": "restore_observation",
+              "detail": "Restore access to the named local file or retain its unavailable status. Missing observation is not a failed or passing artistic check; do not repeat remote work to repair a read."
+            },
+            "identity": {
+              "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+              "path": "work/compact-caller/intentionally-missing.txt"
+            }
+          }
+        },
+        {
+          "category": "uncertain_remote_result",
+          "native_line": 49,
+          "exact": true,
+          "native": {
+            "error": "job_history",
+            "detail": "job_history: dispatch requires prepared intent without a remote identity",
+            "category": "uncertain_remote_result",
+            "recovery": {
+              "action": "reconcile_existing_job",
+              "detail": "Read the retained job and reconcile the same attempt on its originating connection. Do not dispatch or submit another request.",
+              "operation": "pixl_jobs",
+              "arguments": {
+                "path": ".pixl/state.px"
+              }
+            },
+            "identity": {
+              "job_id": "member.job",
+              "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "store": ".pixl",
+              "task_id": "member.task",
+              "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "job_state": "unknown"
+            }
+          },
+          "saved": {
+            "error": "job_history",
+            "detail": "job_history: dispatch requires prepared intent without a remote identity",
+            "category": "uncertain_remote_result",
+            "recovery": {
+              "action": "reconcile_existing_job",
+              "detail": "Read the retained job and reconcile the same attempt on its originating connection. Do not dispatch or submit another request.",
+              "operation": "pixl_jobs",
+              "arguments": {
+                "path": ".pixl/state.px"
+              }
+            },
+            "identity": {
+              "job_id": "member.job",
+              "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "store": ".pixl",
+              "task_id": "member.task",
+              "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+              "job_state": "unknown"
+            }
+          }
+        },
+        {
+          "category": "invalid_authoring",
+          "native_line": 70,
+          "exact": true,
+          "native": {
+            "error": "caller_result_input",
+            "detail": "caller_result_input: details.caller violates the bounded caller-result schema; inspect spec/caller-result.md",
+            "category": "invalid_authoring",
+            "recovery": {
+              "action": "correct_input",
+              "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+            },
+            "identity": {
+              "asset_id": "queue.working",
+              "expect": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+              "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+              "path": "authoring-plar.txt"
+            }
+          },
+          "saved": {
+            "error": "caller_result_input",
+            "detail": "caller_result_input: details.caller violates the bounded caller-result schema; inspect spec/caller-result.md",
+            "category": "invalid_authoring",
+            "recovery": {
+              "action": "correct_input",
+              "detail": "Inspect the operation's declared schema and relevant source, correct the rejected input, and preserve existing state before retrying the local operation."
+            },
+            "identity": {
+              "asset_id": "queue.working",
+              "expect": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+              "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+              "path": "authoring-plar.txt"
+            }
+          }
+        },
+        {
+          "category": "stale_local_state",
+          "native_line": 107,
+          "exact": true,
+          "native": {
+            "error": "handoff_stale",
+            "detail": "handoff_stale: Production state changed or wrong identity supplied; expect must match the canonical production state hash at production.continuation.state_hash; reread selected PLAR, not its top-level file hash",
+            "category": "stale_local_state",
+            "recovery": {
+              "action": "reread_and_reconcile",
+              "detail": "Reread the relevant identity, compare the intended change and preserve prior evidence. A new hash alone does not authorize changed semantics.",
+              "operation": "pixl_plar_read",
+              "arguments": {
+                "path": "authoring-plar.txt",
+                "asset_id": "queue.working"
+              }
+            },
+            "identity": {
+              "asset_id": "queue.working",
+              "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+              "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+              "path": "authoring-plar.txt"
+            }
+          },
+          "saved": {
+            "error": "handoff_stale",
+            "detail": "handoff_stale: Production state changed or wrong identity supplied; expect must match the canonical production state hash at production.continuation.state_hash; reread selected PLAR, not its top-level file hash",
+            "category": "stale_local_state",
+            "recovery": {
+              "action": "reread_and_reconcile",
+              "detail": "Reread the relevant identity, compare the intended change and preserve prior evidence. A new hash alone does not authorize changed semantics.",
+              "operation": "pixl_plar_read",
+              "arguments": {
+                "path": "authoring-plar.txt",
+                "asset_id": "queue.working"
+              }
+            },
+            "identity": {
+              "asset_id": "queue.working",
+              "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+              "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+              "path": "authoring-plar.txt"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "check": "caller_consumed_complete_specialist_result_and_printed_complete_final_report",
+      "pass": true,
+      "evidence": [
+        {
+          "path": "work/compact-caller/CALLER-RESULT.json",
+          "sha256": "84fbf84a5ed0defa7430bbcc7b5e92b6eb7bd9c3e56a483ee3d9d1005b0de51b",
+          "complete_model_visible_saved_text": true,
+          "proof": [
+            {
+              "file": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\native\\claude-02\\native-transcripts\\parent.jsonl",
+              "line": 450
+            }
+          ]
+        },
+        {
+          "path": "work/compact-caller/SPECIALIST-RESULT.json",
+          "sha256": "ce38956d5f3ddf73e0a5e543385fa5fde5fdc6a67d54f0895220ce809e734236",
+          "complete_model_visible_saved_text": true,
+          "proof": [
+            {
+              "file": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\native\\claude-02\\native-transcripts\\parent.jsonl",
+              "line": 382
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "check": "caller_report_references_match_current_bytes",
+      "pass": true,
+      "evidence": [
+        {
+          "path": "work/compact-caller/compact.json",
+          "sha256": "ff5c2289915ce12c26cc69073759f6254e154d341a631465d262ff8720900687",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/receipt.json",
+          "sha256": "6878691886ac3ab0221a5f03fd7efea96f12e6ce32f7ccfdf437f90cdd33e0e3",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/parent-receipt.json",
+          "sha256": "1938829b875b02015a79776ef6a8e3d69ce1d5548c618f8650384ec1e07c490b",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/details-read.json",
+          "sha256": "420e2f79ea9bc696964c14ef4557bb5d17722792d1f72a53b5c49c3970612f4c",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/resume-read.json",
+          "sha256": "bd39736eadaa5245c5f7260b16f5bbf354e2ccb309a22461fe54ed444784bab9",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/refresh.json",
+          "sha256": "3dccfd43851c41b036281bf4def05789a50791c91c28dd2b19c778d4b2ff34f2",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/SPECIALIST-RESULT.json",
+          "sha256": "ce38956d5f3ddf73e0a5e543385fa5fde5fdc6a67d54f0895220ce809e734236",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/SPECIALIST-REPORT.json",
+          "sha256": "7390a062f174405010b9472c952bb7948aa7748684220bb3682650e700c9f303",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/details.json",
+          "sha256": "92682b133f09898b20e620fd0e9aea94f2aad3b5aae511f2ceec9defa87a3dc2",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/errors/invalid-authoring.json",
+          "sha256": "2f59805f6cc1134863a3a5a2bc222fb58f050df50e732457710bf0ffb5f2a524",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/errors/stale-state.json",
+          "sha256": "4158ec7f9188315db6feab57847d516fa0f4e4cee755a8b94cb5cf0739a967b2",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/errors/unavailable-observation.json",
+          "sha256": "a68d928eb73964c22457f1fdf475f5c175ba6db3e6e1a098ea5d2cc2f463f50e",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/errors/uncertain-remote.json",
+          "sha256": "7ca722062ef9fd500e7c540924c362b41177b4d1339eb1f5b96232e050a5feb5",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/errors/missing-capability.json",
+          "sha256": "a8d3561f334ba8a199a56a6a6a2f2f298efdb34478d4c675994ebc5e02a409dd",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/unknown-recovery.json",
+          "sha256": "e8cfa146f3ebcbc10ffadf98a9fd5d2bfaa89b176ce984351cd103e7514ba38e",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/stale-recovery.json",
+          "sha256": "3dccfd43851c41b036281bf4def05789a50791c91c28dd2b19c778d4b2ff34f2",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/missing-capability-protocol.jsonl",
+          "sha256": "89fc2d68349c428d41fc55a688d6b346f6b235a908cff0b0f7fca543b74f5356",
+          "matches": true
+        },
+        {
+          "path": "work/compact-caller/source-reads-protocol.jsonl",
+          "sha256": "fde8daa800168573e635ed322fc7b474ecb3a12503bd05fd4a4697e7fcb4df60",
+          "matches": true
+        },
+        {
+          "path": ".pixl/handoffs/0f2d80cdc1fdd13c94544116899c9ff053ee061a603d1974997df9194a8765a3.json",
+          "sha256": "0f2d80cdc1fdd13c94544116899c9ff053ee061a603d1974997df9194a8765a3",
+          "matches": true
+        }
+      ]
+    },
+    {
+      "check": "caller_preserves_partial_assignment_and_delivered_production",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "check": "caller_identifies_controlled_unknown_refusal_and_no_new_acceptance",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "check": "retained_integration_and_human_acceptance_are_separate",
+      "pass": true,
+      "evidence": null
+    },
+    {
+      "check": "historical_state_hash_interpretation_preserves_original_report",
+      "pass": true,
+      "evidence": null
+    }
+  ],
+  "source": {
+    "path": "evidence/caller-result/20261113/semantic-review-source.py.txt",
+    "sha256": "f23e9ce92421cef3f9f2132f31194d5c3f5f0dbcbb59c82992f1462bba80adf4",
+    "bytes": 16761
+  },
+  "inputs": [
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/launch.json",
+      "sha256": "ecfab8a24816dd79cc0839ea753bf035f6ff2f8d54056c36e36e8b97c57c34e6",
+      "bytes": 1872
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/identity.json",
+      "sha256": "d1bc46f8981e1d007b8ce7db2f7625e49ae9817a48ac9d22e669435463e7e436",
+      "bytes": 1822089
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/continuation.json",
+      "sha256": "7b7f5138a5d47979e80cd66e3539a0c023d124d0246da0e0afa60451b555a66e",
+      "bytes": 17792
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/stdout.jsonl",
+      "sha256": "c34f7421a8ad72186833bcde56c48710c74073d900467c32065f7e5f1ecfc616",
+      "bytes": 971920
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/outputs/CALLER-RESULT.json",
+      "sha256": "84fbf84a5ed0defa7430bbcc7b5e92b6eb7bd9c3e56a483ee3d9d1005b0de51b",
+      "bytes": 7022
+    },
+    {
+      "path": "evidence/caller-result/20261113/native/claude-02/outputs/SPECIALIST-RESULT.json",
+      "sha256": "ce38956d5f3ddf73e0a5e543385fa5fde5fdc6a67d54f0895220ce809e734236",
+      "bytes": 5850
+    }
+  ],
+  "saved_file_visibility": [
+    {
+      "path": "work/compact-caller/CALLER-RESULT.json",
+      "sha256": "84fbf84a5ed0defa7430bbcc7b5e92b6eb7bd9c3e56a483ee3d9d1005b0de51b",
+      "complete_model_visible_saved_text": true,
+      "proof": [
+        {
+          "file": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\native\\claude-02\\native-transcripts\\parent.jsonl",
+          "line": 450
+        }
+      ]
+    },
+    {
+      "path": "work/compact-caller/SPECIALIST-RESULT.json",
+      "sha256": "ce38956d5f3ddf73e0a5e543385fa5fde5fdc6a67d54f0895220ce809e734236",
+      "complete_model_visible_saved_text": true,
+      "proof": [
+        {
+          "file": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\native\\claude-02\\native-transcripts\\parent.jsonl",
+          "line": 382
+        }
+      ]
+    },
+    {
+      "path": "work/compact-caller/compact.json",
+      "sha256": "ff5c2289915ce12c26cc69073759f6254e154d341a631465d262ff8720900687",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/receipt.json",
+      "sha256": "6878691886ac3ab0221a5f03fd7efea96f12e6ce32f7ccfdf437f90cdd33e0e3",
+      "complete_model_visible_saved_text": true,
+      "proof": [
+        {
+          "file": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\native\\claude-02\\native-transcripts\\parent.jsonl",
+          "line": 394
+        }
+      ]
+    },
+    {
+      "path": "work/compact-caller/parent-receipt.json",
+      "sha256": "1938829b875b02015a79776ef6a8e3d69ce1d5548c618f8650384ec1e07c490b",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/details-read.json",
+      "sha256": "420e2f79ea9bc696964c14ef4557bb5d17722792d1f72a53b5c49c3970612f4c",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/resume-read.json",
+      "sha256": "bd39736eadaa5245c5f7260b16f5bbf354e2ccb309a22461fe54ed444784bab9",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/refresh.json",
+      "sha256": "3dccfd43851c41b036281bf4def05789a50791c91c28dd2b19c778d4b2ff34f2",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/stale-recovery.json",
+      "sha256": "3dccfd43851c41b036281bf4def05789a50791c91c28dd2b19c778d4b2ff34f2",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/unknown-recovery.json",
+      "sha256": "e8cfa146f3ebcbc10ffadf98a9fd5d2bfaa89b176ce984351cd103e7514ba38e",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/errors/invalid-authoring.json",
+      "sha256": "2f59805f6cc1134863a3a5a2bc222fb58f050df50e732457710bf0ffb5f2a524",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/errors/missing-capability.json",
+      "sha256": "a8d3561f334ba8a199a56a6a6a2f2f298efdb34478d4c675994ebc5e02a409dd",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/errors/stale-state.json",
+      "sha256": "4158ec7f9188315db6feab57847d516fa0f4e4cee755a8b94cb5cf0739a967b2",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/errors/unavailable-observation.json",
+      "sha256": "a68d928eb73964c22457f1fdf475f5c175ba6db3e6e1a098ea5d2cc2f463f50e",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    },
+    {
+      "path": "work/compact-caller/errors/uncertain-remote.json",
+      "sha256": "7ca722062ef9fd500e7c540924c362b41177b4d1339eb1f5b96232e050a5feb5",
+      "complete_model_visible_saved_text": false,
+      "proof": []
+    }
+  ],
+  "semantic_findings": [
+    {
+      "id": "SR-01",
+      "status": "needs_correction",
+      "finding": "The unavailable-observation original_error.detail was manually transcribed with fewer Windows backslashes than the native error. Code, category, recovery and identity remain accurate; exact original detail preservation is incomplete. Keep this report and first grade. Write a fresh exact error record and caller correction using the retained native event; do not normalize away the failure."
+    },
+    {
+      "id": "SR-02",
+      "status": "qualified",
+      "finding": "Both native_child objects name the same actual agent_id, but the specialist uses role:pixl and a human canonical_task label while the caller uses agent_type:pixl:pixl. Role qualification must use actual native events; dictionary equality is not the identity contract. The caller fork:none label is not separately established as a Claude host property."
+    },
+    {
+      "id": "SR-03",
+      "status": "bounded_observation",
+      "finding": "Parent consumed complete specialist and caller report text and a complete receipt. Other saved results were fully parsed and hashed by helper code, with actual local MCP observations and selected identities returned to the parent. This does not establish complete model-visible review of every saved JSON body. The frozen host redirects large PLAR responses to tool-result files; no fresh renderer/artistic verdict is inferred."
+    },
+    {
+      "id": "SR-04",
+      "status": "useful_outcome_with_retained_defect",
+      "finding": "The ordinary caller result distinguishes delivered reused art, partial reporting, stale plan history, no fresh integration, and separate unknown-job reconciliation. The caller accurately discloses the rejected duplicate dispatch; the unchanged old report's read-only language describes the earlier specialist observation."
+    }
+  ],
+  "scope": "Independent first-resume semantic and output-scope review, not a replacement grade, host-wide qualification, new provider execution, artistic verdict, or human acceptance. Original failure, timeout, failed adapter grade and native shell failures remain retained."
+}

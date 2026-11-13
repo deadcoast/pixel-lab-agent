@@ -1,0 +1,75 @@
+{
+  "observed_at": "2026-11-13T23:02:11.469810+00:00",
+  "status": "pass",
+  "source": {
+    "path": "C:\\github\\pixel-lab-agent\\evidence\\caller-result\\20261113\\verify-continuation-03.py.txt",
+    "sha256": "f8b036a74c98a94487276cda08e1e8db4ce72396356a39f2563ba44d38b3c886"
+  },
+  "checked_inputs": {
+    "evaluations/caller_result_case.py": "6075e9c178f30363e7df6756527873c7be3c841a6310c94390b0c68416013657",
+    "evaluations/claude_completion.py": "2d26fdfe9fab6f3c60bc56de18a9a00e3944ff0471a5662873aa114605407b60",
+    "evaluations/claude_result_proofs.py": "01421af363e1afaeec232f60828fa04178619a746162661f14123e4c0e71018f",
+    "evaluations/grade_caller_result.py": "d73b40be6c0073189b936345167a7f85a040bd1f8a2c698bef8d72a09bac3e4d",
+    "evaluations/native_trial_records.py": "94c610087ecb0d08f465606d4d39bae46e1bf9226ddfa1a1fd4caef83f79bd86",
+    "tests/test_caller_result.py": "7b9fdc3e9cf5c8f00aece9780b181dfe09affae505fa144ce8a1bc576ce8069a",
+    "tests/test_caller_result_case.py": "142fc3bf0ee53ab90c3113b895f2afa7590878af39662df75c1413c6fd5ea082",
+    "tests/test_claude_completion.py": "54c41f2d31be6e2c0d0f6c73e39f3aa950edce786b4f72595895cfe3e936bbdc",
+    "tests/test_claude_result_proofs.py": "5dc3d773adb6ca70c1cd36ac3979babbf9fee31fdaa0cc7eb653b33a13aaafc9",
+    "tests/test_grade_domain_consumers.py": "4b414fe7465281d38e2f64f812a8aa9938f4a50819288c38acd276c467680657",
+    "tests/test_native_trial_records.py": "3dca58708b81c4d3368197d98d3e6d2ac65161adb391cacbf2bf97753e96e2c2",
+    "tests/test_readiness_case.py": "eaf77dea217604ee0be80ec9e65405a8f9fef29fba484b806cade1833cc4614e"
+  },
+  "changed_during_verification": [],
+  "checks": [
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_caller_result_case",
+        "tests.test_native_trial_records",
+        "tests.test_caller_result",
+        "tests.test_readiness_case",
+        "tests.test_grade_domain_consumers",
+        "tests.test_claude_completion",
+        "tests.test_claude_result_proofs",
+        "-v"
+      ],
+      "returncode": 0,
+      "stdout": "01-stdout.txt",
+      "stderr": "01-stderr.txt"
+    },
+    {
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "evaluations/caller_result_case.py",
+        "evaluations/claude_completion.py",
+        "evaluations/claude_result_proofs.py",
+        "evaluations/grade_caller_result.py",
+        "tests/test_caller_result.py",
+        "tests/test_caller_result_case.py",
+        "tests/test_claude_completion.py",
+        "tests/test_claude_result_proofs.py"
+      ],
+      "returncode": 0,
+      "stdout": "02-stdout.txt",
+      "stderr": "02-stderr.txt"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "03-stdout.txt",
+      "stderr": "03-stderr.txt"
+    }
+  ],
+  "tests_run": 122,
+  "scope": "Focused evaluator, recorder, caller contract and adjacent native-proof regressions. No full-suite, bundle rebuild, new production package or artistic acceptance claim."
+}

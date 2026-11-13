@@ -113,6 +113,37 @@ happened. Retained transcript snapshots are evidence; copying one into a differe
 machine does not automatically restore native host sessions there. If native
 history is unavailable, explicitly start artifact recovery from the saved files.
 
+For the retained compact-caller case, use its case-specific preparation and
+grading entry points so the original input and controlled-job baselines survive
+the continuation:
+
+```powershell
+.venv/Scripts/python.exe -m evaluations.caller_result_case resume evidence/caller-result/original evidence/caller-result/continued --child ACTUAL_CHILD_ID --prompt followup.md
+.venv/Scripts/python.exe -m evaluations.caller_result_case run evidence/caller-result/continued --timeout 1200
+.venv/Scripts/python.exe -m evaluations.claude_result_proofs evidence/caller-result/continued evidence/caller-result/host-results
+.venv/Scripts/python.exe -m evaluations.grade_caller_result evidence/caller-result/original --continuation evidence/caller-result/continued --host-results evidence/caller-result/host-results --output evidence/caller-result/continued-grade-01.json
+```
+
+The case wrapper retains the original baseline and separately captures every file
+present before resuming, including incomplete reports. The new grade belongs to
+the continued attempt; the original failed grade and timeout remain unchanged.
+Actual child completion must be bound to the selected child and native host
+events. A background launch or successful follow-up delivery alone is insufficient.
+The continued full parent journal supplies a single chronology for the caller's
+reads, rejected operations, recovery and guarded handoff. This frozen-kit result
+does not qualify a newer package or establish broad host reliability.
+
+When correcting a completed caller report, keep it and use a fresh report path,
+then pass `--caller-report work/compact-caller/revision-03/CALLER-RESULT.json` to
+the grader. It validates the full predecessor chain and retains earlier partial
+files transitively. Keep later grading and review receipts outside an attempt
+that has already become a predecessor; its recorded file inventory is immutable.
+Host-result retention captures only files named by actual native tool results,
+with journal, call, path and content bindings. Repeat `--host-results` when a
+continuation needs several archives; caller-authored JSON is not a substitute.
+The ordered recovery proof requires completed errors and recovery before a guarded
+handoff. A later identical read-only probe does not erase that earlier sequence.
+
 Official sources checked 2026-11-09: [Claude CLI persistence/resume](https://code.claude.com/docs/en/cli-reference),
 [subagent continuation](https://code.claude.com/docs/en/sub-agents#resume-subagents),
 and [parent session plus child ID](https://code.claude.com/docs/en/agent-sdk/subagents#resume-subagents).

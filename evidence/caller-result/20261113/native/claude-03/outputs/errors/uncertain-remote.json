@@ -1,0 +1,57 @@
+{
+  "probe": "uncertain-remote",
+  "server": "pixl-unknown (root controlled-unknown, fictional fixture)",
+  "precheck": {
+    "operation": "pixl_jobs",
+    "arguments": {
+      "path": ".pixl/state.px"
+    },
+    "job_id": "member.job",
+    "job_state": "unknown",
+    "remote_id": null,
+    "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+    "revision": 9,
+    "events": 1
+  },
+  "operation": "pixl_job_dispatch",
+  "arguments": {
+    "store": ".pixl",
+    "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+    "job_id": "member.job"
+  },
+  "result_kind": "tool_error",
+  "original_error": {
+    "error": "job_history",
+    "detail": "job_history: dispatch requires prepared intent without a remote identity",
+    "category": "uncertain_remote_result",
+    "recovery": {
+      "action": "reconcile_existing_job",
+      "detail": "Read the retained job and reconcile the same attempt on its originating connection. Do not dispatch or submit another request.",
+      "operation": "pixl_jobs",
+      "arguments": {
+        "path": ".pixl/state.px"
+      }
+    },
+    "identity": {
+      "job_id": "member.job",
+      "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+      "store": ".pixl",
+      "task_id": "member.task",
+      "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+      "job_state": "unknown"
+    }
+  },
+  "derived": {
+    "category": "uncertain_remote_result",
+    "affected_identity": {
+      "job_id": "member.job",
+      "expect": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+      "store": ".pixl",
+      "task_id": "member.task",
+      "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+      "job_state": "unknown"
+    },
+    "recovery_followed": "pixl_jobs .pixl/state.px re-read; saved at work/compact-caller/unknown-recovery.json; no dispatch, submission or state change; job remains unknown"
+  },
+  "observed_at": "2026-11-13"
+}

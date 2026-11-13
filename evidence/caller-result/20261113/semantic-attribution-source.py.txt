@@ -1,0 +1,44 @@
+"""Supplement the first review with exact original caller-view authorship."""
+import hashlib
+import json
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+sys.path.insert(0, str(ROOT))
+from evaluations.grade_caller_result import mcp_calls
+from evaluations.grade_named_codex_role import rows
+
+old = ROOT / "evidence/caller-result/20261110/native/claude-01"
+new = BASE / "native/claude-02"
+selected = "ab352c80d7f534aae"
+calls = []
+for path in sorted((old / "native-transcripts").glob("*.jsonl")):
+    for call in mcp_calls([rows(path)]):
+        if call["tool"] == "pixl_plar_handoff":
+            calls.append({"child": path.stem, "file": path.relative_to(ROOT).as_posix(),
+                          "line": call["line"], "call_id": call["call_id"],
+                          "view": call["arguments"].get("view", "receipt"),
+                          "result_path": call["arguments"].get("result_path")})
+observed = [c for c in calls if c["view"] == "caller"]
+assert len(observed) == 1 and observed[0]["child"] == "ac98550e535c93d5a"
+sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+result = {
+    "version": 1, "observed_at": datetime.now(UTC).isoformat(),
+    "status": "needs_correction", "source": ref(Path(__file__).resolve()),
+    "supplements": ref(BASE / "semantic-review-01.json"),
+    "selected_resumed_child": selected, "original_public_handoff_calls": calls,
+    "reports_reviewed": [ref(new / "outputs/SPECIALIST-RESULT.json"), ref(new / "outputs/CALLER-RESULT.json")],
+    "finding": "The original caller view was created by the earlier rate-limited child ac98550e535c93d5a. The retained latest child ab352c80d7f534aae later resumed and created the missing receipt/result, but did not make that original caller-view call. Its current activation text incorrectly attributes the session-1 compact result to itself. Shared artifact reuse does not establish authorship by the selected child.",
+    "required_followup": "Preserve old files and grades. Correct the attribution in a fresh specialist addendum and have the selected child reconcile/reaffirm the same snapshot via the public caller view at a fresh output path. A fresh parent report should consume that addendum and preserve the original error-detail defect while linking its exact correction.",
+    "scope": "Additional independent semantic finding after review01 was emitted. This supplement preserves review01 and does not replace the earlier timeout, failed grade, or native artifacts."
+}
+out = Path(sys.argv[1])
+with out.open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2)
+    stream.write("\n")
+print(json.dumps({"status": result["status"], "observed_original_caller_child": observed[0]["child"], "output": str(out)}))

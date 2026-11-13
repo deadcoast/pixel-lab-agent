@@ -1,0 +1,53 @@
+"""Read-only frozen-case preflight; emits a fresh receipt, never edits old trials."""
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from evaluations.host_trials import inventory, sha
+from evaluations.native_trial_records import reference, transcript_locations, verify_inputs
+
+OLD = ROOT / "evidence/caller-result/20261110/native/claude-01"
+CHILD = "ab352c80d7f534aae"
+out = Path(sys.argv[1]).resolve()
+if out.exists():
+    raise ValueError("Choose a fresh preflight output")
+saved = json.loads((OLD / "continuation.json").read_bytes())
+identity = json.loads((OLD / "identity.json").read_bytes())
+launch = json.loads((OLD / "launch.json").read_bytes())
+root = Path(launch["cwd"])
+verify_inputs(saved)
+current = inventory(root, ("__pycache__",))
+drift = [p for p, digest in identity["inputs"].items() if current.get(p) != digest]
+locations = transcript_locations(saved["session_id"], [CHILD])
+checks = []
+for name, live in (("parent", locations["parent"]), (CHILD, locations["children"].get(CHILD))):
+    retained = saved["retained_transcripts"][name]
+    checks.append({"name": name, "retained": retained, "live": live,
+                   "matches": bool(live) and sha(Path(retained["path"])) == retained["sha256"] == live["sha256"]})
+old_artifacts = [{**item, "matches": Path(item["path"]).is_file() and sha(Path(item["path"])) == item["sha256"]}
+                 for item in saved["artifacts"]]
+unknown_ok = inventory(root / "controlled-unknown", ("__pycache__",)) == identity["unknown_files"]
+passed = not drift and unknown_ok and all(x["matches"] for x in checks + old_artifacts)
+result = {
+    "observed_at": datetime.now(UTC).isoformat(), "status": "pass" if passed else "fail",
+    "source": reference(Path(__file__)), "predecessor": reference(OLD / "continuation.json"),
+    "parent": saved["session_id"], "child": CHILD,
+    "host_version": subprocess.check_output([launch["command"][0], "--version"], text=True).strip(),
+    "original_input_count": len(identity["inputs"]), "changed_or_missing": drift,
+    "original_partial_artifacts": old_artifacts, "unknown_fixture_unchanged": unknown_ok,
+    "frozen_package_verified": True, "transcripts": checks,
+    "predecessor_evidence": inventory(OLD), "consumer_before_resume": current,
+    "scope": "Read-only verification of retained identities and frozen kit. No resume or provider call; no behavioral or human acceptance."
+}
+out.parent.mkdir(parents=True, exist_ok=True)
+with out.open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2, ensure_ascii=False)
+    stream.write("\n")
+print(json.dumps({"status": result["status"], "original_inputs": len(identity["inputs"]),
+                  "consumer_files": len(current), "old_artifacts": len(old_artifacts),
+                  "host_version": result["host_version"], "output": str(out)}))
+raise SystemExit(not passed)

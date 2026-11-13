@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,17 +12,24 @@ from unittest.mock import patch
 from evaluations import caller_result_case as case
 from evaluations.grade_caller_result import (
     bind_exports,
+    caller_report_path,
     child_identity,
     command_proofs,
+    continued_journals,
+    direct_python_helper,
     error_object,
     matching_calls,
     mcp_attempts,
     mcp_calls,
+    ordered_recovery_proof,
     prohibited_attempts,
+    recovery_result,
     refresh_proofs,
+    reported_child,
     source_locator_errors,
 )
-from evaluations.host_trials import sha, write_json
+from evaluations.host_trials import inventory, sha, write_json
+from evaluations.native_trial_records import reference
 
 
 class CallerResultNativeProofTests(unittest.TestCase):
@@ -41,6 +49,144 @@ class CallerResultNativeProofTests(unittest.TestCase):
         self.assertEqual(child_identity({"agent_type": "pixl", "canonical_task": "/root/specialist", "fork_turns": "none"}), "/root/specialist")
         self.assertIsNone(child_identity({"agent_type": "default", "canonical_task": "/root/specialist"}))
         self.assertIsNone(child_identity({"agent_type": "pixl"}))
+
+    def test_claude_explicit_identity_preserves_descriptive_labels_but_rejects_conflicts(self):
+        value = {"role": "pixl", "agent_id": "retained-child", "canonical_task": "pixl:pixl specialist", "activation": "claimed"}
+        self.assertEqual(reported_child(value, "claude"), "retained-child")
+        self.assertEqual(value["canonical_task"], "pixl:pixl specialist")
+        for extra in ({"child_id": "replacement"}, {"role": "default"}, {"canonical_task": "another-child"}, {"agent_id": None}):
+            self.assertIsNone(reported_child({**value, **extra}, "claude"))
+        self.assertIsNone(reported_child({"role": "pixl", "activation": "claimed"}, "claude"))
+
+    def test_labelled_recovery_result_requires_exact_operation_arguments_and_server(self):
+        recovery = {"operation": "pixl_jobs", "arguments": {"path": ".pixl/state.px"}}
+        actual = {"jobs": [{"id": "member.job", "state": "unknown"}]}
+        report = {"recovery": {**recovery, "server": "pixl-unknown"}, "result": actual, "assessment": "unchanged"}
+        self.assertEqual(recovery_result(report, recovery, "pixl_unknown"), actual)
+        for field, value in (("operation", "pixl_read"), ("arguments", {"path": "other.px"}), ("server", "pixl-local")):
+            changed = {**report, "recovery": {**report["recovery"], field: value}}
+            self.assertIsNone(recovery_result(changed, recovery, "pixl_unknown"))
+        self.assertEqual(recovery_result(actual, recovery, "pixl_unknown"), actual)
+
+    def test_caller_report_override_stays_inside_the_caller_output_scope(self):
+        root = Path(tempfile.gettempdir()).resolve()
+        relative = case.WORK + "/revision-03/CALLER-RESULT.json"
+        self.assertEqual(caller_report_path(root, relative), root / relative)
+        for path in ("../outside.json", "work/elsewhere.json", str(root / relative)):
+            with self.assertRaises(ValueError):
+                caller_report_path(root, path)
+
+    def test_mixed_command_output_requires_complete_native_json_not_report_prose(self):
+        returned = {"id": 2, "result": {"isError": True}}
+        output = 'exit=0\n' + json.dumps({"protocol_response": returned, "process_returncode": 0}) + '\ntruncated JSON {"id":2\n'
+        journal = [{"type": "assistant", "file": "parent", "line": 1, "message": {"content": [{
+            "type": "tool_use", "id": "probe", "name": "Bash", "input": {"command": "python missing_capability_probe.py"}}]}},
+            {"type": "user", "file": "parent", "line": 2, "message": {"content": [{
+                "type": "tool_result", "tool_use_id": "probe", "is_error": False, "content": output}]}}]
+        self.assertTrue(command_proofs(journal, "missing_capability_probe.py", returned))
+        journal[1]["message"]["content"][0]["content"] = 'report says ' + json.dumps(returned)
+        self.assertFalse(command_proofs(journal, "missing_capability_probe.py", returned))
+        journal[1]["message"]["content"][0].update(content=output, is_error=True)
+        self.assertFalse(command_proofs(journal, "missing_capability_probe.py", returned))
+
+    def test_probe_filename_in_comment_echo_or_python_c_text_is_not_execution(self):
+        returned = {"id": 2, "result": {"isError": True}}
+        output = 'summary\n' + json.dumps({"protocol_response": returned, "process_returncode": 0})
+        for command in ("printf '%s\\n' 'matching JSON' # missing_capability_probe.py",
+                        "echo python missing_capability_probe.py", "python -c 'print(\"missing_capability_probe.py\")'",
+                        "cat missing_capability_probe.py", "python copy_missing_capability_probe.py"):
+            journal = [{"file": "parent", "line": 1, "message": {"content": [{"type": "tool_use", "id": "probe", "name": "Bash", "input": {"command": command}}]}},
+                       {"file": "parent", "line": 2, "message": {"content": [{"type": "tool_result", "tool_use_id": "probe", "content": output}]}}]
+            with self.subTest(command=command):
+                self.assertFalse(command_proofs(journal, "missing_capability_probe.py", returned))
+        actual = 'cd "C:/consumer" && ls missing* 2>&1; "C:/runtime/python.exe" -I -B work/compact-caller-inputs/missing_capability_probe.py > work/result.json; echo "exit=$?"; cat work/result.json'
+        self.assertTrue(direct_python_helper(actual, "missing_capability_probe.py"))
+
+    def test_skipped_background_or_control_flow_helper_segments_are_not_proof(self):
+        name = "missing_capability_probe.py"
+        commands = [f"false && python {name}; printf matching-json", f"true || python {name}; printf matching-json",
+                    f"exit 0; python {name}", f"return 0; python {name}", f"exec true; python {name}",
+                    f"(python {name})", f"function f() {{ python {name}; }}", f"python {name} & printf matching-json",
+                    f"cd . && python {name}", f"ls; python {name} | cat", f"ls `exit`; python {name}",
+                    f"ls $(exit); python {name}", f"if false; then python {name}; fi",
+                    f"ls ';' python {name}; printf matching-json", f"ls \\; python {name}; printf matching-json"]
+        for command in commands:
+            with self.subTest(command=command):
+                self.assertFalse(direct_python_helper(command, name))
+        self.assertTrue(direct_python_helper(f"python -B {name}", name))
+        self.assertTrue(direct_python_helper(f"cd . && ls absent* 2>&1; python -B {name}; echo done", name))
+
+    def test_actual_grader_binds_helper_path_and_rejects_cwd_escape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            expected = root / case.INPUTS / "missing_capability_probe.py"
+            expected.parent.mkdir(parents=True)
+            expected.write_text("Frozen helper")
+            relative = expected.relative_to(root).as_posix()
+            actual = f'cd "{root.as_posix()}" && ls missing* 2>&1; "C:/runtime/python.exe" -B {relative} > result.json; cat result.json'
+            self.assertTrue(direct_python_helper(actual, expected.name, root=root, expected_helper=expected))
+            for command in (f'python "{root.parent.as_posix()}/{expected.name}"',
+                            f'cd "{root.parent.as_posix()}"; python "{expected.as_posix()}"',
+                            f'python {expected.name}'):
+                with self.subTest(command=command):
+                    self.assertFalse(direct_python_helper(command, expected.name, root=root, expected_helper=expected))
+
+    def test_codex_powershell_argv_requires_single_direct_call_operator_invocation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            expected = root / case.INPUTS / "missing_capability_probe.py"
+            expected.parent.mkdir(parents=True)
+            expected.write_text("Frozen helper")
+            relative = expected.relative_to(root).as_posix()
+            inner = f"& 'C:/runtime/python.exe' -B {relative}"
+            command = ["C:/native/powershell/pwsh.exe", "-Command", inner]
+            returned = {"id": 2, "result": {"isError": True}}
+            row = {"file": "parent", "line": 47, "payload": {"type": "item_completed", "item": {
+                "type": "CommandExecution", "exit_code": 0, "command": command,
+                "aggregated_output": json.dumps({"protocol_response": returned, "process_returncode": 0})}}}
+            self.assertTrue(command_proofs([row], expected.name, returned, root=root, expected_helper=expected))
+            for wrong in (f"Get-Content {relative}", f"Write-Output 'json' # {expected.name}",
+                          f"if ($false) {{ {inner} }}", inner + "; Write-Output 'json'", inner + " | Write-Output",
+                          f"& 'C:/runtime/python.exe' -c 'print(\"{expected.name}\")'",
+                          f"& 'C:/runtime/python.exe' -B C:/other/{expected.name}"):
+                with self.subTest(inner=wrong):
+                    self.assertFalse(direct_python_helper([command[0], "-Command", wrong], expected.name, root=root, expected_helper=expected))
+            self.assertFalse(direct_python_helper(["cmd.exe", "-Command", inner], expected.name, root=root, expected_helper=expected))
+
+    def chronology(self):
+        def row(line, end=None, file="parent"):
+            return {"file": file, "line": line, "result_line": line if end is None else end}
+        probes = {category: [row(line, line + 1)] for category, line in (
+            ("invalid_authoring", 10), ("missing_capability", 12), ("unavailable_observation", 14),
+            ("uncertain_remote_result", 16), ("stale_local_state", 20))}
+        return probes, [row(5, 6), row(25, 26)], [row(30, 31)], row
+
+    def test_later_identical_probe_does_not_erase_actual_ordered_recovery(self):
+        probes, reads, guards, row = self.chronology()
+        probes["unavailable_observation"].extend([row(40, 41), row(50, 51)])
+        reads.append(row(60, 61))
+        proof = ordered_recovery_proof(probes, reads, guards)
+        self.assertEqual(proof[0]["observed_errors"]["unavailable_observation"]["line"], 14)
+        self.assertEqual(proof[0]["stale_recovery"]["line"], 25)
+        self.assertEqual(proof[0]["guard"]["line"], 30)
+
+    def test_later_only_probe_recovery_or_unreturned_error_cannot_qualify(self):
+        for mode in ("later-probe", "later-recovery", "early-recovery", "pending-error", "pending-recovery", "other-journal"):
+            probes, reads, guards, row = self.chronology()
+            if mode == "later-probe":
+                probes["unavailable_observation"] = [row(40, 41)]
+            elif mode == "later-recovery":
+                reads = [row(40, 41)]
+            elif mode == "early-recovery":
+                reads = [row(5, 6)]
+            elif mode == "pending-error":
+                probes["stale_local_state"] = [row(20, 28)]
+            elif mode == "pending-recovery":
+                reads = [row(25, 40)]
+            else:
+                reads = [row(25, 26, "unrelated-parent")]
+            with self.subTest(mode=mode):
+                self.assertFalse(ordered_recovery_proof(probes, reads, guards))
 
     def test_failed_native_mcp_return_retains_real_diagnostic(self):
         error = {"error": "job_history", "category": "uncertain_remote_result", "detail": "dispatch refused", "recovery": {"action": "reconcile_existing_job"}}
@@ -193,6 +339,252 @@ class CallerResultPreparationTests(unittest.TestCase):
         case.retain(destination)
         with self.assertRaisesRegex(ValueError, "Preserve"):
             case.retain(destination)
+
+    def fake_resume(self, previous, destination, prompt, child):
+        destination.mkdir()
+        launch = json.loads((previous / "launch.json").read_bytes())
+        write_json(destination / "launch.json", launch)
+        write_json(destination / "identity.json", {"mode": "native_same_session", "child_id": child,
+                                                    "predecessor": reference(previous / "continuation.json")})
+        (destination / "prompt.txt").write_text(prompt)
+
+    def test_resume_keeps_original_baseline_and_separate_complete_preflight(self):
+        previous, consumer = self.prepare()
+        write_json(previous / "independent-grade-01.json", {"status": "fail"})
+        write_json(consumer / case.WORK / "partial.json", {"status": "unfinished"})
+        live = self.resume_evidence(previous, consumer)
+        baseline = json.loads((previous / "identity.json").read_bytes())
+        old_files, preflight = inventory(previous), inventory(consumer)
+        destination = self.root / "resume"
+        with patch.object(case, "prepare_native_resume", side_effect=self.fake_resume), patch.object(case, "transcript_locations", return_value=live):
+            self.assertEqual(case.prepare_resume(previous, destination, "Continue same child", "child"), consumer)
+        current = json.loads((destination / "identity.json").read_bytes())
+        self.assertEqual(current["inputs"], baseline["inputs"])
+        self.assertEqual(current["unknown_files"], baseline["unknown_files"])
+        self.assertEqual(current["resume_inputs"], preflight)
+        self.assertNotIn(case.WORK + "/partial.json", current["inputs"])
+        self.assertEqual(current["predecessor_files"], old_files)
+        self.assertEqual(inventory(previous), old_files)
+        self.assertEqual(current["predecessor_identity"], reference(previous / "identity.json"))
+        write_json(consumer / case.WORK / "CALLER-RESULT.json", {"status": "complete"})
+        case.retain(destination)
+        retained = json.loads((destination / "preservation.json").read_bytes())
+        self.assertEqual(retained["changed_since_resume"], [])
+        self.assertEqual(set(retained["added_since_resume"]), {case.WORK + "/CALLER-RESULT.json"})
+
+    def test_resume_rejects_baseline_drift_and_unexpected_additions_before_preparation(self):
+        for mode in ("input", "unknown", "addition"):
+            with self.subTest(mode=mode):
+                previous, consumer = self.prepare()
+                changed = {"input": consumer / "BRIEF.md", "unknown": consumer / case.UNKNOWN / "source.txt",
+                           "addition": consumer / "unexpected.txt"}[mode]
+                changed.write_text("drift")
+                with patch.object(case, "prepare_native_resume") as prepare, self.assertRaisesRegex(ValueError, "changed"):
+                    case.prepare_resume(previous, self.root / "resume", "Continue", "child")
+                prepare.assert_not_called()
+                self.assertFalse((self.root / "resume").exists())
+                # Each subcase uses a distinct temporary tree.
+                shutil.rmtree(previous)
+                shutil.rmtree(consumer)
+
+    def resume_evidence(self, previous, consumer):
+        retained = {}
+        for key in ("parent", "child"):
+            path = previous / "native-transcripts" / (key + ".jsonl")
+            path.parent.mkdir(exist_ok=True)
+            path.write_text('{"type":"assistant"}\n')
+            retained[key] = reference(path)
+        partial = consumer / case.WORK / "partial.json"
+        write_json(previous / "continuation.json", {"status": "finished", "interruption_reason": "timeout",
+            "session_id": "session", "retained_transcripts": retained,
+            "artifacts": [reference(partial)] if partial.exists() else []})
+        return {"parent": retained["parent"], "children": {"child": retained["child"]}}
+
+    def test_resume_rejects_edited_partial_output_instead_of_rebasing_it(self):
+        previous, consumer = self.prepare()
+        partial = consumer / case.WORK / "partial.json"
+        write_json(partial, {"status": "failure"})
+        live = self.resume_evidence(previous, consumer)
+        write_json(partial, {"status": "success"})
+        with (patch.object(case, "transcript_locations", return_value=live), patch.object(case, "prepare_native_resume") as prepare,
+              self.assertRaisesRegex(ValueError, "partial caller output changed")):
+            case.prepare_resume(previous, self.root / "resume", "Continue", "child")
+        prepare.assert_not_called()
+
+    def test_resume_rejects_missing_or_advanced_live_parent_and_child_before_launch(self):
+        previous, consumer = self.prepare()
+        original = self.resume_evidence(previous, consumer)
+        for key in ("parent", "child"):
+            live = json.loads(json.dumps(original))
+            target = live["parent"] if key == "parent" else live["children"]["child"]
+            target["sha256"] = "changed-live-history"
+            with (self.subTest(key=key), patch.object(case, "transcript_locations", return_value=live),
+                  patch.object(case, "prepare_native_resume") as prepare, self.assertRaisesRegex(ValueError, "history differs")):
+                case.prepare_resume(previous, self.root / "resume", "Continue", "child")
+            prepare.assert_not_called()
+        with (patch.object(case, "transcript_locations", return_value={"parent": None, "children": {}}),
+              self.assertRaisesRegex(ValueError, "history differs")):
+            case.prepare_resume(previous, self.root / "resume", "Continue", "child")
+
+
+class CallerContinuationGradeTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="caller continuation grade ")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.previous, self.resumed = self.root / "previous", self.root / "resumed"
+        self.consumer = self.root / "consumer"
+        for path in (self.previous, self.resumed, self.consumer):
+            path.mkdir()
+        (self.consumer / "BRIEF.md").write_text("Immutable original input")
+        identity = {"inputs": inventory(self.consumer), "unknown_files": {}}
+        launch = {"host": "claude", "cwd": str(self.consumer)}
+        write_json(self.previous / "identity.json", identity)
+        write_json(self.previous / "launch.json", launch)
+        write_json(self.previous / "independent-grade-01.json", {"status": "fail", "passed": 0})
+        (self.previous / "prompt.txt").write_text("Original assignment")
+        for key in ("parent", "child"):
+            old = {"type": "assistant", "sessionId": "session", "message": {"content": []}}
+            if key == "child":
+                old.update(agentId="child", isSidechain=True)
+            before = self.previous / "native-transcripts" / (key + ".jsonl")
+            after = self.resumed / "native-transcripts" / (key + ".jsonl")
+            before.parent.mkdir(exist_ok=True)
+            after.parent.mkdir(exist_ok=True)
+            before.write_text(json.dumps(old) + "\n")
+            after.write_text(before.read_text() + json.dumps({**old, "new": True}) + "\n")
+        prior = {"host": "claude", "cwd": str(self.consumer), "session_id": "session",
+                 "configuration": {}, "children": [{"id": "child", "role": "pixl:pixl"}], "calls": [],
+                 "inputs": {name: reference(self.previous / name) for name in ("launch.json", "identity.json", "prompt.txt")},
+                 "retained_transcripts": {key: reference(self.previous / "native-transcripts" / (key + ".jsonl"))
+                                          for key in ("parent", "child")}}
+        write_json(self.previous / "continuation.json", prior)
+        predecessor = reference(self.previous / "continuation.json")
+        launch.update(predecessor=predecessor, continuation_mode="native_same_session",
+                      expected_session_id="session", expected_child_id="child")
+        write_json(self.resumed / "launch.json", launch)
+        identity.update(predecessor=predecessor, original_consumer=str(self.consumer), session_id="session", child_id="child",
+                        predecessor_identity=reference(self.previous / "identity.json"), predecessor_files=inventory(self.previous),
+                        resume_inputs=inventory(self.consumer))
+        write_json(self.resumed / "identity.json", identity)
+        (self.resumed / "prompt.txt").write_text("Same-child continuation")
+        current = {**prior, "predecessor": predecessor, "mode": "native_same_session", "expected_session_id": "session",
+                   "expected_child_id": "child", "observed_expected_session": True}
+        write_json(self.resumed / "continuation.json", current)
+        self.refresh_current_refs()
+
+    def refresh_current_refs(self):
+        current = json.loads((self.resumed / "continuation.json").read_bytes())
+        current["inputs"] = {name: reference(self.resumed / name) for name in ("launch.json", "identity.json", "prompt.txt")}
+        current["retained_transcripts"] = {key: reference(self.resumed / "native-transcripts" / (key + ".jsonl"))
+                                          for key in ("parent", "child")}
+        write_json(self.resumed / "continuation.json", current)
+
+    def test_continuation_keeps_whole_parent_chronology_and_separates_new_child_work(self):
+        proof = continued_journals(self.previous, self.resumed, "child")
+        self.assertEqual(len(proof["parent"]), 2)
+        self.assertEqual(len(proof["new_parent"]), 1)
+        self.assertEqual(len(proof["new_child"]), 1)
+        self.assertEqual(proof["new_parent"][0]["line"], 2)
+        self.assertEqual(proof["proof"]["native_prefixes"]["child"]["appended_rows"], 1)
+
+    def test_rewritten_failed_grade_cannot_be_hidden_by_new_completion(self):
+        write_json(self.previous / "independent-grade-01.json", {"status": "pass"})
+        with self.assertRaisesRegex(ValueError, "retained failed evidence"):
+            continued_journals(self.previous, self.resumed, "child")
+
+    def test_original_baseline_cannot_be_replaced_with_pre_resume_inventory(self):
+        identity = json.loads((self.resumed / "identity.json").read_bytes())
+        identity["inputs"]["partial-result.json"] = "rebased-as-an-input"
+        write_json(self.resumed / "identity.json", identity)
+        self.refresh_current_refs()
+        with self.assertRaisesRegex(ValueError, "original input baseline"):
+            continued_journals(self.previous, self.resumed, "child")
+
+    def test_rewritten_or_unextended_parent_and_child_journals_are_rejected(self):
+        for key in ("parent", "child"):
+            path = self.resumed / "native-transcripts" / (key + ".jsonl")
+            original = path.read_bytes()
+            for content in (original.replace(b'"assistant"', b'"changed"', 1),
+                            (self.previous / "native-transcripts" / (key + ".jsonl")).read_bytes()):
+                path.write_bytes(content)
+                self.refresh_current_refs()
+                with self.subTest(key=key, content=content), self.assertRaisesRegex(ValueError, "prefix"):
+                    continued_journals(self.previous, self.resumed, "child")
+            path.write_bytes(original)
+            self.refresh_current_refs()
+
+    def test_replacement_child_cannot_qualify_as_the_retained_child(self):
+        current = json.loads((self.resumed / "continuation.json").read_bytes())
+        current["children"].append({"id": "replacement", "role": "pixl:pixl"})
+        write_json(self.resumed / "continuation.json", current)
+        with self.assertRaisesRegex(ValueError, "exactly the selected named child"):
+            continued_journals(self.previous, self.resumed, "child")
+
+    def test_preceding_partial_artifact_cannot_be_omitted_from_resume_snapshot(self):
+        partial = self.consumer / case.WORK / "partial.json"
+        partial.parent.mkdir(parents=True)
+        partial.write_text("Retained failed partial output")
+        prior = json.loads((self.previous / "continuation.json").read_bytes())
+        prior["artifacts"] = [reference(partial)]
+        write_json(self.previous / "continuation.json", prior)
+        predecessor = reference(self.previous / "continuation.json")
+        for name in ("launch.json", "identity.json", "continuation.json"):
+            value = json.loads((self.resumed / name).read_bytes())
+            value["predecessor"] = predecessor
+            if name == "identity.json":
+                value["predecessor_files"] = inventory(self.previous)
+            write_json(self.resumed / name, value)
+        self.refresh_current_refs()
+        with self.assertRaisesRegex(ValueError, "omitted or rebased"):
+            continued_journals(self.previous, self.resumed, "child")
+
+    def test_earlier_resume_snapshot_files_cannot_disappear_from_next_snapshot(self):
+        original = json.loads((self.previous / "identity.json").read_bytes())
+        original["resume_inputs"] = {**original["inputs"], case.WORK + "/earlier-partial.json": "earlier-output-hash"}
+        write_json(self.previous / "identity.json", original)
+        prior = json.loads((self.previous / "continuation.json").read_bytes())
+        prior["inputs"]["identity.json"] = reference(self.previous / "identity.json")
+        write_json(self.previous / "continuation.json", prior)
+        predecessor = reference(self.previous / "continuation.json")
+        for name in ("launch.json", "identity.json", "continuation.json"):
+            value = json.loads((self.resumed / name).read_bytes())
+            value["predecessor"] = predecessor
+            if name == "identity.json":
+                value.update(predecessor_files=inventory(self.previous), predecessor_identity=reference(self.previous / "identity.json"))
+            write_json(self.resumed / name, value)
+        self.refresh_current_refs()
+        with self.assertRaisesRegex(ValueError, "omitted or rebased"):
+            continued_journals(self.previous, self.resumed, "child")
+
+    def test_multiple_process_chain_preserves_each_predecessor_and_new_work_boundary(self):
+        third = self.root / "third"
+        third.mkdir()
+        predecessor = reference(self.resumed / "continuation.json")
+        launch = json.loads((self.resumed / "launch.json").read_bytes())
+        launch["predecessor"] = predecessor
+        write_json(third / "launch.json", launch)
+        identity = json.loads((self.resumed / "identity.json").read_bytes())
+        identity.update(predecessor=predecessor, predecessor_identity=reference(self.resumed / "identity.json"),
+                        predecessor_files=inventory(self.resumed))
+        write_json(third / "identity.json", identity)
+        (third / "prompt.txt").write_text("Continue again")
+        current = json.loads((self.resumed / "continuation.json").read_bytes())
+        current.update(predecessor=predecessor, inputs={name: reference(third / name) for name in ("launch.json", "identity.json", "prompt.txt")})
+        for key in ("parent", "child"):
+            old = self.resumed / "native-transcripts" / (key + ".jsonl")
+            path = third / "native-transcripts" / (key + ".jsonl")
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(old.read_bytes() + old.read_bytes().splitlines(keepends=True)[-1])
+            current["retained_transcripts"][key] = reference(path)
+        write_json(third / "continuation.json", current)
+        proof = continued_journals(self.previous, third, "child")
+        self.assertEqual(len(proof["proof"]["continuation_chain"]), 2)
+        self.assertEqual(len(proof["parent"]), 3)
+        self.assertEqual(len(proof["new_parent"]), 1)
+        write_json(self.resumed / "invented-grade.json", {"status": "pass"})
+        with self.assertRaisesRegex(ValueError, "retained failed evidence"):
+            continued_journals(self.previous, third, "child")
 
 
 if __name__ == "__main__":

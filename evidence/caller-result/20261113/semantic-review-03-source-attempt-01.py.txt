@@ -1,0 +1,283 @@
+"""Independent correction outcome review; no consumer execution or repairs.
+
+Checks native events and retained bytes directly. Original failed reviews, grades,
+shell attempts and oversize drafts remain immutable. Run with a fresh output path.
+"""
+import hashlib
+import json
+import re
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+sys.path.insert(0, str(ROOT))
+from evaluations.grade_integration_change import complete_file_proof
+from evaluations.grade_named_codex_role import rows
+from evaluations.grade_plar_coverage import native_read_proof
+from evaluations.host_trials import inventory
+
+OLD = BASE / "native/claude-02"
+NEW = BASE / "native/claude-03"
+CHILD = "ab352c80d7f534aae"
+FIRST = "ac98550e535c93d5a"
+SESSION = "0510b038-b18b-4fbc-aafe-c19b95d7dba6"
+COMMANDS = {
+    "e5762bedad7d7c0e956c035497c46c4ac98d39dc03ecd4459ccbdc984f2f4038": "Read-only listing, complete maintainer helper print and old flawed error excerpt.",
+    "3a9dbd88d54d5b38dc0fc8f0ef868d89a66696eb73e06dc9d40ded4287c0647b": "Failed redirection to sibling revision-03-capture-stdout.tmp: parent directory did not yet exist, helper did not run and no sibling file was created. Attempted target was outside revision-03; retained as failed scope intent, not successful write.",
+    "e20da4237570ec114aef12aadaefbf37590298436fa8aaf18ee60adb7d5a2e2a": "Creates revision-03 directory, runs reviewed maintainer helper unchanged, writes only fresh assigned outputs, prints exact saved error.",
+    "e5b0f68d56a9c8ebf7c95eb03d9edfd056902c0f36f0847b51fc914900d154e3": "Lists revision output and native host tool-result filenames; read-only.",
+    "005f7e257e6b6f5bc885c1082f8251c71365ad34d24ebc11eee8aaa7d34ca459": "Copies actual host-saved PLAR result to fresh revision output; hashes/parses and compares identities, no production mutation.",
+    "5b648759e1b71ee832ca0ec7fe32da8227631f6665dd91afaf62af8f30835440": "Creates a host-error copy and comparison helper/output in revision-03. This shell copy repeated the escaping defect; all three failed intermediate files remain retained.",
+    "a80d0a30ce45b08cff14466d37613a19437644ff50ac06d3a077e2ce967aca1e": "Inspects literal backslash bytes in existing reports/scripts with grep/od; no writes.",
+    "463d24cc0522d8e10af196a74c6ddd3b8c73414283d7f9c20ff55e97c4a865a2": "Runs fully reviewed second comparison helper, writes one fresh comparison, prints result and checks raw bytes; no normalization or production mutation.",
+    "e1c29bd3dd050b02c12b3fe74c9a73052f61d3a85d9530ff9b9380be5d3e00f7": "Reads old/new compact bytes, compares complete parsed values and snapshot, counts existing handoffs; no writes.",
+    "7699a32ed6e5c7fb9b1a7166338e121fda50c3ae494050d9e00344936e40a363": "Polls for specialist result then lists revision output. The host backgrounds this Bash wait; it is not a replacement specialist.",
+    "ceefd41ed125e7cb7387988b90ce0e60393d1026a8f4a29383e0da1d3ecd3295": "Runs fully reviewed helper_result_03.py; exclusive fresh specialist result, original artifact/receipt hashes checked.",
+    "31df753cdd2dc280d44db64bbe4a23f1cc6d6421e69012b23d2664d5327463ec": "Runs reviewed initial caller builder/verifier; creates first oversized report and failed size receipt, prints complete report.",
+    "b365cba2151cc80c36f833bc73d95170b681dc07e5e532cd2b730e6191615a38": "Reviewed builder b moves only this run's oversized draft to a checked unused path within revision-03, verifies exact retained hash, exclusively creates replacement; sed derives verifier b and retains its results.",
+    "62383f997fdcdfe9e2aec962142a90e412e840065a66ca6f52b533b5c636a9ba": "Reviewed builder c preserves second oversized draft within revision-03 and creates replacement; derived verifier c writes a fresh receipt. Existing predecessor files unchanged.",
+    "891ed5ff842115124f1ad8bb62faa26536880cabfc1d1ea15270ffed31fa8af9": "Reviewed builder d preserves third oversized draft and creates replacement; fresh verifier d report and full caller/error prints.",
+    "1b3ad0f8876aaf9cdf86db67d3795b534492fed5fda3b9bb2af357841502aaab": "Derives verifier e from fully reviewed verifier d; changes only output name and exact preserved-oversize index checks; writes fresh script inside revision-03.",
+    "2352fee0b02035b9f9223ade1ccb5d5ccd880979d25e1689679c41298043df9f": "Reviewed builder e preserves fourth oversized draft, writes exact attempt index and final bounded report; verifier e writes fresh receipt, full caller/index printed. All paths remain within revision-03.",
+}
+FAILED_REDIRECT = "3a9dbd88d54d5b38dc0fc8f0ef868d89a66696eb73e06dc9d40ded4287c0647b"
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.resolve().relative_to(ROOT).as_posix(), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def blocks(row):
+    content = row.get("message", {}).get("content", [])
+    return content if isinstance(content, list) else []
+
+
+def objects(value):
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():
+            yield from objects(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from objects(child)
+    elif isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except ValueError:
+            return
+        if parsed != value:
+            yield from objects(parsed)
+
+
+def event(row):
+    return {"file": Path(row["file"]).resolve().relative_to(ROOT).as_posix(), "line": row["line"]}
+
+
+def main():
+    out = Path(sys.argv[1]).resolve()
+    if out.exists():
+        raise ValueError("Preserve prior receipts")
+    root = Path(read(NEW / "launch.json")["cwd"])
+    work = root / "work/compact-caller"
+    rev = work / "revision-03"
+    identity = read(NEW / "identity.json")
+    continuation = read(NEW / "continuation.json")
+    parent_path, child_path = NEW / "native-transcripts/parent.jsonl", NEW / f"native-transcripts/{CHILD}.jsonl"
+    old_parent, old_child = OLD / "native-transcripts/parent.jsonl", OLD / f"native-transcripts/{CHILD}.jsonl"
+    parent = rows(parent_path)[len(rows(old_parent)):]
+    child = rows(child_path)[len(rows(old_child)):]
+    stdout = rows(NEW / "stdout.jsonl")
+    caller, specialist, compact = (read(rev / n) for n in ("CALLER-RESULT.json", "SPECIALIST-RESULT.json", "compact.json"))
+    prior = read(work / "CALLER-RESULT.json")
+    checks = []
+    def check(name, passed, evidence=None):
+        checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
+
+    check("continued_journals_preserve_exact_predecessor_prefixes", parent_path.read_bytes().startswith(old_parent.read_bytes())
+          and child_path.read_bytes().startswith(old_child.read_bytes()))
+    check("native_process_finished_naturally_in_original_parent", continuation["session_id"] == SESSION
+          and continuation["status"] == "finished" and continuation["returncode"] == 0
+          and continuation.get("interruption_reason") is None)
+    uses = {b["id"]: (r, b) for r in stdout for b in blocks(r) if isinstance(b, dict) and b.get("type") == "tool_use"}
+    results = {b["tool_use_id"]: (r, b) for r in stdout for b in blocks(r) if isinstance(b, dict) and b.get("type") == "tool_result"}
+    sends = [(r, b) for r, b in uses.values() if b["name"] == "SendMessage" and b["input"].get("to") == CHILD]
+    send_row, send = sends[0]
+    call_id = send["id"]
+    start = next(r for r in stdout if r.get("subtype") == "task_started" and r.get("task_id") == CHILD and r.get("tool_use_id") == call_id)
+    run_id = start["run_id"]
+    completed = next(r for r in stdout if r.get("subtype") == "task_updated" and r.get("task_id") == CHILD
+                     and r.get("run_id") == run_id and r.get("patch", {}).get("status") == "completed")
+    notification = next(r for r in stdout if r.get("subtype") == "task_notification" and r.get("task_id") == CHILD
+                        and r.get("run_id") == run_id and r.get("tool_use_id") == call_id and r.get("status") == "completed")
+    finals = [r for r in child if r.get("type") == "assistant" and r.get("agentId") == CHILD and r.get("message", {}).get("stop_reason") == "end_turn"]
+    final_text = "".join(b.get("text", "") for b in blocks(finals[-1]) if b.get("type") == "text")
+    parent_notice = next(r for r in parent if r.get("promptSource") == "system" and r.get("turnOrigin") == "task_notification"
+                         and r.get("origin", {}).get("runId") == run_id)
+    notice_text = parent_notice["message"]["content"]
+    def tag(name):
+        match = re.search("<" + name + ">(.*?)</" + name + ">", notice_text, re.S)
+        return match[1] if match else None
+    resumed = results[call_id][0].get("tool_use_result", {})
+    check("actual_same_child_resume_start_completion_and_exact_result", len(sends) == 1
+          and resumed.get("success") is True and resumed.get("resumedAgentId") == CHILD
+          and start["subagent_type"] == "pixl:pixl" and len(finals) == 1
+          and send_row["line"] < start["line"] < completed["line"] < notification["line"]
+          and tag("task-id") == CHILD and tag("tool-use-id") == call_id and tag("status") == "completed"
+          and final_text == notification["summary"] == tag("result"),
+          {"events": [event(r) for r in (send_row, start, completed, notification, finals[-1], parent_notice)], "run_id": run_id, "call_id": call_id})
+    check("no_replacement_specialist_launched", not any(b["name"] == "Agent" for r, b in uses.values()))
+
+    native_errors = [(r, b, json.loads(b["content"])) for r, b in results.values()
+                     if b.get("is_error") and uses[b["tool_use_id"]][1]["name"] == "mcp__pixl-local__pixl_source"]
+    actual_error = native_errors[0][2]
+    saved_error = read(rev / "errors/unavailable-observation.json")
+    protocol = [json.loads(line) for line in (rev / "unavailable-protocol.jsonl").read_bytes().splitlines() if line.strip()]
+    captured = next(r for r in protocol if r.get("id") == 2)["result"]
+    check("corrected_error_equals_actual_native_value_without_normalization", len(native_errors) == 1
+          and saved_error["structuredContent"] == actual_error
+          and json.loads(saved_error["content"][0]["text"]) == actual_error
+          and saved_error == captured and saved_error["isError"] is True, event(native_errors[0][0]))
+    bad = read(work / "errors/unavailable-observation.json")["original_error"]
+    check("original_error_defect_and_failed_intermediate_remain_visible", bad != actual_error
+          and bad["detail"].count(chr(92)) == 10 and actual_error["detail"].count(chr(92)) == 20
+          and read(rev / "host-unavailable-return.json") == bad
+          and read(rev / "host-unavailable-return-02.json") == actual_error
+          and read(rev / "unavailable-comparison.json")["host_return_equals_saved_structuredContent"] is False
+          and read(rev / "unavailable-comparison-02.json")["host_return_equals_native_structuredContent"] is True)
+
+    caller_calls = [(r, b) for r, b in uses.values() if r.get("agent_id") == CHILD
+                    and b["name"] == "mcp__pixl-local__pixl_plar_handoff" and b["input"].get("view") == "caller"]
+    view_row, view_call = caller_calls[0]
+    view_result = results[view_call["id"]][0]
+    args = view_call["input"]
+    check("latest_child_actually_reaffirmed_original_caller_snapshot", len(caller_calls) == 1
+          and args["details"] == read(work / "details.json") and args["expect"] == compact["state_hash"]
+          and args["requirements_hash"] == compact["requirements_hash"]
+          and args["result_path"] == "work/compact-caller/revision-03/compact.json"
+          and any(o.get("result_path") == args["result_path"] and o.get("result_sha256") == sha(rev / "compact.json") for o in objects(view_result))
+          and (rev / "compact.json").read_bytes() == (work / "compact.json").read_bytes(), event(view_row))
+    prov = specialist["native_child"]["publication_provenance"]
+    check("new_reports_correct_publication_attribution", specialist["native_child"]["agent_id"] == CHILD
+          and prov["original_caller_view"]["published_by"] == "first child " + FIRST
+          and prov["caller_view_revision_03"]["performed_by"] == prov["receipt_view"]["performed_by"] == CHILD
+          and caller["native_child"]["first_child"]["agent_id"] == FIRST
+          and caller["native_child"]["latest_child"]["agent_id"] == CHILD
+          and "incorrect" in specialist["reconciliation_note"])
+    receipt, parent_receipt = read(work / "receipt.json"), read(work / "parent-receipt.json")
+    check("all_views_name_same_immutable_snapshot", all(v["path"] == compact["path"] and v["sha256"] == compact["sha256"] for v in (receipt, parent_receipt))
+          and sha(root / compact["path"]) == compact["sha256"])
+
+    visibility = []
+    for name in ("CALLER-RESULT.json", "SPECIALIST-RESULT.json", "errors/unavailable-observation.json", "compact.json"):
+        path = rev / name
+        proof = native_read_proof([parent], path) or complete_file_proof([parent], path)
+        visibility.append({"path": path.relative_to(root).as_posix(), "sha256": sha(path), "complete_model_visible_saved_text": bool(proof), "proof": proof})
+    check("parent_consumed_complete_corrected_specialist_caller_and_error", all(v["complete_model_visible_saved_text"] for v in visibility[:3]), visibility[:3])
+    check("ordinary_caller_report_meets_original_scenario_bound", (rev / "CALLER-RESULT.json").stat().st_size == 8006 < 8192)
+    attempts = read(rev / "oversize-attempts.json")["attempts"]
+    check("four_oversize_drafts_and_failed_checks_preserved", [a["bytes"] for a in attempts] == [10104, 9628, 9088, 8812]
+          and all(sha(root / a["path"]) == a["sha256"] for a in attempts)
+          and all(read(rev / name)["failures"] for name in ("caller-verify-03.json", "caller-verify-03b.json", "caller-verify-03c.json", "caller-verify-03d.json")), attempts)
+    refs = []
+    def collect(value):
+        if isinstance(value, dict):
+            if {"path", "sha256"} <= set(value) <= {"path", "sha256", "role", "start", "end", "bytes", "json_pointer"}:
+                refs.append(value)
+            for v in value.values():
+                collect(v)
+        elif isinstance(value, list):
+            for v in value:
+                collect(v)
+    collect(caller)
+    caller_refs = list(refs)
+    collect(specialist)
+    check("all_final_report_references_bind_actual_bytes", all((root / r["path"]).resolve().is_relative_to(root)
+          and sha(root / r["path"]) == r["sha256"] for r in refs), {"caller": len(caller_refs), "total_with_specialist": len(refs)})
+    retained = ("receipt", "parent_receipt", "details_read", "resume_read", "refresh", "specialist_report", "details", "unknown_recovery", "stale_recovery", "missing_capability_protocol", "source_reads_protocol")
+    check("prior_successful_operations_retained_without_replay_claim", all(caller[k] == prior[k] for k in retained)
+          and all(caller["errors"][k] == prior["errors"][k] for k in prior["errors"] if k != "unavailable_observation")
+          and "not repeated" in caller["retained_evidence"])
+
+    current = inventory(root, ("__pycache__",))
+    drift = [n for n, digest in identity["resume_inputs"].items() if current.get(n) != digest]
+    additions = [n for n in current if n not in identity["resume_inputs"]]
+    check("all_4486_pre_correction_files_preserved", len(identity["resume_inputs"]) == 4486 and not drift, drift)
+    check("all_36_new_files_within_revision_03", len(additions) == 36 and all(n.startswith("work/compact-caller/revision-03/") for n in additions), additions)
+    check("controlled_unknown_fixture_bytes_unchanged", inventory(root / "controlled-unknown", ("__pycache__",)) == identity["unknown_files"])
+    helper = root / "work/compact-caller/revision-03-inputs/capture_unavailable.py"
+    helper_proof = complete_file_proof([parent], helper)
+    check("maintainer_helper_inspected_unchanged_and_attributed", sha(helper) == "4f48f919f0be82508269c56fe007f5e205750b4ff3f66a7cbf38e538cd526271"
+          and bool(helper_proof) and "maintainer helper" in " ".join(caller["defects"]), helper_proof)
+
+    scope_events = []
+    failed_redirect = None
+    for call, block in uses.values():
+        tool, args = block["name"], block.get("input", {})
+        item = {**event(call), "actor": call.get("agent_id", "parent"), "tool": tool}
+        if tool == "Bash":
+            digest = hashlib.sha256(args["command"].encode()).hexdigest()
+            item.update(command_sha256=digest, review=COMMANDS.get(digest), reviewed=digest in COMMANDS)
+            if digest == FAILED_REDIRECT:
+                failed_redirect = results[block["id"]]
+                item["failed_outside_scope_write_attempt"] = True
+        elif tool == "Write":
+            target = Path(args["file_path"]).resolve()
+            item.update(path=str(target), reviewed=target.is_relative_to(rev)
+                        and target.read_text(encoding="utf-8").replace("\r\n", "\n").rstrip() == args["content"].replace("\r\n", "\n").rstrip())
+        elif tool == "Read":
+            item["reviewed"] = Path(args["file_path"]).resolve().is_relative_to(root)
+        elif tool == "SendMessage":
+            item["reviewed"] = args.get("to") == CHILD
+        else:
+            item["reviewed"] = tool in {"mcp__pixl-local__pixl_source", "mcp__pixl-local__pixl_plar_read", "mcp__pixl-local__pixl_plar_handoff", "mcp__pixl-unknown__pixl_jobs"}
+        scope_events.append(item)
+    check("all_new_commands_and_writes_reviewed", all(e["reviewed"] for e in scope_events), scope_events)
+    check("failed_sibling_redirection_did_not_create_output", failed_redirect is not None
+          and failed_redirect[1].get("is_error") is True and "No such file or directory" in failed_redirect[1]["content"]
+          and not (work / "revision-03-capture-stdout.tmp").exists(), event(failed_redirect[0]) if failed_redirect else None)
+    check("no_new_provider_dispatch_observation_or_acceptance_attempt", not any(b["name"] in {
+        "mcp__pixl-unknown__pixl_job_dispatch", "mcp__pixl-unknown__pixl_job_observe", "mcp__pixl-local__pixl_candidate_review",
+        "mcp__pixl-local__pixl_task_complete", "mcp__pixl-local__pixl_commit"} for r, b in uses.values()))
+    check("useful_scoped_result_keeps_acceptance_and_milestones_separate", caller["assignment_status"] == "partial"
+          and caller["production_next"] == "delivered" and caller["unknown_job_state"] == "unknown"
+          and compact["caller"]["integration"]["status"] == "not_performed"
+          and "human acceptance separate" in caller["unresolved"] and "M1/M2 and broader M3/M4 open" in caller["unresolved"])
+
+    result = {
+        "version": 1, "observed_at": datetime.now(UTC).isoformat(), "status": "pass" if all(c["pass"] for c in checks) else "fail",
+        "passed": sum(c["pass"] for c in checks), "total": len(checks), "checks": checks, "source": ref(Path(__file__)),
+        "inputs": [ref(NEW / n) for n in ("launch.json", "identity.json", "continuation.json", "stdout.jsonl", "native-transcripts/parent.jsonl", f"native-transcripts/{CHILD}.jsonl")],
+        "prior_reviews": [ref(BASE / n) for n in ("semantic-review-01.json", "semantic-review-source.py.txt", "semantic-attribution-01.json", "semantic-attribution-source.py.txt")],
+        "saved_file_visibility": visibility,
+        "semantic_findings": [
+            {"id": "SR-01", "disposition": "corrected in fresh exact error record", "detail": "The final referenced error equals the actual host-native value, raw MCP protocol result and both saved MCP representations without normalization. The original collapse and the correction's first failed comparison remain retained."},
+            {"id": "SR-02", "disposition": "publication attribution corrected", "detail": "The latest child made its own actual caller-view operation under unchanged guards. New specialist/caller results credit original publication to the first child and retain prior receipt and failed attribution history. Equal file bytes alone were not used to infer authorship."},
+            {"id": "SR-03", "disposition": "visibility remains scoped", "detail": "Complete final specialist, caller and corrected-error contents reached the parent. Fresh compact was fully parsed and compared with the original but not reprinted in full; retained source reads/refresh/recoveries keep their earlier native evidence. No complete model-visible review of every saved JSON body is claimed."},
+            {"id": "SR-04", "disposition": "guided useful continuation", "detail": "Final caller report is 8006 bytes, names the same delivered art/snapshot, leaves separate fixture unknown and keeps retained integration and human acceptance separate. Four oversized drafts, failed comparisons, shell failure and first-attempt grades remain part of the evidence."},
+        ],
+        "limitations": [
+            "The final caller's compressed first_child.did combines HTTP429 and timeout in one phrase. Authoritative original records show the first child ended with HTTP429, then the parent timed out while the later child was unfinished. Do not cite that compressed phrase as a child-specific timeout claim.",
+            "The caller's fork:none label is not separate proof of a Claude host fork setting; actual native SendMessage/start/completion events establish this continuation.",
+            "A failed initial redirection targeted a sibling of revision-03 but created no file; successful writes and all additions stayed within the declared directory. This does not establish flawless instruction following.",
+            "This was a guided correction using one explicitly supplied maintainer capture helper and the frozen November10 kit. It is not a fresh unaided/current-kit qualification, general host reliability, new provider/art/renderer execution, or human acceptance.",
+            "Old guarded handoff and ordered recovery witnesses remain in the prior continuation. The later repeated missing-file read is a safe correction capture, not evidence that every repeated probe preceded that old guard."
+        ]
+    }
+    with out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"], "output": str(out)}))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,96 @@
+"""Read-only final source, native-artifact, frozen-kit and disclosure checks."""
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+from evaluations.host_trials import inventory
+from evaluations.native_trial_records import verify_inputs
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.resolve().relative_to(ROOT).as_posix(), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+out = Path(sys.argv[1]).resolve()
+if out.exists():
+    raise ValueError("Preserve earlier integrity receipts")
+checks = []
+
+
+def check(name, passed, detail=None):
+    checks.append({"check": name, "pass": bool(passed), "evidence": detail})
+
+
+preflight = read(BASE / "preflight-01.json")
+old = ROOT / "evidence/caller-result/20261110/native/claude-01"
+check("original_failed_attempt_exactly_preserved", inventory(old) == preflight["predecessor_evidence"])
+verify_inputs(read(old / "continuation.json"))
+check("original_frozen_package_and_configuration_still_match", True)
+for label in ("claude-02", "claude-03"):
+    attempt = BASE / "native" / label
+    record = read(attempt / "continuation.json")
+    root = Path(record["cwd"])
+    drift = [item["path"] for item in record["artifacts"]
+             if not Path(item["path"]).is_file() or sha(Path(item["path"])) != item["sha256"]]
+    check(label + "_observed_artifacts_still_match", not drift, drift)
+    changed_copies = []
+    for path in (attempt / "outputs").rglob("*"):
+        if path.is_file():
+            actual = root / "work/compact-caller" / path.relative_to(attempt / "outputs")
+            if not actual.is_file() or sha(actual) != sha(path):
+                changed_copies.append(str(path.relative_to(ROOT)))
+    check(label + "_retained_output_copies_match_actual_consumer", not changed_copies, changed_copies)
+verification = read(BASE / "verification-06/result.json")
+source_drift = [name for name, digest in verification["checked_inputs"].items() if sha(ROOT / name) != digest]
+check("final_verification_inputs_unchanged", not source_drift, source_drift)
+check("final_focused_verification_passed", verification["status"] == "pass" and verification["tests_run"] == 127,
+      ref(BASE / "verification-06/result.json"))
+grading = read(BASE / "grading-sources-06/IDENTITY.json")
+grading_drift = [name for name, item in grading["sources"].items()
+                 if sha(ROOT / name) != item["sha256"] or sha(ROOT / item["snapshot"]) != item["sha256"]]
+check("final_grader_sources_match_retained_snapshots", not grading_drift, grading_drift)
+for name, passed in (("claude-03-grade-03.json", 31), ("codex-regression-03.json", 28), ("semantic-review-03.json", 22)):
+    value = read(BASE / name)
+    check("final_receipt:" + name, value["status"] == "pass" and value["passed"] == value["total"] == passed, ref(BASE / name))
+    if "source" in value:
+        check("review_source_matches:" + name, sha(ROOT / value["source"]["path"]) == value["source"]["sha256"])
+legacy = read(old / "independent-grade-01.json")
+check("original_missing_evidence_grade_stays_zero_of_one", legacy["passed"] == 0 and legacy["total"] == 1)
+check("both_real_failures_remain_in_adapted_first_continuation",
+      {row["check"] for row in read(BASE / "claude-02-adapter-grade-02.json")["checks"] if not row["pass"]}
+      == {"selected_child_created_both_actual_public_views", "parent_observed_unavailable_observation"})
+
+changed = subprocess.check_output(["git", "diff", "--name-only", "HEAD"], cwd=ROOT, text=True).splitlines()
+new = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard"], cwd=ROOT, text=True).splitlines()
+patterns = re.compile(rb"\bpixl_[0-9a-fA-F]{32,}|\bsk-[A-Za-z0-9_-]{24,}|\bBearer\s+[A-Za-z0-9._-]{24,}")
+hits = []
+for name in sorted(set(changed + new)):
+    path = ROOT / name
+    if path.is_file() and patterns.search(path.read_bytes()):
+        hits.append(name)
+check("changed_and_new_files_have_no_known_credential_shapes", not hits,
+      {"matching_paths_only": hits, "scope": "Known credential shapes only; no matched values are emitted."})
+result = {"version": 1, "observed_at": datetime.now(UTC).isoformat(), "source": ref(Path(__file__)),
+          "status": "pass" if all(row["pass"] for row in checks) else "fail",
+          "passed": sum(row["pass"] for row in checks), "total": len(checks), "checks": checks,
+          "scope": "Post-verification integrity and known-secret-shape scan. No new native, full-suite, package, artistic or human acceptance."}
+with out.open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2)
+    stream.write("\n")
+print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+raise SystemExit(result["status"] != "pass")

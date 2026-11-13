@@ -1,0 +1,49 @@
+{
+  "probe": "stale-state",
+  "server": "pixl-local",
+  "operation": "pixl_plar_handoff",
+  "arguments": {
+    "asset_id": "queue.working",
+    "path": "authoring-plar.txt",
+    "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+    "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+    "view": "caller",
+    "details": {
+      "path": "work/compact-caller/details.json",
+      "sha256": "92682b133f09898b20e620fd0e9aea94f2aad3b5aae511f2ceec9defa87a3dc2",
+      "note": "exact details.json content passed inline"
+    }
+  },
+  "result_kind": "tool_error",
+  "original_error": {
+    "error": "handoff_stale",
+    "detail": "handoff_stale: Production state changed or wrong identity supplied; expect must match the canonical production state hash at production.continuation.state_hash; reread selected PLAR, not its top-level file hash",
+    "category": "stale_local_state",
+    "recovery": {
+      "action": "reread_and_reconcile",
+      "detail": "Reread the relevant identity, compare the intended change and preserve prior evidence. A new hash alone does not authorize changed semantics.",
+      "operation": "pixl_plar_read",
+      "arguments": {
+        "path": "authoring-plar.txt",
+        "asset_id": "queue.working"
+      }
+    },
+    "identity": {
+      "asset_id": "queue.working",
+      "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+      "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+      "path": "authoring-plar.txt"
+    }
+  },
+  "derived": {
+    "category": "stale_local_state",
+    "affected_identity": {
+      "asset_id": "queue.working",
+      "expect": "0000000000000000000000000000000000000000000000000000000000000000",
+      "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+      "path": "authoring-plar.txt"
+    },
+    "recovery_followed": "executed returned recovery operation pixl_plar_read {path authoring-plar.txt, asset_id queue.working}; saved at work/compact-caller/stale-recovery.json; compared returned production.continuation.state_hash and requirements_hash with compact.json identities; no handoff published by this probe"
+  },
+  "observed_at": "2026-11-13"
+}

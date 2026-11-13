@@ -1,0 +1,55 @@
+"""Retain focused continuation verification without rebuilding production evidence."""
+import json
+import re
+import subprocess
+import sys
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+out = Path(sys.argv[1]).resolve()
+out.mkdir(parents=True, exist_ok=False)
+(out / "verify-source.py.txt").write_bytes(Path(__file__).read_bytes())
+files = ["evaluations/caller_result_case.py", "evaluations/grade_caller_result.py",
+         "evaluations/native_trial_records.py", "evaluations/claude_completion.py", "evaluations/claude_result_proofs.py", "tests/test_claude_result_proofs.py", "tests/test_claude_completion.py", "tests/test_caller_result_case.py",
+         "tests/test_native_trial_records.py", "tests/test_caller_result.py",
+         "tests/test_readiness_case.py", "tests/test_grade_domain_consumers.py"]
+# The completion helper, if split out, is part of the checked evaluator source.
+files += [p.relative_to(ROOT).as_posix() for p in (ROOT / "evaluations").glob("*caller*continuation*.py")]
+files += [p.relative_to(ROOT).as_posix() for p in (ROOT / "tests").glob("*caller*continuation*.py")]
+files = sorted(set(files))
+inputs = {}
+for name in files:
+    data = (ROOT / name).read_bytes()
+    inputs[name] = sha256(data).hexdigest()
+    saved = out / "sources" / (name + ".txt")
+    saved.parent.mkdir(parents=True, exist_ok=True)
+    saved.write_bytes(data)
+modules = ["tests.test_caller_result_case", "tests.test_native_trial_records", "tests.test_caller_result",
+           "tests.test_readiness_case", "tests.test_grade_domain_consumers", "tests.test_claude_completion", "tests.test_claude_result_proofs"]
+modules += [name[:-3].replace("/", ".") for name in files if name.startswith("tests/") and "continuation" in name]
+commands = [
+    [sys.executable, "-B", "-m", "unittest", *modules, "-v"],
+    [sys.executable, "-m", "ruff", "check", *[n for n in files if "caller" in n or "claude_completion" in n or "claude_result_proofs" in n]],
+    ["git", "diff", "--check"],
+]
+checks = []
+for index, command in enumerate(commands, 1):
+    proc = subprocess.run(command, cwd=ROOT, capture_output=True)
+    (out / f"{index:02d}-stdout.txt").write_bytes(proc.stdout)
+    (out / f"{index:02d}-stderr.txt").write_bytes(proc.stderr)
+    checks.append({"command": command, "returncode": proc.returncode,
+                   "stdout": f"{index:02d}-stdout.txt", "stderr": f"{index:02d}-stderr.txt"})
+changed = [name for name, digest in inputs.items() if sha256((ROOT / name).read_bytes()).hexdigest() != digest]
+test_text = (out / "01-stderr.txt").read_text(encoding="utf-8")
+match = re.search(r"Ran (\d+) tests?", test_text)
+result = {"observed_at": datetime.now(UTC).isoformat(),
+          "status": "pass" if not changed and all(c["returncode"] == 0 for c in checks) else "fail",
+          "source": {"path": str(Path(__file__).resolve()), "sha256": sha256(Path(__file__).read_bytes()).hexdigest()},
+          "checked_inputs": inputs, "changed_during_verification": changed, "checks": checks,
+          "tests_run": int(match[1]) if match else None,
+          "scope": "Focused evaluator, recorder, caller contract and adjacent native-proof regressions. No full-suite, bundle rebuild, new production package or artistic acceptance claim."}
+(out / "result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+print(json.dumps({k: result[k] for k in ("status", "tests_run", "changed_during_verification")}))
+raise SystemExit(result["status"] != "pass")

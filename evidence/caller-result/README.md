@@ -1,12 +1,14 @@
 # Compact caller results and actionable recovery
 
-Development increment: **2026-11-10**, active cycle `IDENTIFY-2026-11-09-01`,
-**[M2 | QOL-10, SC-08 | PX-A2A-001, PX-EVAL-005]**. Local implementation and
-Codex's bounded caller outcome are complete. The additional Claude trial is
-incomplete after an account-rate-limit failure and timeout. M1/M2 and the overall
-product remain open; no new artwork or artistic acceptance is assigned here.
-The [result and identity index](20261110/RESULT.json) binds the final verification,
-exact packages, native outcomes and retained failures.
+Initial increment: **2026-11-10**; retained Claude continuation: **2026-11-13**,
+active cycle `IDENTIFY-2026-11-09-01`,
+**[M2 | QOL-10, SC-08 | PX-A2A-001, PX-EVAL-005]**. Local implementation and both
+bounded caller outcomes are complete. Claude finishes through guided same-parent,
+same-child continuation on the frozen November 10 kit. Its original rate-limit
+failure, timeout and subsequent defects remain retained. Human acceptance stays
+separate; M1/M2 and broader M3/M4 remain open. No new artwork, provider execution
+or artistic acceptance is assigned here. The [original index](20261110/RESULT.json)
+and [continuation index](20261113/OUTCOME.json) retain their distinct scopes.
 
 ## Implemented operation
 
@@ -92,6 +94,8 @@ alone is not useful caller acceptance.
 | --- | --- | --- |
 | Codex, actual named `pixl` child | Completed compact result, full retrieval, current refresh, guarded handoff and five local error/recovery exercises | [28/28 pass](20261110/native/codex-01/independent-grade-03.json) |
 | Claude, registered `pixl:pixl` children | Partial artifacts retained; no final caller result or complete retrieval/recovery evidence before timeout | [Required-evidence failure, 0/1](20261110/native/claude-01/independent-grade-01.json), [incomplete observation](20261110/native/claude-01/incomplete-observation-01.json) |
+| Claude, first retained continuation | Same parent/latest child completes, but original caller-view authorship and exact error retention need correction | [23/31 original grade](20261113/native/claude-02/independent-grade-01.json), [29/31 after strict adapter fixes](20261113/claude-02-adapter-grade-02.json) |
+| Claude, guided correction | Same child publishes caller view; parent retains exact error and consumes corrected reports | [31/31 final grade](20261113/claude-03-grade-03.json), [22/22 independent review](20261113/semantic-review-03.json) |
 
 Codex's parent consumes exact details/resume ranges, refreshes selection and safely
 repeats the unchanged handoff with returned guards. Assignment status stays partial
@@ -124,23 +128,83 @@ trial then timed out with exit 1. Compact output, full details and a specialist
 report exist, but the receipt, specialist result, parent source reads/refresh and
 final caller report do not. The 0/1 grade records missing required evidence, not a
 failed artistic verdict. Original inputs and both production states remain
-unchanged. The native parent is available for a later bounded continuation when
-quota permits, with its retained child metadata checked first; no continuation
-has been launched. The separately passing [Claude readiness cases](../readiness/20261110/RESULT.json)
+unchanged. At that original close, no continuation had been launched. The later
+continuation below preserves those records. The separately passing [Claude readiness cases](../readiness/20261110/RESULT.json)
 do not establish completion of this changed workflow.
+
+## Retained Claude continuation — 2026-11-13
+
+The [fresh preflight](20261113/preflight-01.json) verifies all 4,439 original
+inputs, 16 partial artifacts, the frozen kit and exact persisted parent/child
+journals. Both new processes use parent `0510b038-b18b-4fbc-aafe-c19b95d7dba6`
+and latest child `ab352c80d7f534aae` through actual `SendMessage`, with native
+completion events and additive journal prefixes. No replacement specialist is
+credited. The kit remains manifest
+`10895896cfc882c27e1fa99306426dc0def3cf59ce639e0ebbb9da8909cf9097`;
+this does not qualify the newer production package.
+
+The first continuation preserves all 4,456 preceding files and adds 29 outputs.
+Its 23/31 grade has six adapter gaps and two real defects. The adapters now bind
+the frozen host's queued completion notification, exact explicit child identity,
+complete JSON lines in actual command output, labelled recovery wrappers and
+native host-spilled result bodies. [Retained host results](20261113/native-tool-results-02/manifest.json)
+come from actual native tool-result locators, not caller-authored copies. Those
+fixes yield 29/31 while correctly retaining both real failures: the earlier child
+had published the original caller view, and a manually copied diagnostic altered
+literal backslashes in its original error detail. The [first semantic review](20261113/semantic-review-01.json)
+and [attribution supplement](20261113/semantic-attribution-01.json) preserve them.
+
+The guided correction supplies one explicitly identified
+[read-only error-capture helper](20261113/correction-inputs-03/IDENTITY.json).
+The same latest child makes its own public caller-view operation with identical
+details and guards; the parent retains the exact native error without string
+normalization. Fresh reports acknowledge original publication by the earlier
+child. The [final caller report](20261113/native/claude-03/outputs/revision-03/CALLER-RESULT.json)
+is **8,006 UTF-8 bytes**, names the same immutable handoff and delivered art,
+leaves the fictional `member.job` unknown, and keeps assignment status partial
+separate from delivered artistic production. All 4,486 pre-correction files remain
+unchanged; 36 new files stay within `revision-03`.
+
+Four oversized caller drafts (10,104, 9,628, 9,088 and 8,812 bytes), failed
+comparisons, shell failures and the failed sibling redirection remain retained.
+That redirection created no file. The [initial correction grade, 30/31](20261113/claude-03-grade-01.json)
+also remains: its chronology adapter incorrectly let a later identical read-only
+probe erase an earlier valid sequence. The final proof identifies one actual
+ordered sequence of completed errors, stale recovery and guarded handoff; it
+does not pretend the later probe preceded the earlier handoff. Final sources and
+their exact snapshots are [retained separately](20261113/grading-sources-06/IDENTITY.json).
+
+The [independent review](20261113/semantic-review-03.json) verifies complete
+parent-visible specialist, caller and corrected-error reports. Fresh compact JSON
+was parsed and compared with the original; complete model-visible review of every
+saved JSON body is not claimed. The compressed caller history groups HTTP 429
+and timeout in one phrase: the authoritative sequence remains first-child HTTP
+429, then parent timeout while the latest child was unfinished. A report's
+`fork: none` label is not proof of a separate Claude fork setting.
+
+Reusable [case preparation and grading](../../evaluations/NATIVE-CONTINUATION.md)
+now retain original and pre-resume baselines, reject changed partial outputs or
+native history, verify transitive preservation and actual same-child completion,
+and allow fresh correction report paths. The [focused final verification](20261113/verification-06/result.json)
+passes **127 tests** covering evaluator, recorder, caller-contract and adjacent
+native-proof regressions, with Ruff and whitespace checks. The [final Codex regression](20261113/codex-regression-03.json)
+remains **28/28**; its [intermediate 26/28](20261113/codex-regression-02.json)
+is retained with the narrow PowerShell-argument-vector adapter fix. The production
+runtime, profile, skills and package are unchanged; the older full-suite result
+above is not a new test run for this increment.
 
 ## Review questions A–E
 
 **A — Improvement:** derive the ordinary result through the existing handoff so
 callers receive useful artifacts, scoped findings and exact continuation without
-manually rebuilding runtime identities. Codex's actual retrieval/recovery outcome
-supports this bounded operation; all full detail remains available.
+manually rebuilding runtime identities. Both bounded caller outcomes support this
+operation; Claude's result includes explicit guided corrections. Full detail remains available.
 
 **B — Host compatibility:** CLI/MCP share the operation and structured diagnostics.
-Codex's explicit named route completes the assigned caller work. Claude retains
-useful partial artifacts after a host rate limit and timeout; its missing final
-caller result keeps this additional host-reliability exit open. Earlier readiness
-passes keep their own package and scenario scope.
+Codex's explicit named route completes the assigned caller work. Claude now
+finishes the retained caller work through the same parent and latest child, on the
+frozen kit. Earlier failures and guided recovery constrain that claim; broad host
+reliability and current-kit qualification remain open.
 
 **C — Contextual quality:** the concise view preserves unresolved requirements,
 source authority and the difference between assignment status and acceptance.
@@ -148,8 +212,8 @@ No aesthetic verdict follows from serialization, file hashes or a successful exp
 
 **D — Another repository:** the assignment and returned paths remain rooted in the
 actual consumer. Fresh focused reads and exact retained-byte retrieval establish
-which selection Codex consumed; Claude's unfinished retrieval is not inferred from
-the partial artifacts.
+which selection each caller consumed. Claude's exact correction reports and native
+operations establish its completed result; partial artifacts alone did not.
 
 **E — Responsibility:** the specialist authors scope, integration judgments and
 issues; the local runtime derives saved-state facts and safe recovery context;
@@ -159,8 +223,7 @@ a recovery hint nor a cached catalog grants a new provider submission.
 ## Continuation
 
 Follow [TODO](../../TODO.md), [PLAN](../../PLAN.md) and the
-[ordered backlog](../../SHELVED.md). CF-06 is the next
-ready M3 group. Keep the retained Claude continuation/reliability exit explicit;
-when quota permits, recover its persisted parent and actual child evidence without
-new generation or acceptance. M1/M2 remain open and the active IDENTIFY cycle
-continues without a new audit.
+[ordered backlog](../../SHELVED.md). **SC-06 — saved adapter/schema compatibility**
+is the next eligible increment; M5 enabling work can proceed alongside the open
+earlier milestones. Human acceptance stays separate; M1/M2 and broader M3/M4
+remain open. Continue the active IDENTIFY cycle without a new audit.

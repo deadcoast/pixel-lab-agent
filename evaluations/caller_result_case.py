@@ -10,7 +10,8 @@ from pathlib import Path
 
 from evaluations import readiness_case
 from evaluations.host_trials import inventory, sha, write_json
-from evaluations.native_trial_records import reference
+from evaluations.native_trial_records import prepare_resume as prepare_native_resume
+from evaluations.native_trial_records import reference, transcript_locations
 from evaluations.request_review_trials import ROOT, run
 
 WORK = "work/compact-caller"
@@ -178,6 +179,50 @@ this is a scenario bound, not a universal pixel-art rule. Detailed evidence stay
     return consumer
 
 
+def verify_resume_evidence(previous: Path, root: Path, child_id: str) -> None:
+    """Reject drift in failed outputs or live host history before preparation."""
+    saved = json.loads((previous / "continuation.json").read_bytes())
+    for item in saved.get("artifacts", []):
+        path = Path(item["path"]).resolve()
+        if not path.is_relative_to(root / WORK) or not path.is_file() or reference(path) != item:
+            raise ValueError("Retained partial caller output changed before resume")
+    live = transcript_locations(saved["session_id"], [child_id])
+    for key, current in (("parent", live.get("parent")), (child_id, live.get("children", {}).get(child_id))):
+        retained = saved.get("retained_transcripts", {}).get(key)
+        if (not retained or not current or not Path(retained["path"]).is_file()
+                or reference(retained["path"]) != retained
+                or any(current.get(field) != retained.get(field) for field in ("sha256", "bytes"))):
+            raise ValueError("Live parent/child history differs from the retained predecessor")
+
+
+def prepare_resume(previous: Path, destination: Path, prompt: str, child_id: str) -> Path:
+    """Resume the frozen caller case without rebasing its original input hashes."""
+    previous, destination = previous.resolve(), destination.resolve()
+    identity = json.loads((previous / "identity.json").read_bytes())
+    launch = json.loads((previous / "launch.json").read_bytes())
+    root = Path(launch["cwd"]).resolve()
+    if identity.get("case") != "compact-caller" or launch.get("case") != "compact-caller":
+        raise ValueError("Resume requires the retained compact-caller case")
+    current = inventory(root, ("__pycache__",))
+    changed = [name for name, digest in identity["inputs"].items() if current.get(name) != digest]
+    unexpected = [name for name in current if name not in identity["inputs"]
+                  and not name.startswith((WORK + "/", ".pixl/handoffs/"))]
+    if changed or unexpected or inventory(root / UNKNOWN, ("__pycache__",)) != identity["unknown_files"]:
+        raise ValueError("Original caller inputs or controlled unknown fixture changed")
+    verify_resume_evidence(previous, root, child_id)
+    # Hash the complete failed attempt before preparing anything. The new run
+    # keeps both its original scenario baseline and all pre-resume output bytes.
+    preceding_files = inventory(previous, ("__pycache__",))
+    prepare_native_resume(previous, destination, prompt, child_id)
+    resumed = json.loads((destination / "identity.json").read_bytes())
+    resumed = {**identity, **resumed, "predecessor_identity": reference(previous / "identity.json"),
+               "predecessor_files": preceding_files, "resume_inputs": current,
+               "resume_runner": reference(Path(__file__))}
+    write_json(destination / "identity.json", resumed)
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+    return root
+
+
 def retain(destination: Path) -> None:
     if (destination / "preservation.json").exists():
         raise ValueError("Preserve the prior retention receipt")
@@ -192,8 +237,13 @@ def retain(destination: Path) -> None:
             target = destination / "handoffs" / Path(name).name
             target.parent.mkdir(exist_ok=True)
             shutil.copyfile(root / name, target)
-    write_json(destination / "preservation.json", {"changed": [p for p, digest in identity["inputs"].items()
-        if current.get(p) != digest], "added": added})
+    receipt = {"changed": [p for p, digest in identity["inputs"].items()
+        if current.get(p) != digest], "added": added}
+    if "resume_inputs" in identity:
+        receipt["changed_since_resume"] = [p for p, digest in identity["resume_inputs"].items()
+                                           if current.get(p) != digest]
+        receipt["added_since_resume"] = {p: digest for p, digest in current.items() if p not in identity["resume_inputs"]}
+    write_json(destination / "preservation.json", receipt)
 
 
 def main() -> None:
@@ -205,6 +255,11 @@ def main() -> None:
     prep.add_argument("--python", type=Path, default=readiness_case.DEFAULT_PYTHON)
     prep.add_argument("--package", type=Path)
     prep.add_argument("--consumer", type=Path)
+    resume = sub.add_parser("resume")
+    resume.add_argument("previous", type=Path)
+    resume.add_argument("destination", type=Path)
+    resume.add_argument("--prompt", type=Path, required=True)
+    resume.add_argument("--child", required=True)
     execute = sub.add_parser("run")
     execute.add_argument("destination", type=Path)
     execute.add_argument("--timeout", type=float, default=900)
@@ -212,6 +267,9 @@ def main() -> None:
     if args.action == "prepare":
         root = prepare(args.destination, args.host, args.python, package=args.package, consumer=args.consumer)
         print(json.dumps({"consumer": str(root), "launched": False}))
+    elif args.action == "resume":
+        root = prepare_resume(args.previous, args.destination, args.prompt.read_text(encoding="utf-8"), args.child)
+        print(json.dumps({"consumer": str(root), "launched": False, "mode": "native_same_session"}))
     else:
         run(args.destination.resolve(), timeout=args.timeout)
         retain(args.destination.resolve())

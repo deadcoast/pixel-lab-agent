@@ -5,10 +5,14 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import tomllib
+from itertools import pairwise
 from pathlib import Path
 
-from evaluations.caller_result_case import KIT, UNKNOWN, WORK
+from evaluations.caller_result_case import INPUTS, KIT, UNKNOWN, WORK
+from evaluations.claude_completion import async_completion
+from evaluations.claude_result_proofs import bind_retained
 from evaluations.grade_named_codex_role import rows, strings
 from evaluations.grade_readiness import (
     claude_loading_proof,
@@ -18,6 +22,7 @@ from evaluations.grade_readiness import (
     semantic_result,
 )
 from evaluations.host_trials import inventory, write_json
+from evaluations.native_trial_records import reference as file_reference
 
 CATEGORIES = {"invalid_authoring", "stale_local_state", "missing_capability", "uncertain_remote_result", "unavailable_observation"}
 
@@ -34,7 +39,8 @@ def mcp_calls(journals: list[list[dict]]) -> list[dict]:
             item = payload.get("item", row.get("item", {}))
             if item.get("type") in ("McpToolCall", "mcp_tool_call") and item.get("status") in ("completed", "succeeded", "failed"):
                 calls.append({"tool": item.get("tool"), "server": item.get("server"), "arguments": item.get("arguments", {}),
-                              "result": item.get("result"), "call_id": item.get("id"), "file": row.get("file"), "line": row.get("line")})
+                              "result": item.get("result"), "call_id": item.get("id"), "file": row.get("file"), "line": row.get("line"),
+                              "result_line": row.get("line")})
             message = row.get("message", {})
             content = message.get("content", []) if isinstance(message, dict) else []
             for block in content if isinstance(content, list) else []:
@@ -45,7 +51,7 @@ def mcp_calls(journals: list[list[dict]]) -> list[dict]:
                     uses[block["id"]] = {"server": match[1], "tool": match[2], "arguments": block.get("input", {}),
                                          "call_id": block["id"], "file": row.get("file"), "line": row.get("line")}
                 if block.get("type") == "tool_result" and block.get("tool_use_id") in uses:
-                    calls.append({**uses[block["tool_use_id"]], "result": block.get("content")})
+                    calls.append({**uses[block["tool_use_id"]], "result": block.get("content"), "result_line": row.get("line")})
     return calls
 
 
@@ -93,7 +99,7 @@ def matching_calls(calls: list[dict], tool: str, saved: dict, arguments: dict | 
         if arguments is not None and any(call["arguments"].get(k, "receipt" if k == "view" and tool == "pixl_plar_handoff" else None) != v for k, v in arguments.items()):
             continue
         if any(obj == saved for obj in expanded_objects(call["result"])):
-            result.append({k: call[k] for k in ("file", "line", "tool", "server", "arguments")})
+            result.append({k: call[k] for k in ("file", "line", "result_line", "tool", "server", "arguments", "native_spill") if k in call})
     return result
 
 
@@ -104,6 +110,23 @@ def child_identity(value):
     if isinstance(value, dict) and value.get("agent_type") in ("pixl", "pixl:pixl"):
         return value.get("canonical_task", value.get("agent_id"))
     return None
+
+
+def reported_child(value, host):
+    """Read explicit Claude IDs without treating descriptive metadata as proof."""
+    if host != "claude" or not isinstance(value, dict):
+        return child_identity(value)
+    selected = value.get("agent_id")
+    if not isinstance(selected, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", selected):
+        return None
+    if any(value[key] != selected for key in ("id", "child_id") if key in value):
+        return None
+    if any(value[key] not in ("pixl", "pixl:pixl") for key in ("role", "agent_type", "subagent_type") if key in value):
+        return None
+    canonical = value.get("canonical_task")
+    if isinstance(canonical, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,128}", canonical) and canonical != selected:
+        return None
+    return selected
 
 
 def refresh_proofs(calls: list[dict], saved: dict, arguments: dict) -> list[dict]:
@@ -136,7 +159,7 @@ def refresh_proofs(calls: list[dict], saved: dict, arguments: dict) -> list[dict
                     and isinstance(observed, dict) and observed.get("requirements_hash") == saved.get("requirements_hash")
                     and domains.get("production.continuation.state_hash") == "canonical_state_sha256"
                     and domains.get("requirements_hash") == "selected_requirements_sha256"):
-                result.append({**{k: call[k] for k in ("file", "line", "tool", "server", "arguments")},
+                result.append({**{k: call[k] for k in ("file", "line", "result_line", "tool", "server", "arguments") if k in call},
                     "native_result_scope": "complete production.continuation and hash_domains suffix only",
                     "native_full_result_truncated": True,
                     "unverified_native_body": "The middle of the full returned PLAR body is absent from this event; saved full caller file is separate evidence."})
@@ -181,14 +204,14 @@ def error_object(saved: dict) -> dict:
     return next((o for o in expanded_objects(saved) if "category" in o and "error" in o and "recovery" in o), {})
 
 
-def command_proofs(parent: list[dict], command_name: str, returned: dict) -> list[dict]:
+def command_proofs(parent: list[dict], command_name: str, returned: dict, *, root=None, expected_helper=None) -> list[dict]:
     """Correlate direct local protocol stdout with actual completed host commands."""
     result = []
     for row in parent:
         payload = row.get("payload", {})
         item = payload.get("item", {})
         if (payload.get("type") == "item_completed" and item.get("type") == "CommandExecution"
-                and item.get("exit_code") == 0 and command_name in str(item.get("command"))
+                and item.get("exit_code") == 0 and direct_python_helper(item.get("command"), command_name, root=root, expected_helper=expected_helper)
                 and any(o == returned for o in expanded_objects(item.get("aggregated_output", "")))):
             result.append({"file": row.get("file"), "line": row.get("line")})
     # Claude's Bash result is paired with its actual tool_use request.
@@ -197,45 +220,279 @@ def command_proofs(parent: list[dict], command_name: str, returned: dict) -> lis
         for block in row.get("message", {}).get("content", []) if isinstance(row.get("message"), dict) else []:
             if not isinstance(block, dict):
                 continue
-            if block.get("type") == "tool_use" and block.get("name") == "Bash" and command_name in block.get("input", {}).get("command", ""):
+            if (block.get("type") == "tool_use" and block.get("name") == "Bash"
+                    and direct_python_helper(block.get("input", {}).get("command"), command_name, root=root, expected_helper=expected_helper)):
                 uses[block["id"]] = row
             if (block.get("type") == "tool_result" and block.get("tool_use_id") in uses and not block.get("is_error")
-                    and any(o == returned for o in expanded_objects(block.get("content", "")))):
+                    and any(o == returned for o in command_output_objects(block.get("content", "")))):
                 result.append({"file": row.get("file"), "line": row.get("line")})
     return result
 
 
-def _grade(attempt: Path) -> dict:
+def direct_python_helper(command, name, *, root=None, expected_helper=None):
+    """Recognize a direct Python script command, excluding comments and quoted prose.
+
+    Recognize a first command or an unconditional command after reviewed cd/ls
+    prefixes. Shell control flow, background work, expansions and wrappers are
+    deliberately unsupported; their text alone cannot establish execution.
+    """
+    if isinstance(command, list):
+        # Codex retains argv for the native PowerShell process. Support only
+        # its observed single call-operator invocation, not a shell program.
+        if (len(command) != 3 or not all(isinstance(value, str) for value in command)
+                or command[0].replace("\\", "/").rsplit("/", 1)[-1].lower() not in ("pwsh.exe", "powershell.exe")
+                or command[1].lower() != "-command"):
+            return False
+        inner = command[2].strip()
+        lexer = shlex.shlex(inner, posix=False, punctuation_chars=";&|<>")
+        lexer.whitespace_split = True
+        try:
+            parts = list(lexer)
+        except ValueError:
+            return False
+        if (not parts or parts[0] != "&" or not inner.startswith("&")
+                or any(token and set(token) <= {";", "&", "|", "<", ">"} for token in parts[1:])):
+            return False
+        return direct_python_helper(inner[1:].lstrip(), name, root=root, expected_helper=expected_helper)
+    if not isinstance(command, str):
+        return False
+    # Preserve quotes so an operand such as ';' never becomes an operator.
+    lexer = shlex.shlex(command, posix=False, punctuation_chars=";&|<>")
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return False
+    segments, current, preceding = [], [], None
+    for token in tokens:
+        if token and set(token) <= {";", "&", "|"}:
+            segments.append((preceding, current, token))
+            current = []
+            preceding = token
+        else:
+            current.append(token)
+    segments.append((preceding, current, None))
+    root = Path(root).resolve() if root is not None else None
+    cwd = root
+
+    def shell_path(value):
+        value = value.replace("\\", "/")
+        if re.match(r"^/[A-Za-z]/", value):
+            value = value[1].upper() + ":" + value[2:]
+        path = Path(value)
+        return path.resolve() if path.is_absolute() else (cwd / path).resolve() if cwd is not None else None
+
+    for preceding, segment, following in segments:
+        segment = [token[1:-1] if len(token) >= 2 and token[0] == token[-1] and token[0] in ("'", '"') else token for token in segment]
+        if not segment or any(any(mark in token for mark in ("\n", "\r", "`", "$", "(", ")", "{", "}")) for token in segment):
+            return False
+        if any(token.endswith("\\") for token in segment):
+            return False  # Escaped punctuation and continuations are unsupported.
+        if re.fullmatch(r"python(?:\d+(?:\.\d+)*)?(?:\.exe)?", segment[0].replace("\\", "/").rsplit("/", 1)[-1]):
+            args = segment[1:]
+            while args and re.fullmatch(r"-[IBuEsSO]+", args[0]):
+                args = args[1:]
+            return (preceding in (None, ";") and following in (None, ";")
+                    and bool(args) and args[0].replace("\\", "/").rsplit("/", 1)[-1] == name
+                    and (expected_helper is None or root is not None and shell_path(args[0]) == Path(expected_helper).resolve()))
+        if (preceding not in (None, ";", "&&") or following not in (";", "&&")
+                or segment[0] not in ("cd", "ls") or segment[0] == "cd" and len(segment) != 2):
+            return False
+        if segment[0] == "cd" and root is not None:
+            target = shell_path(segment[1])
+            if target is None or not target.is_relative_to(root) or not target.is_dir():
+                return False
+            cwd = target
+    return False
+
+
+def command_output_objects(value):
+    """Read complete JSON lines in real command stdout, never loose substrings."""
+    yield from expanded_objects(value)
+    for text in strings(value):
+        for line in text.splitlines():
+            try:
+                decoded = json.loads(line)
+            except ValueError:
+                continue
+            yield from expanded_objects(decoded)
+
+
+def recovery_result(value, recovery, server):
+    """A labelled recovery report may retain the exact native result as a member."""
+    if not isinstance(value, dict) or not isinstance(value.get("result"), dict):
+        return value
+    observed = value.get("recovery", {})
+    if (not isinstance(observed, dict) or any(observed.get(k) != recovery.get(k) for k in ("operation", "arguments"))
+            or str(observed.get("server", server)).replace("-", "_") != server):
+        return None
+    return semantic_result(value["result"])
+
+
+def ordered_recovery_proof(probes, stale_reads, guards):
+    """Find a completed observed sequence; later repeated probes do not erase it."""
+    if set(probes) != CATEGORIES:
+        return []
+
+    def before(entry, guard):
+        start, end, limit = entry.get("line"), entry.get("result_line", entry.get("line")), guard.get("line")
+        return (entry.get("file") == guard.get("file") and isinstance(start, int) and isinstance(end, int)
+                and isinstance(limit, int) and 0 < start <= end < limit)
+
+    for guard in guards:
+        eligible = {category: [entry for entry in entries if before(entry, guard)] for category, entries in probes.items()}
+        if not all(eligible.values()):
+            continue
+        for stale in eligible["stale_local_state"]:
+            observed = stale.get("result_line", stale["line"])
+            recovery = next((entry for entry in stale_reads if before(entry, guard) and observed < entry["line"]), None)
+            if recovery:
+                return [{"guard": guard, "stale_recovery": recovery,
+                         "observed_errors": {**{category: entries[0] for category, entries in eligible.items()},
+                                             "stale_local_state": stale},
+                         "scope": "One actual same-journal error/recovery/guard sequence; subsequent read-only probes remain separate observations."}]
+    return []
+
+
+def _continued_pair(previous: Path, resumed: Path, selected: str) -> dict:
+    """Verify additive records, then separate historical and newly executed rows."""
+    # Local import avoids the existing PLAR grader's caller-helper dependency.
+    from evaluations.grade_plar_coverage import continuation_record
+    continuation, proof = continuation_record(previous, resumed, selected)
+    original, identity = read(previous / "identity.json"), read(resumed / "identity.json")
+    if (identity.get("predecessor_identity") != file_reference(previous / "identity.json")
+            or identity.get("predecessor_files") != inventory(previous, ("__pycache__",))
+            or any(identity.get(key) != original[key] for key in ("inputs", "unknown_files"))
+            or not isinstance(identity.get("resume_inputs"), dict)
+            or any(identity["resume_inputs"].get(name) != digest for name, digest in original["inputs"].items())):
+        raise ValueError("Continuation changed its original input baseline or retained failed evidence")
+    prior, current = read(previous / "continuation.json"), read(resumed / "continuation.json")
+    required = {**original["inputs"], **original.get("resume_inputs", {})}
+    root = Path(prior["cwd"]).resolve()
+    for item in prior.get("artifacts", []):
+        path = Path(item["path"]).resolve()
+        if not path.is_relative_to(root / WORK):
+            raise ValueError("Predecessor caller artifact escapes its declared output scope")
+        name = path.relative_to(root).as_posix()
+        if name in required and required[name] != item["sha256"]:
+            raise ValueError("Predecessor caller artifact conflicts with its earlier preservation baseline")
+        required[name] = item["sha256"]
+    if any(identity["resume_inputs"].get(name) != digest for name, digest in required.items()):
+        raise ValueError("Continuation omitted or rebased a preceding consumer file or retained partial output")
+    if [(c.get("id"), c.get("role")) for c in current.get("children", [])] != [(selected, "pixl:pixl")]:
+        raise ValueError("Continuation did not retain exactly the selected named child")
+    journals, appended, prefixes = {}, {}, {}
+    for key in ("parent", selected):
+        before = previous / "native-transcripts" / (key + ".jsonl")
+        after = resumed / "native-transcripts" / (key + ".jsonl")
+        if (prior.get("retained_transcripts", {}).get(key) != file_reference(before)
+                or current.get("retained_transcripts", {}).get(key) != file_reference(after)):
+            raise ValueError("Native journal does not match its recorded reference")
+        old_bytes, new_bytes = before.read_bytes(), after.read_bytes()
+        if not old_bytes.endswith(b"\n") or not new_bytes.startswith(old_bytes) or len(new_bytes) <= len(old_bytes):
+            raise ValueError("Original native journal is not an exact nonempty prefix of the continuation")
+        journals[key] = rows(after)
+        appended[key] = journals[key][len(old_bytes.splitlines()):]
+        if not appended[key]:
+            raise ValueError("Continuation has no appended native activity")
+        prefixes[key] = {"previous": file_reference(before), "continued": file_reference(after),
+                         "previous_lines": len(old_bytes.splitlines()), "appended_rows": len(appended[key])}
+    child = journals[selected]
+    if any(row.get("agentId") != selected or row.get("sessionId") != continuation["session_id"]
+           for row in child if "agentId" in row):
+        raise ValueError("Continued child journal contains another child or session")
+    return {"continuation": continuation, "proof": {**proof, "native_prefixes": prefixes}, "identity": identity,
+            "parent": journals["parent"], "children": [child],
+            "new_parent": appended["parent"], "new_child": appended[selected]}
+
+
+def continued_journals(previous: Path, resumed: Path, selected: str) -> dict:
+    """Validate every additive link from the original case to the latest process."""
+    previous, resumed = previous.resolve(), resumed.resolve()
+    chain, visited, current = [resumed], set(), resumed
+    while current != previous:
+        if current in visited or len(visited) >= 32:
+            raise ValueError("Continuation predecessor chain is cyclic or too long")
+        visited.add(current)
+        predecessor = read(current / "launch.json").get("predecessor")
+        if not isinstance(predecessor, dict) or "path" not in predecessor:
+            raise ValueError("Continuation does not lead back to the original case")
+        path = Path(predecessor["path"]).resolve()
+        if path.name != "continuation.json" or file_reference(path) != predecessor:
+            raise ValueError("Continuation predecessor reference changed")
+        current = path.parent
+        chain.append(current)
+    chain.reverse()
+    if len(chain) < 2:
+        raise ValueError("Continuation must be a fresh attempt")
+    proofs, result = [], None
+    for before, after in pairwise(chain):
+        result = _continued_pair(before, after, selected)
+        proofs.append(result["proof"])
+    result["proof"] = {**result["proof"], "continuation_chain": proofs}
+    return result
+
+
+def caller_report_path(root, relative):
+    path = Path(relative)
+    if path.is_absolute() or not (root / path).resolve().is_relative_to((root / WORK).resolve()):
+        raise ValueError("Caller report must remain project-relative under work/compact-caller")
+    return root / path
+
+
+def _grade(attempt: Path, continuation_attempt: Path | None = None, *, caller_report=WORK + "/CALLER-RESULT.json", host_results=()) -> dict:
     attempt = attempt.resolve()
     launch, identity, continuation = (read(attempt / n) for n in ("launch.json", "identity.json", "continuation.json"))
     root = Path(launch["cwd"])
-    caller = read(root / WORK / "CALLER-RESULT.json")
+    caller_path = caller_report_path(root, caller_report)
+    caller = read(caller_path)
+    selected = reported_child(caller.get("native_child"), launch["host"])
     checks = []
     def check(name, passed, evidence=None):
         checks.append({"check": name, "pass": bool(passed), "evidence": evidence})
     all_journals = [rows(p) for p in sorted(attempt.glob("native-*.jsonl"))]
     all_journals += [rows(p) for p in sorted((attempt / "native-transcripts").glob("*.jsonl"))]
     stdout = rows(attempt / "stdout.jsonl")
+    continued = None
+    if continuation_attempt is not None:
+        continuation_attempt = continuation_attempt.resolve()
+        continued = continued_journals(attempt, continuation_attempt, selected)
+        continuation = continued["continuation"]
+        check("same_parent_child_continuation_and_unchanged_predecessor_verified", True, continued["proof"])
+        all_journals += [continued["parent"], *continued["children"]]
+        stdout = rows(continuation_attempt / "stdout.jsonl")
     if launch["host"] == "codex":
         parent = next((j for j in all_journals if j and j[0].get("type") == "session_meta"
                        and j[0].get("payload", {}).get("id") == continuation["session_id"]), [])
         role = tomllib.loads((root / ".codex/agents/pixl.toml").read_text(encoding="utf-8"))["developer_instructions"]
-        proof = codex_role_proof(all_journals, continuation["session_id"], child_identity(caller.get("native_child")), role)
+        proof = codex_role_proof(all_journals, continuation["session_id"], selected, role)
         child_ids = {c["id"] for c in proof["selected_children"]}
         child_journals = [j for j in all_journals if j and j[0].get("payload", {}).get("id") in child_ids]
         check("actual_named_child_loaded_and_completed", proof["loaded"] and proof["completed"],
               {k: v for k, v in proof.items() if k != "child_text"})
     else:
-        parent = [r for r in stdout if not r.get("parent_tool_use_id") and not r.get("agent_id")]
+        parent = continued["parent"] if continued else [r for r in stdout if not r.get("parent_tool_use_id") and not r.get("agent_id")]
         children = continuation.get("children", [])
-        child_journals = [j for j in all_journals if j and Path(j[0]["file"]).stem.removeprefix("agent-") == child_identity(caller.get("native_child"))]
-        check("actual_named_child_completed", any(c.get("id") == child_identity(caller.get("native_child")) and c.get("role") == "pixl:pixl" for c in children)
-              and any(c.get("tool") == "Agent" and c.get("role") == "pixl:pixl" and c.get("result_line")
-                      and not c.get("is_error") for c in continuation.get("calls", [])), children)
+        child_journals = continued["children"] if continued else [j for j in all_journals if j and Path(j[0]["file"]).stem.removeprefix("agent-") == selected]
+        if continued:
+            completion = async_completion(stdout, continued["new_parent"], continued["new_child"], selected,
+                                          continuation["session_id"], resumed=True)
+        else:
+            from evaluations.grade_plar_coverage import claude_completion
+            completion = claude_completion(parent, selected)
+            if not completion:
+                native_parent = rows(attempt / "native-transcripts/parent.jsonl")
+                completion = async_completion(stdout, native_parent, [row for journal in child_journals for row in journal],
+                                              selected, continuation["session_id"])
+        check("actual_named_child_completed", any(c.get("id") == selected and c.get("role") == "pixl:pixl" for c in children)
+              and bool(completion), completion)
         loading = claude_loading_proof(child_journals, root / KIT)
         check("selected_claude_child_loaded_current_skill_and_profile", all(p["loaded"] for p in loading.values()), loading)
     calls = bind_exports(mcp_calls([parent]), root)
     child_calls = bind_exports(mcp_calls(child_journals), root)
+    if launch["host"] == "claude" and host_results:
+        calls = bind_retained(calls, continuation["session_id"], host_results)
+        child_calls = bind_retained(child_calls, continuation["session_id"], host_results)
     values = {}
     for name in ("compact", "receipt", "parent_receipt", "details_read", "resume_read", "refresh", "unknown_recovery", "stale_recovery", "specialist_result"):
         values[name] = semantic_result(read(reference(root, caller[name])))
@@ -247,9 +504,10 @@ def _grade(attempt: Path) -> dict:
     check("selected_child_created_both_actual_public_views", bool(matching_calls(child_calls, "pixl_plar_handoff", compact, {**handoff_args, "view": "caller"}))
           and bool(matching_calls(child_calls, "pixl_plar_handoff", receipt, {**handoff_args, "view": "receipt"})))
     specialist = values["specialist_result"]
-    check("specialist_result_binds_actual_child_and_artifacts", specialist.get("native_child") == caller.get("native_child")
+    check("specialist_result_binds_actual_child_and_artifacts", bool(selected) and reported_child(specialist.get("native_child"), launch["host"]) == selected
           and specialist.get("compact") == caller["compact"] and specialist.get("receipt") == caller["receipt"]
-          and reference(root, specialist["detailed_report"]).is_file())
+          and reference(root, specialist["detailed_report"]).is_file(),
+          {"selected": selected, "specialist_reported_identity": specialist.get("native_child"), "caller_reported_identity": caller.get("native_child")})
     same = all(r.get("path") == compact["path"] and r.get("sha256") == compact["sha256"] for r in (receipt, parent_receipt))
     check("same_immutable_snapshot_in_all_three_views", same, {"path": compact["path"], "sha256": compact["sha256"]})
     check("retained_detailed_observations_exact", snapshot["details"].get("retained_specialist_observations")
@@ -264,9 +522,9 @@ def _grade(attempt: Path) -> dict:
           and all(set(r) == {"path", "sha256", "role"} and reference(root, r).is_file() for r in authored_refs))
     size = len(json.dumps(compact, ensure_ascii=False, separators=(",", ":")).encode())
     check("bounded_return_smaller_than_its_full_snapshot", size < snapshot_path.stat().st_size
-          and (root / WORK / "CALLER-RESULT.json").stat().st_size <= 8192,
+          and caller_path.stat().st_size <= 8192,
           {"compact_utf8_bytes": size, "full_same_snapshot_bytes": snapshot_path.stat().st_size,
-           "caller_report_bytes": (root / WORK / "CALLER-RESULT.json").stat().st_size})
+           "caller_report_bytes": caller_path.stat().st_size})
     check("authored_partial_does_not_override_delivered_production", compact.get("assignment") == {"status": "partial", "basis": "agent_authored"}
           and compact["next"] == snapshot["next"] == "delivered"
           and compact["production"].get("delivery_complete") is True
@@ -302,7 +560,7 @@ def _grade(attempt: Path) -> dict:
     check("parent_safely_continued_with_returned_guards", bool(parent_saves), parent_saves)
     errors = caller.get("errors", {})
     check("all_five_observed_error_categories_returned", set(errors) == CATEGORIES, sorted(errors))
-    failed_call_lines = []
+    observed_errors = {}
     for category in sorted(CATEGORIES):
         saved = read(reference(root, errors[category]))
         observed = error_object(saved)
@@ -310,7 +568,8 @@ def _grade(attempt: Path) -> dict:
         if category == "missing_capability":
             protocol = rows(root / WORK / "missing-capability-protocol.jsonl")
             returned = next((r for r in protocol if r.get("id") == 2), {})
-            native = command_proofs(parent, "missing_capability_probe.py", {k: v for k, v in returned.items() if k not in ("file", "line")})
+            native = command_proofs(parent, "missing_capability_probe.py", {k: v for k, v in returned.items() if k not in ("file", "line")},
+                                    root=root, expected_helper=root / INPUTS / "missing_capability_probe.py")
             passed = passed and error_object(returned) == observed and bool(native)
             evidence = {"error": observed, "native": native}
         else:
@@ -319,23 +578,29 @@ def _grade(attempt: Path) -> dict:
             server = "pixl_unknown" if category == "uncertain_remote_result" else "pixl_local"
             native = matching_calls(calls, tool, observed, server=server)
             passed = passed and bool(native)
-            failed_call_lines += [r["line"] for r in native]
             evidence = {"error": observed, "native": native}
+        observed_errors[category] = native
         check("parent_observed_" + category, passed, evidence)
     unknown_error = error_object(read(reference(root, errors["uncertain_remote_result"])))
     recovery = unknown_error["recovery"]
     check("unknown_job_actual_identity_preserved_and_read", unknown_error.get("identity", {}).get("job_id") == "member.job"
           and unknown_error.get("identity", {}).get("job_state") == "unknown"
           and caller.get("unknown_job_id") == "member.job" and caller.get("unknown_job_state") == "unknown"
-          and bool(matching_calls(calls, recovery["operation"], values["unknown_recovery"], recovery["arguments"], "pixl_unknown")))
+          and bool(matching_calls(calls, recovery["operation"], recovery_result(values["unknown_recovery"], recovery, "pixl_unknown"),
+                                  recovery["arguments"], "pixl_unknown")))
     stale_error = error_object(read(reference(root, errors["stale_local_state"])))
     recovery = stale_error["recovery"]
     stale_reads = refresh_proofs(calls, values["stale_recovery"], recovery["arguments"]) if recovery["operation"] == "pixl_plar_read" else []
-    check("parent_followed_stale_recovery_before_guarded_continuation", bool(stale_reads) and bool(parent_saves)
-          and max(p["line"] for p in parent_saves) > max([p["line"] for p in stale_reads] + failed_call_lines))
+    chronology = ordered_recovery_proof(observed_errors, stale_reads, parent_saves)
+    check("parent_followed_stale_recovery_before_guarded_continuation", bool(chronology), chronology)
     illegal = prohibited_attempts(all_journals + [stdout])
     check("no_provider_or_acceptance_mutation_observed", not illegal, [{k: c[k] for k in ("file", "line", "tool", "server")} for c in illegal])
     current = inventory(root, ("__pycache__",))
+    if continued:
+        resumed_inputs = continued["identity"]["resume_inputs"]
+        changed = [p for p, digest in resumed_inputs.items() if current.get(p) != digest]
+        check("every_pre_resume_consumer_file_including_partial_outputs_preserved", not changed,
+              {"files": len(resumed_inputs), "changed": changed})
     drift = [p for p, digest in identity["inputs"].items() if current.get(p) != digest]
     unexpected = [p for p in current if p not in identity["inputs"] and not p.startswith((WORK + "/", ".pixl/handoffs/"))]
     check("all_prior_inputs_and_both_production_histories_preserved", not drift and not unexpected, {"changed": drift, "unexpected": unexpected})
@@ -349,9 +614,9 @@ def _grade(attempt: Path) -> dict:
             "scope": "One compact caller continuation and actual rejected local operations. Controlled unknown job is fictional and remains unresolved. No new provider, artistic or renderer acceptance."}
 
 
-def grade(attempt: Path) -> dict:
+def grade(attempt: Path, continuation: Path | None = None, *, caller_report=WORK + "/CALLER-RESULT.json", host_results=()) -> dict:
     try:
-        return _grade(attempt)
+        return _grade(attempt, continuation, caller_report=caller_report, host_results=host_results)
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
         return {"version": 1, "status": "fail", "passed": 0, "total": 1,
                 "checks": [{"check": "required_evidence_readable", "pass": False, "evidence": f"{type(error).__name__}: {error}"}]}
@@ -360,11 +625,14 @@ def grade(attempt: Path) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("attempt", type=Path)
+    parser.add_argument("--continuation", type=Path)
+    parser.add_argument("--caller-report", default=WORK + "/CALLER-RESULT.json")
+    parser.add_argument("--host-results", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
         raise ValueError("Preserve prior grades; use a fresh output")
-    result = grade(args.attempt)
+    result = grade(args.attempt, args.continuation, caller_report=args.caller_report, host_results=args.host_results)
     write_json(args.output, result)
     print(json.dumps({k: result[k] for k in ("status", "passed", "total")}))
     raise SystemExit(result["status"] != "pass")

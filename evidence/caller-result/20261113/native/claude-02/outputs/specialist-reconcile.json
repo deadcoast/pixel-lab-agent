@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "kind": "specialist_reconciliation",
+  "observed_at": "2026-11-13T22:41:38.656036+00:00",
+  "assignment": "QOL-10/SC-08 compact-result evaluation, SPECIALIST part, resumed after HTTP 429 / host timeout interruption. Read-only reconciliation of the session-1 outputs; no provider call, acceptance, commit or edit of existing files.",
+  "identities": {
+    "asset_id": "queue.working",
+    "plar_path": "authoring-plar.txt",
+    "store": ".pixl/assets/queue.ready",
+    "state_hash": "88d77c62b47eb8fef5d35015973f67b0f38731cb04e54430efa36aec4b898d64",
+    "revision": 108,
+    "requirements_hash": "ec61d688f752ac1280914d22ba75bdb4e8f7e31c42b18d7d62f7a14038eedea5",
+    "plar_file_sha256": "caa672cc5f42589ac61c6d0b61ad9291b00c6405a74af83e2633280829bb51c1"
+  },
+  "snapshot": {
+    "path": ".pixl/handoffs/0f2d80cdc1fdd13c94544116899c9ff053ee061a603d1974997df9194a8765a3.json",
+    "sha256": "0f2d80cdc1fdd13c94544116899c9ff053ee061a603d1974997df9194a8765a3"
+  },
+  "checks": {
+    "handoff_file_exists": true,
+    "handoff_file_sha_matches_compact": true,
+    "handoff_details_equals_details_json": true,
+    "handoff_identities": true,
+    "compact_identities_current": true,
+    "plar_read_02_identities_current": true,
+    "plar_read_02_byte_identical_to_session1": true,
+    "receipt_names_same_snapshot": true,
+    "receipt_identities": true,
+    "no_new_handoff_created_by_receipt_call": true,
+    "preserved_session1_files_unchanged": true,
+    "unknown_fixture_read_only_state": true
+  },
+  "helper_verify_02": {
+    "ref": {
+      "path": "work/compact-caller/helper_verify_02.py",
+      "sha256": "61ad7f826f42d0cc375808d438cc4e4dca2c08133e14e5db2241d0af0e84ddff"
+    },
+    "result": "172 checks, 1 flagged item (see interpretation_notes)"
+  },
+  "interpretation_notes": [
+    "SPECIALIST-REPORT.json stale_plan01.diagnostic_state cites .pixl/assets/queue.ready/state.px with sha256 07110fbe5dd6df111c2637ea00acee3a24af0e9614f9e99f4b369e8d9dbc718c and revision 92. That value is the canonical state hash recorded in work/artistic-revision/request-review-02.json when plan01 was diagnosed (historical identity), not the current state.px file hash. The current canonical state hash is 88d77c62... revision 108. The report is retained unchanged; read that field as a historical canonical_state_sha256.",
+    "The fresh pixl_plar_read return (specialist-plar-read-02.json) is byte-identical to the session-1 return; the state did not change between sessions.",
+    "The receipt-view call used details equal in parsed value to details.json; the runtime returned the identical immutable snapshot and created no new handoff file."
+  ],
+  "tool_returns": [
+    {
+      "path": "work/compact-caller/specialist-plar-read-02.json",
+      "sha256": "3dccfd43851c41b036281bf4def05789a50791c91c28dd2b19c778d4b2ff34f2",
+      "role": "pixl_plar_read asset_id=queue.working path=authoring-plar.txt (session 2, exact return bytes)"
+    },
+    {
+      "path": "work/compact-caller/receipt.json",
+      "sha256": "6878691886ac3ab0221a5f03fd7efea96f12e6ce32f7ccfdf437f90cdd33e0e3",
+      "role": "pixl_plar_handoff view=receipt (tool-saved result_path)"
+    },
+    {
+      "path": "work/compact-caller/compact.json",
+      "sha256": "ff5c2289915ce12c26cc69073759f6254e154d341a631465d262ff8720900687",
+      "role": "pixl_plar_handoff view=caller (session 1, preserved)"
+    }
+  ],
+  "controlled_unknown_fixture": {
+    "label": "CONTROLLED FICTIONAL FIXTURE, NOT PRODUCTION",
+    "root": "controlled-unknown",
+    "store": ".pixl",
+    "job_id": "member.job",
+    "state": "unknown",
+    "remote_id": null,
+    "provider": "fictional-fixture",
+    "next_action": "reconcile",
+    "state_hash": "3ab0c1633edbf21977744bab59eb2a15b2cd8dc81424ea3cfe6c569d5f35e0a9",
+    "revision": 9,
+    "touched_this_session": false,
+    "evidence": {
+      "path": "work/compact-caller/specialist-unknown-jobs.json",
+      "sha256": "f9f66ef22ed70581d2b3edfe77fa71f9377e76153209b3682bfc8ba8f1cf15ad"
+    }
+  }
+}
