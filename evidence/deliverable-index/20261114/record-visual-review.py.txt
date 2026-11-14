@@ -1,0 +1,26 @@
+"""Record the root evaluator's limited still-image observations after opening exact files."""
+import hashlib
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "visual-review-01.json"
+OBSERVATIONS = {
+    "evidence/deliverable-index/20261114/cold-01/project/assets/robot-idle/east-4.png":
+        "Opened the original endpoint PNG. It is a small dark blue silhouette with a narrow cyan panel; no new artwork or subjective quality approval was requested.",
+    "evidence/deliverable-index/20261114/cold-01/project/work/capture-01/screen-east-idle-1x-0.png":
+        "The native-scale surface displays the supplied silhouette and frame 1 of 5 / 800 ms / 1x, with usable clip, playback, stepping and scale controls.",
+    "evidence/deliverable-index/20261114/cold-02/project/work/capture-01/screen-east-idle-1x-2.png":
+        "The final native-scale capture displays frame 3 of 5 / 160 ms / 1x within the declared viewport; the controls and artwork are visible without an error or placeholder.",
+    "evidence/deliverable-index/20261114/cold-02/project/work/capture-01/screen-east-idle-3x-4.png":
+        "The final enlarged capture displays frame 5 of 5 / 400 ms / 3x. The retained endpoint silhouette and cyan panel match the inspected original; integer enlargement and placement are visible.",
+}
+if OUT.exists():
+    raise ValueError("Preserve the earlier review")
+with OUT.open("x", encoding="utf-8") as stream:
+    json.dump({"observed_at": datetime.now(UTC).isoformat(), "reviewer": "root development evaluator",
+               "scope": "Actual image-tool inspection of these stills only. Automated pixel/playback checks are separate; no continuous video viewing, new artistic acceptance or human acceptance.",
+               "images": [{"path": path, "sha256": hashlib.sha256((ROOT / path).read_bytes()).hexdigest(),
+                           "observation": observation} for path, observation in OBSERVATIONS.items()]}, stream, indent=2)
+    stream.write("\n")

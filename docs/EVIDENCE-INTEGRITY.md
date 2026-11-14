@@ -44,13 +44,22 @@ results separate. Do not regenerate old evidence, overwrite a failed receipt or
 change an expected hash simply to obtain a zero exit code.
 
 The [TM-10 qualification](../evidence/release-integrity/README.md) exercises the
-actual checkout and isolated changed inputs. Its current declaration covers 15
-claims and 54 receipts: two current setup/install claims, eleven historical
+actual checkout and isolated changed inputs. Its original declaration covered 15
+claims and 54 receipts: two then-current setup/install claims, eleven historical
 outcomes and two stale maintenance claims. The old full-suite and NF-04 reviews
 retain their passing outcomes; current applicability needs review. The exact
 retained sdist also has a changed README input. These are expected inspection
 findings, preserved alongside the 65 passing focused tests, one Windows
 privilege skip and ten successful CLI qualification cases.
+
+The [NF-07 update](../evidence/deliverable-index/README.md) adds two reviewed claims
+and three receipts, keeping every prior registry entry: 17 claims and 57 receipts.
+`NF-07-CONSUMER` checks the final-source cold caller; `NF-07-FULL-VERIFICATION`
+checks the new full-suite inputs and bundle identity. Both are intact and current
+in the [retained inspection](../evidence/deliverable-index/20261114/integrity-02/report.json).
+The newer runtime/bundle makes the earlier setup/install bindings stale, alongside
+the old maintenance claims. The overall report therefore still needs review;
+historical failures and previous successful outcomes retain their original scope.
 
 ## What is checked
 

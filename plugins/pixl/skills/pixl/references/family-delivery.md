@@ -167,6 +167,47 @@ Commit a handoff containing the state path and observed revision/hash, family ou
 
 A cold session starts with `family`, `workflow` and `jobs` against that root, then retrieves focused `context` and opens the cited artifacts and observations. Reconcile unknown jobs first, review reported plan/selection drift before new evaluation, and execute only the outstanding check or revision. Mark the delivery T done only after every declared criterion on its current nominee passes and prerequisites are done. Finish with the useful files, actual verification, unresolved limits and actionable handoff, without claiming art quality or engine readiness from local fixtures.
 
+## Give a consumer the named package
+
+For integration without reading internal state records, request the
+[consumer deliverable index](../../../resources/spec/deliverable-index.md):
+
+```text
+family STATE OUTPUT --view consumer --root ROOT --result-path FRESH_INDEX_JSON
+```
+
+Use MCP `pixl_family` with `path`, explicit `output`, `view: "consumer"` and an
+optional fresh consumer-relative `result_path`. Omit `candidate` to select the
+current nominee; use CLI `--candidate` / MCP `candidate` only to inspect a specific
+retained package. A missing nominee returns no package and an unresolved reason;
+it does not choose the latest snapshot. The default complete family report remains
+the route for full history.
+
+Open the exact saved JSON. Give the caller its manifest, each `assets[].path` and
+any `integration.sources[].path` required by the saved destination or member
+contract choices. Check the named hashes and byte lengths when transferring them.
+Preserve the exported relative layout or retain an explicit verified copy mapping.
+A package-only caller can use those files, names, contracts, choices, sources and
+current review without opening `state.px`. Producer state/refresh locators remain
+available for later continuation; they are not prerequisites for reading the handoff.
+
+Use `integration.choices` for the actual recorded key, value, status and rationale;
+open its cited source files before interpreting slicing, frame order, timing or
+pivot behavior. An authored consumer module may hold that contract. Transfer the
+exact cited module when it is needed; do not substitute an inferred layout.
+The index's `metadata` preserves opaque X.mt with `not_interpreted` or
+`not_declared` layout status. Dimensions, kind, filenames and lineage alone do not
+supply missing frame, timing or pivot facts. Old/current source and choice bindings
+stay visible; unresolved or unavailable source information needs explicit follow-up.
+
+Read `package.creation_acceptance` separately from each candidate's current
+`review`, the family's `current_eligible` and `unresolved`. An old package's
+creation `accepted: false` remains recorded after later review;
+a current eligible result covers only the saved declared criteria at this state
+hash. Package validity, metadata and transfer checks do not run the consumer or
+supply artistic, engine or human acceptance. Retain the exported index and refresh
+through its exact arguments after relevant producer-state changes.
+
 ## Saving family results
 
 Use MCP `result_path` or CLI `--result-path` on family, family-snapshot and

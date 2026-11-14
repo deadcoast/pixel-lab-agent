@@ -1,0 +1,43 @@
+"""Separate NF-07 lint from the retained broad lint failure on unchanged files."""
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "maintenance-02"
+BASE = "724af6800c7c8a3bd517ffc6472e25cc4c3f320a"
+SCOPED = ["pixl/deliverable_index.py", "pixl/service.py", "pixl/cli.py", "pixl/mcp.py",
+          "scripts/family_probe.py", "tests/test_deliverable_index.py", "evaluations/deliverable_index_case.py"]
+
+
+def main():
+    OUT.mkdir(exist_ok=False)
+    commands = []
+    for name, targets in (("scoped", SCOPED), ("broad", ["pixl", "scripts", "tests", "evaluations"])):
+        argv = [sys.executable, "-B", "-m", "ruff", "check", "--output-format=json", *targets]
+        result = subprocess.run(argv, cwd=ROOT, capture_output=True, check=False)
+        (OUT / (name + ".json")).write_bytes(result.stdout)
+        (OUT / (name + ".stderr.txt")).write_bytes(result.stderr)
+        commands.append({"name": name, "argv": argv, "returncode": result.returncode})
+    findings = json.loads((OUT / "broad.json").read_bytes())
+    files = {}
+    for finding in findings:
+        path = Path(finding["filename"]).resolve()
+        relative = path.relative_to(ROOT).as_posix()
+        previous = subprocess.check_output(["git", "show", BASE + ":" + relative], cwd=ROOT)
+        files[relative] = {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                           "baseline_sha256": hashlib.sha256(previous).hexdigest(),
+                           "unchanged": previous == path.read_bytes()}
+    report = {"status": "pass" if commands[0]["returncode"] == 0 and all(r["unchanged"] for r in files.values()) else "fail",
+              "scope": "NF-07 changed-code lint and byte-identity classification only. Broad Ruff remains failed; no suppression or repair was applied.",
+              "baseline": BASE, "commands": commands, "broad_status": "fail" if findings else "pass",
+              "broad_finding_count": len(findings), "finding_files": files,
+              "scoped_source_hashes": {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in SCOPED}}
+    (OUT / "RESULT.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({key: report[key] for key in ("status", "broad_status", "broad_finding_count", "finding_files")}))
+
+
+if __name__ == "__main__":
+    main()

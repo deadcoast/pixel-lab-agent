@@ -208,8 +208,8 @@ TOOLS = [
     ),
     (
         "pixl_family",
-        "Verify retained family files and report baseline, member selection and lineage, destination requirements, pending jobs and drift. Lineage describes retained evidence, not authenticated remote execution. No acceptance or remote action.",
-        schema({"path": STR, "output": STR}, ["path"]),
+        "Verify retained family files and report selection, lineage, requirements and drift. view=consumer requires output and returns one named package index with declared layout metadata, current review and unresolved conditions. candidate selects a historical package; otherwise use the current nominee. No acceptance or remote action.",
+        schema({"path": STR, "output": STR, "view": {"enum": ["complete", "consumer"]}, "candidate": STR}, ["path"]),
     ),
     (
         "pixl_family_snapshot",

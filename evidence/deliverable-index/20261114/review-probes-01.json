@@ -1,0 +1,77 @@
+{
+  "scope": "Independent synthetic consumer-index edge-case checks; no native qualification, art or acceptance claim.",
+  "observations": [
+    {
+      "name": "remote_source_is_explicit_without_fetch_or_mutation",
+      "pass": true,
+      "all_required_pass": true,
+      "current_eligible": false,
+      "source": {
+        "id": "source",
+        "uri": "https://example.invalid/synthetic-source.txt",
+        "sha256": "71112fed673b6bbb2d00405505e8166c7b703569760b7f9337014691b87124e5",
+        "lines": [
+          1,
+          1
+        ],
+        "authority": "local",
+        "record_sha256": "4dd7093d1492af64fd14ae712a851cbb6d598d542a9a0bbf9664cf8063020d43",
+        "saved_record_sha256": "4dd7093d1492af64fd14ae712a851cbb6d598d542a9a0bbf9664cf8063020d43",
+        "current_binding": true,
+        "path": null,
+        "bytes": null,
+        "observed_sha256": null,
+        "status": "remote_not_observed"
+      },
+      "unresolved": [
+        {
+          "code": "integration_source_unavailable",
+          "subject": "source",
+          "detail": "Remote source bytes were not observed; this local view performs no remote requests."
+        }
+      ]
+    },
+    {
+      "name": "lost_live_plar_blocks_eligibility_after_passing_reviews",
+      "pass": true,
+      "all_required_pass": true,
+      "current_eligible": false,
+      "selection_bindings": [
+        {
+          "task": "delivery.task",
+          "input": "selection",
+          "snapshot": "selection.json",
+          "asset_id": "queue.start",
+          "binding": "pixl.plar.selection/1",
+          "plar_path": "plar.txt",
+          "requirements_hash": "3aa675af99e78600a9b77079868c14d0aabccacb7861cc2dfa651232308200a1",
+          "status": "unavailable",
+          "reason": "plar_read: C:\\Users\\ryanf\\AppData\\Local\\Temp\\tmp01ut0vbv\\plar.txt"
+        }
+      ],
+      "unresolved": [
+        {
+          "code": "selection_not_current",
+          "subject": "delivery.task",
+          "detail": {
+            "task": "delivery.task",
+            "input": "selection",
+            "snapshot": "selection.json",
+            "asset_id": "queue.start",
+            "binding": "pixl.plar.selection/1",
+            "plar_path": "plar.txt",
+            "requirements_hash": "3aa675af99e78600a9b77079868c14d0aabccacb7861cc2dfa651232308200a1",
+            "status": "unavailable",
+            "reason": "plar_read: C:\\Users\\ryanf\\AppData\\Local\\Temp\\tmp01ut0vbv\\plar.txt"
+          }
+        }
+      ]
+    }
+  ],
+  "prior_probe_attempt": {
+    "exit_code": 1,
+    "stage": "Synthetic fixture preparation for missing PLAR before completion",
+    "error": "pixl.codec.PixlError: plar_selection: delivery.task: current consumer requirements differ or are unavailable; retain the old review and compare a revised contract",
+    "interpretation": "Existing store transition correctly rejected completing a task whose PLAR was already unavailable. Corrected probe starts with a valid live PLAR, completes reviews, then removes only the live PLAR file to exercise index-time drift. Remote-source assertions had passed before this fixture failure but are rerun and reported above."
+  }
+}

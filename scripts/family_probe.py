@@ -139,6 +139,27 @@ def run_family_probe(invoke, project):
     require(manifest_path.read_bytes() == manifest_bytes, "lineage rewrote manifest")
     checks.append({"command": "family", "check": "derived member lineage preserves exact identities and manifest bytes", "status": "pass"})
 
+    index = cli(
+        "consumer index exposes exact retained files without accepting unfinished work",
+        "family", state, "delivery.output", "--root", root,
+        "--view", "consumer", "--candidate", "portable.package",
+    )
+    require(
+        index["schema"] == "pixl.deliverable-index/1"
+        and not index["family"]["current_eligible"]
+        and index["package"]["creation_acceptance"]["accepted"] is False
+        and len(index["assets"]) == len(manifest["files"])
+        and any(row["code"] == "review_unperformed" for row in index["unresolved"]),
+        "consumer view lost unperformed review or invented acceptance",
+    )
+    for asset in index["assets"]:
+        require(
+            sha256((project / asset["path"]).read_bytes()).hexdigest() == asset["sha256"]
+            and asset["name"] and asset["source_path"],
+            "consumer index named file identity differs",
+        )
+    require(manifest_path.read_bytes() == manifest_bytes, "consumer index rewrote manifest")
+
     task["ca"] = [{"$ref": "portable.package"}]
     task["vr"] = [{"$ref": "portable.engine"}]
     document["records"].append(
@@ -190,6 +211,18 @@ def run_family_probe(invoke, project):
     )
     require(
         manifest_path.read_bytes() == manifest_bytes, "historical manifest rewritten"
+    )
+    historical_index = cli(
+        "consumer index preserves exact historical files and exposes plan drift",
+        "family", state, "delivery.output", "--root", root,
+        "--view", "consumer", "--candidate", "portable.package",
+    )
+    require(
+        historical_index["package"]["stale"]
+        and len(historical_index["assets"]) == len(index["assets"])
+        and not historical_index["family"]["current_eligible"]
+        and any(row["code"] == "package_stale" for row in historical_index["unresolved"]),
+        "consumer view hid historical files or plan drift",
     )
     revised = cli(
         "retain a new snapshot against the saved amended plan",

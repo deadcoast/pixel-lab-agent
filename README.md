@@ -12,6 +12,18 @@ PIXL is a pixel-art production agent profile and skill system for Claude and Cod
 
 **Candidate/family review:** [review-context and candidate-review](spec/candidate-review.md) expose literal criteria and exact bindings, retain explicit observations, and connect nomination/completion with recoverable retries. The specialist still supplies actual visual and destination judgments. Prepared inspection packets retain their existing view-coverage rules.
 
+**Consumer deliverable index:** `family STATE OUTPUT --view consumer --root ROOT`
+(`pixl_family` with `view: "consumer"` and `output`) returns the current nominated
+package's named files, exact supporting sources, declared integration choices,
+current review and unresolved conditions. An explicit `--candidate` inspects a
+retained historical package; it never silently selects the newest snapshot.
+Export the full JSON and transfer its named files and required source modules for
+cold integration. The [index contract](spec/deliverable-index.md) separates
+immutable creation status from current review and keeps missing layout facts
+unresolved. [NF-07's final-source cold caller](evidence/deliverable-index/README.md)
+passes 43/43 independent checks with actual 1×/3× playback. Earlier source-drift
+and lint failures remain retained; artistic and human acceptance stay separate.
+
 **Isolated consumer execution:** [`consumer-execute`](spec/consumer-execution.md) runs the shipped queue-motion profile, checks actual frame/wrap and reduced-motion-switch observations, and retains exact delivered-file evidence. It leaves production state and acceptance unchanged. [TM-07 results and limits](evidence/consumer-execution/README.md) track the scoped qualification; M1/M2 and broader M3 remain open.
 
 **Historical HTTP integration milestone complete for the controlled test.** Claude and Codex each delegated to PIXL, submitted through the official HTTP adapter, retrieved and inspected the fixture, and saved an independent parent review. See the [recorded outcomes](evidence/delegated-asset-request/README.md) and [milestone contract](evaluations/delegated-asset-request.spec.md). Provider transport was simulated; these results establish the delivery workflow, not newly generated artwork or target-engine quality.

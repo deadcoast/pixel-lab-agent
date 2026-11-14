@@ -1,0 +1,177 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> pixl\plar_prepare.py:7:1
+   |
+ 5 |   """
+ 6 |
+ 7 | / import copy
+ 8 | | import json
+ 9 | | from datetime import UTC, datetime
+10 | | from hashlib import sha256
+11 | | from pathlib import Path
+12 | |
+13 | | from jsonschema import Draft202012Validator
+14 | |
+15 | | from . import (
+16 | |     codec,
+17 | |     graph,
+18 | |     jobs,
+19 | |     lifecycle,
+20 | |     plar,
+21 | |     plar_workflow,
+22 | |     platform,
+23 | |     preparation_focus,
+24 | |     store,
+25 | | )
+26 | | from .codec import PixlError, Record, Ref, Symbol
+27 | | from .adapter_versions import require_version
+   | |_____________________________________________^
+28 |
+29 |   SCHEMA = json.loads(
+   |
+help: Organize imports
+   |
+25 | )
+26 + from .adapter_versions import require_version
+27 | from .codec import PixlError, Record, Ref, Symbol
+   - from .adapter_versions import require_version
+28 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> pixl\production_review.py:3:1
+  |
+1 |   """Exact connected-plan evidence for the existing independent caller review."""
+2 |
+3 | / import json
+4 | | from pathlib import Path
+5 | |
+6 | | from . import adapter_versions, codec, graph, jobs, plar, platform, production_plan, retention, store
+7 | | from .codec import PixlError
+8 | | from .request_review import source_evidence
+  | |___________________________________________^
+help: Organize imports
+   |
+5  |
+   - from . import adapter_versions, codec, graph, jobs, plar, platform, production_plan, retention, store
+6  + from . import (
+7  +     adapter_versions,
+8  +     codec,
+9  +     graph,
+10 +     jobs,
+11 +     plar,
+12 +     platform,
+13 +     production_plan,
+14 +     retention,
+15 +     store,
+16 + )
+17 | from .codec import PixlError
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\test_adapter_compatibility.py:3:1
+   |
+ 1 |   """Saved adapter compatibility without reinterpretation, migration or acceptance."""
+ 2 |
+ 3 | / import copy
+ 4 | | import hashlib
+ 5 | | import json
+ 6 | | from pathlib import Path
+ 7 | | import tempfile
+ 8 | | import unittest
+ 9 | |
+10 | | from pixl import adapter_versions, authoring_context, codec, production_plan, production_review, store, successor_review
+11 | | from pixl.codec import PixlError
+12 | | from tests.family_support import family
+13 | | from tests.test_production_plan import packet, plan
+   | |___________________________________________________^
+help: Organize imports
+   |
+5  | import json
+   - from pathlib import Path
+6  | import tempfile
+7  | import unittest
+8  + from pathlib import Path
+9  |
+   - from pixl import adapter_versions, authoring_context, codec, production_plan, production_review, store, successor_review
+10 + from pixl import (
+11 +     adapter_versions,
+12 +     authoring_context,
+13 +     codec,
+14 +     production_plan,
+15 +     production_review,
+16 +     store,
+17 +     successor_review,
+18 + )
+19 | from pixl.codec import PixlError
+   |
+
+B023 Function definition does not bind loop variable `current`
+  --> tests\test_plar_preparation_focus.py:60:55
+   |
+58 |                 before = self.files()
+59 |                 operations = (
+60 |                     lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+   |                                                       ^^^^^^^
+61 |                                                        result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+62 |                     lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+   |
+
+B023 Function definition does not bind loop variable `candidate`
+  --> tests\test_plar_preparation_focus.py:61:72
+   |
+59 |                 operations = (
+60 |                     lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+61 |                                                        result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+   |                                                                        ^^^^^^^^^
+62 |                     lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+63 |                 )
+   |
+
+B023 Function definition does not bind loop variable `candidate`
+  --> tests\test_plar_preparation_focus.py:61:96
+   |
+59 |                 operations = (
+60 |                     lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+61 |                                                        result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+   |                                                                                                ^^^^^^^^^
+62 |                     lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+63 |                 )
+   |
+
+B023 Function definition does not bind loop variable `current`
+  --> tests\test_plar_preparation_focus.py:62:58
+   |
+60 |                     lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+61 |                                                        result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+62 |                     lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+   |                                                          ^^^^^^^
+63 |                 )
+64 |                 for operation in operations:
+   |
+
+B023 Function definition does not bind loop variable `candidate`
+  --> tests\test_plar_preparation_focus.py:62:94
+   |
+60 |                     lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+61 |                                                        result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+62 |                     lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+   |                                                                                              ^^^^^^^^^
+63 |                 )
+64 |                 for operation in operations:
+   |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> tests\test_plar_prepare.py:291:9
+    |
+289 |           # Interrupt before state publication so the retained intent can be read
+290 |           # without deliberately invalidating an already-bound artifact digest.
+291 | /         with patch("pixl.plar_prepare.store.initialize", side_effect=OSError("controlled before-state interruption")):
+292 | |             with self.assertRaises(OSError):
+    | |____________________________________________^
+293 |                   self.prepare()
+294 |           location = next((self.root / ".pixl/assets/queue.working/plans").glob("*.json"))
+    |
+help: Combine `with` statements
+
+Found 9 errors.
+[*] 3 fixable with the `--fix` option.

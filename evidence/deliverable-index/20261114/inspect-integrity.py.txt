@@ -1,0 +1,18 @@
+"""Retain a fresh stdout-only integrity observation after registering NF-07."""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "integrity-01"
+OUT.mkdir(exist_ok=False)
+command = [sys.executable, "-B", "scripts/check_integrity.py", "--json"]
+result = subprocess.run(command, cwd=ROOT, capture_output=True, check=False)
+(OUT / "report.json").write_bytes(result.stdout)
+(OUT / "stderr.txt").write_bytes(result.stderr)
+(OUT / "command.json").write_text(json.dumps({"argv": command, "returncode": result.returncode}, indent=2) + "\n", encoding="utf-8")
+report = json.loads(result.stdout)
+print(json.dumps({"returncode": result.returncode, "status": report["status"],
+                  "claims": [{"id": row["id"], "status": row["status"], "applicability": row["applicability"]}
+                             for row in report.get("claims", [])]}, indent=2))

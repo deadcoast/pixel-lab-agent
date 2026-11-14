@@ -40,6 +40,24 @@ Old packages are checked against their saved members and typed constituents, so 
 
 Family reports require a project root and include pending jobs for baseline/member/delivery tasks. Unrooted graph validation can check typed structure and current selection, but cannot read frozen manifest bindings or copied bytes; it does not establish current package validity. Store publication and family reports require rooted checks. Pending prepared/submitted/running/unknown work prevents a fresh snapshot and is routed through the provider recovery skill. A family that lacks confirmed destination or applicable adoption may still retain useful local accepted-member bytes; it cannot use that retention to activate or complete delivery. Continuity inspection, engine execution and human artistic approval remain actual obligations supplied by the task's declared Q and real observations.
 
+## Consumer deliverable view
+
+`family STATE OUTPUT --view consumer --root ROOT` / `pixl_family` with
+`view: "consumer"` projects one family's retained package into the
+[versioned deliverable index](deliverable-index.md). It requires an explicit output
+and defaults to its current nominated manifest, never the latest snapshot. An
+explicit candidate can inspect a historical package, with nomination and drift
+reported against current state. The default complete family report is unchanged.
+
+The index names retained members and their original source paths, exact byte
+identities, declared contracts and opaque metadata, supporting integration choices
+and source files, bounded lineage, current review and unresolved conditions.
+It separates the manifest's immutable creation acceptance from current review and
+eligibility. Export the index and transfer its required member/source files for
+package-only integration; a saved locator alone does not transfer those bytes.
+This read changes no manifest, ledger, nomination or acceptance and supplies no
+universal atlas, pivot or timing interpretation.
+
 ## Visible asset lineage
 
 Rooted `family` reports derive `lineage` beside each currently selected member and

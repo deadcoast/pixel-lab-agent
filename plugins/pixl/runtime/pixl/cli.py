@@ -132,6 +132,8 @@ def parser():
     )
     q.add_argument("path")
     q.add_argument("output", nargs="?")
+    q.add_argument("--view", choices=("complete", "consumer"), default="complete", help="Consumer view indexes one explicit family's retained package for integration.")
+    q.add_argument("--candidate", help="Explicit historical package candidate for consumer view; otherwise use the current nominee.")
     q.add_argument("--root", required=True)
     q = sub.add_parser(
         "family-snapshot",
@@ -425,7 +427,7 @@ def main(argv=None):
                 a.root,
             )
         elif cmd == "family":
-            output = service.family_report(a.path, a.root, a.output)
+            output = service.family_report(a.path, a.root, a.output, a.view, a.candidate)
         elif cmd == "family-snapshot":
             from . import delivery
 

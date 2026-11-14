@@ -382,11 +382,19 @@ def job_report(path, root):
     return _with_retained_sources(jobs.report(doc, root, Path(path).resolve().parent), doc, root)
 
 
-def family_report(path, root, output_id=None):
+def family_report(path, root, output_id=None, view="complete", candidate_id=None):
     """Verify retained family files and describe the current saved selection."""
     from . import delivery
 
+    if view not in ("complete", "consumer") or (candidate_id is not None and view != "consumer"):
+        raise PixlError("deliverable_view", "candidate selection requires family view consumer; supported views are complete and consumer")
+    if view == "consumer" and not output_id:
+        raise PixlError("deliverable_output", "consumer view requires an explicit family output")
     doc = load_document(path)
+    if view == "consumer":
+        from . import deliverable_index
+
+        return deliverable_index.report(doc, root, output_id, path, candidate_id)
     return _with_retained_sources(delivery.report(doc, root, output_id), doc, root)
 
 
@@ -541,7 +549,7 @@ def _call(name, args, root):
 
         return production_plan.prepare(path("store"), args["expect"], args["plan"], args["stage"], args["job"], args["packet"], root)
     if name == "pixl_family":
-        return family_report(path("path"), root, args.get("output"))
+        return family_report(path("path"), root, args.get("output"), args.get("view", "complete"), args.get("candidate"))
     if name == "pixl_family_snapshot":
         from . import delivery
 

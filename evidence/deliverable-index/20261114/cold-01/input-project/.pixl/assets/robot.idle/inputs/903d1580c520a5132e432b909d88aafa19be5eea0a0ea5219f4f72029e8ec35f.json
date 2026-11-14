@@ -1,0 +1,99 @@
+{
+  "provider": "pixellab",
+  "schema": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "description": "The motion (e.g. 'walking forward', 'flame flickering', 'chest opening'). Describe movement, not appearance.",
+        "maxLength": 1000,
+        "type": "string"
+      },
+      "frame_count": {
+        "default": 8,
+        "description": "Frames to generate — must be EVEN. 4 for idle loops, 8 for walk/run, 16 for complex actions. Large frames allow fewer frames.",
+        "maximum": 16,
+        "minimum": 4,
+        "type": "integer"
+      },
+      "first_frame_base64": {
+        "default": null,
+        "description": "Base64 PNG to animate — the first frame. Max 256x256. PREFER first_frame_url; MCP clients routinely truncate large inline base64.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "first_frame_url": {
+        "default": null,
+        "description": "Alternative to first_frame_base64: an https, data: or `upload:<id>` URL to the first frame PNG. PREFER THIS. Give one, not both.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "last_frame_base64": {
+        "default": null,
+        "description": "Optional final frame, same size as the first, to pin where the motion ends (interpolation instead of open-ended animation).",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "last_frame_url": {
+        "default": null,
+        "description": "Alternative to last_frame_base64: an https, data: or `upload:<id>` URL to the final frame PNG. Give one, not both.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "no_background": {
+        "default": null,
+        "description": "Background handling. Default (unset) follows the first frame: a transparent sprite animates on transparency, an opaque image stays opaque.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "seed": {
+        "default": null,
+        "description": "Seed for reproducible generation.",
+        "minimum": 0,
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "project_id": {
+        "default": null,
+        "description": "Internal Game Builder project context; the finished image is linked after generation.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "action"
+    ],
+    "type": "object"
+  },
+  "discovery": {
+    "source": "Official PixelLab MCP tools/list",
+    "observed_at": "2026-11-12T20:58:52.678994+00:00",
+    "evidence": {
+      "tool": "animate_image",
+      "inventory_sha256": "2ec4e0c91b83577909fbdb27143a762742ece735797684c50e2a9416b62d7ef2",
+      "inventory": "evidence/domain-art-revision/20261112/access/codex-01/tools-01.json",
+      "authentication": "Free authenticated operation failed with 401 Invalid API token; execution unavailable"
+    }
+  },
+  "authorization": {
+    "scope": "Current user CF-09 development assignment: useful actual-art robot idle production and scoped correction; this retained operation is local preparation only while official authentication fails.",
+    "evidence": {
+      "source": "CF-09-ROBOT-IDLE.md",
+      "sha256": "c310753ac2ea2e659446780e313014b015c8a1f4fcacaef6e681a4b8119673ef",
+      "user_direction": "Next: CF-09 useful actual-art revision; prioritize core-feature usability, human acceptance separate and M1/M2/broader M3/M4 open"
+    }
+  }
+}

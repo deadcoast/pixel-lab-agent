@@ -1,0 +1,38 @@
+"""Compare the two retained CLI projections without modifying either attempt."""
+import hashlib
+import json
+from pathlib import Path
+
+here = Path(__file__).resolve().parent
+paths = [here.parent / "cold-01/input-project/deliverable-index.json", here / "input-project/deliverable-index.json"]
+changes = []
+
+
+def walk(before, after, pointer=""):
+    if isinstance(before, dict) and isinstance(after, dict):
+        for key in sorted(before.keys() | after.keys()):
+            location = pointer + "/" + key
+            if key not in before:
+                changes.append({"pointer": location, "change": "added"})
+            elif key not in after:
+                changes.append({"pointer": location, "change": "removed"})
+            else:
+                walk(before[key], after[key], location)
+    elif isinstance(before, list) and isinstance(after, list) and len(before) == len(after):
+        for index, (old, new) in enumerate(zip(before, after)):
+            walk(old, new, pointer + "/" + str(index))
+    elif before != after:
+        changes.append({"pointer": pointer, "change": "changed"})
+
+
+walk(*(json.loads(path.read_bytes()) for path in paths))
+result = {
+    "status": "pass" if len(changes) == 18 and all(row["change"] == "added" for row in changes) else "fail",
+    "inputs": [{"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "bytes": path.stat().st_size} for path in paths],
+    "changes": changes,
+    "scope": "The final producer view adds 18 explicit current/saved family/output binding fields; existing values are identical. This comparison does not relabel the earlier native attempt as testing the final runtime.",
+}
+with (here / "projection-compare.json").open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2)
+    stream.write("\n")
+print(result["status"])

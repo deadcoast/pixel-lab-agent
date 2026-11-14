@@ -704,6 +704,41 @@
       "id": "tm08-claude-identity",
       "path": "evidence/domain-consumers/20261112/claude-01/identity.json",
       "sha256": "61b036e51e08bd2617b6f800d02d0967d0e9d79e8687859876087807c05a34f5"
+    },
+    {
+      "id": "nf07-native",
+      "path": "evidence/deliverable-index/20261114/cold-02/independent-01.json",
+      "sha256": "740fbdc84bd634f7e33d5ff3a638aa0f490499594f4b336611522024a0457052",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/passed",
+          "equals": 43
+        },
+        {
+          "pointer": "/total",
+          "equals": 43
+        }
+      ]
+    },
+    {
+      "id": "nf07-native-identity",
+      "path": "evidence/deliverable-index/20261114/cold-02/identity.json",
+      "sha256": "d20c1c1a4517be50129f272ecef6b7d3708f4b691fdd0f7c033fecc1bc7338b0"
+    },
+    {
+      "id": "nf07-full-verification",
+      "path": "evidence/verification-runs/20261114T152255.619054Z/result.json",
+      "sha256": "0d26027ce23155a3d91b8199ca9c0dddd4bb6b288bd227a3a90992eecb4048fe",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -1545,6 +1580,100 @@
           "path": "docs/CAPABILITY-OUTCOMES.md",
           "receipt": "nf04-coverage",
           "pointer": "/matrix/sha256"
+        }
+      ]
+    },
+    {
+      "id": "NF-07-CONSUMER",
+      "task": "Integrate a public deliverable index without internal production state",
+      "document": {
+        "path": "evidence/deliverable-index/README.md",
+        "anchor": "nf07-native-consumption",
+        "line_sha256": "ca6c089f0cda673d10c99143e96d1b2ac7e1bfb86418bbf5126472eff090f105"
+      },
+      "tier": "native package-only consumption and browser mechanics",
+      "scope": "One Codex 0.167.2 cold caller; five retained CF-09 images, exact cited authored module and both playback scales.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "No new provider execution, artistic improvement, Claude replay or other-engine qualification."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "nf07-native",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "nf07-native",
+        "nf07-native-identity"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "nf07-native-identity",
+          "pointer": "/source_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl"
+            ],
+            "suffixes": [
+              ".py",
+              ".json"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "NF-07-FULL-VERIFICATION",
+      "task": "Check NF-07 maintained source and distributable payloads",
+      "document": {
+        "path": "evidence/deliverable-index/README.md",
+        "anchor": "nf07-full-verification",
+        "line_sha256": "fd9d3a07a247d11934120987d9aaf20d25cd38b59dc06b461c278ed661b72e7a"
+      },
+      "tier": "local full-suite and installed/copied package checks",
+      "scope": "The exact retained full verifier, including consumer-index probes on unfinished and stale synthetic packages.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "Reference fixtures and local checks do not establish native profile behavior or art quality; broad lint is recorded separately."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "nf07-full-verification",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "nf07-full-verification"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "nf07-full-verification",
+          "pointer": "/checked_input_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl",
+              "scripts",
+              "tests",
+              "evaluations"
+            ],
+            "suffixes": [
+              ".py"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "nf07-full-verification",
+          "pointer": "/bundle_manifest_sha256"
         }
       ]
     }

@@ -1,0 +1,44 @@
+"""Retain fresh maintained-source lint/type checks without replacing old evidence."""
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def sources():
+    return {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            for folder in ("pixl", "scripts", "tests", "evaluations")
+            for path in sorted((ROOT / folder).rglob("*.py")) if "__pycache__" not in path.parts}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    args.out.mkdir(parents=True, exist_ok=False)
+    before = sources()
+    commands = []
+    for name, tail in (("ruff", ["ruff", "check", "pixl", "scripts", "tests", "evaluations"]),
+                       ("mypy", ["mypy", "pixl"])):
+        argv = [sys.executable, "-B", "-m", *tail]
+        result = subprocess.run(argv, cwd=ROOT, capture_output=True, check=False)
+        (args.out / (name + ".stdout.txt")).write_bytes(result.stdout)
+        (args.out / (name + ".stderr.txt")).write_bytes(result.stderr)
+        commands.append({"name": name, "argv": argv, "returncode": result.returncode})
+    unchanged = before == sources()
+    report = {"status": "pass" if unchanged and all(row["returncode"] == 0 for row in commands) else "fail",
+              "observed_at": datetime.now(UTC).isoformat(), "commands": commands,
+              "source_hashes": before, "source_unchanged": unchanged,
+              "scope": "Maintained-source Ruff and default mypy; unchecked untyped bodies and native/artistic/human outcomes are separate."}
+    (args.out / "RESULT.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": report["status"], "commands": commands, "source_unchanged": unchanged}))
+    raise SystemExit(0 if report["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()

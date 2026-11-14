@@ -1,0 +1,81 @@
+{
+  "schema": "pixl.independent-review/1",
+  "task": "NF-07 consumer deliverable index",
+  "reviewer": "caller_outcome_review",
+  "result": "no_actionable_findings_in_reviewed_scope",
+  "findings": [],
+  "source_sha256": {
+    "pixl/deliverable_index.py": "3f3835c9b8f68cf781ba7002640d4e819cb3c1099f5ab2c39563213ad19ecc0c",
+    "pixl/service.py": "d16075fdea9a0b298a2faeeb14df0586d9992fd878eb013e0f4cf549803c30d7",
+    "pixl/cli.py": "e6c4858aca2a61dcf4c4545b2ac822b31748c6ab8df7454708740af399f8e1db",
+    "pixl/mcp.py": "3d8abe286b50a410791e0c885e5ae8b74c9dd247aaa62df8ca05e9ded1449bc6",
+    "spec/deliverable-index.md": "b6c88a3ca57b920bafe3c7bfc28cc99890808ca0d4375cad878a221af6c1b23f",
+    "tests/test_deliverable_index.py": "b547f4a06ce183645d029e49716e6e97bb8eb36d41480ec86b11e23f1d1f9bef",
+    "pixl/delivery.py": "d09c84a7faaba954bb9438cde5c275f3e90a4dad60073a928bfce5b05d0c7706",
+    "pixl/families.py": "6e161b4ef4a38b7678d47b0f73fe48382096d9e0e2744f636ce4a4dc9a927945",
+    "pixl/lifecycle.py": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+    "pixl/retention.py": "832dc42e6125d7e6512c544957648cbadf634dfffe0a16230a990ad25047f9d5",
+    "pixl/plar.py": "c9b5cc6fad88d0cb7cdb2363c414160417e0d4489cc2fd57e94f4e567a9435b6",
+    "pixl/graph.py": "399c0709bf93665e2ae7508e4295ed88ca623a3ac8e5038a8aebd97898f79196"
+  },
+  "criteria": [
+    {
+      "criterion": "current_review_and_creation_acceptance",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Reviewed manifest validation, selected candidate review, task completion and criteria handling. Creation accepted=false remains immutable and separate from current eligibility."
+    },
+    {
+      "criterion": "current_default_and_historical_selection",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Default is the current nominee, not the newest package. No nominee returns no selected package. Explicit historical selection preserves saved member order and reports current nomination/review and stale reasons."
+    },
+    {
+      "criterion": "named_files_and_current_declarations",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Retained candidate record identity, source URI, member SHA-256, size and package path are validated before projecting name/kind/opaque metadata. F/C/I/S declarations carry current and saved identity labels; package stale reasons include changed semantic bindings."
+    },
+    {
+      "criterion": "opaque_or_missing_layout",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Absent metadata remains not_declared and present metadata remains not_interpreted. The contract expressly requires caller-needed slicing/timing/pivot facts to come from declarations or cited consumer source, not filename/kind/size guesses."
+    },
+    {
+      "criterion": "sources_and_retention",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Direct member-contract and destination-choice S references expose exact local bytes and resolved retained revisions. Remote sources are explicitly unavailable and block eligibility without a fetch; independently exercised in review-probes-01.json."
+    },
+    {
+      "criterion": "root_and_retained_path_confinement",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Read-path inspection confirms producer state must remain under root, graph.confined checks local sources, and delivery._manifest rejects redirected manifest/member locations and verifies retained bytes. Existing tests cover state escape and missing/corrupt retained assets. No new symlink execution was performed in this review."
+    },
+    {
+      "criterion": "pending_jobs_and_live_selection",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Pending jobs and relevant current task PLAR selections add unresolved conditions independently of passing review. A valid completed synthetic family lost its live PLAR file and became ineligible without losing passing criteria or mutating files; independently exercised in review-probes-01.json."
+    },
+    {
+      "criterion": "default_api_compatibility",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "CLI/MCP view and candidate additions retain the complete default path and result-export mechanism. Reviewed regression tests include default parity, cold process CLI/MCP parity, fresh export and no overwrite. Direct missing-root CLI probe returned the existing argparse required-root error for both views."
+    },
+    {
+      "criterion": "cold_caller_handoff_surface",
+      "assessment": "reviewed_no_actionable_defect",
+      "basis": "Projection supplies names, exact retained file identities, declared contracts/choices and source locators while spec requires actual index/manifest/assets/needed sources transfer. Static review does not establish actual cold integration or rendered behavior; that qualification remains separately owned."
+    }
+  ],
+  "independent_execution": {
+    "receipt": "evidence/deliverable-index/20261114/review-probes-01.json",
+    "receipt_sha256": "7b057ac9cd5fa2064d2f9c80704ff530d95f36df9bc7b25602ee7c2d03f73a2c",
+    "passed_probes": 2,
+    "prior_fixture_preparation_failure_preserved": true,
+    "test_suite": "Reviewed all 16 NF-07 test methods. Did not rerun or claim the runtime worker suite, full verify, bundle build or native qualification."
+  },
+  "scope_limits": [
+    "Read-only source/diff/spec/test review plus temporary synthetic probes. No production state, runtime, docs, tests, old receipts or art changed by this reviewer.",
+    "This receipt applies to the listed exact source bytes and the bounded family projection; it is not a new ledger or acceptance judgment.",
+    "No native model behavior, actual CF-09 handoff, rendered target integration, subjective artistic quality or human acceptance is established here.",
+    "M1/M2 and broader M3/M4/M5 remain outside this review and open as recorded by the parent workflow."
+  ]
+}

@@ -7,6 +7,50 @@ outcomes from current source/package applicability. This command does not run
 the rebuilding verifier described below.
 
 
+## Consumer deliverable index, 2026-11-14
+
+The [NF-07 index](../spec/deliverable-index.md) projects one selected retained
+package into named files, declared integration choices and exact source locators,
+current review, unresolved conditions and bounded lineage. It preserves opaque
+metadata and immutable creation status; it makes no new acceptance decision.
+
+[Focused verification](../evidence/deliverable-index/20261114/implementation-02/RESULT.json)
+passes **85 tests**, including **16 new tests and 69 existing regressions**, plus
+changed-runtime Ruff. [Independent source review](../evidence/deliverable-index/20261114/review-01.json)
+finds no actionable issue across nine criteria. [Two edge probes](../evidence/deliverable-index/20261114/review-probes-01.json)
+pass after a retained initial fixture failure. They check explicit unavailable
+remote sources and lost current PLAR bindings without inferring eligibility.
+
+[Final full verification](../evidence/verification-runs/20261114T152255.619054Z/result.json) reports
+**1,393 passing tests with 3 Windows privilege skips (1,396 run), 39 reference checks and distribution probes**. This is fresh unit/reference/package
+verification, separate from native behavior and maintenance checks below.
+[Repository-wide Ruff](../evidence/deliverable-index/20261114/maintenance-01/RESULT.json)
+**fails with nine findings in five files unchanged from the baseline**. No fixes
+or suppressions were applied. [All seven changed-code files](../evidence/deliverable-index/20261114/maintenance-02/RESULT.json)
+pass scoped Ruff; default Mypy passes 44 runtime modules. Default Mypy does not
+fully check untyped bodies. A passing full verifier is not a broad lint pass.
+
+[Cold Codex 0.167.2 qualification](../evidence/deliverable-index/20261114/cold-02/independent-01.json)
+passes **43/43**. Its external consumer receives only 29 public inputs, including
+five exact retained PNGs, the cited authored module and renderer guidance, without
+internal state, PLAR, history or PIXL runtime. The caller derives the exact original
+configuration from those inputs. Ten stills cover native and 3x scales; each
+playback observes five frames, ten transitions, two wraps and zero skips. All
+740 producer files and 29 input files preserve their exact bytes and mtimes.
+The 98,757-byte index is complete, compared with the 143,579-byte full report;
+this size difference is a scoped projection, not truncation.
+
+[Cold-01](../evidence/deliverable-index/20261114/cold-01/independent-01.json)
+remains **38/39**: consumer checks pass, while its source identity changes after
+18 additive binding values across six field names; existing values stay identical. Cold-02 is a new final-source
+run, not a rewritten first receipt. The [ledger](../evidence/deliverable-index/README.md)
+preserves both attempts, the first edge-probe fixture failure and maintenance
+failures. Public-input absence and the trace establish the scoped no-state
+boundary; filesystem permissions are not an OS sandbox. Existing CF-09 art is
+reused. No new provider result, generative improvement, Claude cold-consumer
+qualification, other-engine acceptance or human acceptance is established.
+M1/M2 and broader M3/M4/M5 remain open; QOL-07 is the next development slice.
+
 ## Readiness and consumer setup, 2026-11-09
 
 The [readiness increment](../evidence/readiness/README.md) adds a standard-library

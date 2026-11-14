@@ -1,0 +1,68 @@
+"""Append reviewed NF-07 receipts to the existing read-only integrity registry."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+RUN = "evidence/verification-runs/20261114T152255.619054Z/result.json"
+README = "evidence/deliverable-index/README.md"
+
+
+def main():
+    path = ROOT / "evaluations/evidence-claims.json"
+    previous = path.read_bytes()
+    data = json.loads(previous)
+    original_receipts = json.loads(json.dumps(data["receipts"]))
+    original_claims = json.loads(json.dumps(data["claims"]))
+    if any(row["id"].startswith("NF-07-") for row in data["claims"]):
+        raise ValueError("NF-07 already registered; inspect instead of overwriting")
+    receipts = [
+        ("nf07-native", "evidence/deliverable-index/20261114/cold-02/independent-01.json", [{"pointer": "/status", "equals": "pass"}, {"pointer": "/passed", "equals": 43}, {"pointer": "/total", "equals": 43}]),
+        ("nf07-native-identity", "evidence/deliverable-index/20261114/cold-02/identity.json", []),
+        ("nf07-full-verification", RUN, [{"pointer": "/status", "equals": "pass"}]),
+    ]
+    if json.loads((ROOT / RUN).read_bytes())["status"] != "pass":
+        raise ValueError("Wait for the completed verifier")
+    for id_, relative, assertions in receipts:
+        row = {"id": id_, "path": relative, "sha256": hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()}
+        if assertions:
+            row["assertions"] = assertions
+        data["receipts"].append(row)
+    def document(anchor):
+        lines = [line for line in (ROOT / README).read_text(encoding="utf-8").splitlines() if f'id="{anchor}"' in line]
+        if len(lines) != 1:
+            raise ValueError("Expected one concrete claim line")
+        return {"path": README, "anchor": anchor, "line_sha256": hashlib.sha256(lines[0].encode()).hexdigest()}
+    limits = ["Human acceptance remains separate and unrecorded.",
+              "Identity checks do not replay, regrade or expand the recorded task scope."]
+    data["claims"].append({
+        "id": "NF-07-CONSUMER", "task": "Integrate a public deliverable index without internal production state",
+        "document": document("nf07-native-consumption"), "tier": "native package-only consumption and browser mechanics",
+        "scope": "One Codex 0.167.2 cold caller; five retained CF-09 images, exact cited authored module and both playback scales.",
+        "limits": [*limits, "No new provider execution, artistic improvement, Claude replay or other-engine qualification."],
+        "policy": "current", "outcome": {"receipt": "nf07-native", "pointer": "/status"},
+        "receipts": ["nf07-native", "nf07-native-identity"],
+        "bindings": [{"kind": "map", "domain": "source", "receipt": "nf07-native-identity", "pointer": "/source_hashes", "prefix": "",
+                      "inventory": {"roots": ["pixl"], "suffixes": [".py", ".json"]}}],
+    })
+    data["claims"].append({
+        "id": "NF-07-FULL-VERIFICATION", "task": "Check NF-07 maintained source and distributable payloads",
+        "document": document("nf07-full-verification"), "tier": "local full-suite and installed/copied package checks",
+        "scope": "The exact retained full verifier, including consumer-index probes on unfinished and stale synthetic packages.",
+        "limits": [*limits, "Reference fixtures and local checks do not establish native profile behavior or art quality; broad lint is recorded separately."],
+        "policy": "current", "outcome": {"receipt": "nf07-full-verification", "pointer": "/status"},
+        "receipts": ["nf07-full-verification"],
+        "bindings": [{"kind": "map", "domain": "source", "receipt": "nf07-full-verification", "pointer": "/checked_input_hashes", "prefix": "",
+                      "inventory": {"roots": ["pixl", "scripts", "tests", "evaluations"], "suffixes": [".py"]}},
+                     {"kind": "file", "domain": "package", "path": "plugins/pixl/bundle-manifest.json", "receipt": "nf07-full-verification", "pointer": "/bundle_manifest_sha256"}],
+    })
+    assert data["receipts"][:len(original_receipts)] == original_receipts
+    assert data["claims"][:len(original_claims)] == original_claims
+    # Keep the original registry's line-ending convention and all old entries.
+    newline = "\r\n" if b"\r\n" in previous else "\n"
+    path.write_bytes((json.dumps(data, ensure_ascii=False, indent=2) + "\n").replace("\n", newline).encode("utf-8"))
+    print(json.dumps({"claims": len(data["claims"]), "receipts": len(data["receipts"]), "prior_entries_unchanged": True}))
+
+
+if __name__ == "__main__":
+    main()
