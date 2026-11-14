@@ -12,7 +12,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from . import graph, store
+from . import adapter_versions, graph, store
 from .codec import PixlError
 
 MAX_BYTES = 4 * 1024 * 1024
@@ -348,10 +348,11 @@ def selection_bindings(document, task_id, root, folder=None):
     for reference in document.records[task_id].fields["ip"]:
         artifact = document.records[reference.id]
         metadata = artifact.fields.get("mt", {})
-        if metadata.get("binding") != "pixl.plar.selection/1":
+        if not adapter_versions.is_binding(metadata.get("binding"), "pixl.plar.selection"):
             continue
         row = {"input": artifact.id, "snapshot": artifact.fields["ur"], **metadata}
         try:
+            adapter_versions.require_binding(metadata.get("binding"), "pixl.plar.selection")
             if artifact.fields["kd"].value != "report" or not all(
                 isinstance(metadata.get(k), str)
                 for k in ("plar_path", "asset_id", "requirements_hash")

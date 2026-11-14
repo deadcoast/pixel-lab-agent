@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from . import codec, graph, jobs, plar, platform, production_plan, retention, store
+from . import adapter_versions, codec, graph, jobs, plar, platform, production_plan, retention, store
 from .codec import PixlError
 from .request_review import source_evidence
 
@@ -42,6 +42,7 @@ def _coverage(root, path, scope_hash, rows):
     value = json.loads(graph.confined(root, path).read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise PixlError("request_review", "comparison must be an object")
+    adapter_versions.require_version(value, "caller criterion comparison", optional=True)
     expected = {row["id"]: row["record_sha256"] for row in rows}
     comparisons = value.get("criterion_comparisons", [])
     if not isinstance(comparisons, list):
@@ -100,18 +101,8 @@ def report(root, state, plan_id, job=None, comparison=None):
         state_path.name == "state.px", "review needs store state.px"
     )
     marker = production_plan._record(doc, plan_id, "X")
-    production_plan._require(
-        marker.fields.get("mt", {}).get("binding") == "pixl.production.plan/1",
-        "review needs a connected production plan",
-    )
-    snapshot_path = graph.confined(root, marker.fields["ur"])
-    production_plan._require(
-        graph.file_hash(snapshot_path) == marker.fields["dg"], "plan snapshot changed"
-    )
-    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    snapshot = production_plan._snapshot(root, marker)
     plan = snapshot["plan"]
-    production_plan._validate(plan, production_plan.SCHEMA)
-    production_plan._require(plan_id == plan["id"] + ".plan", "plan identity mismatch")
     diagnostics, rows, sources, controls = [], [], {}, []
     try:
         production_plan._current_plan(doc, marker)

@@ -1,0 +1,237 @@
+"""Restore retained TM-08 consumers, then replace each installed kit in place.
+
+Run prepare before changing the kit and upgrade after the final bundle is stable.
+Only disposable build consumers and this fresh evidence attempt are written.
+The immutable original archives and their receipts are never changed.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path.cwd().resolve()
+OUT = ROOT / "evidence/schema-compatibility/20261113/consumer-upgrade-01"
+WORK = ROOT / "build/sc06-consumer-upgrade-01"
+SERIES = ROOT / "evidence/domain-consumers/20261112"
+DOMAINS = ("terrain", "animation")
+NAMES = ("codex-01", "claude-01")
+KIT = "installed pixl"
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    require(not path.exists(), "Refuse to overwrite retained evidence: " + str(path))
+    path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): sha(p)
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def child(root, name):
+    target = (root / name).resolve()
+    require(target.is_relative_to(root.resolve()), "Path escapes isolated root")
+    return target
+
+
+def command(consumer, retained, arguments, timeout=150):
+    retained.mkdir(parents=True, exist_ok=True)
+    cmd = [sys.executable, "-B", str(consumer / KIT / "scripts/pixl.py"), *arguments]
+    receipt = {"command": cmd, "cwd": str(consumer), "started_at": datetime.now(UTC).isoformat(),
+               "timeout_seconds": timeout, "status": "failed"}
+    started = time.monotonic()
+    process = None
+    try:
+        with (retained / "stdout.txt").open("xb") as stdout, (retained / "stderr.txt").open("xb") as stderr:
+            flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            process = subprocess.Popen(cmd, cwd=consumer,
+                env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8"),
+                stdout=stdout, stderr=stderr, creationflags=flags)
+            receipt["pid"] = process.pid
+            try:
+                process.wait(timeout=timeout)
+                receipt["status"] = "complete" if process.returncode == 0 else "failed"
+            except subprocess.TimeoutExpired:
+                receipt["status"] = "timeout"
+    except (OSError, subprocess.SubprocessError) as error:
+        receipt["error"] = str(error)
+    finally:
+        if process is not None and process.poll() is None:
+            receipt["cleanup_attempted"] = True
+            if os.name == "nt":
+                stopped = subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    capture_output=True, timeout=15, check=False, creationflags=subprocess.CREATE_NO_WINDOW)
+                receipt["tree_stop_returncode"] = stopped.returncode
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=10)
+        receipt.update(returncode=process.returncode if process else None,
+                       process_reaped=process is None or process.poll() is not None,
+                       elapsed_seconds=round(time.monotonic() - started, 3))
+        write(retained / "process.json", receipt)
+    return receipt
+
+
+def replay(consumer, name, phase):
+    result = {"domains": {}, "pass": True}
+    before = inventory(consumer)
+    for domain in DOMAINS:
+        retained = OUT / name / phase / domain
+        state = consumer / f".pixl/assets/{domain}/state.px"
+        config = consumer / f"work/domain-consumer-inputs/{domain}-config.json"
+        context = command(consumer, retained / "review-context", ["review-context", str(state),
+                          "delivery.candidate", "--root", str(consumer)])
+        validation = command(consumer, retained / "validate", ["validate", str(state), "--root", str(consumer)])
+        relative = f"work/sc06-kit-upgrade/{phase}/{domain}"
+        process = command(consumer, retained / "execute", ["consumer-execute", str(state),
+                          "delivery.candidate", str(config), "--root", str(consumer), "--out", relative])
+        output = consumer / relative
+        row = {"review_context": context["status"], "validation": validation["status"],
+               "execution": process["status"], "pass": False}
+        if output.exists():
+            shutil.copytree(output, retained / "output")
+            write(retained / "output-inventory.json", inventory(output))
+        if (output / "result.json").exists():
+            actual = read(output / "result.json")
+            row["result"] = actual
+            row["pass"] = (context["status"] == validation["status"] == process["status"] == "complete"
+                           and actual.get("status") == "complete" and actual.get("files_verified") is True
+                           and actual.get("automatic_acceptance") is False and actual.get("state_changed") is False
+                           and actual.get("state_written") is False and actual.get("renderer_executed") is True
+                           and actual.get("cleanup", {}).get("complete") is True)
+            if row["pass"]:
+                # Reuse the separately retained TM-08 independent artifact/renderer
+                # audit verbatim, recording its exact source hash in the result.
+                audit_source = SERIES / "final-kit-compatibility-01/compatibility.py.txt"
+                namespace = {"__file__": str(audit_source), "__name__": "sc06_retained_audit"}
+                exec(compile(audit_source.read_text(encoding="utf-8"), str(audit_source), "exec"), namespace)
+                row["audit_source_sha256"] = sha(audit_source)
+                row["audit"] = namespace["audit_operation"](consumer, output, read(config), actual)
+        result["domains"][domain] = row
+        result["pass"] = result["pass"] and row["pass"]
+        print(name, phase, domain, row["pass"], flush=True)
+    after = inventory(consumer)
+    result["preexisting_files_preserved"] = all(after.get(key) == value for key, value in before.items())
+    result["pass"] = result["pass"] and result["preexisting_files_preserved"]
+    write(OUT / name / phase / "result.json", result)
+    return result
+
+
+def prepare():
+    require(not WORK.exists(), "Use a fresh isolated workspace")
+    WORK.mkdir(parents=True)
+    result = {"version": 1, "scope": "Archived saved consumers with original installed kits", "consumers": {}}
+    for name in NAMES:
+        receipt = read(SERIES / name / "consumer-inputs.json")
+        archive = SERIES / name / "consumer-inputs.zip"
+        require(sha(archive) == receipt["archive"]["sha256"], "Retained input archive differs")
+        consumer = WORK / name
+        consumer.mkdir()
+        with zipfile.ZipFile(archive) as zipped:
+            require(set(zipped.namelist()) == set(receipt["files"]), "Archived inventory differs")
+            for member in zipped.infolist():
+                require(not member.is_dir(), "Unexpected directory entry")
+                data = zipped.read(member)
+                require(hashlib.sha256(data).hexdigest() == receipt["files"][member.filename], "Archived bytes differ")
+                target = child(consumer, member.filename)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+        require(inventory(consumer) == receipt["files"], "Restored consumer differs")
+        write(OUT / name / "restored-inventory.json", inventory(consumer))
+        # These retained TM-08 projects bind only BRIEF.md as an S record. Keep
+        # this explicit; a library-bound fixture must retain-library before swap.
+        from pixl import codec
+        sources = {}
+        for domain in DOMAINS:
+            doc = codec.parse((consumer / f".pixl/assets/{domain}/state.px").read_bytes())
+            sources[domain] = {r.id: r.fields["ur"] for r in doc.records.values() if r.kind == "S"}
+            require(all(not uri.startswith(KIT + "/") for uri in sources[domain].values()),
+                    "Fixture requires explicit retain-library before replacement")
+        before = replay(consumer, name, "old-kit")
+        write(OUT / name / "pre-upgrade-inventory.json", inventory(consumer))
+        result["consumers"][name] = {"archive": str(archive), "archive_sha256": sha(archive),
+            "retained_input_count": len(receipt["files"]), "source_bindings": sources,
+            "library_retention_required": False, "old_replay_pass": before["pass"]}
+    write(OUT / "preparation.json", result)
+
+
+def upgrade(current_kit):
+    require((OUT / "preparation.json").exists(), "Run prepare first")
+    kit_inventory = inventory(current_kit)
+    require("runtime/pixl/adapter_versions.py" in kit_inventory, "SC-06 kit has not been rebuilt")
+    write(OUT / "upgraded-kit-inventory.json", kit_inventory)
+    with zipfile.ZipFile(OUT / "upgraded-kit.zip", "x", zipfile.ZIP_DEFLATED) as zipped:
+        for name in kit_inventory:
+            zipped.write(current_kit / name, name)
+    result = {"version": 1, "scope": "Actual same-path installed-kit replacement over retained saved consumers",
+        "started_at": datetime.now(UTC).isoformat(), "consumers": {}, "pass": True,
+        "python": {"path": sys.executable, "sha256": sha(sys.executable)},
+        "upgraded_kit_archive_sha256": sha(OUT / "upgraded-kit.zip"),
+        "script_sha256": sha(OUT / "upgrade.py.txt"),
+        "limitations": ["No new native model/profile qualification, PixelLab request, art generation or acceptance",
+                        "Existing source and art bytes retain original provenance",
+                        "M1/M2 and broader M3/M4 remain open; human acceptance remains separate"]}
+    for name in NAMES:
+        consumer = WORK / name
+        before = read(OUT / name / "pre-upgrade-inventory.json")
+        require(inventory(consumer) == before, "Prepared isolated consumer changed")
+        installed = child(consumer, KIT)
+        retired = child(WORK, "retired-kits/" + name)
+        require(installed == consumer.resolve() / KIT and retired.is_relative_to(WORK.resolve()) and not retired.exists(),
+                "Unsafe or previously used kit replacement paths")
+        retired.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(installed), str(retired))
+        shutil.copytree(current_kit, installed)
+        require(inventory(installed) == kit_inventory, "Replacement installed kit differs")
+        replayed = replay(consumer, name, "upgraded-kit")
+        after = inventory(consumer)
+        preserved = {key: value for key, value in before.items() if not key.startswith(KIT + "/")}
+        original_kit = {key[len(KIT) + 1:]: value for key, value in before.items() if key.startswith(KIT + "/")}
+        checks = {"actual_same_path_replacement": str(installed),
+                  "all_preexisting_nonkit_files_preserved": all(after.get(key) == value for key, value in preserved.items()),
+                  "original_kit_preserved_outside_consumer": inventory(retired) == original_kit,
+                  "saved_review_contexts_unchanged": all(
+                      read(OUT / name / "old-kit" / domain / "review-context/stdout.txt") ==
+                      read(OUT / name / "upgraded-kit" / domain / "review-context/stdout.txt") for domain in DOMAINS),
+                  "updated_replay_pass": replayed["pass"], "preserved_nonkit_file_count": len(preserved)}
+        checks["pass"] = all(checks[key] for key in ("all_preexisting_nonkit_files_preserved",
+            "original_kit_preserved_outside_consumer", "saved_review_contexts_unchanged", "updated_replay_pass"))
+        write(OUT / name / "post-upgrade-inventory.json", after)
+        write(OUT / name / "upgrade-result.json", checks)
+        result["consumers"][name] = checks
+        result["pass"] = result["pass"] and checks["pass"]
+    result["current_kit_stable_during_probe"] = inventory(current_kit) == kit_inventory
+    result["pass"] = result["pass"] and result["current_kit_stable_during_probe"]
+    write(OUT / "result.json", result)
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("phase", choices=("prepare", "upgrade"))
+    parser.add_argument("--current-kit", type=Path, default=ROOT / "plugins/pixl")
+    options = parser.parse_args()
+    prepare() if options.phase == "prepare" else upgrade(options.current_kit.resolve())

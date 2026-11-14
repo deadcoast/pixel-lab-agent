@@ -9,6 +9,19 @@ from tests import test_jobs as job_fixture
 
 
 class DiagnosticsTests(unittest.TestCase):
+    def test_unsupported_saved_format_preserves_detail_without_mutation_retry(self):
+        error = PixlError("adapter_version", "Unsupported saved production-plan version")
+        result = diagnostics.error_result("production_plan", error, {"store": ".pixl/asset"})
+        self.assertEqual(result["error"], error.code)
+        self.assertEqual(result["detail"], str(error))
+        self.assertEqual(result["category"], "missing_capability")
+        self.assertEqual(result["identity"], {"store": ".pixl/asset"})
+        self.assertEqual(result["recovery"]["action"], "use_compatible_adapter")
+        self.assertNotIn("operation", result["recovery"])
+        self.assertNotIn("arguments", result["recovery"])
+        self.assertIn("Do not relabel", result["recovery"]["detail"])
+        self.assertIn("not an observation of provider availability", result["recovery"]["detail"])
+
     def test_existing_exception_text_and_code_stay_compatible(self):
         plain = PixlError("stale_write", "reload the selected state")
         context = {"job_state": "unknown"}

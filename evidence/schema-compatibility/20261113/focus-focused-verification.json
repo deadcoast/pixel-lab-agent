@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "scope": "Development checks for saved preparation metadata; not full-suite or model qualification",
+  "runs": [
+    {
+      "command": ".venv/Scripts/python.exe -B -m unittest tests.test_plar_preparation_focus tests.test_plar_prepare",
+      "result": "35 tests passed in 66.438s",
+      "source_stage": "After numeric compatibility and failed-fixture correction; before moving retained reads earlier and adding changed-input-shape rejection"
+    },
+    {
+      "command": ".venv/Scripts/python.exe -B -m unittest tests.test_plar_prepare.PLARPrepareTests.test_unsupported_retained_marker_version_rejects_before_resumption_writes tests.test_plar_prepare.PLARPrepareTests.test_interrupted_intent_publication_resumes_the_saved_plan tests.test_plar_preparation_focus.PreparationFocusTests.test_saved_marker_versions_preserve_numeric_one_and_reject_unsupported_without_focus_bypass",
+      "result": "3 tests passed in 3.349s",
+      "source_stage": "After immediate retained-marker version gates"
+    },
+    {
+      "command": ".venv/Scripts/python.exe -B -m unittest tests.test_plar_preparation_focus.PreparationFocusTests.test_future_marker_cannot_bypass_focus_by_changing_its_input_shape tests.test_plar_preparation_focus.PreparationFocusTests.test_explicit_delivery_link_outranks_focus_and_other_task_types_are_not_reselected tests.test_plar_prepare.PLARPrepareTests.test_unsupported_retained_marker_version_rejects_before_resumption_writes",
+      "result": "3 tests passed in 3.328s",
+      "source_stage": "Final preparation runtime and tests before full repository verification"
+    }
+  ],
+  "earlier_failure": "focus-test-fixture-failure-01.json",
+  "original_behavior": "focus-baseline-01/receipt.json",
+  "final_saved_marker_observations": "focus-confirmation-02/receipt.json",
+  "limits": "The 35-test run and targeted runs overlap; these counts must not be added as independent new checks. The full repository verifier separately establishes the final complete source result."
+}

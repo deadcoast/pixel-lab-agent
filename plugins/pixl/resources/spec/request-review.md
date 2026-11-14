@@ -7,6 +7,10 @@ They do not write a caller review, classify semantic consistency, or authorize a
 provider call. The [skill procedure](../plugins/pixl/skills/pixl/references/request-review.md)
 assigns the actual comparison to the calling agent.
 
+Saved packet, candidate-plan and caller-comparison versions follow the
+[adapter compatibility policy](adapter-compatibility.md). Legacy absent comparison
+versions remain distinct from unsupported explicit versions.
+
 Connected authoring additionally returns ready arguments for this same operation:
 `pixl_request_review({packet: STATE_PATH, plan: PLAN_ID, job?: JOB_ID,
 comparison?: CALLER_JSON})`. The CLI equivalents are `--plan`, `--job` and

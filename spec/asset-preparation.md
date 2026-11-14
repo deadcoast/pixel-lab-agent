@@ -8,6 +8,10 @@ never calls PixelLab, invents a review, approves a style or marks an asset integ
 The host submits through its authenticated official PixelLab connection using the
 existing dispatch/observe operations and the assignment's existing authorization.
 
+The [adapter compatibility policy](adapter-compatibility.md) records supported
+packet, candidate-plan, preparation-marker and focus versions, including legacy
+focus absence and explicit unsupported-version recovery.
+
 ## Inputs and interpretation
 
 - `asset_id` and `requirements_hash` come from a current focused PLAR read. All

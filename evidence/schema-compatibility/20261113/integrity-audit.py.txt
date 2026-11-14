@@ -1,0 +1,134 @@
+"""Read-only SC-06 final source/package/evidence binding; no acceptance inference."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import zipfile
+from datetime import UTC, datetime
+
+ROOT = Path(__file__).resolve().parents[3]
+HERE = Path(__file__).resolve().parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def audit(verification):
+    checks, references = [], {}
+
+    def check(name, passed, detail):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    def receipt(path):
+        references[path.relative_to(ROOT).as_posix()] = sha(path)
+        return read(path)
+
+    verified = receipt(verification)
+    tests = verified.get("tests", {})
+    check("full_verifier", verified["status"] == "pass" and tests.get("status") == "pass"
+          and tests.get("run") == tests.get("discovered"), tests)
+    drift = [name for name, digest in verified["checked_input_hashes"].items()
+             if sha(ROOT / name) != digest]
+    check("checked_sources_still_current", not drift, {"mismatches": drift})
+    check("distribution", verified["distribution"].get("status") == "pass", verified["distribution"])
+    manifest_path = ROOT / "plugins/pixl/bundle-manifest.json"
+    manifest = receipt(manifest_path)
+    check("final_manifest_matches_verifier", sha(manifest_path) == verified["bundle_manifest_sha256"], sha(manifest_path))
+    mismatches = [row["path"] for row in manifest["files"] + manifest["generated_files"]
+                  if sha(ROOT / "plugins/pixl" / row["path"]) != row["sha256"]]
+    source_mismatches = [row["source"] for row in manifest["files"]
+                         if sha(ROOT / row["source"]) != row["sha256"]]
+    check("bundle_bytes_and_source_parity", not mismatches and not source_mismatches,
+          {"files": len(manifest["files"]), "file_mismatches": mismatches, "source_mismatches": source_mismatches})
+    previous = receipt(verification.parent / "previous-manifest.json")
+    archive = verification.parent / "previous.zip"
+    references[archive.relative_to(ROOT).as_posix()] = sha(archive)
+    with zipfile.ZipFile(archive) as retained:
+        mismatch = [name for name, digest in previous.items()
+                    if hashlib.sha256(retained.read(name)).hexdigest() != digest]
+    check("pre_verification_generated_bytes_retained", not mismatch,
+          {"retained_files": len(previous), "mismatches": mismatch})
+    wire = ["pixl/registry.json", "pixl/registry-v2.json", "spec/PIXL-1.md", "spec/PIXL-2.md"]
+    wire_changed = subprocess.check_output(["git", "diff", "--name-only",
+        "74646f6ee2d3138057d54a6f9a6aade765b0402d", "--", *wire], cwd=ROOT, text=True).splitlines()
+    check("wire_contracts_unchanged", not wire_changed, {"changed": wire_changed})
+    added = receipt(HERE / "new-regression-inventory.json")
+    expected = [row["path"][:-3].replace("/", ".") + "." + test
+                for row in added["files"] for test in row["new_test_methods"]]
+    check("new_regressions_executed", set(expected) <= set(verified["test_inventory"]),
+          {"new_tests": len(expected), "missing": sorted(set(expected) - set(verified["test_inventory"]))})
+    before = receipt(HERE / "baseline-01/result.json")
+    after = receipt(HERE / "after-01/result.json")
+    stable_cases = ("known_v1_clean", "known_v1_changed_scope", "numeric_v1_wrapper",
+                    "numeric_v1_authored_schema", "legacy_unversioned_comparison", "unrelated_binding")
+    check("supported_plan_probe_behavior_preserved",
+          all(before["cases"][key] == after["cases"][key] for key in stable_cases), list(stable_cases))
+    check("future_plan_guards_now_explicit", all(
+          "adapter_version" in json.dumps(after["cases"][key])
+          for key in ("future_binding_changed_scope", "future_wrapper", "future_comparison")),
+          "Original failing outcomes remain in baseline-01; after-01 is a separate execution")
+    check("probe_does_not_mutate_saved_fixture", all(after["retained_fixture_unchanged"].values()),
+          after["retained_fixture_unchanged"])
+    for name, field in (("runtime-tests-01/result.json", "source_sha256"),
+                        ("focus-confirmation-02/receipt.json", "sources")):
+        item = receipt(HERE / name)
+        mismatch = [path for path, digest in item[field].items() if sha(ROOT / path) != digest]
+        check("focused_source_binding:" + name, not mismatch, {"mismatches": mismatch})
+    upgraded = receipt(HERE / "consumer-upgrade-01/result.json")
+    check("two_retained_consumer_kit_replacements", upgraded["pass"], upgraded["consumers"])
+    kit_archive = HERE / "consumer-upgrade-01/upgraded-kit.zip"
+    with zipfile.ZipFile(kit_archive) as saved_kit:
+        check("consumer_replays_use_final_kit",
+              sha(kit_archive) == upgraded["upgraded_kit_archive_sha256"]
+              and hashlib.sha256(saved_kit.read("bundle-manifest.json")).hexdigest() == sha(manifest_path)
+              and all(hashlib.sha256(saved_kit.read(row["path"])).hexdigest() == row["sha256"]
+                      for row in manifest["files"] + manifest["generated_files"]),
+              {"archive_sha256": sha(kit_archive), "manifest_sha256": sha(manifest_path)})
+    old = receipt(HERE / "consumer-upgrade-01/preparation.json")
+    check("old_renderer_failures_preserved", all(not row["old_replay_pass"] for row in old["consumers"].values()),
+          "Four original-kit renderer cleanup failures are preserved separately from the new-kit result")
+    plan = receipt(HERE / "plan-upgrade-01/replacement-result.json")
+    preserved = ("old_kit_preserved", "original_consumer_unchanged", "all_nonkit_files_unchanged_across_replacement",
+                 "review_read_only", "new_kit_unchanged", "same_saved_plan_identity", "same_review_scope",
+                 "same_criteria", "same_coverage", "same_diagnostics")
+    check("retained_connected_plan_actual_kit_replacement", plan["exit_code"] == 0
+          and all(plan[key] for key in preserved), {key: plan[key] for key in preserved})
+    check("retained_plan_uses_final_kit", plan["new_manifest_sha256"] == sha(manifest_path)
+          and all(sha(ROOT / "pixl" / name) == digest for name, digest in plan["new_runtime_sha256"].items()),
+          {"manifest": plan["new_manifest_sha256"], "runtime": plan["new_runtime_sha256"]})
+    old_report = receipt(HERE / "plan-upgrade-01/old-stdout.json")
+    new_report = receipt(HERE / "plan-upgrade-01/replacement-stdout.json")
+    labels = new_report.pop("hash_domains", None)
+    check("only_additive_hash_labels_in_plan_report", old_report == new_report
+          and labels == {"state.sha256": "canonical_state_sha256", "plan.sha256": "file_sha256",
+                         "review_scope_sha256": "review_scope_sha256"},
+          {"hash_domains": labels, "original_exact_report_equality": plan["same_report"]})
+    check("review_acceptance_not_invented", plan["comparison_coverage"]["complete"]
+          and plan["comparison_coverage"]["semantic_verdict"] == "not_assessed"
+          and plan["consistent"] is None,
+          {"coverage": plan["comparison_coverage"], "consistent": plan["consistent"]})
+    return {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+            "scope": __doc__, "source_sha256": sha(Path(__file__)), "references": references,
+            "status": "pass" if all(c["passed"] for c in checks) else "fail",
+            "passed": sum(c["passed"] for c in checks), "total": len(checks), "checks": checks}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--verification", required=True, type=Path)
+    parser.add_argument("--out", required=True, type=Path)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Preserve previous receipts; select a fresh output")
+    result = audit(args.verification.resolve())
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)

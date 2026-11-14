@@ -385,6 +385,31 @@ class PLARWorkflowTests(unittest.TestCase):
             store.commit(folder, next_doc, codec.digest(reviewed), self.root)
         self.assertEqual(before, self.files())
 
+    def test_unsupported_selection_binding_cannot_disappear_from_completion_guard(self):
+        folder, reviewed = self.reviewed_sample()
+        before = self.files()
+        for binding in ("pixl.plar.selection/2", "pixl.plar.selection", "pixl.plar.selection/"):
+            with self.subTest(binding=binding):
+                changed = copy.deepcopy(reviewed)
+                changed.records["selection"].fields["mt"]["binding"] = binding
+                rows = plar.selection_bindings(changed, "task", self.root, folder)
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(rows[0]["status"], "unavailable")
+                self.assertIn("adapter_version", rows[0]["reason"])
+                self.assertIn("Preserve the saved state", rows[0]["reason"])
+                changed.revision += 1
+                changed.records["task"].fields["st"] = Symbol("active")
+                with self.assertRaisesRegex(PixlError, "plar_selection"):
+                    store.commit(folder, changed, codec.digest(reviewed), self.root)
+        self.assertEqual(before, self.files())
+
+    def test_unrelated_selection_namespace_retains_opt_in_behavior(self):
+        folder, reviewed = self.reviewed_sample()
+        before = self.files()
+        reviewed.records["selection"].fields["mt"]["binding"] = "example.unrelated/2"
+        self.assertEqual(plar.selection_bindings(reviewed, "task", self.root, folder), [])
+        self.assertEqual(before, self.files())
+
     def test_done_history_remains_readable_but_stale_recompletion_is_not_current_acceptance(
         self,
     ):

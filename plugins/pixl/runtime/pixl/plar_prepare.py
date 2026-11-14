@@ -24,6 +24,7 @@ from . import (
     store,
 )
 from .codec import PixlError, Record, Ref, Symbol
+from .adapter_versions import require_version
 
 SCHEMA = json.loads(
     Path(__file__).with_name("asset-plan.schema.json").read_text("utf-8")
@@ -430,6 +431,7 @@ def _retained_identity(current, root, folder, identity, linked):
             marker, _, relative = _json_file(
                 root, record.fields["ur"], record.fields["dg"]
             )
+            require_version(marker, "retained preparation marker")
             previous = marker.get("input")
             if (
                 not isinstance(previous, dict)
@@ -502,6 +504,7 @@ def prepare(
             marker, marker_hash, marker_path = _json_file(
                 root, marker_file.relative_to(root).as_posix()
             )
+            require_version(marker, "retained preparation marker")
             _require(
                 marker.get("input_sha256") == fingerprint
                 and marker.get("input") == identity,
@@ -598,10 +601,8 @@ def prepare(
                     store._atomic(destination, source_data)
             marker_file.parent.mkdir(parents=True, exist_ok=True)
             store._atomic(marker_file, data)
-    _require(
-        marker.get("version") == 1 and isinstance(marker.get("sources"), dict),
-        "unsupported preparation snapshot; inspect its retained version",
-    )
+    require_version(marker, "retained preparation marker")
+    _require(isinstance(marker.get("sources"), dict), "invalid preparation snapshot sources")
     document = _document(root, selected, plan, marker_path, marker, marker_hash)
     task_id = marker.get("prefix", "") + "task"
     new_task = current is None or task_id not in current.records

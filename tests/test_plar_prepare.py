@@ -285,6 +285,23 @@ class PLARPrepareTests(unittest.TestCase):
         self.assertEqual(resumed["revision"], 1)
         self.assertEqual(resumed["job"]["state"], "prepared")
 
+    def test_unsupported_retained_marker_version_rejects_before_resumption_writes(self):
+        # Interrupt before state publication so the retained intent can be read
+        # without deliberately invalidating an already-bound artifact digest.
+        with patch("pixl.plar_prepare.store.initialize", side_effect=OSError("controlled before-state interruption")):
+            with self.assertRaises(OSError):
+                self.prepare()
+        location = next((self.root / ".pixl/assets/queue.working/plans").glob("*.json"))
+        original = json.loads(location.read_bytes())
+        for version in (True, 2, None):
+            with self.subTest(version=version):
+                write(self.root, location.relative_to(self.root).as_posix(), {**original, "version": version})
+                before = self.files()
+                with self.assertRaises(PixlError) as caught:
+                    self.prepare()
+                self.assertEqual(caught.exception.code, "adapter_version")
+                self.assertEqual(self.files(), before)
+
     def test_resumption_does_not_adopt_a_different_job_with_the_same_id(self):
         with (
             patch(

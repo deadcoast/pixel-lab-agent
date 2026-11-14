@@ -5,6 +5,9 @@ acceptance rules. The specialist chooses the approach, uses applicable knowledge
 compares the caller's requirements, discovers official PixelLab tools and judges
 the art. The adapters remove repeated graph wiring and input binding.
 
+See [saved adapter compatibility](adapter-compatibility.md) for plan, snapshot,
+request-packet and caller-comparison versions and unsupported-version recovery.
+
 ## Author the connected plan
 
 First orient with `context STATE TASK_OR_OUTPUT_OR_PLAN --view authoring --root

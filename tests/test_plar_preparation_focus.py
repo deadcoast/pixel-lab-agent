@@ -4,6 +4,7 @@ import copy
 import json
 import shutil
 import unittest
+from hashlib import sha256
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -32,6 +33,75 @@ class PreparationFocusTests(unittest.TestCase):
 
     def files(self):
         return {p.relative_to(self.root).as_posix(): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+
+    def test_saved_marker_versions_preserve_numeric_one_and_reject_unsupported_without_focus_bypass(self):
+        result = self.prepare()
+        document = store.load(self.folder)
+        artifact = next(record for record in document.records.values()
+                        if record.fields.get("mt", {}).get("binding") == "pixl.plar.selection/1")
+        location = self.root / artifact.fields["ur"]
+        original = location.read_bytes()
+        marker = json.loads(original)
+        missing = object()
+        for version in (1, 1.0, True, 2, None, missing):
+            with self.subTest(version=repr(version)):
+                current = copy.deepcopy(document)
+                value = copy.deepcopy(marker)
+                if version is missing:
+                    value.pop("version")
+                else:
+                    value["version"] = version
+                data = (json.dumps(value) + "\n").encode()
+                location.write_bytes(data)
+                candidate = current.records[artifact.id]
+                candidate.fields["dg"] = sha256(data).hexdigest()
+                before = self.files()
+                operations = (
+                    lambda: preparation_focus.binding(current, self.root, self.folder, "plar.txt", "queue.working",
+                                                       result["task"], candidate.fields["ur"], candidate.fields["dg"]),
+                    lambda: preparation_focus.task_store(current, self.root, result["task"], candidate),
+                )
+                for operation in operations:
+                    if type(version) in (int, float) and version == 1:
+                        self.assertIsNotNone(operation())
+                    else:
+                        with self.assertRaises(PixlError) as caught:
+                            operation()
+                        self.assertEqual(caught.exception.code, "adapter_version")
+                self.assertEqual(self.files(), before)
+        location.write_bytes(original)
+
+    def test_marker_version_failure_is_distinct_from_absent_legacy_focus(self):
+        result = self.prepare()
+        self.head.unlink()
+        document = store.load(self.folder)
+        self.assertIsNone(preparation_focus.read(document, self.root, self.folder, "plar.txt", "queue.working"))
+        artifact = next(record for record in document.records.values()
+                        if record.fields.get("mt", {}).get("binding") == "pixl.plar.selection/1")
+        marker = json.loads((self.root / artifact.fields["ur"]).read_bytes())
+        marker["version"] = 2
+        reference = write(self.root, artifact.fields["ur"], marker)
+        artifact.fields["dg"] = reference["sha256"]
+        before = self.files()
+        with self.assertRaises(PixlError) as caught:
+            preparation_focus.task_store(document, self.root, result["task"], artifact)
+        self.assertEqual(caught.exception.code, "adapter_version")
+        self.assertEqual(self.files(), before)
+
+    def test_future_marker_cannot_bypass_focus_by_changing_its_input_shape(self):
+        result = self.prepare()
+        document = store.load(self.folder)
+        artifact = next(record for record in document.records.values()
+                        if record.fields.get("mt", {}).get("binding") == "pixl.plar.selection/1")
+        marker = json.loads((self.root / artifact.fields["ur"]).read_bytes())
+        marker.update(version=2, input={"renamed_future_input": True})
+        reference = write(self.root, artifact.fields["ur"], marker)
+        artifact.fields["dg"] = reference["sha256"]
+        before = self.files()
+        with self.assertRaises(PixlError) as caught:
+            preparation_focus.task_store(document, self.root, result["task"], artifact)
+        self.assertEqual(caught.exception.code, "adapter_version")
+        self.assertEqual(self.files(), before)
 
     def settle(self, result):
         return jobs.observe(self.folder, codec.digest(store.load(self.folder)), result["job"]["id"], "failed",

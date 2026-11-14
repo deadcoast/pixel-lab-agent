@@ -1,6 +1,5 @@
 """Concise structural comparison backed by exact connected-plan review reports."""
 
-import json
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -10,13 +9,7 @@ from .codec import PixlError
 
 def _plan(root, doc, ident):
     marker = production_plan._record(doc, ident, "X")
-    production_plan._require(marker.fields.get("mt", {}).get("binding") == "pixl.production.plan/1", "expected connected plan")
-    path = graph.confined(root, marker.fields["ur"])
-    production_plan._require(graph.file_hash(path) == marker.fields["dg"], "plan snapshot changed")
-    snapshot = json.loads(path.read_bytes())
-    production_plan._validate(snapshot["plan"], production_plan.SCHEMA)
-    production_plan._require(ident == snapshot["plan"]["id"] + ".plan", "plan identity mismatch")
-    return marker, snapshot
+    return marker, production_plan._snapshot(root, marker)
 
 
 def _delta(before, after):

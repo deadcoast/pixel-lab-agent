@@ -15,6 +15,10 @@ sandbox**. Run trusted consumer modules and installed profile resources. Desktop
 control is unnecessary for this headless route; interactive inspection remains
 available when a reviewer needs it.
 
+Saved config and destination-report versions retain their existing closed
+contracts; see [adapter compatibility](adapter-compatibility.md) for the version
+matrix and the scope of retained-kit qualification.
+
 ## Operation inputs
 
 The runtime API is:

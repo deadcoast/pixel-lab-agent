@@ -9,6 +9,7 @@ from hashlib import sha256
 from pathlib import Path
 
 from . import codec, graph, jobs, store
+from .adapter_versions import require_version
 from .codec import PixlError
 
 NAME = "preparation-focus.json"
@@ -38,9 +39,10 @@ def binding(document, root, folder, path, asset_id, task_id, marker_path, marker
 
     folder = Path(folder).resolve()
     marker, digest, relative = _json(root, marker_path, marker_hash)
+    require_version(marker, "retained preparation marker")
     fingerprint = marker.get("input_sha256")
     intent = marker.get("input")
-    _require(marker.get("version") == 1 and isinstance(intent, dict) and _hex(fingerprint), "invalid retained preparation marker")
+    _require(isinstance(intent, dict) and _hex(fingerprint), "invalid retained preparation marker")
     _require(platform._sha(intent) == fingerprint, "retained preparation fingerprint changed")
     _require(graph.confined(root, relative) == graph.confined(folder, f"plans/{fingerprint}.json"), "preparation marker is outside its exact store location")
     plar_path = graph.confined(root, path).relative_to(Path(root).resolve()).as_posix()
@@ -98,9 +100,15 @@ def task_store(document, root, task_id, artifact):
     if location.parent.name != "plans" or location.suffix != ".json" or not _hex(location.stem):
         return None
     marker, _, _ = _json(root, artifact.fields["ur"], artifact.fields["dg"])
-    if (marker.get("version") != 1 or not isinstance(marker.get("input"), dict)
-            or not {"packet", "request", "selection", "plar_path", "asset_id", "requirements_hash"} <= marker["input"].keys()
-            or marker.get("input_sha256") != location.stem or not isinstance(marker.get("prefix", ""), str)):
+    if "version" in marker:
+        require_version(marker, "retained preparation marker")
+    if (not isinstance(marker.get("input"), dict)
+            or not {"packet", "request", "selection", "plar_path", "asset_id", "requirements_hash"} <= marker["input"].keys()):
+        return None
+    # A recognized direct preparation is not a legacy/connected input merely
+    # because its saved version is unsupported. Do not bypass its focus guard.
+    require_version(marker, "retained preparation marker")
+    if marker.get("input_sha256") != location.stem or not isinstance(marker.get("prefix", ""), str):
         return None
     if task_id != marker.get("prefix", "") + "task":
         return None

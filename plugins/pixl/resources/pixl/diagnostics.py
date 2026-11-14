@@ -162,6 +162,12 @@ def error_result(operation, error, args=None):
     elif code == "unknown_tool":
         category = "missing_capability"
         recovery = {"action": "inspect_tool_inventory", "detail": "Inspect this local server's current tools/list and select a supported operation. This does not establish official provider availability."}
+    elif code == "adapter_version":
+        category = "missing_capability"
+        recovery = {
+            "action": "use_compatible_adapter",
+            "detail": "Preserve the saved file, its hashes and the original kit. Check spec/adapter-compatibility.md and use a kit supporting this format or an explicitly tested migration. Do not relabel its version, replace hashes, or retry provider work. This is a local format limitation, not an observation of provider availability.",
+        }
     elif code == "platform_tool":
         recovery = {"action": "inspect_current_tool_declarations", "detail": "Check the actual connected official tool declaration. A dated local catalog lookup does not establish that a live capability is absent."}
     elif code in _INVALID or isinstance(error, json.JSONDecodeError) or (code == "json_read" and isinstance(error.__cause__, ValueError)):

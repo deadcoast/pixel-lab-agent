@@ -6,7 +6,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from . import codec, graph, jobs, plar, platform, store
+from . import adapter_versions, codec, graph, jobs, plar, platform, store
 from .codec import PixlError, Record, Ref, Symbol
 
 
@@ -116,6 +116,9 @@ def _require(condition, message):
 
 
 def _validate(value, schema):
+    adapter_versions.require_version(
+        value, "connected production plan" if schema is SCHEMA else "stage request packet"
+    )
     error = next(Draft202012Validator(schema).iter_errors(value), None)
     _require(error is None, error.message if error else "")
     plar._bytes(value)
@@ -181,23 +184,44 @@ def _current_plan(doc, marker):
         )
 
 
+def _snapshot(root, marker):
+    """Read one supported immutable plan without upgrading or rewriting it."""
+    metadata = marker.fields.get("mt", {})
+    adapter_versions.require_binding(metadata.get("binding"), "pixl.production.plan")
+    _require(
+        isinstance(metadata.get("scope"), dict)
+        and all(isinstance(key, str) and isinstance(value, str) for key, value in metadata["scope"].items())
+        and isinstance(metadata.get("tasks"), dict)
+        and all(
+            isinstance(key, str) and isinstance(value, dict)
+            and isinstance(value.get("sha256"), str)
+            and isinstance(value.get("inputs"), list)
+            and all(isinstance(item, str) for item in value["inputs"])
+            for key, value in metadata["tasks"].items()
+        ),
+        "invalid production plan metadata; preserve its saved scope and tasks",
+    )
+    path = graph.confined(root, marker.fields["ur"])
+    _require(graph.file_hash(path) == marker.fields["dg"], "plan snapshot changed")
+    snapshot = json.loads(path.read_text(encoding="utf-8"))
+    adapter_versions.require_version(snapshot, "production plan snapshot")
+    _validate(snapshot.get("plan"), SCHEMA)
+    _require(isinstance(snapshot.get("selections"), dict), "plan snapshot needs selections")
+    _require(marker.id == snapshot["plan"]["id"] + ".plan", "plan identity mismatch")
+    return snapshot
+
+
 def blockers(doc, task_id, root, folder=None):
     """Check opt-in plan scope and only this stage's downstream allocations."""
     reasons = []
     task = doc.records[task_id]
     for reference in task.fields["ip"]:
         marker = doc.records[reference.id]
-        if marker.fields.get("mt", {}).get("binding") != "pixl.production.plan/1":
+        if not adapter_versions.is_binding(marker.fields.get("mt", {}).get("binding"), "pixl.production.plan"):
             continue
         try:
+            plan = _snapshot(root, marker)["plan"]
             _current_plan(doc, marker)
-            retained = graph.confined(root, marker.fields["ur"])
-            _require(
-                graph.file_hash(retained) == marker.fields["dg"],
-                "plan artifact changed",
-            )
-            plan = json.loads(retained.read_text(encoding="utf-8"))["plan"]
-            _validate(plan, SCHEMA)
             delivery_task = _ids(plan, "delivery")[0]
             for stage in plan["stages"]:
                 if "selection" not in stage:
@@ -315,14 +339,10 @@ def author(folder, expected, plan, root=None):
     existing = current.records.get(marker_id)
     if existing:
         _require(
-            existing.kind == "X"
-            and existing.fields.get("mt", {}).get("binding")
-            == "pixl.production.plan/1",
+            existing.kind == "X",
             "plan ID already belongs to another artifact",
         )
-        retained = json.loads(
-            graph.confined(root, existing.fields["ur"]).read_text(encoding="utf-8")
-        )
+        retained = _snapshot(root, existing)
         _require(
             retained["plan"] == plan,
             "plan ID already exists with different content; append a new plan ID",
@@ -578,15 +598,8 @@ def prepare(folder, expected, plan_id, stage_id, job_id, packet, root=None):
     _validate(packet, REQUEST_SCHEMA)
     folder, root, doc = jobs._load(folder, expected, root)
     marker = _record(doc, plan_id, "X")
-    _require(
-        marker.fields.get("mt", {}).get("binding") == "pixl.production.plan/1",
-        "not a production plan",
-    )
+    plan = _snapshot(root, marker)["plan"]
     _current_plan(doc, marker)
-    plan = json.loads(
-        graph.confined(root, marker.fields["ur"]).read_text(encoding="utf-8")
-    )["plan"]
-    _validate(plan, SCHEMA)
     stages = [s for s in plan["stages"] if s["id"] == stage_id]
     _require(len(stages) == 1, "unknown stage")
     stage = stages[0]

@@ -3,7 +3,7 @@
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from . import codec, graph, jobs, plar, retention, store
+from . import adapter_versions, codec, graph, jobs, plar, retention, store
 from .codec import PixlError
 
 
@@ -31,7 +31,8 @@ def report(path, focus, root, plar_path=None, asset_id=None):
         tasks.add(focus)
     elif selected.kind == "F":
         outputs.add(focus)
-    elif selected.kind == "X" and selected.fields.get("mt", {}).get("binding") == "pixl.production.plan/1":
+    elif selected.kind == "X" and adapter_versions.is_binding(selected.fields.get("mt", {}).get("binding"), "pixl.production.plan"):
+        adapter_versions.require_binding(selected.fields["mt"]["binding"], "pixl.production.plan")
         plans.add(focus)
     else:
         raise PixlError("authoring_context", "focus on a task, output or connected plan")
@@ -41,12 +42,17 @@ def report(path, focus, root, plar_path=None, asset_id=None):
     outputs.update(r.id for t in tasks for r in records[t].fields["op"])
     tasks.update(records[f].fields["tk"].id for f in outputs)
     seed_tasks, seed_outputs = set(tasks), set(outputs)
+    seed_inputs = {ref.id for task in seed_tasks for ref in records[task].fields["ip"]}
     for record in records.values():
         if record.kind == "F" and seed_outputs.intersection(r.id for r in record.fields.get("mb", [])):
             outputs.add(record.id)
-        if record.kind == "X" and record.fields.get("mt", {}).get("binding") == "pixl.production.plan/1":
-            plan_tasks = set(record.fields["mt"]["tasks"])
-            if record.id in plans or seed_tasks & plan_tasks:
+        if record.kind == "X" and adapter_versions.is_binding(record.fields.get("mt", {}).get("binding"), "pixl.production.plan"):
+            saved_tasks = record.fields["mt"].get("tasks", {})
+            plan_tasks = set(saved_tasks) if isinstance(saved_tasks, dict) else set()
+            if record.id in plans or record.id in seed_inputs or seed_tasks & plan_tasks:
+                adapter_versions.require_binding(record.fields["mt"]["binding"], "pixl.production.plan")
+                if not isinstance(saved_tasks, dict):
+                    raise PixlError("authoring_context", "connected plan metadata needs saved tasks")
                 plans.add(record.id)
                 tasks.update(plan_tasks)
     outputs.update(r.id for t in tasks for r in records[t].fields["op"])

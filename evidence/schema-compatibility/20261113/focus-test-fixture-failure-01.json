@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "scope": "Development test-fixture failure preserved from the first focused run",
+  "command": ".venv/Scripts/python.exe -B -m unittest tests.test_plar_preparation_focus tests.test_plar_prepare",
+  "observed_result": {"tests": 35, "failures": 3, "seconds": 45.677},
+  "failing_test": "tests.test_plar_prepare.PLARPrepareTests.test_unsupported_retained_marker_version_rejects_before_resumption_writes",
+  "subcases": [true, 2, null],
+  "assertion": "Expected adapter_version; observed file_hash",
+  "cause": "The fixture edited an already-bound marker without updating its production artifact digest. Existing integrity validation correctly rejected those altered bytes before schema dispatch.",
+  "correction": "Interrupt local preparation before production state publication, then probe resumption of the retained marker. The version error can now be reached without bypassing an existing digest guard.",
+  "limits": "This is a retained development-test observation, not a native trial or product regression. The original marker baseline receipt is separate and unchanged."
+}

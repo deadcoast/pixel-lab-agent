@@ -1,0 +1,111 @@
+"""SC-06 post-fix local preparation-marker read probes; never operates a provider.
+
+Run from repository root with the selected Python and -B. Existing fixture source
+is read only. A fresh disposable fixture is prepared locally, and variant marker
+bytes are tested against a matching in-memory binding, never a rewritten state.
+Numeric 1.0 is recorded as historical behavior, not declared invalid by this probe.
+"""
+
+import copy
+import json
+import subprocess
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from pixl import codec, preparation_focus, service, store
+from pixl.codec import PixlError
+from tests.test_plar_prepare import seed
+
+ROOT = Path.cwd().resolve()
+OUT = ROOT / "evidence/schema-compatibility/20261113/focus-confirmation-02"
+
+
+def digest(data):
+    return sha256(data).hexdigest()
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): digest(p.read_bytes())
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def observe(operation):
+    try:
+        value = operation()
+        return {"outcome": "returned", "value": str(value) if isinstance(value, Path) else value}
+    except PixlError as error:
+        return {"outcome": "rejected", "code": error.code, "detail": error.detail}
+
+
+def main():
+    sources = ["pixl/preparation_focus.py", "pixl/plar_prepare.py", "tests/test_plar_prepare.py"]
+    receipt = {"version": 1, "scope": "post-fix local saved-marker reader observations",
+               "recorded_at": datetime.now(UTC).isoformat(),
+               "head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+               "sources": {name: digest((ROOT / name).read_bytes()) for name in sources},
+               "limits": ["Controlled disposable fixture, not a historical user project upgrade",
+                          "No provider submission, native host, art generation or acceptance",
+                          "Variant marker digest is reflected only in an in-memory document copy",
+                          "Historical numeric 1.0 behavior is measured without redefining its policy"],
+               "cases": {}}
+    original_fixture = inventory(ROOT / "examples/plar-project")
+    for name in sources:
+        target = OUT / "sources" / (name + ".txt")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((ROOT / name).read_bytes())
+    with TemporaryDirectory(prefix="pixl-sc06-focus-baseline-") as temporary:
+        root = Path(temporary) / "consumer"
+        args, _, _, _ = seed(root)
+        prepared = service.call("pixl_plar_prepare", args, root)
+        folder = root / ".pixl/assets/queue.working"
+        document = store.load(folder)
+        state_before = (folder / "state.px").read_bytes()
+        selection = next(record for record in document.records.values()
+                         if record.fields.get("mt", {}).get("binding") == "pixl.plar.selection/1")
+        marker_path = root / selection.fields["ur"]
+        marker_bytes = marker_path.read_bytes()
+        marker = json.loads(marker_bytes)
+        task_id = marker.get("prefix", "") + "task"
+        receipt["baseline"] = {"prepared_job_state": prepared["job"]["state"],
+                               "state_sha256": digest(state_before),
+                               "marker_sha256": digest(marker_bytes),
+                               "legacy_absent_focus": observe(lambda: preparation_focus.read(
+                                   document, root, folder, marker["input"]["plar_path"], "queue.working"))}
+        for label, version in (("integer_1", 1), ("boolean_true", True), ("numeric_1_0", 1.0),
+                               ("future_2", 2), ("missing", None)):
+            variant = copy.deepcopy(marker)
+            if label == "missing":
+                variant.pop("version")
+            else:
+                variant["version"] = version
+            data = (json.dumps(variant, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            marker_path.write_bytes(data)
+            current = copy.deepcopy(document)
+            artifact = current.records[selection.id]
+            artifact.fields["dg"] = digest(data)
+            receipt["cases"][label] = {
+                "version_type": type(version).__name__ if label != "missing" else "absent",
+                "binding": observe(lambda: preparation_focus.binding(
+                    current, root, folder, marker["input"]["plar_path"], "queue.working", task_id,
+                    artifact.fields["ur"], artifact.fields["dg"])),
+                "task_store": observe(lambda: preparation_focus.task_store(current, root, task_id, artifact)),
+                "persisted_state_unchanged": (folder / "state.px").read_bytes() == state_before,
+            }
+        marker_path.write_bytes(marker_bytes)
+        receipt["fixture_state_preserved"] = (folder / "state.px").read_bytes() == state_before
+    receipt["original_example_preserved"] = inventory(ROOT / "examples/plar-project") == original_fixture
+    receipt["script_sha256"] = digest((OUT / "probe.py.txt").read_bytes())
+    receipt["source_identity_preserved"] = receipt["sources"] == {
+        name: digest((ROOT / name).read_bytes()) for name in sources}
+    (OUT / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"receipt": str(OUT / "receipt.json"),
+                      "cases": {name: {key: entry[key]["outcome"] for key in ("binding", "task_store")}
+                                for name, entry in receipt["cases"].items()},
+                      "source_identity_preserved": receipt["source_identity_preserved"],
+                      "original_example_preserved": receipt["original_example_preserved"]}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

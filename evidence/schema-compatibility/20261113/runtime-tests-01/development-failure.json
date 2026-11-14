@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "scope": "Preserved first targeted test run before fixing the test's diagnostic expectation",
+  "command": ".venv/Scripts/python.exe -m unittest tests.test_adapter_compatibility tests.test_production_plan tests.test_production_review tests.test_successor_review tests.test_authoring_context",
+  "observed": {"tests": 49, "seconds": 33.507, "failures": 2, "exit_code": 1},
+  "failed_test": "tests.test_adapter_compatibility.SavedProductionCompatibilityTests.test_changed_snapshot_cannot_be_reused_or_prepared",
+  "failed_subcases": ["production_plan.author", "production_plan.prepare"],
+  "expected_diagnostic": "plan snapshot changed",
+  "actual_diagnostic": "file_hash: next.plan: .pixl/production-plans/8ab3f5eb3f674026174367fd249d9741c3d6dcbc843934b38a5414d1487851f8.json",
+  "interpretation": "Both mutation routes already reject altered artifact bytes through jobs._load graph validation before reaching the shared snapshot reader. The new test was too narrow about error wording; retaining either existing file_hash or shared-reader snapshot diagnostic preserves the useful rejection and unchanged-files assertion.",
+  "change": "Adjusted only the new test's expected diagnostic; did not weaken either runtime hash check. A subsequent fresh run is recorded separately."
+}
