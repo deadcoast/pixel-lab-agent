@@ -1,0 +1,456 @@
+"""Inspect declared evidence and release identities without rebuilding or writing files."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Any
+
+sys.dont_write_bytecode = True
+ROOT = Path(__file__).resolve().parents[1]
+if not __package__:
+    sys.path.insert(0, str(ROOT))
+
+DEFAULT_MANIFEST = "evaluations/evidence-claims.json"
+SHA = re.compile(r"[0-9a-f]{64}\Z")
+IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]*\Z")
+LIMIT = ("Identity checks only: no rebuild, installation, native/model replay, provider "
+         "execution, artistic judgment or human acceptance. Changed applicability is "
+         "not a demonstrated runtime regression.")
+
+
+class InvalidRegistry(ValueError):
+    """The declared check cannot be interpreted without guessing."""
+
+
+def require(condition: bool, detail: str) -> None:
+    if not condition:
+        raise InvalidRegistry(detail)
+
+
+def object_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        require(key not in result, f"Duplicate JSON field: {key}")
+        result[key] = value
+    return result
+
+
+def reject_constant(value):
+    raise InvalidRegistry(f"Non-JSON numeric constant: {value}")
+
+
+def load_json(data: bytes):
+    return json.loads(data.decode("utf-8"), object_pairs_hook=object_pairs,
+                      parse_constant=reject_constant)
+
+
+def fields(item, required, optional=(), *, where):
+    require(isinstance(item, dict), f"{where}: expected an object")
+    require(set(required) <= item.keys(), f"{where}: missing fields {sorted(set(required) - item.keys())}")
+    require(item.keys() <= set(required) | set(optional),
+            f"{where}: unknown fields {sorted(item.keys() - set(required) - set(optional))}")
+
+
+def text(item, *, where):
+    require(isinstance(item, str) and bool(item.strip()), f"{where}: expected nonempty text")
+
+
+def identifier(item, *, where):
+    require(isinstance(item, str) and IDENTIFIER.fullmatch(item) is not None,
+            f"{where}: expected a stable identifier")
+
+
+def digest_value(item, *, where):
+    require(isinstance(item, str) and SHA.fullmatch(item) is not None,
+            f"{where}: expected a lowercase SHA-256")
+
+
+def relative_path(root: Path, name: str, *, empty=False) -> Path:
+    require(isinstance(name, str), "Path must be text")
+    if empty and name == "":
+        return root
+    require(bool(name) and "\\" not in name and ":" not in name and "\0" not in name,
+            f"Path must be a normalized repository-relative POSIX path: {name!r}")
+    require(all(part not in ("", ".", "..") for part in name.split("/")),
+            f"Path must be a normalized repository-relative POSIX path: {name!r}")
+    path = (root / name).resolve()
+    require(path.is_relative_to(root) and path != root, f"Path escapes repository: {name}")
+    return path
+
+
+def pointer_tokens(pointer: str) -> list[str]:
+    require(isinstance(pointer, str) and (pointer == "" or pointer.startswith("/")),
+            "JSON pointer must be empty or start with /")
+    require(re.search(r"~(?![01])", pointer) is None, f"Invalid JSON pointer escape: {pointer}")
+    return [] if pointer == "" else [part.replace("~1", "/").replace("~0", "~")
+                                    for part in pointer[1:].split("/")]
+
+
+def pointer_value(value, pointer: str):
+    for token in pointer_tokens(pointer):
+        if isinstance(value, dict):
+            require(token in value, f"Missing JSON pointer: {pointer}")
+            value = value[token]
+        elif isinstance(value, list):
+            require(re.fullmatch(r"0|[1-9][0-9]*", token) is not None,
+                    f"Invalid array index in JSON pointer: {pointer}")
+            index = int(token)
+            require(index < len(value), f"Missing JSON pointer: {pointer}")
+            value = value[index]
+        else:
+            raise InvalidRegistry(f"JSON pointer descends into a scalar: {pointer}")
+    return value
+
+
+def string_list(value, *, where, nonempty=False):
+    require(isinstance(value, list) and (bool(value) or not nonempty), f"{where}: expected a list")
+    for item in value:
+        text(item, where=where)
+    require(len(value) == len(set(value)), f"{where}: duplicate entries")
+
+
+def validate_registry(data, root: Path):
+    fields(data, ("version", "scope", "cycle", "receipts", "claims", "release"), where="registry")
+    require(type(data["version"]) is int and data["version"] == 1, "Unsupported evidence registry version")
+    text(data["scope"], where="scope")
+    text(data["cycle"], where="cycle")
+    require(isinstance(data["receipts"], list) and bool(data["receipts"]), "receipts must be nonempty")
+    receipts = {}
+    for row in data["receipts"]:
+        fields(row, ("id", "path", "sha256"), ("assertions",), where="receipt")
+        identifier(row["id"], where="receipt id")
+        require(row["id"] not in receipts, f"Duplicate receipt id: {row['id']}")
+        relative_path(root, row["path"])
+        digest_value(row["sha256"], where=row["id"])
+        require(isinstance(row.get("assertions", []), list), "assertions must be a list")
+        for assertion in row.get("assertions", []):
+            fields(assertion, ("pointer", "equals"), where="assertion")
+            pointer_tokens(assertion["pointer"])
+        receipts[row["id"]] = row
+    require(isinstance(data["claims"], list) and bool(data["claims"]), "claims must be nonempty")
+    claims = {}
+    for claim in data["claims"]:
+        fields(claim, ("id", "task", "document", "tier", "scope", "limits", "policy", "outcome",
+                       "receipts", "bindings"), where="claim")
+        identifier(claim["id"], where="claim id")
+        require(claim["id"] not in claims, f"Duplicate claim id: {claim['id']}")
+        for key in ("task", "tier", "scope"):
+            text(claim[key], where=f"{claim['id']} {key}")
+        string_list(claim["limits"], where="limits")
+        require(claim["policy"] in ("current", "historical"), "Unknown applicability policy")
+        document = claim["document"]
+        fields(document, ("path", "anchor", "line_sha256"), where="document")
+        relative_path(root, document["path"])
+        identifier(document["anchor"], where="document anchor")
+        digest_value(document["line_sha256"], where="document line")
+        string_list(claim["receipts"], where="claim receipts", nonempty=True)
+        require(set(claim["receipts"]) <= receipts.keys(), f"{claim['id']}: unknown receipt id")
+        fields(claim["outcome"], ("receipt", "pointer"), where="outcome")
+        require(claim["outcome"]["receipt"] in claim["receipts"], "Outcome receipt must be listed by its claim")
+        pointer_tokens(claim["outcome"]["pointer"])
+        require(isinstance(claim["bindings"], list), "bindings must be a list")
+        require(claim["policy"] != "current" or bool(claim["bindings"]), "Current claim has no applicability binding")
+        for binding in claim["bindings"]:
+            require(isinstance(binding, dict), "binding must be an object")
+            require(binding.get("kind") in ("file", "map"), "Unknown binding kind")
+            if binding["kind"] == "file":
+                fields(binding, ("kind", "domain", "path", "receipt", "pointer"), where="file binding")
+                relative_path(root, binding["path"])
+            else:
+                fields(binding, ("kind", "domain", "receipt", "pointer"), ("prefix", "inventory"), where="map binding")
+                relative_path(root, binding.get("prefix", ""), empty=True)
+                if "inventory" in binding:
+                    inventory = binding["inventory"]
+                    fields(inventory, ("roots", "suffixes"), where="inventory")
+                    for key in ("roots", "suffixes"):
+                        string_list(inventory[key], where=f"inventory {key}", nonempty=True)
+                    for folder in inventory["roots"]:
+                        relative_path(root, folder)
+                    require(all(re.fullmatch(r"\.[A-Za-z0-9_-]+", suffix) for suffix in inventory["suffixes"]),
+                            "Inventory suffixes must be file extensions such as .py")
+            require(binding["domain"] in ("source", "package"), "Unknown binding domain")
+            require(binding["receipt"] in claim["receipts"], "Binding receipt must be listed by its claim")
+            pointer_tokens(binding["pointer"])
+        claims[claim["id"]] = claim
+    fields(data["release"], ("archives",), where="release")
+    require(isinstance(data["release"]["archives"], list), "release archives must be a list")
+    archive_ids = []
+    for archive in data["release"]["archives"]:
+        fields(archive, ("receipt", "kind"), where="archive")
+        require(archive["receipt"] in receipts, "Unknown archive receipt")
+        require(archive["kind"] in ("wheel", "sdist"), "Unknown archive kind")
+        archive_ids.append(archive["receipt"])
+    require(len(archive_ids) == len(set(archive_ids)), "Duplicate archive receipt")
+    return receipts, claims
+
+
+def sha(path: Path) -> str:
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def finding(code, path, detail, action, **extra):
+    return {"code": code, "path": path, "detail": detail, "next_action": action, **extra}
+
+
+def inspect_receipt(root, row, *, needs_json=False):
+    result = {"id": row["id"], "path": row["path"], "expected_sha256": row["sha256"], "findings": []}
+    try:
+        path = relative_path(root, row["path"])
+        data = path.read_bytes()
+        actual = hashlib.sha256(data).hexdigest()
+        result["actual_sha256"] = actual
+        if actual != row["sha256"]:
+            result["status"] = "altered"
+            result["findings"].append(finding("receipt_changed", row["path"], "Retained receipt bytes differ from the declared identity.",
+                                               "Recover the original receipt or record a new separately reviewed reference; do not rewrite its outcome."))
+            return result, None
+        value = None
+        if needs_json or row.get("assertions"):
+            value = load_json(data)
+            for assertion in row["assertions"]:
+                actual_value = pointer_value(value, assertion["pointer"])
+                if json.dumps(actual_value, sort_keys=True) != json.dumps(assertion["equals"], sort_keys=True):
+                    result["findings"].append(finding("receipt_assertion", row["path"],
+                        f"Recorded field differs at {assertion['pointer']}.", "Review the declared claim against the intact receipt.",
+                        pointer=assertion["pointer"], expected=assertion["equals"], actual=actual_value))
+        result["status"] = "intact" if not result["findings"] else "mismatch"
+        return result, value
+    except FileNotFoundError:
+        result["status"] = "missing"
+        result["findings"].append(finding("receipt_missing", row["path"], "Declared retained file is missing.",
+                                           "Restore the exact retained artifact; a same-named new file is not its replacement."))
+    except (OSError, UnicodeError, ValueError) as error:
+        result["status"] = "unreadable"
+        result["findings"].append(finding("receipt_unreadable", row["path"], str(error), "Inspect the preserved receipt and registry without rebuilding either."))
+    return result, None
+
+
+def document_check(root, document):
+    path = document["path"]
+    try:
+        data = relative_path(root, path).read_bytes()
+        data.decode("utf-8")
+        marker = f'<a id="{document["anchor"]}"></a>'.encode()
+        require(data.count(marker) == 1, f"Expected one explicit document anchor: {document['anchor']}")
+        line = next(line for line in data.splitlines() if marker in line)
+        actual = hashlib.sha256(line).hexdigest()
+        if actual != document["line_sha256"]:
+            return "changed", [finding("claim_text_changed", path, "The registered claim line has changed.",
+                "Review the new wording against its scoped receipts, then explicitly update the registry binding.",
+                anchor=document["anchor"], expected_sha256=document["line_sha256"], actual_sha256=actual)]
+        return "intact", []
+    except (OSError, UnicodeError, ValueError) as error:
+        return "unavailable", [finding("claim_document_unavailable", path, str(error), "Restore or explicitly review the registered claim location.")]
+
+
+def inspect_binding(root, binding, expected):
+    entries = {}
+    if binding["kind"] == "file":
+        digest_value(expected, where="file binding expected value")
+        entries[binding["path"]] = expected
+    else:
+        require(isinstance(expected, dict) and bool(expected), "Map binding must resolve to a nonempty path/hash object")
+        prefix = binding.get("prefix", "")
+        for name, digest in expected.items():
+            relative_path(root, name)
+            digest_value(digest, where=f"map value {name}")
+            target = f"{prefix}/{name}" if prefix else name
+            relative_path(root, target)
+            entries[target] = digest
+    findings = []
+    for name, expected_sha in entries.items():
+        try:
+            actual = sha(relative_path(root, name))
+            if actual != expected_sha:
+                findings.append(finding("input_changed", name, "Current bytes differ from the tested identity.",
+                    "Review or requalify this affected scope; preserve the earlier receipt as historical evidence.",
+                    expected_sha256=expected_sha, actual_sha256=actual))
+        except OSError as error:
+            findings.append(finding("input_missing_or_unreadable", name, str(error), "Restore the input or requalify the changed scope without editing the old receipt."))
+    inventory = binding.get("inventory")
+    if inventory:
+        actual_names = set()
+        for folder in inventory["roots"]:
+            base = relative_path(root, folder)
+            require(base.is_dir(), f"Inventory root is missing or not a directory: {folder}")
+            for path in base.rglob("*"):
+                if "__pycache__" in path.relative_to(root).parts or path.suffix not in inventory["suffixes"]:
+                    continue
+                name = path.relative_to(root).as_posix()
+                resolved = relative_path(root, name)
+                if resolved.is_file():
+                    actual_names.add(name)
+        expected_names = {name for name in entries if Path(name).suffix in inventory["suffixes"]
+                          and any(name.startswith(folder + "/") for folder in inventory["roots"])}
+        for name in sorted(actual_names - expected_names):
+            findings.append(finding("input_added", name, "The current inventory includes a file absent from the tested input set.",
+                                    "Qualify the added input; an old suite result cannot cover newly added files."))
+        for name in sorted(expected_names - actual_names):
+            findings.append(finding("input_removed", name, "A tested inventory member is absent from the current scope.",
+                                    "Review or requalify the changed input set; preserve the original result."))
+    return {"kind": binding["kind"], "domain": binding["domain"], "receipt": binding["receipt"],
+            "pointer": binding["pointer"], "status": "changed" if findings else "current",
+            "files_checked": len(entries), "findings": findings}
+
+
+def release_check(root, archives):
+    from scripts.release_integrity import check_release
+    return check_release(root, archives)
+
+
+def inspect_claim(root, claim, receipt_rows, receipt_results, parsed):
+    findings = []
+    statuses = {receipt_results[name]["status"] for name in claim["receipts"]}
+    intact = statuses == {"intact"}
+    for name in claim["receipts"]:
+        findings.extend(receipt_results[name]["findings"])
+
+    def read_field(binding):
+        name = binding["receipt"]
+        require(receipt_results[name]["status"] == "intact", f"Cannot bind to an unverified receipt: {name}")
+        require(name in parsed, f"Verified JSON receipt is unavailable: {name}")
+        return pointer_value(parsed[name], binding["pointer"])
+
+    outcome = None
+    try:
+        outcome = read_field(claim["outcome"])
+    except (OSError, UnicodeError, ValueError) as error:
+        intact = False
+        findings.append(finding("outcome_unavailable", receipt_rows[claim["outcome"]["receipt"]]["path"],
+                                str(error), "Review the recorded outcome in the exact retained receipt; do not infer a pass."))
+    document_status, document_findings = document_check(root, claim["document"])
+    findings.extend(document_findings)
+    bindings = []
+    for binding in claim["bindings"]:
+        try:
+            bindings.append(inspect_binding(root, binding, read_field(binding)))
+        except (OSError, UnicodeError, ValueError) as error:
+            bindings.append({"kind": binding["kind"], "domain": binding["domain"], "receipt": binding["receipt"],
+                "pointer": binding["pointer"], "status": "unavailable", "files_checked": 0,
+                "findings": [finding("binding_unavailable", binding.get("path", receipt_rows[binding["receipt"]]["path"]),
+                    str(error), "Review the declared source/package binding before claiming current qualification.")]})
+    for binding in bindings:
+        findings.extend(binding["findings"])
+
+    def domain_state(domain):
+        values = {item["status"] for item in bindings if item["domain"] == domain}
+        return ("unbound" if not values else "unavailable" if "unavailable" in values else
+                "changed" if "changed" in values else "current")
+
+    unavailable = any(item["status"] == "unavailable" for item in bindings)
+    changed = any(item["status"] == "changed" for item in bindings)
+    needs_review = not intact or document_status != "intact" or unavailable or (claim["policy"] == "current" and changed)
+    applicability = ("unavailable" if not intact or unavailable else "historical" if claim["policy"] == "historical"
+                     else "stale" if changed or document_status != "intact" else "current")
+    action = ("Review the listed identity or scope changes; preserve existing outcomes and add new qualification when needed."
+              if needs_review else "Keep the recorded historical scope; this is not current qualification."
+              if claim["policy"] == "historical" else "The declared bindings still match; retain this scope and its acceptance limits.")
+    return {"id": claim["id"], "task": claim["task"], "tier": claim["tier"], "scope": claim["scope"],
+            "limits": claim["limits"], "policy": claim["policy"], "status": "needs_review" if needs_review else "intact",
+            "receipt_integrity": "intact" if intact else "needs_review", "recorded_outcome": outcome,
+            "document_status": document_status, "source_applicability": domain_state("source"),
+            "package_applicability": domain_state("package"), "applicability": applicability,
+            "bindings": bindings, "changed_paths": sorted({item["path"] for item in findings}),
+            "findings": findings, "next_action": action}
+
+
+def check(root=ROOT, manifest=DEFAULT_MANIFEST, claim_ids=None):
+    root = Path(root).resolve()
+    result: dict[str, Any] = {"version": 1, "status": "invalid", "exit_code": 2, "root": str(root),
+                              "manifest": str(manifest), "scope": LIMIT, "claims": [], "receipts": []}
+    result["checker_sha256"] = sha(Path(__file__))
+    try:
+        require(root.is_dir(), "Repository root must be an existing directory")
+        path = relative_path(root, str(manifest))
+        data = path.read_bytes()
+        result["registry_sha256"] = hashlib.sha256(data).hexdigest()
+        registry = load_json(data)
+        rows, claims = validate_registry(registry, root)
+        selected = list(claim_ids) if claim_ids is not None else list(claims)
+        require(bool(selected), "Select at least one declared claim")
+        require(len(selected) == len(set(selected)), "Duplicate --claim selection")
+        require(set(selected) <= claims.keys(), f"Unknown claim ids: {sorted(set(selected) - claims.keys())}")
+        needed = {name for identity in selected for name in claims[identity]["receipts"]}
+        needed.update(item["receipt"] for item in registry["release"]["archives"])
+        json_needed = {claims[identity]["outcome"]["receipt"] for identity in selected}
+        json_needed.update(binding["receipt"] for identity in selected for binding in claims[identity]["bindings"])
+        receipt_results, parsed = {}, {}
+        for identity, row in rows.items():
+            if identity not in needed:
+                continue
+            receipt_results[identity], value = inspect_receipt(root, row, needs_json=identity in json_needed)
+            if receipt_results[identity]["status"] == "intact" and (identity in json_needed or row.get("assertions")):
+                parsed[identity] = value
+        result["cycle"] = registry["cycle"]
+        result["declared_scope"] = registry["scope"]
+        result["selection"] = selected
+        result["declared_claim_count"] = len(claims)
+        result["receipts"] = list(receipt_results.values())
+        result["claims"] = [inspect_claim(root, claims[identity], rows, receipt_results, parsed) for identity in selected]
+        archives = [{"path": rows[item["receipt"]]["path"], "sha256": rows[item["receipt"]]["sha256"], "kind": item["kind"]}
+                    for item in registry["release"]["archives"]]
+        result["release"] = release_check(root, archives)
+        require(result["release"].get("status") in ("current", "needs_review", "invalid"), "Unknown release check result")
+        result["status"] = ("invalid" if result["release"]["status"] == "invalid" else "needs_review"
+                            if result["release"]["status"] == "needs_review"
+                            or any(row["status"] != "intact" for row in result["receipts"] + result["claims"])
+                            else "intact")
+        result["exit_code"] = {"intact": 0, "needs_review": 1, "invalid": 2}[result["status"]]
+        result["summary"] = {"claims_checked": len(selected), "receipts_checked": len(needed),
+                             "current": sum(row["applicability"] == "current" for row in result["claims"]),
+                             "historical": sum(row["applicability"] == "historical" for row in result["claims"]),
+                             "needs_review": sum(row["status"] == "needs_review" for row in result["claims"])}
+    except (OSError, UnicodeError, ValueError, TypeError) as error:
+        result.update(status="invalid", exit_code=2, error=str(error),
+                      next_action="Correct the declared registry or unavailable check input; preserve historical receipts. Nothing was rebuilt.")
+    return result
+
+
+def render(report):
+    lines = [f"PIXL evidence/release integrity: {report['status']}", report["scope"]]
+    if "error" in report:
+        lines.extend((report["error"], report["next_action"]))
+    for claim in report["claims"]:
+        outcome = json.dumps(claim["recorded_outcome"], ensure_ascii=False)
+        if len(outcome) > 120:
+            outcome = outcome[:117] + "..."
+        lines.append(f"{claim['id']}: {claim['status']}; applicability={claim['applicability']}; recorded outcome={outcome}")
+        for item in claim["findings"][:8]:
+            lines.append(f"  {item['code']}: {item['path']} — {item['detail']}")
+        if len(claim["findings"]) > 8:
+            lines.append(f"  {len(claim['findings']) - 8} more findings; use --json for every locator.")
+        if claim["findings"]:
+            lines.append(f"  Next: {claim['next_action']}")
+    release = report.get("release")
+    if release:
+        lines.append(f"Release: {release['status']}")
+        for item in release.get("checks", []):
+            if item["status"] != "current":
+                lines.append(f"  {item['code']}: {item['detail']}")
+                if item.get("paths"):
+                    lines.append("  Paths: " + ", ".join(item["paths"][:8]))
+                if item.get("next_action"):
+                    lines.append("  Next: " + item["next_action"])
+    return "\n".join(lines)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=ROOT, help="Repository to inspect; no files are written")
+    parser.add_argument("--manifest", default=DEFAULT_MANIFEST, help="Repository-relative explicit claim registry")
+    parser.add_argument("--claim", action="append", help="Check a named claim; repeat to select more. Release checks always run.")
+    parser.add_argument("--json", action="store_true", help="Print the full structured report to stdout")
+    args = parser.parse_args(argv)
+    report = check(args.root, args.manifest, args.claim)
+    print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else render(report))
+    return report["exit_code"]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

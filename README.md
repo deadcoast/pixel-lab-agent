@@ -81,6 +81,12 @@ route; it needs this repository and lockfile. It is not required for a consumer
 using a complete copied kit. Tokenizer benchmarking remains in the optional
 `benchmark` extra as well as the maintainer environment.
 
+For a read-only check of current package inputs and retained capability claims, run
+`.venv/Scripts/python.exe -B scripts/check_integrity.py`. The
+[integrity guide](docs/EVIDENCE-INTEGRITY.md) explains historical results, stale
+current applicability and exact recovery actions. The command prints a report
+without rebuilding packages or evidence.
+
 The verifier archives previous generated evidence, regenerates local fixtures and the plugin, discovers the entire test suite, and builds/installs a wheel through its source distribution. Each attempt has its own directory under `evidence/verification-runs/`; a failed stage leaves a current failure report and identifies unperformed stages. See [verification scope](docs/VERIFICATION.md) for separate lint/type checks and evidence limits.
 
 The checked-in source adapters expose `$pixl` in Codex and `/pixl` in Claude;

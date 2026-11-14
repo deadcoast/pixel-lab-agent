@@ -1,0 +1,70 @@
+"""Capture the final read-only report after living-document reconciliation."""
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = ROOT / 'evidence/release-integrity/20261114/final-check-01'
+OUT.mkdir(exist_ok=False)
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write(name, value):
+    with (OUT / name).open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+registry = json.loads((ROOT / 'evaluations/evidence-claims.json').read_bytes())
+names = {row['path'] for row in registry['receipts']}
+names.update(claim['document']['path'] for claim in registry['claims'])
+names.update({'README.md', 'TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/IDENTIFIED.md',
+              'docs/EVIDENCE-INTEGRITY.md', 'docs/VERIFICATION.md', 'evaluations/evidence-claims.json'})
+for folder in ('pixl', 'scripts', 'plugins/pixl'):
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*') if p.is_file())
+
+
+def snapshot():
+    return {name: {'sha256': sha(ROOT / name), 'mtime_ns': (ROOT / name).stat().st_mtime_ns}
+            for name in sorted(names)}
+
+
+before = snapshot()
+write('before.json', before)
+command = [sys.executable, '-B', str(ROOT / 'scripts/check_integrity.py'), '--json']
+run = subprocess.run(command, cwd=ROOT, capture_output=True, timeout=90,
+                     env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+(OUT / 'stdout.json').write_bytes(run.stdout)
+(OUT / 'stderr.txt').write_bytes(run.stderr)
+after = snapshot()
+write('after.json', after)
+report = json.loads(run.stdout)
+changed = [name for name in names if before[name] != after[name]]
+claims = {claim['id']: claim for claim in report['claims']}
+checks = {
+    'expected_review_exit': run.returncode == report['exit_code'] == 1,
+    'registered_receipts_intact': len(report['receipts']) == 54 and all(r['status'] == 'intact' for r in report['receipts']),
+    'all_claim_lines_intact': all(c['document_status'] == 'intact' for c in report['claims']),
+    'current_setup_and_install': all(claims[n]['applicability'] == 'current' for n in ('CORE-SETUP', 'CORE-INSTALL-UPDATE')),
+    'stale_checks_remain_visible': {c['id'] for c in report['claims'] if c['status'] == 'needs_review'} == {'CURRENT-FULL-VERIFICATION', 'CURRENT-CLAIM-REVIEW'},
+    'failed_and_partial_outcomes_preserved': claims['CORE-RECOVERY-CLAUDE-FAILURE']['recorded_outcome'] == 'fail' and claims['CORE-CONTRACT']['recorded_outcome'] == 'partial',
+    'read_only_registered_and_implementation_files': not changed,
+}
+result = {'version': 1, 'observed_at': datetime.now(UTC).isoformat(),
+          'status': 'pass' if all(checks.values()) else 'fail', 'checks': checks,
+          'command': command, 'returncode': run.returncode, 'expected_returncode': 1,
+          'files_checked': len(before), 'changed_paths': changed,
+          'source_sha256': sha(Path(__file__)), 'registry_sha256': report['registry_sha256'],
+          'checker_sha256': report['checker_sha256'], 'report_sha256': sha(OUT / 'stdout.json'),
+          'summary': report['summary'],
+          'scope': 'Final documentation/source binding and read-only report capture; all qualification and failure evidence retains its original scope. No fresh full suite, native/provider/art/human acceptance.'}
+write('RESULT.json', result)
+print(json.dumps({key: result[key] for key in ('status', 'files_checked', 'summary')}))
+raise SystemExit(0 if result['status'] == 'pass' else 1)

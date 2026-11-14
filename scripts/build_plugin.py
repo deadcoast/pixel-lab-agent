@@ -14,18 +14,21 @@ from pixl.graph import confined
 from pixl.sources import INVENTORY_PATH, capture_inventory
 
 
-def build():
-    inventory, source_snapshots = capture_inventory(ROOT)
+def capture_plan(root, plugin, inventory, source_snapshots):
+    """Capture the canonical bundle plan without writing generated files."""
+    root, plugin = Path(root), Path(plugin)
     plan = {}
     captured = {}
 
     def add(source, relative):
-        target = (PLUGIN / relative).resolve()
-        if not target.is_relative_to(PLUGIN.resolve()):
+        target = (plugin / relative).resolve()
+        if not target.is_relative_to(plugin.resolve()):
             raise ValueError("bundle path escapes plugin")
+        if not Path(source).resolve().is_relative_to(root.resolve()):
+            raise ValueError("bundle source escapes root")
         plan[target] = Path(source)
 
-    for path in (ROOT / "pixl").iterdir():
+    for path in (root / "pixl").iterdir():
         if path.suffix in (".py", ".json"):
             add(path, Path("runtime/pixl") / path.name)
             # Source evidence remains an importable package with the same dependency closure.
@@ -38,19 +41,19 @@ def build():
         "methods",
         "evidence/art-methods",
     ):
-        folder = ROOT / name
+        folder = root / name
         if folder.exists():
             for path in folder.rglob("*"):
                 if path.is_file() and "__pycache__" not in path.parts:
-                    add(path, Path("resources") / path.relative_to(ROOT))
-    add(ROOT / ".agents/PROFILE.md", Path("resources/agent/PROFILE.md"))
+                    add(path, Path("resources") / path.relative_to(root))
+    add(root / ".agents/PROFILE.md", Path("resources/agent/PROFILE.md"))
     for name in [INVENTORY_PATH, *(row["path"] for row in inventory["documents"])]:
-        add(ROOT / name, Path("resources") / name)
-        captured[(PLUGIN / "resources" / name).resolve()] = source_snapshots[name]
-    review = ROOT / "evidence/source-migration/range-review.json"
+        add(root / name, Path("resources") / name)
+        captured[(plugin / "resources" / name).resolve()] = source_snapshots[name]
+    review = root / "evidence/source-migration/range-review.json"
     if review.exists():
-        add(review, Path("resources") / review.relative_to(ROOT))
-    add(ROOT / "NOTICE.md", Path("NOTICE.md"))
+        add(review, Path("resources") / review.relative_to(root))
+    add(root / "NOTICE.md", Path("NOTICE.md"))
     for plugin_folder in (
         "skills",
         "agents",
@@ -59,16 +62,16 @@ def build():
         ".claude-plugin",
         ".codex-plugin",
     ):
-        for path in (PLUGIN / plugin_folder).rglob("*"):
+        for path in (plugin / plugin_folder).rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
-                add(path, path.relative_to(PLUGIN))
+                add(path, path.relative_to(plugin))
     # Preflight all bytes before changing an installed/generated file.
     snapshots = {}
     for target, source in plan.items():
         snapshots[target] = (
             captured[target] if target in captured else source.read_bytes()
         )
-    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    metadata = tomllib.loads(confined(root, "pyproject.toml").read_text(encoding="utf-8"))
     project = metadata.get("project", {})
     version, dependencies = project.get("version"), project.get("dependencies")
     if (
@@ -79,6 +82,15 @@ def build():
     ):
         raise ValueError("package metadata requires a version and a dependency list")
     requirements = ("\n".join(dependencies) + "\n").encode("utf-8")
+    return {"files": plan, "snapshots": snapshots, "project": project,
+            "version": version, "requirements": requirements}
+
+
+def build():
+    inventory, source_snapshots = capture_inventory(ROOT)
+    captured = capture_plan(ROOT, PLUGIN, inventory, source_snapshots)
+    plan, snapshots = captured["files"], captured["snapshots"]
+    version, requirements = captured["version"], captured["requirements"]
     requirements_path = confined(PLUGIN, "requirements.txt")
     obsolete = []
     manifest_path = confined(PLUGIN, "bundle-manifest.json")

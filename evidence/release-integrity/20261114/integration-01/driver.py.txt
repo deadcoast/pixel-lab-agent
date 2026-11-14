@@ -1,0 +1,207 @@
+"""Execute read-only integrity inspection and isolated drift cases; retain every result."""
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def sha(path):
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def write(path, value):
+    with path.open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+def pointer(value, locator):
+    for token in locator[1:].split('/') if locator else []:
+        token = token.replace('~1', '/').replace('~0', '~')
+        value = value[int(token)] if isinstance(value, list) else value[token]
+    return value
+
+
+def contained(root, name):
+    path = (root / name).resolve()
+    if path == root or not path.is_relative_to(root):
+        raise ValueError('Fixture path must remain confined: ' + name)
+    return path
+
+
+def inventory(root, names=None):
+    paths = (root / name for name in names) if names is not None else root.rglob('*')
+    result = {}
+    for path in paths:
+        if path.is_file():
+            result[path.relative_to(root).as_posix()] = {
+                'sha256': sha(path), 'bytes': path.stat().st_size,
+                'mtime_ns': path.stat().st_mtime_ns}
+    return result
+
+
+def signature(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def copy_inputs(destination, registry):
+    names = {'README.md', 'NOTICE.md', 'pyproject.toml', 'setup.py', 'MANIFEST.in',
+             'uv.lock', '.agents/PROFILE.md', 'training/source-inventory.json',
+             'evaluations/evidence-claims.json'}
+    for folder in ('pixl', 'spec', 'knowledge', 'examples', 'docs/research', 'methods',
+                   'evidence/art-methods', 'evidence/source-migration',
+                   'training/original-docs', 'plugins/pixl'):
+        names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*')
+                     if p.is_file() and '__pycache__' not in p.parts and 'previous-run' not in p.parts)
+    receipts = {r['id']: r for r in registry['receipts']}
+    names.update(r['path'] for r in receipts.values())
+    for claim in registry['claims']:
+        names.add(claim['document']['path'])
+        for binding in claim['bindings']:
+            if binding['kind'] == 'file':
+                names.add(binding['path'])
+            else:
+                saved = json.loads((ROOT / receipts[binding['receipt']]['path']).read_bytes())
+                prefix = binding.get('prefix', '')
+                names.update((prefix + '/' if prefix else '') + n
+                             for n in pointer(saved, binding['pointer']))
+                for folder in binding.get('inventory', {}).get('roots', []):
+                    suffixes = binding['inventory']['suffixes']
+                    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*')
+                                 if p.is_file() and p.suffix in suffixes and '__pycache__' not in p.parts)
+    for name in sorted(names):
+        source = contained(ROOT, name)
+        if source.is_file():
+            target = contained(destination, name)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--work', type=Path, required=True)
+    parser.add_argument('--out', type=Path, required=True)
+    args = parser.parse_args()
+    work, out = args.work.resolve(), args.out.resolve()
+    for path, parent in ((work, ROOT / 'build'), (out, ROOT / 'evidence/release-integrity')):
+        if path == parent or not path.is_relative_to(parent) or path.exists():
+            raise ValueError('Use a fresh confined output: ' + str(path))
+    work.mkdir(parents=True)
+    out.mkdir(parents=True)
+    shutil.copy2(__file__, out / 'driver.py.txt')
+    registry = json.loads((ROOT / 'evaluations/evidence-claims.json').read_bytes())
+    receipts = {r['id']: r for r in registry['receipts']}
+    results = []
+    result = {'version': 1, 'status': 'running', 'started_at': datetime.now(UTC).isoformat(),
+              'driver_sha256': sha(__file__), 'registry_sha256': sha(ROOT / 'evaluations/evidence-claims.json'),
+              'scope': 'Actual local read-only CLI, isolated tamper detection and retained outcome identity. No build/native/provider/art/human acceptance.'}
+    write(out / 'START.json', result)
+
+    def execute(name, target, verify, options=(), names=None, structured=True, expected_exit=1):
+        before = inventory(target, names)
+        command = [sys.executable, '-B', str(ROOT / 'scripts/check_integrity.py'), '--root', str(target), *options]
+        if structured:
+            command.append('--json')
+        started = time.monotonic()
+        run = subprocess.run(command, cwd=work, capture_output=True, timeout=90,
+                             env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+        elapsed = time.monotonic() - started
+        (out / (name + '.stdout.txt')).write_bytes(run.stdout)
+        (out / (name + '.stderr.txt')).write_bytes(run.stderr)
+        after = inventory(target, names)
+        report = json.loads(run.stdout) if structured else run.stdout.decode('utf-8')
+        changed = sorted(n for n in before.keys() | after.keys() if before.get(n) != after.get(n))
+        record = {'name': name, 'argv': command, 'cwd': str(work), 'returncode': run.returncode,
+                  'expected_returncode': expected_exit, 'elapsed_seconds': elapsed,
+                  'before_files': len(before), 'after_files': len(after), 'changed_paths': changed,
+                  'before_signature': signature(before), 'after_signature': signature(after),
+                  'stdout_sha256': sha(out / (name + '.stdout.txt')),
+                  'stderr_sha256': sha(out / (name + '.stderr.txt')),
+                  'read_only': not changed, 'semantic_check': bool(verify(report))}
+        record['pass'] = not changed and record['semantic_check'] and run.returncode == expected_exit
+        write(out / (name + '.json'), record)
+        results.append(record)
+        if not record['pass']:
+            raise AssertionError('Inspect preserved case: ' + name)
+        return report
+
+    def claim(report, identity):
+        return next(c for c in report['claims'] if c['id'] == identity)
+
+    def release_issue(report, code, locator):
+        return any(c['code'] == code and c['status'] == 'needs_review' and
+                   locator in json.dumps(c['detail']) for c in report['release']['checks'])
+
+    try:
+        # Existing tracked history plus new implementation/doc files; receipt output
+        # is deliberately external to the inspected list and fixtures live in build.
+        tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
+        untracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard', '-z'], cwd=ROOT).decode().split('\0')
+        live_names = sorted({n for n in tracked + untracked if n and not n.startswith('evidence/release-integrity/')})
+        execute('01-live', ROOT, lambda r: r['status'] == 'needs_review' and
+                all(x['status'] == 'intact' for x in r['receipts']) and
+                claim(r, 'CURRENT-FULL-VERIFICATION')['applicability'] == 'stale' and
+                claim(r, 'CORE-RECOVERY-CLAUDE-FAILURE')['recorded_outcome'] == 'fail', names=live_names)
+        base = work / 'exact consumer checkout'
+        base.mkdir()
+        copy_inputs(base, registry)
+        write(out / 'fixture-inputs.json', inventory(base))
+        execute('02-relocated-checkout', base, lambda r: r['status'] == 'needs_review' and
+                claim(r, 'CORE-SETUP')['applicability'] == 'current' and
+                claim(r, 'CORE-INSTALL-UPDATE')['applicability'] == 'current')
+
+        def variant(name):
+            target = work / name
+            shutil.copytree(base, target, copy_function=shutil.copy2)
+            return target
+
+        target = variant('source drift')
+        path = contained(target, 'pixl/readiness.py')
+        path.write_bytes(path.read_bytes() + b'\n# Isolated TM-10 source drift.\n')
+        execute('03-source-drift', target, lambda r: release_issue(r, 'bundle_source_applicability', 'readiness.py'))
+        target = variant('payload drift')
+        path = contained(target, 'plugins/pixl/runtime/pixl/readiness.py')
+        path.write_bytes(path.read_bytes() + b'\n# Isolated TM-10 payload drift.\n')
+        execute('04-payload-drift', target, lambda r: release_issue(r, 'bundle_payload_integrity', 'readiness.py'))
+        target = variant('missing receipt')
+        contained(target, receipts['tm05-local']['path']).unlink()
+        execute('05-missing-receipt', target, lambda r: any(x['id'] == 'tm05-local' and x['status'] == 'missing' for x in r['receipts']) and
+                claim(r, 'CORE-INSTALL-UPDATE')['recorded_outcome'] is None)
+        target = variant('changed claim')
+        document = next(c for c in registry['claims'] if c['id'] == 'CORE-SETUP')['document']
+        path = contained(target, document['path'])
+        marker = ('<a id="' + document['anchor'] + '"></a>').encode()
+        path.write_bytes(path.read_bytes().replace(marker, marker + b'UNTESTED EXPANSION '))
+        execute('06-claim-drift', target, lambda r: claim(r, 'CORE-SETUP')['document_status'] == 'changed')
+        target = variant('new runtime module')
+        contained(target, 'pixl/tm10_unqualified_module.py').write_bytes(b'# Isolated unqualified source.\n')
+        execute('07-new-source', target, lambda r: release_issue(r, 'bundle_payload_set', 'tm10_unqualified_module.py') and
+                'pixl/tm10_unqualified_module.py' in claim(r, 'CURRENT-FULL-VERIFICATION')['changed_paths'])
+        execute('08-preserved-failure', base, lambda r: len(r['claims']) == 1 and r['claims'][0]['receipt_integrity'] == 'intact' and
+                r['claims'][0]['recorded_outcome'] == 'fail' and r['claims'][0]['applicability'] == 'historical',
+                options=['--claim', 'CORE-RECOVERY-CLAUDE-FAILURE'])
+        execute('09-human-report', base, lambda r: 'CORE-SETUP' in r and 'Next:' in r and 'Release:' in r,
+                structured=False)
+        execute('10-unknown-claim', base, lambda r: r['status'] == 'invalid' and 'Unknown claim' in r['error'],
+                options=['--claim', 'DOES-NOT-EXIST'], expected_exit=2)
+        result['status'] = 'pass'
+    except Exception as error:
+        result.update(status='fail', error={'type': type(error).__name__, 'detail': str(error)})
+    result.update(finished_at=datetime.now(UTC).isoformat(), cases=results,
+                  passed=sum(r['pass'] for r in results), total=len(results))
+    write(out / 'RESULT.json', result)
+    print(json.dumps({k: result[k] for k in ('status', 'passed', 'total')}))
+    return 0 if result['status'] == 'pass' else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -1,0 +1,226 @@
+"""Release inspection detects stale or damaged bytes without repairing them."""
+
+import hashlib
+import io
+import json
+import tarfile
+import unittest
+import warnings
+import zipfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+from scripts import build_plugin, release_integrity
+
+
+class ReleaseIntegrityTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.plugin = self.root / "plugins/pixl"
+        self.content = {
+            "pixl/__init__.py": b"# fixture\n",
+            "pixl/jobs.py": b"VALUE = 'saved state'\n",
+            "pixl/registry.json": b"{}\n",
+            ".agents/PROFILE.md": b"# Fixture profile\n",
+            "training/original-docs/source.md": b"# Original source\nMeaning remains.\n",
+            "knowledge/method.json": b'{"scope":"fixture"}\n',
+            "spec/fixture.md": b"# Fixture specification\n",
+            "NOTICE.md": b"Source notice\n",
+            "setup.py": b"# Fixture distribution builder\n",
+            "MANIFEST.in": b"include NOTICE.md\n",
+            "plugins/pixl/skills/pixl/SKILL.md": b"# Fixture host skill\n",
+            "pyproject.toml": b'[project]\nname="pixl-agent"\nversion="1.0.0"\nrequires-python=">=3.11"\ndependencies=["pillow>=10", "jsonschema>=4.18"]\n',
+        }
+        for name, data in self.content.items():
+            self.write(name, data)
+        source = self.content["training/original-docs/source.md"]
+        self.write("training/source-inventory.json", json.dumps({"version": 1, "documents": [{
+            "id": "fixture", "path": "training/original-docs/source.md", "sha256": self.sha(source),
+            "lines": 2, "previous": None}]}).encode())
+        with patch.object(build_plugin, "ROOT", self.root), patch.object(build_plugin, "PLUGIN", self.plugin):
+            build_plugin.build()
+
+    @staticmethod
+    def sha(data):
+        return hashlib.sha256(data).hexdigest()
+
+    def write(self, name, data):
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return path
+
+    def tree(self):
+        return {p.relative_to(self.root).as_posix(): (self.sha(p.read_bytes()), p.stat().st_mtime_ns)
+                for p in self.root.rglob("*") if p.is_file()}
+
+    def inspect(self, archives=None):
+        before = self.tree()
+        result = release_integrity.check_release(self.root, archives or [])
+        self.assertEqual(before, self.tree(), "The checker changed file paths, bytes or mtimes")
+        return result
+
+    def code(self, result, code):
+        return next(row for row in result["checks"] if row["code"] == code)
+
+    def manifest(self):
+        return json.loads((self.plugin / "bundle-manifest.json").read_bytes())
+
+    def save_manifest(self, value):
+        self.write("plugins/pixl/bundle-manifest.json", json.dumps(value).encode())
+
+    def archive(self, kind="wheel", change=None):
+        metadata = b"Metadata-Version: 2.4\nName: pixl-agent\nVersion: 1.0.0\nRequires-Python: >=3.11\nRequires-Dist: pillow>=10\nRequires-Dist: jsonschema>=4.18\n\n"
+        if kind == "wheel":
+            files = {p.relative_to(self.plugin).as_posix().replace("resources/", "pixl/resources/", 1): p.read_bytes()
+                     for p in (self.plugin / "resources").rglob("*") if p.is_file()}
+            files.update({"pixl/" + p.name: p.read_bytes() for p in (self.root / "pixl").iterdir()})
+            files["pixl/resources/NOTICE.md"] = self.content["NOTICE.md"]
+            files.update({"pixl_agent-1.0.0.dist-info/METADATA": metadata,
+                          "pixl_agent-1.0.0.dist-info/WHEEL": b"Wheel-Version: 1.0\n",
+                          "pixl_agent-1.0.0.dist-info/RECORD": b""})
+        else:
+            files = {p.relative_to(self.root).as_posix(): p.read_bytes() for p in self.root.rglob("*")
+                     if p.is_file() and not p.is_relative_to(self.plugin)}
+            files["PKG-INFO"] = metadata
+        if change:
+            change(files)
+        path = self.root / ("retained.whl" if kind == "wheel" else "retained.tar.gz")
+        if kind == "wheel":
+            with zipfile.ZipFile(path, "w") as archive:
+                for name, data in files.items():
+                    archive.writestr(name, data)
+        else:
+            with tarfile.open(path, "w:gz") as archive:
+                for name, data in files.items():
+                    info = tarfile.TarInfo("pixl_agent-1.0.0/" + name)
+                    info.size = len(data)
+                    archive.addfile(info, io.BytesIO(data))
+        return {"path": path.name, "sha256": self.sha(path.read_bytes()), "kind": kind}
+
+    def test_current_bundle_does_not_write_or_build(self):
+        with patch.object(build_plugin, "build", side_effect=AssertionError("must not build")):
+            result = self.inspect()
+        self.assertEqual(result["status"], "current")
+
+    def test_source_drift_preserves_valid_old_payload(self):
+        self.write("pixl/jobs.py", b"VALUE = 'new implementation'\n")
+        result = self.inspect()
+        self.assertEqual(result["status"], "needs_review")
+        self.assertEqual(self.code(result, "bundle_payload_integrity")["status"], "current")
+        self.assertEqual(self.code(result, "bundle_source_applicability")["status"], "needs_review")
+
+    def test_payload_drift_is_separate_from_source_drift(self):
+        self.write("plugins/pixl/runtime/pixl/jobs.py", b"altered payload\n")
+        result = self.inspect()
+        self.assertEqual(self.code(result, "bundle_payload_integrity")["status"], "needs_review")
+
+    def test_forged_manifest_cannot_hide_changed_payload(self):
+        data = b"altered payload\n"
+        self.write("plugins/pixl/runtime/pixl/jobs.py", data)
+        manifest = self.manifest()
+        row = next(row for row in manifest["files"] if row["path"] == "runtime/pixl/jobs.py")
+        row.update(sha256=self.sha(data), bytes=len(data))
+        self.save_manifest(manifest)
+        result = self.inspect()
+        self.assertEqual(self.code(result, "bundle_payload_integrity")["status"], "current")
+        self.assertEqual(self.code(result, "bundle_source_applicability")["status"], "needs_review")
+
+    def test_missing_manifest_row_cannot_hide_payload(self):
+        manifest = self.manifest()
+        manifest["files"] = [row for row in manifest["files"] if row["path"] != "runtime/pixl/jobs.py"]
+        self.save_manifest(manifest)
+        result = self.inspect()
+        self.assertEqual(self.code(result, "bundle_payload_set")["status"], "needs_review")
+
+    def test_added_source_module_is_visible(self):
+        self.write("pixl/new_operation.py", b"# new implementation\n")
+        result = self.inspect()
+        issues = self.code(result, "bundle_payload_set")["detail"]
+        self.assertEqual({row["path"] for row in issues}, {"runtime/pixl/new_operation.py", "resources/pixl/new_operation.py"})
+
+    def test_unlisted_generated_file_is_visible(self):
+        self.write("plugins/pixl/resources/obsolete.md", b"obsolete\n")
+        result = self.inspect()
+        self.assertEqual(self.code(result, "bundle_payload_set")["status"], "needs_review")
+
+    def test_dependency_change_does_not_rewrite_requirements(self):
+        self.write("pyproject.toml", self.content["pyproject.toml"].replace(b"pillow>=10", b"pillow>=11"))
+        result = self.inspect()
+        self.assertIn("requirements.txt", self.code(result, "bundle_metadata")["detail"])
+
+    def test_changed_declared_source_is_invalid_without_repair(self):
+        self.write("training/original-docs/source.md", b"changed authoritative bytes\n")
+        result = self.inspect()
+        self.assertEqual(result["status"], "invalid")
+        self.assertEqual(result["checks"][0]["code"], "canonical_inputs")
+
+    def test_duplicate_json_and_manifest_paths_are_invalid(self):
+        original = (self.plugin / "bundle-manifest.json").read_bytes()
+        self.write("plugins/pixl/bundle-manifest.json", b'{"version":"a","version":"b"}')
+        self.assertEqual(self.inspect()["status"], "invalid")
+        self.write("plugins/pixl/bundle-manifest.json", original)
+        manifest = self.manifest()
+        manifest["files"].append(manifest["files"][0])
+        self.save_manifest(manifest)
+        self.assertEqual(self.inspect()["status"], "invalid")
+
+    def test_escaping_manifest_path_is_invalid(self):
+        manifest = self.manifest()
+        manifest["files"][0]["path"] = "../../escape"
+        self.save_manifest(manifest)
+        self.assertEqual(self.inspect()["status"], "invalid")
+
+    def test_valid_wheel_and_sdist_are_read_only(self):
+        wheel = self.archive()
+        sdist = self.archive("sdist")
+        self.assertEqual(self.inspect([wheel, sdist])["status"], "current")
+
+    def test_archive_hash_mismatch_is_not_name_equivalence(self):
+        wheel = self.archive()
+        wheel["sha256"] = "0" * 64
+        result = self.inspect([wheel])
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("retained_artifact_hash_changed", str(result))
+
+    def test_missing_exact_archive_is_actionable(self):
+        result = self.inspect([{"path": "missing.whl", "sha256": "0" * 64, "kind": "wheel"}])
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("missing_retained_artifact", str(result))
+
+    def test_duplicate_wheel_members_are_invalid(self):
+        wheel = self.archive()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            with zipfile.ZipFile(self.root / wheel["path"], "a") as archive:
+                archive.writestr("pixl/jobs.py", b"duplicate\n")
+        wheel["sha256"] = self.sha((self.root / wheel["path"]).read_bytes())
+        self.assertEqual(self.inspect([wheel])["status"], "invalid")
+
+    def test_wheel_missing_runtime_copy_and_changed_metadata_are_reported(self):
+        def change(files):
+            del files["pixl/resources/pixl/jobs.py"]
+            name = "pixl_agent-1.0.0.dist-info/METADATA"
+            files[name] = files[name].replace(b"pillow>=10", b"pillow>=9")
+        result = self.inspect([self.archive(change=change)])
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("pixl/resources/pixl/jobs.py", str(result))
+        self.assertIn("Requires-Dist", str(result))
+
+    def test_sdist_missing_supplied_source_is_reported(self):
+        result = self.inspect([self.archive("sdist", lambda files: files.pop("training/original-docs/source.md"))])
+        self.assertEqual(result["status"], "needs_review")
+        self.assertIn("training/original-docs/source.md", str(result))
+
+    def test_archive_traversal_or_duplicate_descriptor_is_invalid(self):
+        wheel = self.archive(change=lambda files: files.update({"../outside": b"never extracted"}))
+        self.assertEqual(self.inspect([wheel])["status"], "invalid")
+        wheel = self.archive()
+        self.assertEqual(self.inspect([wheel, wheel])["status"], "invalid")
+
+
+if __name__ == "__main__":
+    unittest.main()

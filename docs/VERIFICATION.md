@@ -1,5 +1,12 @@
 # Verification and limits
 
+For read-only evidence and package inspection, use
+`.venv/Scripts/python.exe -B scripts/check_integrity.py`. The
+[integrity guide](EVIDENCE-INTEGRITY.md) distinguishes unchanged historical
+outcomes from current source/package applicability. This command does not run
+the rebuilding verifier described below.
+
+
 ## Readiness and consumer setup, 2026-11-09
 
 The [readiness increment](../evidence/readiness/README.md) adds a standard-library

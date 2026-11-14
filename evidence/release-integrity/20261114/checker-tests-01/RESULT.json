@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-14T10:26:14.807690+00:00",
+  "status": "fail",
+  "sources": {
+    "scripts/check_integrity.py": {
+      "sha256": "b07fd862a753886a77dfb504fcff4630749d4859ec5ce2ff398893f424b853dd",
+      "snapshot": "evidence/release-integrity/20261114/checker-tests-01/check_integrity.py.txt"
+    },
+    "tests/test_evidence_integrity.py": {
+      "sha256": "af6d388d5128a406b5419310b4f05c42d49ff87b31994f7be120bff5d475a445",
+      "snapshot": "evidence/release-integrity/20261114/checker-tests-01/test_evidence_integrity.py.txt"
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_evidence_integrity",
+        "-q"
+      ],
+      "exit_code": 1,
+      "stdout": "evidence/release-integrity/20261114/checker-tests-01/tests.stdout.txt",
+      "stderr": "evidence/release-integrity/20261114/checker-tests-01/tests.stderr.txt"
+    },
+    {
+      "argv": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "scripts/check_integrity.py",
+        "tests/test_evidence_integrity.py"
+      ],
+      "exit_code": 0,
+      "stdout": "evidence/release-integrity/20261114/checker-tests-01/ruff.stdout.txt",
+      "stderr": "evidence/release-integrity/20261114/checker-tests-01/ruff.stderr.txt"
+    }
+  ],
+  "scope": "Frozen reproduction of initial focused-check failure; no runtime/native/provider outcome. Initial tool run had identical source and reported the same 21 tests with one help-whitespace assertion failure and one Windows symlink privilege skip. Ruff passed.",
+  "failure": "Help output wrapped the phrase Release checks always run; test expected one unwrapped literal substring. No product failure established."
+}

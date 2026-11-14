@@ -1,0 +1,300 @@
+"""Read-only evidence checks retain outcomes and distinguish identity from applicability."""
+
+import copy
+import hashlib
+import io
+import json
+import os
+import subprocess
+import sys
+import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+from scripts import check_integrity as checker
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+class EvidenceIntegrityTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = TemporaryDirectory(prefix="pixl read-only evidence ")
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.source = b"def operation(): return 'original'\n"
+        self.package = b'{"version":"recorded-kit"}\n'
+        self.line = b'<a id="core-case"></a> Useful bounded operation.'
+        self.write("pixl/work.py", self.source)
+        self.write("plugins/pixl/bundle-manifest.json", self.package)
+        self.write("docs/matrix.md", self.line + b"\r\n")
+        self.receipt = {"status": "pass", "count": 1, "source_hashes": {"pixl/work.py": digest(self.source)},
+                        "kit_sha256": digest(self.package), "context": {"path": "/tmp/unavailable-original-run"},
+                        "a/b~c": [{"result": "recorded"}]}
+        self.data = {"version": 1, "scope": "Selected evidence only", "cycle": "retained-cycle",
+            "receipts": [{"id": "run", "path": "evidence/original.json", "sha256": "0" * 64,
+                          "assertions": [{"pointer": "/status", "equals": "pass"}]}],
+            "claims": [{"id": "CORE-CASE", "task": "Use the core operation", "tier": "local",
+                "document": {"path": "docs/matrix.md", "anchor": "core-case", "line_sha256": digest(self.line)},
+                "scope": "Exact local fixture", "limits": ["No human acceptance"], "policy": "current",
+                "outcome": {"receipt": "run", "pointer": "/status"}, "receipts": ["run"],
+                "bindings": [
+                    {"kind": "file", "domain": "source", "path": "pixl/work.py", "receipt": "run",
+                     "pointer": "/source_hashes/pixl~1work.py"},
+                    {"kind": "file", "domain": "package", "path": "plugins/pixl/bundle-manifest.json",
+                     "receipt": "run", "pointer": "/kit_sha256"}]}],
+            "release": {"archives": []}}
+        self.save_receipt()
+        self.save_registry()
+
+    def write(self, name, data):
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return path
+
+    def save_receipt(self):
+        data = json.dumps(self.receipt, sort_keys=True).encode()
+        self.write("evidence/original.json", data)
+        self.data["receipts"][0]["sha256"] = digest(data)
+
+    def save_registry(self):
+        self.write(checker.DEFAULT_MANIFEST, json.dumps(self.data).encode())
+
+    def snapshot(self):
+        return {p.relative_to(self.root).as_posix(): (p.read_bytes() if p.is_file() else None, p.stat().st_mtime_ns)
+                for p in self.root.rglob("*")}
+
+    def inspect(self, ids=None, release=None):
+        before = self.snapshot()
+        with patch.object(checker, "release_check", return_value=release or {"status": "current", "checks": []}) as call:
+            result = checker.check(self.root, claim_ids=ids)
+        self.assertEqual(before, self.snapshot(), "Checking must preserve file sets, bytes and modification times")
+        return result, call
+
+    def claim(self, result):
+        return result["claims"][0]
+
+    def test_current_bindings_and_external_context_are_read_only(self):
+        report, release = self.inspect()
+        self.assertEqual((report["status"], report["exit_code"]), ("intact", 0))
+        self.assertEqual(self.claim(report)["recorded_outcome"], "pass")
+        self.assertEqual(self.claim(report)["source_applicability"], "current")
+        self.assertEqual(self.claim(report)["package_applicability"], "current")
+        release.assert_called_once_with(self.root, [])
+
+    def test_source_drift_is_stale_qualification_not_a_changed_outcome(self):
+        self.write("pixl/work.py", b"changed source\n")
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(self.claim(report)["receipt_integrity"], "intact")
+        self.assertEqual(self.claim(report)["recorded_outcome"], "pass")
+        self.assertEqual(self.claim(report)["applicability"], "stale")
+        self.assertEqual(self.claim(report)["changed_paths"], ["pixl/work.py"])
+
+    def test_intact_historical_failure_stays_a_failure_when_sources_change(self):
+        self.receipt["status"] = "fail"
+        self.save_receipt()
+        self.data["receipts"][0]["assertions"][0]["equals"] = "fail"
+        self.data["claims"][0]["policy"] = "historical"
+        self.save_registry()
+        self.write("pixl/work.py", b"later source\n")
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 0)
+        self.assertEqual(self.claim(report)["recorded_outcome"], "fail")
+        self.assertEqual(self.claim(report)["applicability"], "historical")
+        self.assertEqual(self.claim(report)["source_applicability"], "changed")
+
+    def test_receipt_change_never_supplies_trusted_binding_or_outcome(self):
+        self.receipt["status"] = "rewritten pass"
+        self.write("evidence/original.json", json.dumps(self.receipt).encode())
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(report["receipts"][0]["status"], "altered")
+        self.assertIsNone(self.claim(report)["recorded_outcome"])
+        self.assertEqual(self.claim(report)["source_applicability"], "unavailable")
+
+    def test_missing_receipt_is_actionable_without_reconstruction(self):
+        (self.root / "evidence/original.json").unlink()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(report["receipts"][0]["status"], "missing")
+        self.assertIn("Restore", report["receipts"][0]["findings"][0]["next_action"])
+
+    def test_package_drift_does_not_discard_intact_source_binding(self):
+        self.write("plugins/pixl/bundle-manifest.json", b"new kit")
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(self.claim(report)["source_applicability"], "current")
+        self.assertEqual(self.claim(report)["package_applicability"], "changed")
+
+    def test_claim_text_change_requires_review_even_with_identical_receipts(self):
+        self.write("docs/matrix.md", self.line + b" Now all domains accepted.\n")
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(self.claim(report)["document_status"], "changed")
+        self.assertEqual(self.claim(report)["receipt_integrity"], "intact")
+
+    def test_ambiguous_or_missing_document_anchor_cannot_pass(self):
+        for data in (b"No anchor\n", self.line + b"\n" + self.line + b"\n"):
+            with self.subTest(data=data):
+                self.write("docs/matrix.md", data)
+                report, _ = self.inspect()
+                self.assertEqual(report["exit_code"], 1)
+                self.assertEqual(self.claim(report)["document_status"], "unavailable")
+
+    def test_pointer_escapes_arrays_and_exact_assertion_types(self):
+        self.data["claims"][0]["outcome"]["pointer"] = "/a~1b~0c/0/result"
+        self.data["receipts"][0]["assertions"].append({"pointer": "/count", "equals": True})
+        self.save_registry()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(report["receipts"][0]["status"], "mismatch")
+        self.data["receipts"][0]["assertions"][-1]["equals"] = 1
+        self.save_registry()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 0)
+        self.assertEqual(self.claim(report)["recorded_outcome"], "recorded")
+
+    def test_missing_outcome_pointer_is_not_an_invalid_registry_or_inferred_pass(self):
+        self.data["claims"][0]["outcome"]["pointer"] = "/not-recorded"
+        self.save_registry()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertIsNone(self.claim(report)["recorded_outcome"])
+
+    def test_map_inventory_detects_new_and_removed_source_files(self):
+        self.data["claims"][0]["bindings"][0] = {"kind": "map", "domain": "source", "receipt": "run",
+            "pointer": "/source_hashes", "inventory": {"roots": ["pixl"], "suffixes": [".py"]}}
+        self.save_registry()
+        self.write("pixl/new_operation.py", b"new operation\n")
+        self.write("pixl/__pycache__/old.py", b"excluded cache\n")
+        (self.root / "pixl/work.py").unlink()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        codes = {(item["code"], item["path"]) for item in self.claim(report)["findings"]}
+        self.assertIn(("input_added", "pixl/new_operation.py"), codes)
+        self.assertIn(("input_removed", "pixl/work.py"), codes)
+        self.assertNotIn("pixl/__pycache__/old.py", self.claim(report)["changed_paths"])
+
+    def test_malformed_hash_map_cannot_be_counted_as_current(self):
+        self.receipt["source_hashes"] = {"pixl/work.py": "not-a-hash"}
+        self.save_receipt()
+        self.data["claims"][0]["bindings"][0] = {"kind": "map", "domain": "source", "receipt": "run", "pointer": "/source_hashes"}
+        self.save_registry()
+        report, _ = self.inspect()
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(self.claim(report)["source_applicability"], "unavailable")
+
+    def test_strict_registry_rejects_unsupported_ambiguous_and_unbound_checks(self):
+        original = copy.deepcopy(self.data)
+        mutations = [
+            lambda data: data.update(version=True),
+            lambda data: data.update(version=2),
+            lambda data: data.update(unrecognized="ignored?"),
+            lambda data: data["claims"].append(copy.deepcopy(data["claims"][0])),
+            lambda data: data["receipts"].append(copy.deepcopy(data["receipts"][0])),
+            lambda data: data["claims"][0].update(bindings=[]),
+            lambda data: data["claims"][0]["bindings"][0].update(kind="guess"),
+            lambda data: data["claims"][0]["bindings"][0].update(pointer="/bad~2escape"),
+            lambda data: data["claims"][0]["outcome"].update(receipt="unknown"),
+            lambda data: data.update(claims=[]),
+        ]
+        for index, mutation in enumerate(mutations):
+            with self.subTest(index=index):
+                self.data = copy.deepcopy(original)
+                mutation(self.data)
+                self.save_registry()
+                report, release = self.inspect()
+                self.assertEqual(report["exit_code"], 2)
+                release.assert_not_called()
+
+    def test_duplicate_json_field_is_rejected_before_any_release_check(self):
+        raw = json.dumps(self.data).replace('"version": 1', '"version": 1, "version": 1', 1)
+        self.write(checker.DEFAULT_MANIFEST, raw.encode())
+        report, release = self.inspect()
+        self.assertEqual(report["exit_code"], 2)
+        self.assertIn("Duplicate JSON field", report["error"])
+        release.assert_not_called()
+
+    def test_unsafe_paths_are_never_interpreted_as_execution_locators(self):
+        for name in ("../outside.json", "/tmp/original.json", "C:/temp/old.json", "evidence\\old.json", "evidence/./old.json"):
+            with self.subTest(name=name):
+                self.data["receipts"][0]["path"] = name
+                self.save_registry()
+                report, release = self.inspect()
+                self.assertEqual(report["exit_code"], 2)
+                release.assert_not_called()
+
+    def test_symlink_escape_is_rejected_without_reading_external_receipt(self):
+        with TemporaryDirectory() as outside:
+            target = Path(outside) / "receipt.json"
+            target.write_bytes(b"external bytes")
+            link = self.root / "evidence/outside.json"
+            try:
+                os.symlink(target, link)
+            except OSError:
+                self.skipTest("Creating a symlink requires an unavailable Windows privilege")
+            self.data["receipts"][0]["path"] = "evidence/outside.json"
+            self.save_registry()
+            report, _ = self.inspect()
+            self.assertEqual(report["exit_code"], 2)
+            self.assertIn("escapes repository", report["error"])
+
+    def test_filter_limits_evidence_dependencies_but_always_checks_release(self):
+        other = copy.deepcopy(self.data["claims"][0])
+        other.update(id="OTHER", policy="historical", receipts=["other"], bindings=[],
+                     outcome={"receipt": "other", "pointer": "/status"})
+        self.data["claims"].append(other)
+        self.data["receipts"].append({"id": "other", "path": "evidence/missing.json", "sha256": "0" * 64})
+        self.save_registry()
+        report, release = self.inspect(["CORE-CASE"])
+        self.assertEqual(report["exit_code"], 0)
+        self.assertEqual(report["summary"]["receipts_checked"], 1)
+        release.assert_called_once()
+        report, _ = self.inspect(["UNKNOWN"])
+        self.assertEqual(report["exit_code"], 2)
+
+    def test_release_drift_is_visible_when_claim_filter_is_current(self):
+        report, release = self.inspect(["CORE-CASE"], release={"status": "needs_review", "checks": [
+            {"code": "payload_changed", "status": "needs_review", "detail": "Changed kit bytes", "paths": ["runtime/module.py"],
+             "next_action": "Review the changed payload"}]})
+        self.assertEqual(report["exit_code"], 1)
+        self.assertEqual(self.claim(report)["status"], "intact")
+        self.assertIn("payload_changed", checker.render(report))
+        release.assert_called_once()
+
+    def test_archive_identity_is_forwarded_explicitly(self):
+        wheel = b"retained wheel bytes"
+        self.write("evidence/exact.whl", wheel)
+        self.data["receipts"].append({"id": "wheel", "path": "evidence/exact.whl", "sha256": digest(wheel)})
+        self.data["release"]["archives"] = [{"receipt": "wheel", "kind": "wheel"}]
+        self.save_registry()
+        report, release = self.inspect()
+        self.assertEqual(report["exit_code"], 0)
+        release.assert_called_once_with(self.root, [{"path": "evidence/exact.whl", "sha256": digest(wheel), "kind": "wheel"}])
+
+    def test_main_json_preserves_exit_status_and_writes_only_stdout(self):
+        self.write("pixl/work.py", b"changed")
+        before = self.snapshot()
+        output = io.StringIO()
+        with patch.object(checker, "release_check", return_value={"status": "current", "checks": []}), redirect_stdout(output):
+            exit_code = checker.main(["--root", str(self.root), "--json"])
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(json.loads(output.getvalue())["status"], "needs_review")
+        self.assertEqual(before, self.snapshot())
+
+    def test_help_runs_outside_checkout_without_target_imports_or_files(self):
+        before = self.snapshot()
+        result = subprocess.run([sys.executable, "-B", str(Path(checker.__file__).resolve()), "--help"],
+                                cwd=self.root, capture_output=True, text=True, check=False, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Release checks always run", result.stdout)
+        self.assertEqual(before, self.snapshot())
+
+
+if __name__ == "__main__":
+    unittest.main()
