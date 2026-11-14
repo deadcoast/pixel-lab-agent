@@ -1,0 +1,83 @@
+"""Check a retained unfamiliar-reader result mechanically; semantic judgment is separate."""
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def local_path(name):
+    if not isinstance(name, str) or not name or ":" in name or Path(name).is_absolute():
+        raise ValueError("Expected a repository-relative source path")
+    path = (ROOT / name.replace("\\", "/").split("#", 1)[0]).resolve()
+    if path == ROOT or not path.is_relative_to(ROOT):
+        raise ValueError("Source path leaves repository")
+    return path
+
+
+def check(attempt):
+    checks = []
+    def expect(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+    identity = json.loads((attempt / "identity.json").read_bytes())
+    record = json.loads((attempt / "record.json").read_bytes())
+    preservation = json.loads((attempt / "preservation.json").read_bytes())
+    result_path = attempt / "project/NAVIGATION-RESULT.json"
+    answers = json.loads(result_path.read_bytes())
+    expected_ids = [row["id"] for row in json.loads((attempt / "questions.json").read_bytes())]
+    expect("native_completed", record["returncode"] == 0 and record["execution_status"] == "host_completed_ungraded")
+    expect("reader_reports_complete", answers.get("version") == 1 and answers.get("status") == "complete")
+    expect("entrypoint_and_new_index_used", answers.get("entrypoint") == "README.md" and
+           isinstance(answers.get("route"), list) and "evidence/README.md" in answers["route"])
+    expect("all_assigned_questions_answered_once", len(answers.get("answers", [])) == len(expected_ids) and
+           sorted(row.get("id", "") for row in answers.get("answers", [])) == sorted(expected_ids))
+    expect("protected_input_files_preserved", preservation["status"] == "pass" and
+           preservation["before_tree_sha256"] == preservation["after_tree_sha256"], {"files": preservation["files"], "changed": preservation["changed"], "scope": preservation["scope"]})
+    expect("scratch_instructions_unchanged", preservation["scratch_inputs_unchanged"])
+    expect("evaluated_document_identities_current", all(sha(ROOT / name) == digest for name, digest in identity["documents"].items()))
+    expect("runner_sources_unchanged", all(sha(ROOT / name) == digest for name, digest in identity["sources"].items()))
+    references = {}
+    for row in answers.get("answers", []):
+        expect(row["id"] + ":conclusion_and_limits", isinstance(row.get("conclusion"), str) and bool(row["conclusion"].strip()) and
+               isinstance(row.get("limits"), list) and bool(row["limits"]))
+        expect(row["id"] + ":primary_evidence_supplied", isinstance(row.get("evidence"), list) and bool(row["evidence"]))
+        for ref in [*row.get("evidence", []), *row.get("prior_failures", [])]:
+            name, digest = ref.get("path"), ref.get("sha256")
+            try:
+                path = local_path(name)
+                valid = isinstance(digest, str) and re.fullmatch(r"[0-9a-fA-F]{64}", digest) is not None and path.is_file() and sha(path) == digest.lower()
+            except (OSError, ValueError):
+                valid = False
+            references[name] = {"sha256": digest, "matches": valid}
+            expect(row["id"] + ":reference:" + str(name), valid)
+    return {"version": 1, "status": "pass" if all(row["passed"] for row in checks) else "fail",
+            "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks,
+            "result": {"path": result_path.relative_to(ROOT).as_posix(), "sha256": sha(result_path)},
+            "distinct_references": references, "source_sha256": sha(Path(__file__)),
+            "scope": "Native completion, exact question coverage, file references, input preservation and frozen-document identity only. Semantic correctness, route discipline and practical navigation require independent review; human acceptance is separate."}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--attempt", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Preserve earlier grades; choose a fresh output")
+    try:
+        result = check(args.attempt.resolve())
+    except Exception as error:
+        result = {"version": 1, "status": "fail", "passed": 0, "total": 1,
+                  "scope": "Evaluator failure; preceding native and preservation artifacts remain unchanged.",
+                  "error": type(error).__name__, "detail": str(error), "source_sha256": sha(Path(__file__))}
+    with args.out.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)

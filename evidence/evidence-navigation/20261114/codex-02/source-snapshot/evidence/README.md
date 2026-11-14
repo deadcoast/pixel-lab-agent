@@ -1,0 +1,87 @@
+# Find evidence for a PIXL task
+
+Start with the task below, then open its exact result and failure ledger. This is
+a navigation index, reviewed **2026-11-14 against `611a513`**. The
+[capability matrix](../docs/CAPABILITY-OUTCOMES.md) defines supported scope;
+individual ledgers preserve attempts, interventions and tested identities. A newer
+date or passing local test does not make a native or artistic result apply to a
+different kit. **Human acceptance is unrecorded and separate; M1/M2 and broader
+M3/M4/M5 remain open.**
+
+## Which result applies now?
+
+- **Latest full local checkpoint:** [NF-07 verification](verification-runs/20261114T152255.619054Z/result.json)
+  records 1,393 passing tests, three Windows privilege skips, 39 reference checks
+  and distribution checks. Its source hashes define applicability. This is retained
+  implementation evidence, **not a new QOL-07 run or new native/art acceptance**.
+- **Maintenance is not all green:** [broad Ruff](deliverable-index/20261114/maintenance-01/RESULT.json)
+  failed nine findings in five unchanged files. [Scoped Ruff](deliverable-index/20261114/maintenance-02/RESULT.json)
+  passed for seven changed files; default mypy passed 44 runtime modules with its
+  unchecked-untyped-body limit. Preserve the broad failure.
+- **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
+  The [last inspection](deliverable-index/20261114/integrity-02/report.json) covers
+  17 claims and 57 receipts: two NF-07 claims current, eleven historical, four
+  stale applicability claims. Earlier setup/install and maintenance results remain
+  intact but are not today's qualification. `needs_review` is not a runtime failure.
+
+```powershell
+.venv/Scripts/python.exe -B scripts/check_integrity.py --json
+```
+
+Run from the checkout when a current-source decision is needed. The command reads
+identities without rebuilding or replaying evidence. It does not rerun a host,
+provider or renderer. The registry ID `CURRENT-FULL-VERIFICATION` deliberately
+tracks the **older SC-06** receipt; use `NF-07-FULL-VERIFICATION` for the latest
+registered full checkpoint. Claim filtering still checks retained releases, so
+an overall exit 1 can coexist with an intact current selected claim.
+
+## Choose the core task
+
+The implementation column names the operation and focused mechanism evidence;
+the shared full checkpoint above supplies the latest broader local verification.
+Native/outcome columns retain their **executed kit and assignment scope**, unless
+an explicit currentness or compatibility proof says more. Check counts describe
+one assignment, not a reliability rate.
+
+| Task and implementation route | Native behavior or actual outcome | Limits and retained failures |
+| --- | --- | --- |
+| <a id="setup"></a>**Load or install PIXL** — [setup/support matrix](../docs/INSTALL-SUPPORT.md); [five local rows / 341 commands](install-support/20261114/local-01/FINAL.json) | [Named-host setup](install-support/20261114/native/RESULT.json): Codex 19/19, Claude 18/18 on the recorded kit. | Those kit bindings are now stale. Local install/move/update and host loading do not prove native continuation through updates. [Install ledger](install-support/README.md) retains setup, parser and mounted-filesystem failures. |
+| <a id="allocate"></a>**Map source requirements to asset work** — [PLAR operation](../plugins/pixl/skills/plar/references/format.md) | [CF-06 result](plar-coverage/20261111/results.json): Codex 37/37, Claude 38/38; real shared-source discovery and selective refresh. | Missing art, remote inventory and uninspected files remain distinct. No generation or render acceptance. [Allocation ledger](plar-coverage/README.md) preserves the Claude timeout and existing source drift. |
+| <a id="review"></a>**Review, nominate and export a candidate** — [review contract](../spec/candidate-review.md) | Original independent checks: [Codex](candidate-review/20261109/native/codex-01/independent-checks.json), [Claude](candidate-review/20261109/native/claude-01/independent-checks.json). Later exact-export checks: [Codex](candidate-review/20261109/native/codex-export-01/independent-export-checks.json), [Claude](candidate-review/20261109/native/claude-export-01/independent-export-checks.json). | The 15 original checks cover identity/lifecycle/retention; separate visual/renderer judgments matter. The 13 export checks qualify file return. [Review ledger](candidate-review/README.md) preserves earlier verifier/export failures. |
+| <a id="contract"></a>**Correct requirements without replacing their authority** — [request/criteria workflow](../plugins/pixl/skills/pixl/references/request-review.md); [choice comparison](choice-comparison/20261109/RESULT.json) | [CF-03 corrected successor](artistic-revision/20261109/native/independent-grade-02.json) has a passing reused-art task outcome but remains **17/18, partial overall**. | Caller guidance and the recorder failure stay explicit. Do not call this new generated revision quality. [Revision ledger](artistic-revision/README.md) retains the failure and original proposals. |
+| <a id="produce"></a>**Produce a useful icon or directional family** — [family delivery](../spec/family-delivery.md) | CF-10: [Codex icon 35/35](native-production/20261112/codex-01/grade-06.json), [Claude family 40/40](native-production/20261112/claude-01-resume-02/grade-02.json), with actual provider art and caller consumption. | Claude needed two guided recoveries and a runtime upgrade. South was reused, East/North generated, West mirrored locally. [Production ledger](native-production/README.md) preserves 8/24 and 37/39 failures and exact original/upgraded kits. |
+| <a id="revise-art"></a>**Repair actual animation art** — [assignment and production ledger](domain-art-revision/README.md) | CF-09 [final audit](domain-art-revision/20261112/production-01/final-audit.json) and [current handoff](domain-art-revision/20261112/production-01/final-handoff-caller.json): delivered five-frame correction, current review, zero pending jobs. | Maintainer-operated actual production, **not a fresh native-host production trial**. Official edit, reused endpoints and extraction remain distinct. [Raw rejection](domain-art-revision/20261112/production-01/specialist-raw-review.json), access/extraction failures and human-acceptance limits remain in the ledger. |
+| <a id="integrate-change"></a>**Integrate changed consumer requirements** — [source-linked integration](integration-change/README.md) | CF-07/NF-06 [Codex 50/50](integration-change/20261111/codex01/grade-04.json), [Claude 51/51](integration-change/20261111/claude01-resume01/grade-04.json): 100→150 ms change, exact art reuse and fresh review. | Fresh prospective stores; 3× live playback, with separate 1× static/timeline checks. [Integration ledger](integration-change/README.md) retains stale-intent refusal, timeout and original grades. |
+| <a id="execute"></a>**Execute assets in a declared consumer** — [consumer profiles/contract](../spec/consumer-execution.md) | Queue: [Codex 28/28](consumer-execution/20261111/codex-01/grade-05.json), [Claude 28/28](consumer-execution/20261111/claude-01/grade-04.json). Animation/terrain: [TM-08 outcome](domain-consumers/OUTCOME.json), 49/49 per host. | TM-08 diagnoses authored contact/corner faults; it is not generated-terrain quality. Mechanical passes do not approve pixels. [Queue failures](consumer-execution/README.md), [domain failures/replays](domain-consumers/README.md) and their exact interfaces remain authoritative. |
+| <a id="lineage"></a>**Explain generated, edited, constructed and reused origins** — [lineage contract](../spec/family-delivery.md#visible-asset-lineage) | NF-08 [Codex 42/42](asset-lineage/20261111/codex-01/grade-04.json), [Claude 45/45](asset-lineage/20261111/claude-01/grade-02.json) after same-child recovery. | `remote_verified:false`; equal bytes and workflow inputs are not directed ancestry. [Lineage ledger](asset-lineage/README.md) keeps the first Claude failure and unresolved provenance boundaries. |
+| <a id="recover"></a>**Recover uncertain provider work** — [recovery operation](../plugins/pixl/skills/pixl/references/provider-recovery.md); [CF-08/TM-03 outcome](recovery-continuation/20261112/OUTCOME.json) | Core controlled recovery completes across cold artifact restarts without duplicate submission. [Claude phase-three supplement](recovery-continuation/20261112/claude-03/async-completion-proof.json) verifies actual async completion. | Native conformance is **not all-pass**: phase two remains 32/33 for omitted profile loading; phase three retains 30/31 plus its separate 12-check supplement. No live ambiguous-service qualification. [Recovery ledger](recovery-continuation/README.md) preserves all six grades. |
+| <a id="handoff"></a>**Return a compact result and continue** — [caller-result contract](../spec/caller-result.md) | [Retained Codex regrade 28/28](caller-result/20261113/codex-regression-03.json); guided Claude [31/31](caller-result/20261113/claude-03-grade-03.json) plus [22/22 review](caller-result/20261113/semantic-review-03.json). Separate [native continuation 24/24](native-continuation/20261109/independent-checks.json) proves one same-parent/child cross-process case. | Regrading is not new execution. [Caller ledger](caller-result/README.md) retains 0/1, HTTP 429, timeout, later failed grades and oversized drafts. [Continuation limits](native-continuation/README.md) keep artifact restart and broader host reliability separate. |
+| <a id="knowledge"></a>**Use retrieved knowledge for a concrete decision** — [knowledge operation](../plugins/pixl/skills/pixl/references/knowledge.md); [TM-09 outcome](knowledge-decisions/OUTCOME.json) | [Codex 51/51](knowledge-decisions/20261113/native/codex-01/independent-grade-01.json), [guided Claude 53/53](knowledge-decisions/20261113/claude-followup-proof.json); separate [Codex](knowledge-decisions/20261113/semantic-review-codex-01.json) and [Claude](knowledge-decisions/20261113/semantic-review-claude-02.json) K1–K8 reviews. | Existing-art import decision, not new provider/playback or retroactive cause of the repair. [Knowledge ledger](knowledge-decisions/README.md) preserves Claude's original 29/52, incomplete review and four `/tmp` writes. |
+| <a id="saved-state"></a>**Use saved production after updating the kit** — [compatibility policy](../spec/adapter-compatibility.md) | SC-06 [plan replacement](schema-compatibility/20261113/plan-upgrade-01/replacement-result.json) preserves 23/23 criteria coverage; [four consumer replays](schema-compatibility/20261113/consumer-upgrade-01/result.json) pass. | Local compatibility, not semantic agreement or native update continuation. [Compatibility ledger](schema-compatibility/README.md) preserves original unsupported-version and four old-kit cleanup failures. |
+| <a id="consume-package"></a>**Integrate a package without internal state** — [consumer-index contract](../spec/deliverable-index.md); [85 focused checks](deliverable-index/20261114/implementation-02/RESULT.json) | NF-07 [final-source Codex 43/43](deliverable-index/20261114/cold-02/independent-01.json), [caller result](deliverable-index/20261114/cold-02/project/CALLER-RESULT.json): exact five PNGs, cited module and derived config, actual 1×/3× playback. | Public package/source inputs only; immutable creation `accepted:false` differs from observed current eligibility. [Index ledger](deliverable-index/README.md) retains cold-01's 38/39 source drift. No fresh Claude, provider or artistic qualification. |
+
+## Find a gap or preserve a result
+
+For fonts, panels, characters, materials, other engines and untested host routes,
+use the matrix's [advertised-domain gaps](../docs/CAPABILITY-OUTCOMES.md#advertised-domains)
+and [remaining scenarios](../docs/CAPABILITY-OUTCOMES.md#remaining-scenario-coverage).
+No receipt listed here grants an untested domain or human acceptance. A dated
+ledger's “next” paragraph describes that increment; [TODO](../TODO.md) and
+[SHELVED](../SHELVED.md) own today's work order.
+
+When an outcome changes:
+
+1. Update the matching task row with the exact new receipt, evidence tier, executed
+   identity and useful limit. Keep the predecessor/failure ledger link; do not pick
+   by timestamp, overwrite receipts or replace an old kit with today's hash.
+2. Reconcile current-facing matrix/TODO prose. Preserve pinned historical claim
+   lines unless a scope review explicitly updates their registry binding. The
+   [registry](../evaluations/evidence-claims.json) remains the integrity authority.
+3. Check the changed links/anchors and exact result fields; run the read-only
+   integrity check when asserting current applicability. Navigation changes need
+   an unfamiliar-reader check; a documentation update alone does not require the
+   evidence-rebuilding full verifier. Record fresh checks separately from retained
+   implementation/native/art outcomes.
+
+Maintain this index under **QOL-07** in the existing
+`IDENTIFY-2026-11-09-01` cycle. Its navigation role does not close the broader milestones.

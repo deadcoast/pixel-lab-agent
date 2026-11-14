@@ -1,0 +1,64 @@
+"""Retain the QOL-07 reader findings and exact before/after document correction."""
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "prose-correction-01"
+FILES = ("README.md", "docs/INSTALL-SUPPORT.md", "docs/CAPABILITY-OUTCOMES.md")
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def anchors(data):
+    return {match.group(1): line for line in data.decode().splitlines()
+            for match in re.finditer(r'<a id="([^"]+)"', line)}
+
+
+before = {name: (OUT / "before" / name).read_bytes() for name in FILES}
+after = {name: (ROOT / name).read_bytes() for name in FILES}
+for name, data in after.items():
+    target = OUT / "after" / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("xb") as stream:
+        stream.write(data)
+matrix = "docs/CAPABILITY-OUTCOMES.md"
+old, new = anchors(before[matrix]), anchors(after[matrix])
+registry = json.loads((ROOT / "evaluations/evidence-claims.json").read_bytes())
+bound = {claim["document"]["anchor"] for claim in registry["claims"]
+         if claim["document"]["path"] == matrix}
+changed = sorted(key for key in old.keys() | new.keys() if old.get(key) != new.get(key))
+checks = {
+    "all_anchor_names_preserved": old.keys() == new.keys(),
+    "only_reviewed_unregistered_animation_row_changed": changed == ["renderer-animation"],
+    "all_registered_anchor_lines_preserved": all(old.get(key) == new.get(key) for key in bound),
+    "reviewed_row_unregistered": "renderer-animation" not in bound,
+    "index_unchanged": digest((ROOT / "evidence/README.md").read_bytes()) == "edb6d41a3d5d3af9e9e5d2815a0e93b233f825e490e6e18ba366efcf154086be",
+}
+supports = ["evidence/evidence-navigation/20261114/semantic-review-01.json",
+            "evidence/evidence-navigation/20261114/codex-01/project/NAVIGATION-RESULT.json",
+            "evidence/artistic-revision/README.md",
+            "evidence/domain-art-revision/20261112/production-01/final-audit.json",
+            "evidence/deliverable-index/20261114/integrity-02/report.json"]
+result = {
+    "version": 1, "status": "pass" if all(checks.values()) else "fail",
+    "scope": "Current-facing prose corrections after the first unfamiliar-reader trial. Original source snapshots, answers and grades remain unchanged. No runtime or outcome receipt is rewritten.",
+    "corrections": [
+        {"path": matrix, "reason": "The old renderer-animation row described actual-art revision as open despite bounded CF-09 completion. State bounded completion and retain broader motion-quality/human limits."},
+        {"path": "docs/INSTALL-SUPPORT.md", "reason": "Label TM-05 as a recorded kit scope, distinguish its SC-06-era checkpoint from later NF-07 verification, and retain stale applicability instead of presenting old loading results as current."},
+        {"path": "README.md", "reason": "Clarify that the named Codex successor completed the retained Claude-authored corrected29 proposal; original Claude authorship is distinct from final native execution."},
+    ],
+    "documents": {name: {"before_sha256": digest(before[name]), "after_sha256": digest(after[name])} for name in FILES},
+    "checks": checks, "anchor_count": len(old), "registered_anchor_count": len(bound),
+    "changed_anchor_lines": changed,
+    "supporting_evidence": [{"path": name, "sha256": digest((ROOT / name).read_bytes())} for name in supports],
+    "source_sha256": digest(Path(__file__).read_bytes()),
+}
+with (OUT / "review.json").open("x", encoding="utf-8") as stream:
+    json.dump(result, stream, indent=2)
+    stream.write("\n")
+print(json.dumps({"status": result["status"], "checks": checks, "anchor_count": len(old), "registered_anchor_count": len(bound)}))
+raise SystemExit(0 if result["status"] == "pass" else 1)

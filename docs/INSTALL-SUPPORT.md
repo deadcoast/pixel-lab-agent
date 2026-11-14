@@ -14,6 +14,12 @@ retain exact sources, package identities and failures. The
 [capability matrix](CAPABILITY-OUTCOMES.md) separately records production outcomes,
 provider work, renderer observations and acceptance.
 
+These are the **recorded TM-05 kit and interpreter combinations**, not an
+automatic claim for every later bundle. NF-07 subsequently changed the runtime
+and kit, so the earlier setup/install bindings are now stale while their original
+passes remain intact. Use the [evidence index](../evidence/README.md) and
+[read-only integrity check](EVIDENCE-INTEGRITY.md) for present applicability.
+
 ## Choose an installation route
 
 | Route | Use it when | What must remain available |
@@ -71,9 +77,10 @@ The selected copied kit has manifest
 The fresh retained wheel has SHA-256
 `b1bfb390f9a45df4f9663ae62491883c12bec5f15af8a0a7d129fb72715e7846`.
 The kit manifest and package label `1.0.0` do not identify a wheel. The production
-runtime remains unchanged; the last full verifier is retained SC-06 evidence,
-not a new TM-05 run. The new evaluator and its targeted tests are separate
-verification. No new local pass is inferred from the existing full suite.
+runtime was unchanged at the TM-05 checkpoint; SC-06 was then the retained full
+verifier, not a new TM-05 run. The later [NF-07 full checkpoint](../evidence/verification-runs/20261114T152255.619054Z/result.json)
+is the latest broader local verification. It does not rerun these five cells or
+the native setup cases. Each installation result retains its own exact tested kit.
 
 Retained evidence remains useful within its original scope:
 
@@ -93,7 +100,7 @@ does not by itself qualify PIXL on those platforms.
 
 ## Host loading and native qualification
 
-| Windows host route | Current TM-05 loading outcome | Retained native evidence and limits |
+| Windows host route | Recorded TM-05 loading outcome | Retained native evidence and limits |
 | --- | --- | --- |
 | Codex CLI 0.167.2; explicit `pixl` role configuration and installed-skill wrappers | [Pass, 19/19](../evidence/install-support/20261114/native/codex-clean-01/independent-grade-04.json): named specialist loads and performs useful local retrieval. Original 18/19 inventory-parser grade retained. | [Earlier setup](../evidence/readiness/20261110/RESULT.json) passed 19/19 clean and 16/16 omitted-role checks on Codex 0.167.0. Automatic project discovery and general cross-process continuation are separate claims. |
 | Claude Code 2.1.318; explicit complete-kit `--plugin-dir` | [Pass, 18/18](../evidence/install-support/20261114/native/claude-clean-01/independent-grade-03.json): actual plugin child loads and returns useful local retrieval. Original 0/1 reference-wrapper parser failure and the child's self-corrected path error remain retained. | [Earlier setup](../evidence/readiness/20261110/RESULT.json) passed 18/18 clean and 16/16 omitted-plugin checks. Expired-authentication attempts remain retained; later same-child continuation has its own evidence. |
@@ -102,8 +109,9 @@ Both [fresh native cases](../evidence/install-support/20261114/native/RESULT.jso
 use Windows/Python 3.14.3 and the same 251-file portable kit inventory, excluding
 bytecode caches. Their 258/255 original consumer files remain unchanged. The
 final grader passes 27 targeted tests and Ruff; corrections regrade the retained
-traces rather than replace the native work. These cases establish current loading
-and local retrieval, not native continuation through an update or move.
+traces rather than replace the native work. These cases establish loading and
+local retrieval of their recorded kit, not native continuation through an update
+or move or automatic qualification of the newer NF-07 kit.
 
 Codex's current [custom-agent contract](https://learn.chatgpt.com/docs/agent-configuration/subagents#custom-agents)
 describes project `.codex/agents` TOML files and inherited parent permissions,

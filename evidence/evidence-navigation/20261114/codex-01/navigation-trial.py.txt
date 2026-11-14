@@ -1,0 +1,156 @@
+"""QOL-07 unfamiliar-reader navigation trial; retained evaluation source, no runtime changes."""
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+import tempfile
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from evaluations.host_trials import codex_command
+from evaluations.request_review_trials import run as native_run
+
+DOCUMENTS = ("README.md", "evidence/README.md", "docs/CAPABILITY-OUTCOMES.md", "docs/VERIFICATION.md")
+SOURCES = ("evaluations/host_trials.py", "evaluations/request_review_trials.py", "evaluations/native_trial_records.py")
+QUESTIONS = [
+    {"id": "local", "question": "Find the latest applicable full local verification checkpoint and its exact test/reference/distribution results. Does it establish a new QOL-07 test run, a broad lint pass, native behavior or artistic acceptance? Locate any contrary maintenance evidence."},
+    {"id": "package", "question": "Find the final consumer-deliverable-index qualification and its earlier unsuccessful attempt. What did the caller actually integrate, which host was tested, and what remains unqualified?"},
+    {"id": "caller", "question": "Find the latest Claude compact caller-result continuation and its separate review. Explain its relationship to the original failed attempt, the tested kit, guidance and current code."},
+    {"id": "authority", "question": "Can the corrected 20-to-29 requirement successor (CF-03) be described as an overall passing trial? Locate its task outcome, governing overall result and remaining failure."},
+    {"id": "recovery", "question": "Can both hosts be reported as fully conformant for interrupted provider recovery (CF-08)? Locate the governing outcome and contrary native evidence, and distinguish asynchronous completion, artifact restarts and unresolved remote work."},
+    {"id": "art", "question": "Find the actual animation-art revision outcome and the terrain/animation diagnostic qualification. Which evidence supports actual art revision, native production, fault diagnosis and later package consumption? Keep these scopes separate."},
+    {"id": "gaps", "question": "Does the available evidence qualify native continuation through updates or relocation, or production outcomes for normal maps/materials and rigs? Locate the authoritative limits and state what a passing local check cannot establish."},
+    {"id": "applicability", "question": "Explain how a retained passing receipt can have stale applicability, and why CURRENT-FULL-VERIFICATION can differ from the latest full checkpoint. Which registered claims presently have current evidence? Explain how to check again without rebuilding evidence."},
+]
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def write(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+
+
+def inventory(names):
+    result = {}
+    for name in names:
+        path = ROOT / name
+        if not path.is_file():
+            result[name] = {"missing": True}
+        else:
+            stat = path.stat()
+            result[name] = {"sha256": sha(path), "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+    return result
+
+
+def tree_hash(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def prepare(attempt):
+    attempt.mkdir(parents=True, exist_ok=False)
+    consumer = Path(tempfile.mkdtemp(prefix="pixl evidence reader ")).resolve()
+    (consumer / "work").mkdir()
+    guidance = f"""You are an unfamiliar evidence reader in a bounded documentation usability evaluation.
+The repository at {ROOT.as_posix()} is read-only source material, not your workspace.
+Begin with its README.md. Discover the evidence entrypoint from that page, then
+follow local document links to answer the questions in ASSIGNMENT.md. You have no
+prior project context or supplied expected answers. Do not recursively search or
+enumerate dated evidence directories, use filename/date guessing, search outside
+this repository, browse the web, delegate, inspect credentials or persistent memory,
+edit source/evidence, rebuild a kit, run tests, call a provider or create art.
+You may search within a document you opened and read linked receipts. The documented
+read-only integrity command is allowed when useful; save any output only in this
+scratch workspace's work/ directory. Source paths in your answer are repository-relative.
+Write only under {consumer.as_posix()}/work plus the final NAVIGATION-RESULT.json here.
+Human acceptance and product acceptance are separate from this reader exercise.
+"""
+    assignment = "# Find evidence from the public entrypoint\n\n" + "\n\n".join(
+        f"{n}. **{question['id']}** — {question['question']}" for n, question in enumerate(QUESTIONS, 1))
+    assignment += """\n\nReturn NAVIGATION-RESULT.json with version:1, status:'complete' or 'incomplete',
+entrypoint, a route array naming the repository-relative documents followed, and
+answers (one per question). Each answer has id, conclusion, evidence (an array of
+{path,sha256} references to exact local files), limits (strings), and prior_failures
+(exact file references where applicable). Quote only small relevant facts; do not
+copy large receipts. Cite exact receipt paths and hashes rather than relying only
+on an index summary. If a fact cannot be found, state that gap; do not infer a pass.
+At the end, report any confusing navigation, contradictory current-facing wording,
+or missing route in navigation_observations (strings). No post-launch help will be
+provided. Do not write the evaluator's grade or alter any original artifact.
+"""
+    (consumer / "AGENTS.md").write_text(guidance, encoding="utf-8")
+    (consumer / "ASSIGNMENT.md").write_text(assignment, encoding="utf-8")
+    (attempt / "prompt.txt").write_text(guidance + "\nRead ASSIGNMENT.md and complete this evidence-reading task.\n", encoding="utf-8")
+    write(attempt / "questions.json", QUESTIONS)
+    write(attempt / "locations.json", {"consumer": str(consumer), "root": str(ROOT)})
+    names = sorted(set(subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT).decode().split("\0")) - {""} | set(DOCUMENTS))
+    protected = inventory(names)
+    with zipfile.ZipFile(attempt / "protected-inputs.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("files.json", json.dumps(protected, separators=(",", ":")))
+    for name in DOCUMENTS + SOURCES:
+        target = attempt / "source-snapshot" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((ROOT / name).read_bytes())
+    (attempt / "navigation-trial.py.txt").write_bytes(Path(__file__).read_bytes())
+    native = codex_command()
+    version = subprocess.check_output(native + ["--version"], text=True).strip()
+    command = native + ["exec", "--ignore-user-config", "--ignore-rules", "--json",
+                        "--skip-git-repo-check", "--approve-for-me", "-C", str(consumer),
+                        "-c", "features.apps=false", "-c", "features.plugins=false",
+                        "-c", 'web_search="disabled"', "-"]
+    write(attempt / "launch.json", {"host": "codex", "case": "qol07-unfamiliar-reader", "cwd": str(consumer),
+                                    "command": command, "host_version": version})
+    write(attempt / "identity.json", {"source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "observed_at": datetime.now(UTC).isoformat(), "documents": {name: sha(ROOT / name) for name in DOCUMENTS},
+        "sources": {name: sha(ROOT / name) for name in SOURCES}, "runner_sha256": sha(Path(__file__)),
+        "prompt_sha256": sha(attempt / "prompt.txt"), "questions_sha256": sha(attempt / "questions.json"),
+        "protected_inputs": {"path": "protected-inputs.zip", "sha256": sha(attempt / "protected-inputs.zip"),
+                             "count": len(protected), "bytes": sum(row.get("bytes", 0) for row in protected.values()), "tree_sha256": tree_hash(protected)},
+        "scratch_inputs": {name: sha(consumer / name) for name in ("AGENTS.md", "ASSIGNMENT.md")},
+        "scope": "Unfamiliar native reader follows public links; no inherited task answers. Public traces and input preservation support the task boundary, not an OS sandbox."})
+    print(json.dumps({"attempt": str(attempt), "host_version": version, "protected_files": len(protected)}))
+
+
+def retain(attempt):
+    identity = json.loads((attempt / "identity.json").read_bytes())
+    consumer = Path(json.loads((attempt / "locations.json").read_bytes())["consumer"])
+    destination = attempt / "project"
+    if destination.exists():
+        raise ValueError("Use a fresh retained output, never overwrite a previous attempt")
+    for path in consumer.rglob("*"):
+        if path.is_file():
+            target = destination / path.relative_to(consumer)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(path.read_bytes())
+    with zipfile.ZipFile(attempt / "protected-inputs.zip") as archive:
+        before = json.loads(archive.read("files.json"))
+    after = inventory(before)
+    changed = [name for name, row in before.items() if after[name] != row]
+    write(attempt / "preservation.json", {"status": "pass" if not changed else "fail", "files": len(before),
+          "before_tree_sha256": tree_hash(before), "after_tree_sha256": tree_hash(after), "changed": changed,
+          "scratch_inputs_unchanged": all(sha(consumer / name) == digest for name, digest in identity["scratch_inputs"].items()),
+          "scope": "All tracked files at preparation plus the new navigation index; exact bytes and mtimes. New evaluation outputs are outside this preserved set."})
+    print(json.dumps({"preservation": "pass" if not changed else "fail", "changed_count": len(changed), "result": (destination / "NAVIGATION-RESULT.json").is_file()}))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("prepare", "run", "retain"))
+    parser.add_argument("--attempt", type=Path, required=True)
+    args = parser.parse_args()
+    attempt = args.attempt.resolve()
+    if args.action == "prepare":
+        prepare(attempt)
+    elif args.action == "run":
+        native_run(attempt, timeout=900)
+    else:
+        retain(attempt)

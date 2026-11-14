@@ -1,5 +1,10 @@
 # Verification and limits
 
+Start with the [task-based evidence index](../evidence/README.md) to find the latest
+applicable implementation, native and actual-output receipts. The dated results
+below retain their original scopes; their position or timestamp does not transfer
+acceptance to a different source, kit or consumer.
+
 For read-only evidence and package inspection, use
 `.venv/Scripts/python.exe -B scripts/check_integrity.py`. The
 [integrity guide](EVIDENCE-INTEGRITY.md) distinguishes unchanged historical
