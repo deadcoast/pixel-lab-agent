@@ -1,0 +1,30 @@
+"""Capture a fresh stdout-only integrity inspection without changing prior evidence."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "integrity-01"
+OUT.mkdir(exist_ok=False)
+command = [sys.executable, "-B", "scripts/check_integrity.py", "--json"]
+result = subprocess.run(command, cwd=ROOT, capture_output=True)
+(OUT / "report.json").write_bytes(result.stdout)
+(OUT / "stderr.txt").write_bytes(result.stderr)
+report = json.loads(result.stdout)
+receipt = {
+    "version": 1, "command": command, "cwd": str(ROOT),
+    "exit_code": result.returncode, "report_status": report.get("status"),
+    "summary": report.get("summary"),
+    "scope": "Fresh read-only identity inspection. Expected needs_review preserves stale applicability and retained-release gaps; it is not a new runtime/native/art test or a runtime failure.",
+    "inputs": {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in
+               ("scripts/check_integrity.py", "evaluations/evidence-claims.json", "plugins/pixl/bundle-manifest.json", "docs/CAPABILITY-OUTCOMES.md", "README.md")},
+    "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    "report_sha256": hashlib.sha256(result.stdout).hexdigest(),
+}
+with (OUT / "receipt.json").open("x", encoding="utf-8") as stream:
+    json.dump(receipt, stream, indent=2)
+    stream.write("\n")
+print(json.dumps({key: receipt[key] for key in ("exit_code", "report_status", "summary")}))
+raise SystemExit(result.returncode)

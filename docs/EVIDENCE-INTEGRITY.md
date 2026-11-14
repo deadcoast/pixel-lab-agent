@@ -17,6 +17,8 @@ claims. Package checks still run. `--root PATH` selects another checkout, and
 an inspection operation in every mode. Save stdout separately when retaining a
 new audit; keep earlier results and use a fresh destination.
 
+For other verification questions, use the [command and side-effect guide](VERIFICATION.md#choose-the-evidence-you-need). Focused tests, native trials and full rebuilding have different outputs and proof limits.
+
 ## Read the result
 
 | Result | Meaning | Next action |

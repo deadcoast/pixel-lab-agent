@@ -1,16 +1,187 @@
 # Verification and limits
 
 Start with the [task-based evidence index](../evidence/README.md) to find the latest
-applicable implementation, native and actual-output receipts. The dated results
-below retain their original scopes; their position or timestamp does not transfer
-acceptance to a different source, kit or consumer.
+applicable implementation, native and actual-output receipts. To obtain new
+verification, choose the question first, then the command below. Run commands
+from the repository root using its selected environment, currently
+`.venv/Scripts/python.exe` on Windows. Environment installation is separate:
+`uv sync --locked` changes the environment and may download packages.
 
-For read-only evidence and package inspection, use
-`.venv/Scripts/python.exe -B scripts/check_integrity.py`. The
-[integrity guide](EVIDENCE-INTEGRITY.md) distinguishes unchanged historical
-outcomes from current source/package applicability. This command does not run
-the rebuilding verifier described below.
+## Choose the evidence you need
 
+| Question | Route | What it establishes | Writes and external activity |
+| --- | --- | --- | --- |
+| Does an existing result still apply? | [Read-only integrity](#read-existing-evidence-first) | Registered receipt/claim integrity and source/package applicability | Stdout only; no builds, tests, host, browser or provider calls |
+| Does this local operation behave correctly? | [Focused core test](#run-a-focused-core-check) | The selected assertions against the selected implementation | This example uses temporary fixture/state/export files; other tests can rebuild tracked outputs |
+| Does the specialist follow its workflow? | [Native scenario](#record-native-behavior-and-actual-outcomes) | Actual host behavior within that recorded assignment | Trial files, consumer state and host sessions; model service access; provider work depends on the assignment |
+| Are the exact assets useful in the destination? | [Actual outcome review](#record-native-behavior-and-actual-outcomes) | Measurements, observed rendering and explicit scoped judgments | Scenario-specific art/import/capture/review outputs; provider and browser activity only when actually exercised |
+| Does the whole local implementation and distribution pass? | [Full verifier](#rebuild-local-evidence-deliberately) | Unit/reference/package checks and exact tested input identities | Rebuilds tracked evidence, examples and bundle; temporary installs, caches and possible dependency/tokenizer downloads |
+
+These are different kinds of evidence. Format/discovery checks do not establish
+instruction following; native execution does not automatically approve art;
+mechanical or renderer checks do not replace visual judgment. **Human acceptance
+stays separate; M1/M2 and broader M3/M4/M5 remain open.**
+
+## Read existing evidence first
+
+```powershell
+.venv/Scripts/python.exe -B scripts/check_integrity.py
+```
+
+Use `--json` for structured stdout, or `--claim NF-07-CONSUMER --json` to focus on
+one registered claim. Package checks still run when claims are filtered. The
+[checker](../scripts/check_integrity.py) creates no files and disables Python
+bytecode writes internally. Redirecting stdout is your own file write: select a
+fresh destination, preserve stderr and record the actual exit code.
+
+Exit **0** means the selected integrity checks are intact, **1** means review is
+needed, and **2** means invalid input. An intact failed trial is still failed;
+stale applicability is not a demonstrated runtime regression. A current selected
+claim can coexist with overall exit 1 because retained release checks need
+review. Follow the [integrity guide](EVIDENCE-INTEGRITY.md) for interpreting each
+finding. This command neither repeats a receipt's tests nor rebuilds old evidence.
+
+## Run a focused core check
+
+For a change to the public consumer deliverable index:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest tests.test_deliverable_index -v
+```
+
+The [test module](../tests/test_deliverable_index.py) checks index contents,
+lifecycle/refusal behavior and CLI/MCP parity. It creates temporary production,
+asset and export fixtures; its CLI/MCP subprocesses also use `-B`. It does not run
+an agent, browser or provider, or judge artwork. Record the actual test count,
+skips and process exit from your run; earlier counts are retained evidence.
+
+Select affected tests for other changes after inspecting their setup and
+subprocesses. **Full unittest discovery is mutating:**
+[test_packaging](../tests/test_packaging.py) rebuilds the live bundle and
+[test_knowledge](../tests/test_knowledge.py) rebuilds the live knowledge outputs.
+A test command is not read-only merely because it begins with `unittest`.
+
+`-B` suppresses that Python process's bytecode writes, not application outputs,
+other tools' caches or every child process. Ruff, mypy and coverage have separate
+scope and may write caches/data; their success is not a behavioral test result.
+Do not add `--fix`, delete caches or run a full rebuild merely to inspect evidence.
+
+## Record native behavior and actual outcomes
+
+Use the scenario matching the changed operation, its real host registration and
+its retained input contract. For a fresh **Codex local-readiness** scenario, set
+`$trialDir` to a new attempt directory and `$consumerPython` to an existing absolute
+runtime-only Python path from the [consumer setup guide](AGENT-KIT.md#set-up-a-consumer-project):
+
+```powershell
+.venv/Scripts/python.exe -B -m evaluations.readiness_case prepare $trialDir --host codex --setup clean --python $consumerPython
+.venv/Scripts/python.exe -B -m evaluations.readiness_case run $trialDir --timeout 600
+.venv/Scripts/python.exe -B -m evaluations.grade_readiness $trialDir --output "$trialDir/grade-01.json"
+```
+
+The [preparer/runner](../evaluations/readiness_case.py) checks the selected bundle
+against its local manifest, copies it into an external temporary consumer and
+writes trial/configuration/input
+inventories and queries the host version. `run` uses the authenticated model host,
+retaining journals, logs and consumer outputs. This assignment exercises local
+readiness, not PixelLab production. Its outer command can finish successfully
+while the native process failed: inspect `record.json`'s `returncode` and
+`execution_status`, the actual result and the [independent grade](../evaluations/grade_readiness.py).
+A grade must be reviewed for task meaning, not just its check count.
+
+The [native production scenario](../evaluations/native_production_case.py) configures
+the official provider route during preparation. Running that assignment can
+perform paid provider work under its recorded authorization and limits; the local
+readiness assignment above does not request that work.
+
+For continuation, follow the particular retained trial's recovery instructions.
+A resume operation can reuse the original consumer and persisted session; it is
+not automatically a fresh isolated trial. Other graders/report helpers can
+replace outputs or seed frozen fixtures. For example,
+[`check_host_evidence.py`](../evaluations/check_host_evidence.py) and
+[`write_host_report.py`](../evaluations/write_host_report.py) write fixed evidence
+files and invoke freezing/replay helpers. Their names do not imply read-only use.
+
+For actual art, use the [task index](../evidence/README.md) to select the relevant
+assignment and [consumer execution contract](../spec/consumer-execution.md).
+Consumer execution runs a local Node/browser/loopback workflow and writes capture,
+check and import evidence; its candidate/configuration/output paths are specific
+to the consumer. Keep provider generation/editing, reused art, actual captured
+motion, visual review and target-engine acceptance distinct. A copied/installed
+runtime probe that reports unavailable execution is not observed playback.
+
+## Rebuild local evidence deliberately
+
+When the change requires the complete local unit/reference/distribution checks:
+
+```powershell
+.venv/Scripts/python.exe -B scripts/verify.py
+```
+
+Inspect the [verifier source](../scripts/verify.py) and current worktree first.
+**Do not probe this script with `--help`: it does not parse arguments, so that
+invocation still runs the rebuild.** The same applies to the direct builder,
+wheel-check and benchmark scripts below.
+
+The verifier creates a fresh `evidence/verification-runs/<UTC>/` attempt and
+archives known prior outputs before importing its build modules. It then checks
+supplied sources/catalogs, executes reference POCs, rebuilds knowledge/examples
+and the bundle, discovers the whole test suite, benchmarks representation,
+rebuilds the bundle again and exercises distribution. It records final source
+identities after checking for drift during the run.
+
+Expect changes under `knowledge/`, `examples/`, `evidence/art-methods/`,
+`plugins/pixl/runtime/` and `plugins/pixl/resources/`, plus the plugin manifest,
+requirements and generated notice. Current top-level evidence such as
+`test-results.json`, `test-log.txt`, `representation-benchmark.json` and
+`wheel-check.json` is replaced as the relevant stages run. The dated attempt
+retains logs, `previous.zip` and its manifest. **That archive covers declared
+outputs, not the entire checkout, every generated file or caches; it is not a
+rollback.** For example, the generated plugin notice and build/tool caches are
+outside its archive list.
+
+Use the selected development environment from the locked setup; distribution
+also requires `uv`. Distribution builds an sdist/wheel, creates a
+temporary environment, resolves/installs production dependencies and probes the
+installed/copied runtimes. It can use the network and write packaging/tool caches.
+Representation tokenization can download/cache encoding data on a cache miss.
+These are not model or PixelLab calls. Full verification does not run native-host
+production or establish artistic quality.
+
+A completed verifier reports exit 0 for a pass or exit 1 for a recorded failure;
+unreached stages remain `not_run`. An interrupted run or failure creating/writing
+its attempt may lack a complete report: retain stderr and the process exit.
+Preserve the dated attempt and inspect its result, not just the mutable top-level
+summary. A passing local suite does not turn a separate broad lint failure into
+a pass.
+
+| Direct helper | Effect and useful limit |
+| --- | --- |
+| [`scripts/build_plugin.py`](../scripts/build_plugin.py) | Copies runtime/resources/notice and writes requirements/manifest; may remove obsolete manifest-listed generated files after checking their old hashes. No archive, tests or proof replay. Existing proof bytes are copied, not re-executed. |
+| [`scripts/check_wheel.py`](../scripts/check_wheel.py) | Builds and installs into temporary environments and runs distribution probes; may fetch dependencies and write caches/build metadata. Writes `evidence/wheel-check.json` on success, with no full-verifier archive. A failure can leave the old successful receipt in place: retain the process exit/log separately. |
+| [`build_knowledge.py`](../scripts/build_knowledge.py), [`build_examples.py`](../scripts/build_examples.py), [`build_intake_example.py`](../scripts/build_intake_example.py), [`benchmark.py`](../scripts/benchmark.py) | Replace their knowledge, example or benchmark outputs without the full verifier's prior-output archive. They also do not parse `--help`. |
+
+## Preserve each attempt
+
+Keep old failures, executed package identities, source snapshots and earlier
+reviews. Retain stdout, stderr, exit status, exact command/environment and input
+identities in a fresh attempt location. Do not reuse a receipt path or replace
+an expected hash to obtain a pass. Not every helper refuses an existing output.
+If a correction changes the implementation, rerun the affected proof against its
+new inputs. A regrade of unchanged native output must retain its original grade
+and identify the evaluator correction; it is not a new execution.
+
+[QOL-09 evidence](../evidence/verification-tiers/README.md) records the fresh
+command/effect checks for this guidance. Documentation maintenance uses focused
+link/source and read-only checks; it does not require the rebuilding full verifier.
+
+## Retained results and older commands
+
+The dated ledger below is preserved history, including its old counts, command
+forms and “next” statements. Use the current choices above for verification and
+[TODO](../TODO.md) for today's development order. A newer date or a passing local
+check does not transfer native/artistic acceptance to another source, kit or
+consumer.
 
 ## Consumer deliverable index, 2026-11-14
 

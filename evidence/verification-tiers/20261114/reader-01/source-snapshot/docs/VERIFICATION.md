@@ -1,0 +1,891 @@
+# Verification and limits
+
+Start with the [task-based evidence index](../evidence/README.md) to find the latest
+applicable implementation, native and actual-output receipts. To obtain new
+verification, choose the question first, then the command below. Run commands
+from the repository root using its selected environment, currently
+`.venv/Scripts/python.exe` on Windows. Environment installation is separate:
+`uv sync --locked` changes the environment and may download packages.
+
+## Choose the evidence you need
+
+| Question | Route | What it establishes | Writes and external activity |
+| --- | --- | --- | --- |
+| Does an existing result still apply? | [Read-only integrity](#read-existing-evidence-first) | Registered receipt/claim integrity and source/package applicability | Stdout only; no builds, tests, host, browser or provider calls |
+| Does this local operation behave correctly? | [Focused core test](#run-a-focused-core-check) | The selected assertions against the selected implementation | This example uses temporary fixture/state/export files; other tests can rebuild tracked outputs |
+| Does the specialist follow its workflow? | [Native scenario](#record-native-behavior-and-actual-outcomes) | Actual host behavior within that recorded assignment | Trial files, consumer state and host sessions; model service access; provider work depends on the assignment |
+| Are the exact assets useful in the destination? | [Actual outcome review](#record-native-behavior-and-actual-outcomes) | Measurements, observed rendering and explicit scoped judgments | Scenario-specific art/import/capture/review outputs; provider and browser activity only when actually exercised |
+| Does the whole local implementation and distribution pass? | [Full verifier](#rebuild-local-evidence-deliberately) | Unit/reference/package checks and exact tested input identities | Rebuilds tracked evidence, examples and bundle; temporary installs, caches and possible dependency/tokenizer downloads |
+
+These are different kinds of evidence. Format/discovery checks do not establish
+instruction following; native execution does not automatically approve art;
+mechanical or renderer checks do not replace visual judgment. **Human acceptance
+stays separate; M1/M2 and broader M3/M4/M5 remain open.**
+
+## Read existing evidence first
+
+```powershell
+.venv/Scripts/python.exe -B scripts/check_integrity.py
+```
+
+Use `--json` for structured stdout, or `--claim NF-07-CONSUMER --json` to focus on
+one registered claim. Package checks still run when claims are filtered. The
+[checker](../scripts/check_integrity.py) creates no files and disables Python
+bytecode writes internally. Redirecting stdout is your own file write: select a
+fresh destination, preserve stderr and record the actual exit code.
+
+Exit **0** means the selected integrity checks are intact, **1** means review is
+needed, and **2** means invalid input. An intact failed trial is still failed;
+stale applicability is not a demonstrated runtime regression. A current selected
+claim can coexist with overall exit 1 because retained release checks need
+review. Follow the [integrity guide](EVIDENCE-INTEGRITY.md) for interpreting each
+finding. This command neither repeats a receipt's tests nor rebuilds old evidence.
+
+## Run a focused core check
+
+For a change to the public consumer deliverable index:
+
+```powershell
+.venv/Scripts/python.exe -B -m unittest tests.test_deliverable_index -v
+```
+
+The [test module](../tests/test_deliverable_index.py) checks index contents,
+lifecycle/refusal behavior and CLI/MCP parity. It creates temporary production,
+asset and export fixtures; its CLI/MCP subprocesses also use `-B`. It does not run
+an agent, browser or provider, or judge artwork. Record the actual test count,
+skips and process exit from your run; earlier counts are retained evidence.
+
+Select affected tests for other changes after inspecting their setup and
+subprocesses. **Full unittest discovery is mutating:**
+[test_packaging](../tests/test_packaging.py) rebuilds the live bundle and
+[test_knowledge](../tests/test_knowledge.py) rebuilds the live knowledge outputs.
+A test command is not read-only merely because it begins with `unittest`.
+
+`-B` suppresses that Python process's bytecode writes, not application outputs,
+other tools' caches or every child process. Ruff, mypy and coverage have separate
+scope and may write caches/data; their success is not a behavioral test result.
+Do not add `--fix`, delete caches or run a full rebuild merely to inspect evidence.
+
+## Record native behavior and actual outcomes
+
+Use the scenario matching the changed operation, its real host registration and
+its retained input contract. For a fresh **Codex local-readiness** scenario, set
+`$trialDir` to a new attempt directory and `$consumerPython` to an existing absolute
+runtime-only Python path from the [consumer setup guide](AGENT-KIT.md#set-up-a-consumer-project):
+
+```powershell
+.venv/Scripts/python.exe -B -m evaluations.readiness_case prepare $trialDir --host codex --setup clean --python $consumerPython
+.venv/Scripts/python.exe -B -m evaluations.readiness_case run $trialDir --timeout 600
+.venv/Scripts/python.exe -B -m evaluations.grade_readiness $trialDir --output "$trialDir/grade-01.json"
+```
+
+The [preparer/runner](../evaluations/readiness_case.py) checks the selected bundle
+against its local manifest, copies it into an external temporary consumer and
+writes trial/configuration/input
+inventories and queries the host version. `run` uses the authenticated model host,
+retaining journals, logs and consumer outputs. This assignment exercises local
+readiness, not PixelLab production. Its outer command can finish successfully
+while the native process failed: inspect `record.json`'s `returncode` and
+`execution_status`, the actual result and the [independent grade](../evaluations/grade_readiness.py).
+A grade must be reviewed for task meaning, not just its check count.
+
+The [native production scenario](../evaluations/native_production_case.py) configures
+the official provider route during preparation. Running that assignment can
+perform paid provider work under its recorded authorization and limits; the local
+readiness assignment above does not request that work.
+
+For continuation, follow the particular retained trial's recovery instructions.
+A resume operation can reuse the original consumer and persisted session; it is
+not automatically a fresh isolated trial. Other graders/report helpers can
+replace outputs or seed frozen fixtures. For example,
+[`check_host_evidence.py`](../evaluations/check_host_evidence.py) and
+[`write_host_report.py`](../evaluations/write_host_report.py) write fixed evidence
+files and invoke freezing/replay helpers. Their names do not imply read-only use.
+
+For actual art, use the [task index](../evidence/README.md) to select the relevant
+assignment and [consumer execution contract](../spec/consumer-execution.md).
+Consumer execution runs a local Node/browser/loopback workflow and writes capture,
+check and import evidence; its candidate/configuration/output paths are specific
+to the consumer. Keep provider generation/editing, reused art, actual captured
+motion, visual review and target-engine acceptance distinct. A copied/installed
+runtime probe that reports unavailable execution is not observed playback.
+
+## Rebuild local evidence deliberately
+
+When the change requires the complete local unit/reference/distribution checks:
+
+```powershell
+.venv/Scripts/python.exe -B scripts/verify.py
+```
+
+Inspect the [verifier source](../scripts/verify.py) and current worktree first.
+**Do not probe this script with `--help`: it does not parse arguments, so that
+invocation still runs the rebuild.** The same applies to the direct builder,
+wheel-check and benchmark scripts below.
+
+The verifier creates a fresh `evidence/verification-runs/<UTC>/` attempt and
+archives known prior outputs before importing its build modules. It then checks
+supplied sources/catalogs, executes reference POCs, rebuilds knowledge/examples
+and the bundle, discovers the whole test suite, benchmarks representation,
+rebuilds the bundle again and exercises distribution. It records final source
+identities after checking for drift during the run.
+
+Expect changes under `knowledge/`, `examples/`, `evidence/art-methods/`,
+`plugins/pixl/runtime/` and `plugins/pixl/resources/`, plus the plugin manifest,
+requirements and generated notice. Current top-level evidence such as
+`test-results.json`, `test-log.txt`, `representation-benchmark.json` and
+`wheel-check.json` is replaced as the relevant stages run. The dated attempt
+retains logs, `previous.zip` and its manifest. **That archive covers declared
+outputs, not the entire checkout, every generated file or caches; it is not a
+rollback.** For example, the generated plugin notice and build/tool caches are
+outside its archive list.
+
+Use the selected development environment from the locked setup; distribution
+also requires `uv`. Distribution builds an sdist/wheel, creates a
+temporary environment, resolves/installs production dependencies and probes the
+installed/copied runtimes. It can use the network and write packaging/tool caches.
+Representation tokenization can download/cache encoding data on a cache miss.
+These are not model or PixelLab calls. Full verification does not run native-host
+production or establish artistic quality.
+
+A completed verifier reports exit 0 for a pass or exit 1 for a recorded failure;
+unreached stages remain `not_run`. An interrupted run or failure creating/writing
+its attempt may lack a complete report: retain stderr and the process exit.
+Preserve the dated attempt and inspect its result, not just the mutable top-level
+summary. A passing local suite does not turn a separate broad lint failure into
+a pass.
+
+| Direct helper | Effect and useful limit |
+| --- | --- |
+| [`scripts/build_plugin.py`](../scripts/build_plugin.py) | Copies runtime/resources/notice and writes requirements/manifest; may remove obsolete manifest-listed generated files after checking their old hashes. No archive, tests or proof replay. Existing proof bytes are copied, not re-executed. |
+| [`scripts/check_wheel.py`](../scripts/check_wheel.py) | Builds and installs into temporary environments and runs distribution probes; may fetch dependencies and write caches/build metadata. Writes `evidence/wheel-check.json` on success, with no full-verifier archive. A failure can leave the old successful receipt in place: retain the process exit/log separately. |
+| [`build_knowledge.py`](../scripts/build_knowledge.py), [`build_examples.py`](../scripts/build_examples.py), [`build_intake_example.py`](../scripts/build_intake_example.py), [`benchmark.py`](../scripts/benchmark.py) | Replace their knowledge, example or benchmark outputs without the full verifier's prior-output archive. They also do not parse `--help`. |
+
+## Preserve each attempt
+
+Keep old failures, executed package identities, source snapshots and earlier
+reviews. Retain stdout, stderr, exit status, exact command/environment and input
+identities in a fresh attempt location. Do not reuse a receipt path or replace
+an expected hash to obtain a pass. Not every helper refuses an existing output.
+If a correction changes the implementation, rerun the affected proof against its
+new inputs. A regrade of unchanged native output must retain its original grade
+and identify the evaluator correction; it is not a new execution.
+
+[QOL-09 evidence](../evidence/verification-tiers/README.md) records the fresh
+command/effect checks for this guidance. Documentation maintenance uses focused
+link/source and read-only checks; it does not require the rebuilding full verifier.
+
+## Retained results and older commands
+
+The dated ledger below is preserved history, including its old counts, command
+forms and “next” statements. Use the current choices above for verification and
+[TODO](../TODO.md) for today's development order. A newer date or a passing local
+check does not transfer native/artistic acceptance to another source, kit or
+consumer.
+
+## Consumer deliverable index, 2026-11-14
+
+The [NF-07 index](../spec/deliverable-index.md) projects one selected retained
+package into named files, declared integration choices and exact source locators,
+current review, unresolved conditions and bounded lineage. It preserves opaque
+metadata and immutable creation status; it makes no new acceptance decision.
+
+[Focused verification](../evidence/deliverable-index/20261114/implementation-02/RESULT.json)
+passes **85 tests**, including **16 new tests and 69 existing regressions**, plus
+changed-runtime Ruff. [Independent source review](../evidence/deliverable-index/20261114/review-01.json)
+finds no actionable issue across nine criteria. [Two edge probes](../evidence/deliverable-index/20261114/review-probes-01.json)
+pass after a retained initial fixture failure. They check explicit unavailable
+remote sources and lost current PLAR bindings without inferring eligibility.
+
+[Final full verification](../evidence/verification-runs/20261114T152255.619054Z/result.json) reports
+**1,393 passing tests with 3 Windows privilege skips (1,396 run), 39 reference checks and distribution probes**. This is fresh unit/reference/package
+verification, separate from native behavior and maintenance checks below.
+[Repository-wide Ruff](../evidence/deliverable-index/20261114/maintenance-01/RESULT.json)
+**fails with nine findings in five files unchanged from the baseline**. No fixes
+or suppressions were applied. [All seven changed-code files](../evidence/deliverable-index/20261114/maintenance-02/RESULT.json)
+pass scoped Ruff; default Mypy passes 44 runtime modules. Default Mypy does not
+fully check untyped bodies. A passing full verifier is not a broad lint pass.
+
+[Cold Codex 0.167.2 qualification](../evidence/deliverable-index/20261114/cold-02/independent-01.json)
+passes **43/43**. Its external consumer receives only 29 public inputs, including
+five exact retained PNGs, the cited authored module and renderer guidance, without
+internal state, PLAR, history or PIXL runtime. The caller derives the exact original
+configuration from those inputs. Ten stills cover native and 3x scales; each
+playback observes five frames, ten transitions, two wraps and zero skips. All
+740 producer files and 29 input files preserve their exact bytes and mtimes.
+The 98,757-byte index is complete, compared with the 143,579-byte full report;
+this size difference is a scoped projection, not truncation.
+
+[Cold-01](../evidence/deliverable-index/20261114/cold-01/independent-01.json)
+remains **38/39**: consumer checks pass, while its source identity changes after
+18 additive binding values across six field names; existing values stay identical. Cold-02 is a new final-source
+run, not a rewritten first receipt. The [ledger](../evidence/deliverable-index/README.md)
+preserves both attempts, the first edge-probe fixture failure and maintenance
+failures. Public-input absence and the trace establish the scoped no-state
+boundary; filesystem permissions are not an OS sandbox. Existing CF-09 art is
+reused. No new provider result, generative improvement, Claude cold-consumer
+qualification, other-engine acceptance or human acceptance is established.
+M1/M2 and broader M3/M4/M5 remain open; QOL-07 is the next development slice.
+
+## Readiness and consumer setup, 2026-11-09
+
+The [readiness increment](../evidence/readiness/README.md) adds a standard-library
+bootstrap and a read-only CLI/MCP report. Static installation facts, supplied host
+observations and provider authentication remain separate. Consumer instructions
+now distinguish copied-kit, wheel and source installation from maintainer work.
+
+The [full verifier](../evidence/verification-runs/20261110T035753.519588Z/result.json)
+passes **716 tests with one Windows symlink-privilege skip**, 39 reference checks,
+benchmark and installed-wheel/copied-plugin checks. Its 176 input hashes identify
+the exact checked source snapshot. The frozen bundle contains 177 manifest-listed
+payloads plus generated requirements; the manifest's own bytes are recorded
+separately. [Focused lint and default Mypy](../evidence/readiness/20261109/verification/local-final-01.json)
+pass for their listed files; default Mypy does not fully check untyped bodies.
+
+The [fresh setup proof](../evidence/readiness/20261109/setup/attempt-01/RESULT.json)
+records 17 commands: a bare environment returns structured incomplete readiness,
+then copied-kit requirements, a real installed-wheel console entrypoint and a
+locked source environment without the development group all pass exact local
+source/readiness checks. No maintainer packages are installed. Consumer/package
+bytes and all 299 inputs in the frozen source fixture remain unchanged; the original maintainer
+environment was not an installation target. Exact wheel/sdist copies and hashes
+are [retained](../evidence/readiness/20261109/setup/retained-distribution-01/IDENTITY.json).
+This tests Windows/Python 3.14.3, not every declared Python or OS combination.
+
+Native evidence is graded separately in the [readiness report](../evidence/readiness/README.md).
+Codex passes 19/19 clean-setup checks and 16/16 omitted-role-loading checks,
+including actual named-child instruction loading in the clean case and successful
+local source/library/readiness calls in both. The grader was updated after the
+full verifier to handle the actual canonical child identity, native catalog and
+full MCP envelopes. [18 supplemental tests plus Ruff/Mypy](../evidence/readiness/20261109/supplemental-verification-01/result.json)
+pass for that evaluation-only change. Initial grades and grader source versions
+remain preserved; runtime and frozen bundle are unchanged. Counts overlap and
+are not additional native production outcomes.
+Claude's initial clean and omitted-role-loading trials stop before model work
+because the host CLI login expired; startup discovery is not behavior or task
+acceptance. That is a Claude host authentication result, not a PixelLab account
+or service result. No provider authentication, generation, artistic or engine
+acceptance is established by this increment. M1/M2 remain open.
+
+## Artistic revision and tool contracts, 2026-11-09
+
+The [scoped outcome](../evidence/artistic-revision/README.md) adopts the original
+Claude corrected29 successor through a fresh named Codex child and caller
+corrections to that same child. `artistic-02.plan` completes four tasks at revision
+108, with exact existing art, fresh candidate/collective reviews and a current
+public handoff. Both consumers receive native/enlarged actual browser observations,
+normal/reduced motion, live preference switches and an initially-reduced run.
+The 20 original Q identities, job lineage and 1,395 immutable input paths survive.
+
+[Independent grade 02](../evidence/artistic-revision/20261109/native/independent-grade-02.json)
+passes all task-outcome checks: **17/18 overall, partial**. The remaining check is
+the unobserved OS exit after a Windows recorder `os.replace` failure. Native
+parent/child work continued to its terminal event without relaunch; original
+progress and failed temporary bytes remain, with additive recovered metadata.
+Grade 01's mistaken treatment of the guard against creating another snapshot of a
+completed family is preserved; it was a grader defect, not failed family delivery.
+Earlier browser captures, the first plan and native corrections remain retained.
+Sampled paint/exposure clocks do not establish exact uninterrupted platform cadence.
+
+The [corrected TM-04 receipt](../evidence/artistic-revision/20261109/contracts-review-02/RESULT.json)
+retains ten actual typed declarations and a read-only workbench command response.
+Six retained signatures and three projected request schemas agree; three historical
+requests validate locally without dispatch. Typed projections are not raw
+`tools/list` schemas and do not capture every prose or command-grammar constraint.
+Current edit-tool prose differs from the dated catalog. Missing-tool summary
+coverage and output-overwrite repairs have separate evidence; the original snapshot
+is unchanged.
+
+[Final focused verification](../evidence/artistic-revision/20261109/verification/focused-final-02.json)
+passes **105 tests and Ruff**: 55 new regressions (6 runner, 16 contract, 27 grader
+and 6 recorder) plus 50 existing tests. The [real Windows sharing-lock probe](../evidence/artistic-revision/20261109/verification/recorder-lock-check.json)
+observes three `WinError 5` denials with original bytes preserved, then replacement
+after release in 0.354 seconds. Bounded retry and fallback-record tests separately
+verify continued observation of an owned process under recording failures. This
+is a local repair proof; the original native wrapper remains partial. The preceding
+604-pass/one-skip full verifier was not rerun; no new generation quality or M1/M2
+completion is claimed.
+
+## Named Codex role and same-child handoff, 2026-11-09
+
+The [qualification report](../evidence/named-codex-role/README.md) separates
+file-only discovery failures, local configuration probes, actual named-role and
+instruction loading, and the completed retained-asset assignment. Explicit
+session registration exposes `pixl` in the installed CLI; the role/profile/skill
+sources and frozen production bundle remain unchanged. A cold caller verifies
+exact exports, continues the same child through unchanged-review recovery and
+independently consumes its public handoff. All **28 independent checks pass**,
+including 4,142 unchanged initial files, preserved production state and one new
+immutable handoff. No new provider, artistic or renderer acceptance is inferred.
+
+The two missing-role attempts and the scope-conflicted partial predecessor remain
+preserved. The latter honestly stopped before handoff because the evaluation
+restricted all new files to its report directory while assigning an operation
+that writes `.pixl/handoffs`. A fresh corrected-scope trial completes that work.
+Grader corrections are separately retained rather than relabelling native output.
+
+Fresh verification runs **30 focused tests** (17 recorder and 13 scenario/grader)
+and Ruff. The preceding 604-pass/one-skip complete verifier below is historical;
+it was not rerun for this evaluation-infrastructure increment. Automatic role
+discovery, cross-process Codex resume, repeated/long-gap continuation and broader
+native production reliability remain open. M1/M2 stay open.
+
+## Native records and Claude continuation, 2026-11-09
+
+The [recording and continuation report](../evidence/native-continuation/README.md)
+separates the old non-persistent usage interruption, explicit recovery of its
+20-to-29 comparison and a successful separate-process continuation of the same
+parent and registered PIXL child. All 12 caller findings are reconciled, including
+two source-backed narrowings; no production or new art/renderer verdict follows.
+All 24 independent routing, history, identity, comparison and preservation checks
+pass. The initial grader representation error and three native script/citation
+self-corrections remain recorded. This is one native case, not broad reliability.
+
+Nine new regressions cover partial records, actual timeout, scoped environment,
+historical inspection, resume identity/configuration, package drift and Codex
+metadata. The [final full verifier](../evidence/verification-runs/20261109T201648.803400Z/result.json)
+passes **604 tests with one Windows privilege skip**, 39 reference checks,
+benchmark and installed-wheel/copied-plugin probes. Its 158 checked inputs and all
+172 final bundle entries match. The first sandbox-constrained broad failure is
+retained. Native trials use the frozen prior package; the rebuilt package differs
+only in four regenerated proof resources/references, with unchanged runtime,
+profile, skills and scripts. Exact identities are in the report. M1 remains open.
+
+
+## Everyday production, identities and locators, 2026-11-09
+
+The [implementation and native report](../evidence/everyday-guide/README.md)
+covers presentation-only CLI/MCP hash labels, actionable hash/root diagnostics,
+root/locator examples and the shipped everyday production guide. Five new
+regressions exercise identity separation, exact exports, relocation and rejected
+call preservation. The [final full verifier](../evidence/verification-runs/20261109T191851.620905Z/result.json)
+passes 595 tests plus one Windows symlink-privilege skip, 39 reference checks and
+fresh installed-wheel/copied-plugin probes. All 172 bundle entries match and the
+native frozen packages match the tested bundle. Earlier temporary-directory,
+newline-fixture and lint failures are documented with their corrections.
+
+Both cold native callers complete the retained successor consumption/recovery
+assignment, with 12 independent identity/preservation checks per host. Claude
+uses this harness's registered `pixl` agent; its caller corrects four field-layout
+and newline assumptions before passing 26 checks. Codex uses a generic native
+child and passes 16 caller checks, retaining its shell/path/output corrections.
+The caller assertions and maintainer checks overlap; these counts do not represent
+separate production outcomes. Prior accepted state is unchanged; review replay
+publishes nothing. This establishes bounded guide use and correct returned
+identities, not new generated-art or renderer acceptance, same-child continuation,
+named Codex selection or general reliability. M1 remains open.
+
+## Focused choices and successor comparison, 2026-11-09
+
+The [implementation and native evidence](../evidence/choice-comparison/README.md)
+cover semantic-link choice selection, discoverable other intake, structural plan
+comparison and exact full-report retrieval. The [full verifier](../evidence/verification-runs/20261109T173837.626745Z/result.json)
+passes 590 tests plus one Windows privilege skip, 39 reference checks, and fresh
+wheel/plugin probes. Nine regressions are new; the earlier distribution-probe path
+failure remains retained. Claude completes registered-agent semantic comparison,
+passing 12 retention/export and six literal mapping/invocation checks. Codex's
+initial unnecessary named-role blocker is preserved as partial behavior; a guided
+generic-child continuation completes the comparison and passes 12 independent
+checks. Both cover 20 original/23 successor criteria with retained corrections.
+Accepted consumer state is unchanged. These outcomes do not qualify new artistic
+acceptance, named Codex role selection or general unassisted reliability.
+
+## Ordinary candidate/family review, 2026-11-09
+
+The [review implementation and native outcomes](../evidence/candidate-review/README.md)
+cover explicit observation retention, exact criterion bindings, nomination,
+supersession and recoverable task completion. The [full verifier](../evidence/verification-runs/20261109T164301.724380Z/result.json)
+passes 581 tests and one Windows privilege skip, 39 reference checks, and fresh
+wheel/copied-plugin review/export probes. Eleven review and five export regressions
+are new. The initial probe import failure and the later two stale MCP annotation
+assertions are preserved with their corrections in the result report.
+Native evidence is graded separately against the copied successor and actual
+renderer outputs; it does not qualify all host routes or new generation quality.
+Both native review trials pass 15 independent state/retention checks and 233
+destination assertions each. Final-kit export follow-ups pass 13 independent
+checks per host, preserving accepted state and prior evidence. Initial failures,
+caller corrections and frozen-package identities remain in the linked report.
+
+## Successor motion, family and destination acceptance, 2026-11-09
+
+The [scoped maintainer review](../evidence/successor-acceptance/README.md) completes Working and the exact successor family. Isolated headless execution records 97 playback observations and four wraps; all 1,160 package/motion assertions and 233 destination assertions pass. Explicit visual judgments cover motion continuity, family treatment and shape distinction at native/3x and in grayscale. The package is exercised through both real consumers, including reduced motion and live preference switches. Prior failed browser observations and unavailable verdicts remain preserved. The [delivery](../evidence/successor-acceptance/20261109/maintainer-01/DELIVERY.json) reports current state and exact continuation.
+
+These are fresh production-observation and state checks, not a newly run full unit suite, new provider generation or a fresh native two-host conformance result. Workflow guidance now prefers an existing isolated renderer and recorded playback; desktop control is optional.
+
+## Focused authoring and reviewed successor, 2026-11-09
+
+The [implementation and A–E review](../evidence/focused-authoring/README.md)
+cover focused context/shared source retrieval and explicit linked successor
+authoring. The [final verifier](../evidence/verification-runs/20261109T114309.309864Z/result.json) reports **565 passes plus one Windows
+symlink-privilege skip**, including eight new regressions and clean installed
+wheel/copied-plugin probes. Local mechanics and distribution checks do not
+establish model behavior or art quality.
+
+Both native hosts consume the focused view. Codex compares all 20 old criteria,
+adopts 23 successor checks, closes the obsolete undispatched intent through its
+normal lifecycle and renders both existing consumers with normal, reduced and
+restored motion. Independent checks match all 240 sampled canvases to the exact
+retained art and confirm labels, dimensions, nearest sampling and mode selection.
+This is actual destination rendering, not a new provider generation or an exact
+wall-clock cadence measurement. Retry and Paused complete; Working's temporal
+visual judgment is unavailable and collective family acceptance remains open.
+
+The first adoption's invented source times are a retained failure. A separate
+native correction appends actual observed bindings without altering old records,
+art or literal checks. Its Working nominee was omitted; the separate maintainer
+[current continuation](../evidence/focused-authoring/20261109/current/CURRENT-HANDOFF.json)
+changes only that selection, leaving seven passes, one unavailable and the task
+open. The first maintainer handoff save used the wrong kind of hash and was
+rejected; public help now identifies the required production state hash exactly.
+These repairs do not qualify unassisted host reliability.
+
+Claude 2.1.318 invokes its registered foreground specialist and retains partial
+proposal/renderer files, then exhausts usage credits. There is no final caller
+comparison or completed capture. Codex 0.167.0 uses a generic named child, not a
+verified custom agent role. All four native attempts have independently reread
+archives/manifests. Broader generated quality, named-role reliability, Claude
+same-child continuation and the current successor's remaining acceptance stay
+open. No human-only approval requirement follows from one reviewer's temporal
+viewing limitation.
+
+## Exact criteria handoff and Claude comparison repair, 2026-11-09
+
+The [repair and A–E review](../evidence/criteria-handoff/README.md) connect authoring
+and stage preparation to the existing request-review tool. Exact member/collective
+criteria, sources, controls and request context reach the independent caller.
+Coverage checks identities and completeness; it does not grant semantic agreement.
+Ordinary job progress preserves an unchanged comparison fingerprint.
+
+Claude's targeted native caller compared all 20 criteria, caught four discrepancies
+in the specialist's proposal and verified a separate revision. It returned a
+complete review with three criteria kept, 14 clarified and three review-route
+corrections. The historical contract remains `changes_requested`; the revised
+proposal is for future adoption. Nineteen independent checks pass, preserving all
+881 pre-run consumer files and the frozen kit. A separate final-kit caller
+continuation preserves the comparison rows verbatim and passes 16 checks for exact
+report export, current identities and unchanged history.
+
+Same-child `SendMessage` failed with “No transcript found”; an explicit artifact-based
+restart completed the revision. This is a bounded repair pass with recovery, not a
+clean first interpretation, general host reliability or new generated/rendered
+acceptance. Codex was not rerun. The maintainer's initial encoding diagnostic was
+wrong; both native report files were already valid UTF-8. The failed diagnostic,
+correction and follow-up caller's independent contrary finding are retained.
+
+The [final verifier](../evidence/verification-runs/20261109T100432.749313Z/result.json)
+passes **557 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin probes. Ten new handoff regressions include lifecycle
+progress without invalidating an unchanged comparison. Ruff passes; Mypy reports
+no issues across 67 maintained files under its configured scope (untyped bodies
+are not fully checked). Both native archives have verified per-file manifests.
+
+## Native connected authoring, 2026-11-09
+
+[Both native callers](../evidence/native-authoring/README.md) used the new authoring
+interface in copies of the existing consumer, recovered an interrupted allocation
+write without a second graph, prepared exact seed inputs and retained a blocked
+request after a declared requirement change. Each passes 21 independent artifact
+checks; all 376 original state records and original assets/sources/allocation remain
+unchanged. This is an announced recovery evaluation using the actual copied runtime.
+
+Behavioral grading is **partial overall**. Codex's caller compares all 13 criteria,
+catches a mixed authority label and obtains a separate correction. Claude performs
+substantial independent artifact and recipe checking, but its grouped comparison
+of 20 criteria does not establish method-versus-outcome authority for stricter
+clauses. The original partial grade remains preserved; the targeted repair is
+recorded above. Claude uses its registered PIXL
+agent; Codex uses a generic native child assigned PIXL work, leaving named role
+selection unverified. No new generation, rendered acceptance or broad reliability
+claim follows.
+
+The [full verifier](../evidence/verification-runs/20261109T082315.017109Z/result.json)
+passes **547 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin checks. Ruff passes; Mypy reports no issues across
+65 maintained files under its configured scope (untyped bodies are not fully
+checked). The additional regression verifies actual dispatch refusal after the
+requirement change and preservation of the original allocation/prepared intent.
+Both native archives include file manifests verified against their complete bytes.
+
+## Cold consumption and connected authoring, 2026-11-08
+
+Both fresh native callers consumed the frozen completed real-provider family:
+[Claude and Codex results](../evidence/package-consumption/README.md). Each delegated
+to PIXL, waited for its return, independently compared actual files and current
+continuation, and retained a usable result. Three new captures across these runs
+pass 404 checks each; original state, PLAR, assets and kit bytes are unchanged.
+This is one bounded consumption run per installed host; same-child resumption,
+new native generation and broader quality/reliability remain open.
+
+The [connected authoring adapter](../spec/production-plan.md) is verified separately
+through ten new regressions, a copied real-consumer preparation rehearsal and both
+clean wheel/copied-plugin public CLI probes. The [final verifier](../evidence/verification-runs/20261108T143610.530795Z/result.json)
+passes **546 tests plus one Windows symlink-privilege skip** and 39 reference checks.
+Ruff passes; Mypy reports no issues across 63 maintained files under its configured
+scope (untyped bodies are not fully checked). The PIXL skill format validator passes.
+The preceding 545-pass receipt predates the downstream-selection guard and remains
+historical. [Authoring results and A–E](../evidence/production-authoring/README.md)
+separate implementation from native use, which was next at that checkpoint and is
+now graded separately in the 2026-11-09 section above.
+
+## Official PixelLab family production, 2026-11-08
+
+[Real production evidence](../evidence/pixellab-family-production/README.md) records
+Working, Retry and Paused generated through official MCP, actual provider failures,
+guarded background corrections and stable motion constructed from the generated
+seed. The original AI animation fails visual review and remains retained. Sixteen
+generations were charged; deterministic workbench corrections were free.
+
+The exact retained four-member package passes scoped color/grayscale review and
+404 mechanical checks per final browser capture. Twenty actual consumer views,
+five state transitions and thirteen live frame transitions verify both views,
+100 ms phases and wrap. The helper now records actual animation callbacks rather
+than relying solely on calculated boundary crops. A discovered completed-delivery
+handoff mismatch is repaired: matching destination bytes and accepted containing
+families yield `delivered`; missing/changed files and unfinished reviews remain open.
+The targeted PLAR/render regression run passes 35 tests. The [full verifier](../evidence/verification-runs/20261108T131152.221959Z/result.json)
+passes **536 tests plus one Windows symlink-privilege skip**, 39 reference checks
+and clean wheel/copied-plugin installations. Ruff passes across source, generated
+runtime, tests, evaluations and scripts; Mypy with explicit package bases passes
+61 maintained source files. Node syntax checks pass for all three renderer modules.
+
+This is a maintainer-operated continuation in the current host. Existing native
+host grades remain unchanged; no new unaided Claude/Codex behavioral pass or broad
+art-quality reliability follows. Ready and Start retain their distinct provenance.
+
+## Existing-consumer style, family and rendering, 2026-11-08
+
+The [final verifier](../evidence/verification-runs/20261108T113550.638557Z/result.json)
+passes **530 tests, one Windows symlink-privilege skip and 39 reference checks**,
+with clean wheel/copied-plugin installation. Six new regressions exercise actual
+source serving, pixel corruption and fractional placement detection, and preservation
+of completed/interrupted consumer stages. Ruff, Mypy across 62 files, Node syntax
+checks and both skill format validators pass. The receipt binds 128 checked inputs;
+the final bundle contains 159 manifest entries.
+
+The [style/family/render evidence](../evidence/style-family-rendering/README.md)
+retains actual graphical execution of both supplied consumers. Independent checking
+found fractional layout and intermittent Chromium screenshot-viewport mismatch;
+the corrected capture sets metrics before navigation and retains report/layout/image
+from the same CDP page. Two independent corrected captures pass 104 pixel/identity
+checks each. An independent source/transition check passes 44 checks. The synthetic
+four-frame/partial-alpha probe passes 155 checks; those pixels are renderer test
+data, not produced family artwork.
+
+Original native01 outcomes remain explicit: Codex completes scoped style/family
+review while correctly withholding failed destination placement; Claude ends while
+its background specialist is still running and never returns the required result.
+The latter also leaves a caller edge-count discrepancy for correction. Both preserve
+the old capture helper and its failures. The shared workflow now keeps required
+delegation and caller completion on the critical path. Codex's guided recovery passes.
+Claude's recovery delivers scoped style/rendering/PLAR/handoff but remains partial for
+the old arm-axis description; a separate guided correction passes independent arithmetic,
+caller comparison, requirement/history preservation and exact-handoff checks. This does
+not replace original grades or establish broad model reliability. Claude uses a labelled
+saved-artifact restart after native child resumption fails; same-child resumption stays
+unqualified. Working, Retry, Paused and upstream PixelLab quality remain outside the
+available-member acceptance.
+
+Claude also updates project auto-memory outside the fixture in the final correction.
+That observed host side effect is retained; these runs do not establish memory isolation.
+The evaluation runner now disables auto-memory only in future child processes and records
+the override. A controlled environment-propagation probe passes; no new native-model trial
+is claimed for that final harness change. Production settings and profile stay unchanged.
+
+## Exact handoff and authority repair, 2026-11-08
+
+The [final routing/harness-revision verifier](../evidence/verification-runs/20261108T083512.248519Z/result.json) passes **524 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel/copied-plugin installation. Six new regressions check complete handoff preservation, idempotence/corruption, stale state/requirements, missing production, authored/derived separation and CLI/MCP parity. Each installed PLAR probe has fourteen checks. Ruff, Mypy and both skill validators pass.
+
+[Current evidence](../evidence/handoff-repair/README.md) distinguishes native contract/handoff repair, independent forward review, explicit expert-knowledge applicability and actual generated-art quality. Native01 kits predate the later silhouette-source clarification; native02 kits include it and the subsequent source-first comparison revision. Native03 adds the historical/new-proposal delegation boundary and visual-role guidance. This instruction-only revision has a separate [passing clean distribution receipt](../evidence/handoff-repair/20261108/delegation-revision/distribution.json); its runtime inputs were unchanged at that stage. Native04 adds review-routing, geometry and measurement corrections and restores the documented SendMessage tool omitted by the isolated Claude harness. The latest complete verifier includes those evaluation-code changes; final Ruff, Mypy across 59 maintained Python files and both skill format checks pass. Initial and intermediate verifier receipts remain preserved. [Checks and identities](../evidence/handoff-repair/checks.json) identifies each tested version. Final04 contracts correct the retained authority/routing findings and source locators in both hosts; exact resume/next checks pass. Claude04 retains a minor descriptive endpoint/axis inconsistency. Codex04 initially lacks its claimed alternatives record; a separately graded same-parent guided correction supplies it without changing prior files. Earlier failures and the original partial grade remain. Native child resumption is not established merely by restoring SendMessage. No source-range or fixture pass establishes general artistic expertise or graphical renderer acceptance.
+
+## Exact handoff evidence and selected-generation delivery, 2026-11-08
+
+The [final full verifier](../evidence/verification-runs/20261108T061236.723524Z/result.json) passes **518 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel and copied-plugin installations. Seventeen new regressions exercise exact source/locator evidence, reviewed connection identity and retention, provider-bound continuation, same-job MCP/HTTP retrieval and execution of the actual TypeScript source consumers. Each installed PLAR probe performs thirteen checks. Source/generated Ruff, runtime/evaluation Mypy and both skill format checks pass.
+
+[Current evidence](../evidence/plar-handoff-delivery/README.md) retains both corrected request-stage operations and their remaining color-authority findings, plus same-generation native delivery results. Later runtime corrections are distinguished from the frozen native kits. [Checks and identities](../evidence/plar-handoff-delivery/checks.json) records all 117 checked inputs, 152 bundle entries and archived native/independent evidence. Actual image viewing, immutable-byte delivery and Node source execution do not establish upstream PixelLab generation quality or graphical renderer acceptance.
+
+## PLAR allocation and production cohesion, 2026-11-08
+
+The [final full verifier](../evidence/verification-runs/20261108T052631.521552Z/result.json) passes **501 tests, one Windows symlink-privilege skip and 39 reference checks**, including clean wheel and copied-plugin installations. Twenty new workflow regressions plus one continuation-fixture regression exercise production linking, interruption/CAS recovery, revised generations, pending ownership, current-consumer readiness/completion, accepted-history preservation and legacy source-order reuse. Each installed PLAR probe now performs eleven checks. Source/generated Ruff, runtime/evaluation Mypy and both shared skill format checks pass.
+
+[Current cohesion evidence](../evidence/plar-cohesion/README.md) records two controlled cold native continuations and their remaining criterion/locator/handoff failures. Later runtime corrections have separate verification from their frozen native kits. The preceding 498-pass full run and the retry interrupted by a Windows receipt-replacement error remain preserved. Exact final input, bundle and archive identities are in [checks.json](../evidence/plar-cohesion/checks.json). These checks do not establish actual PixelLab-generated quality or renderer acceptance.
+
+## PLAR allocation/update and first-request preparation, 2026-11-08
+
+The [corrected full verifier](../evidence/verification-runs/20261108T034254.703857Z/result.json) passes **480 tests, one Windows symlink-privilege skip and 39 reference checks**. The 21 added regressions cover allocation impact, selected preparation/recovery and the controlled request fixture. Fresh wheel/copied-plugin checks exercise the selected asset through preparation, unrelated allocation refresh, dispatch and observation after source drift, with actual populated history links. The preceding package-schema omission remains in its failed receipt.
+
+[Allocation and native evidence](../evidence/plar-allocation/README.md) separates raw-source/update understanding, local mechanisms and actual native call/contract outcomes. Both hosts reach the controlled first-request stage; semantic planning/handoff defects and corrective attempts remain explicit. This does not establish generated-art quality or destination acceptance. Final guidance-only edits receive a separate clean distribution check; all 109 full-verifier checked inputs remain identical.
+
+## Request/criteria handoff and controlled delivery, 2026-11-08
+
+The [current implementation receipt](../evidence/request-review/checks.json) records **459 passing tests, one Windows symlink-privilege skip, 39/39 reference checks**, a clean wheel/copied-plugin installation, and passing maintained-code Ruff/Mypy checks. This increment adds 22 regressions for exact-color measurements, image delivery, upload/recovery, accepted-task completion and preparation-time observation validation.
+
+[Native outcomes](../evidence/request-review/README.md) retain 18 independently reviewed attempts. Both hosts complete controlled delegated delivery and the same unfinished cross-host handoff; the latest Claude full run retains path-scope and timestamp defects. Its final runtime timestamp correction has regression coverage but no subsequent native full run. These results establish the stated mechanisms and bounded behavior, not upstream generation quality or live renderer acceptance.
+
+## Current dependency installation check, 2026-11-07
+
+The wheel verifier now installs the wheel and declared production dependencies into a fresh unseeded environment, checks that maintainer packages are absent, and exercises both the installed runtime and copied plugin. It no longer reuses the development interpreter's dependency paths. [Dependency evidence](../evidence/runtime-dependencies/README.md) records the actual package set and operations. This proves the recorded platform/Python installation, not every supported operating system or Python version.
+
+## Build and verification repair, 2026-09-14
+
+The [ecosystem audit](../evidence/reviews/2026-09-13-ecosystem/README.md) retains the
+failing build, the complete failing baseline suite, regression failures, and fresh
+results. Earlier sections below describe historical runs. Their passing counts
+do not certify the current checkout or complete modules.
+
+Use the existing uv environment:
+
+```powershell
+uv sync --locked
+uv run --no-sync python scripts/verify.py
+uv build
+```
+
+The verifier discovers every test under `tests/`, regenerates reference proofs and
+the portable plugin, and exercises `checkout -> sdist -> wheel -> temporary
+installation`. The September installation reused the selected environment's dependencies;
+that historical result did not prove a clean dependency installation. The current
+replacement is described above; other OS/Python combinations remain unverified.
+
+Each verification attempt archives the previous generated outputs before replacing
+them, records its own logs under `evidence/verification-runs/`, and publishes a
+current [result](../evidence/test-results.json). Import, source, test and build
+errors produce failure records. Unreached stages remain `not_run`. A successful
+file-hash comparison establishes byte identity, not coverage or correctness of
+every function in that file.
+
+Coverage is a separate measurement using the uv development dependency:
+
+```powershell
+uv run --no-sync python -m coverage run --data-file build/coverage-data scripts/verify.py
+uv run --no-sync python -m coverage combine --data-file build/coverage-data
+uv run --no-sync python -m coverage report --data-file build/coverage-data
+uv run --no-sync python -m coverage json --data-file build/coverage-data -o build/coverage.json
+```
+
+Coverage includes branches and uses Coverage.py's [subprocess instrumentation](https://coverage.readthedocs.io/en/latest/subprocess.html).
+The report measures the checkout's `pixl/` runtime. Copied and installed runtimes
+are exercised by the packaging checks; their separate file paths are not merged
+into the checkout's coverage percentages. Percentages measure executed code, not
+assertion quality, complete input coverage, artistic judgment or production readiness.
+Use a new data-file prefix to retain separate measurement attempts.
+
+Static checks have their own scope and exit status:
+
+```powershell
+uv run --no-sync python -m ruff check pixl scripts tests evaluations setup.py plugins/pixl/runtime plugins/pixl/resources/pixl plugins/pixl/scripts
+uv run --no-sync python -m mypy --check-untyped-defs pixl
+uv run --no-sync python -m mypy --check-untyped-defs --explicit-package-bases scripts evaluations setup.py
+```
+
+The [follow-up development evidence](../evidence/development/2026-09-14-typing-adapters/README.md)
+retains the original 24 Mypy diagnostics and the passing check of all 36 maintained
+runtime, build and evaluation source files with `--check-untyped-defs`. These files
+still contain unannotated interfaces: this is not a claim of complete static typing.
+Historical training scripts and frozen evaluation packages are evidence inputs,
+outside the maintained-code lint command above. This repair does not run new
+agent-behavior trials, PixelLab generation, visual acceptance or target-engine acceptance.
+
+Host JSON files and MCP input now reject repeated object member names, including
+escaped spellings of the same name. Previously the decoder silently retained the
+last value and could publish a different document or initialize a different store.
+CLI input failures return `json_read` before writing output; MCP returns a parse
+error before dispatch and continues reading subsequent requests. Repeated names
+in different objects remain valid. PX1/PX2 wire syntax and saved-state semantics
+are unchanged. Process-level regression failures and passing results are retained
+in the follow-up evidence; they establish these input behaviors, not completeness
+of the CLI, MCP or service modules.
+
+## Candidate inspection operation, 2026-09-11
+
+The current full verifier passed **380 tests, zero failures/errors and one Windows
+symlink-privilege skip**, plus **39/39 reference checks**. The log is retained at
+[`full-verifier-first.txt`](../evidence/candidate-inspection/full-verifier-first.txt).
+Its initial `runs:1, errors:1` line comes from the deliberate recorder-integrity
+rejection test; the full suite result has no errors. The previous implementation
+and receipts are preserved in the [145-file archive](../evidence/candidate-inspection/legacy-docs/docs-01/manifest.json).
+
+Independent reviews found and verified corrections for allocation ordering, high
+measurement memory, transparent RGB preservation, reference-only candidate rejection
+and scalar-type equivalence. The old failures remain alongside final probes.
+Ruff passes across runtime/tests/scripts/evaluations. Default Mypy passes for the
+20 runtime modules and explicit-package-base checks pass for the changed evaluation
+and probe code; untyped function bodies retain Mypy's existing default limitation.
+An overly broad initial Mypy invocation failed package discovery; its receipt is
+retained separately from the corrected invocation.
+The Windows CRLF-aware whitespace check also passes. The default Git check reports
+carriage returns in generated JSON as trailing whitespace; that diagnostic is retained
+without rewriting hash-bound receipts for cosmetic line-ending changes.
+
+The [copied-package proof](../evidence/candidate-inspection/portable-operation/report.json)
+passed 11 actual CLI/MCP operations with 10 prepared views, exact retained E/V,
+mechanical pass / visual fail / engine unavailable, a separate unperformed candidate
+and a relocated cold read of the old failure. Its judgments are explicitly supplied
+developer fixture declarations. See [inspection evidence](../evidence/candidate-inspection/README.md)
+for the separate native profile trials and their actual viewing evidence. Neither
+fixture publication nor host completion establishes production art or engine acceptance.
+
+All three new native attempts completed. Codex retained mechanical pass / visual fail /
+engine unavailable after ten verified native/enlarged image deliveries. Claude's first
+attempt preserved the visual rejection but incorrectly required viewing coverage for a
+mechanical pass. The [original failure](../evidence/candidate-inspection/claude-native-review.json)
+is retained. A two-sentence contract clarification, with unchanged runtime/profile/skill
+hashes, led to a [successful fresh repeat](../evidence/candidate-inspection/claude-native-repeat-review.json)
+with all three outcomes, exact image deliveries and saved-state readback. The
+[12 isolated replay operations](../evidence/candidate-inspection/native-integrity.json)
+have zero errors. Only the packaged contract and manifest changed after the full
+runtime verifier; the new instruction identity received the targeted native repeat.
+
+## Native profile evaluation, 2026-09-11
+
+The [host evaluation](../evaluations/README.md) retains **sixteen native attempts**:
+eight completed Codex model sessions, four completed Claude model sessions, three
+Claude attempts interrupted at the shared 600-second limit, and the original Claude
+authentication failure before inference. Both hosts have observed behavior on five
+of eleven catalog cases, a visual repeat and a supplementary cold intake continuation.
+Only maintainer routing and visual rejection have completed fresh turns in both hosts;
+interrupted attempts still supply observable behavior and retained files.
+The unchanged bundle manifest has 90 copied-file entries plus generated requirements;
+its SHA-256 is `2c21250554a42804453ed3ea58810b08fd19b6b1fa08b5f0f3b886e14c3837d1`.
+
+All four visual attempts identified the absent left antenna and right eye despite a
+mechanical pass. Viewing completeness remains an independent requirement: the first
+Codex exec stream omitted viewer observations, and Claude's repeat retained enlarged
+inspection without native-scale viewing. Cold Codex intake recovered revision 2
+unchanged; cold Claude intake continued an interrupted revision 1 and committed the
+study's review at revision 2. Both preserved unresolved canvas and outline choices.
+
+The [criterion review](../evidence/host-evaluation/criterion-review.json) retains
+failures and unverified findings. Claude's style plan replaced requested selective
+antialiasing with zero contour AA and an asserted approved palette; other attempts
+introduced unsupported artistic requirements. Valid state and correct fixture
+rejection did not establish correct project judgment. A Codex missing-provider rerun
+with working file access completed local planning; the original denied-access attempt
+remains unchanged. Claude assistant messages identify `claude-opus-5`, separately from
+the init-selected `claude-opus-5[1m]`; Codex requested/selected `gpt-6-astra` without a
+separate assistant model label. These are reported identities, not independent attestation.
+
+[Evidence integrity and isolated state replay](../evidence/host-evaluation/integrity.json)
+pass for all sixteen attempts and thirteen saved store heads: **39 local operations**.
+All **18 focused recorder/report tests**, Ruff and Mypy pass. The checker discovers
+stores in host-chosen directories, and the compiler separates interrupted inference,
+completed turns, evidence corruption and model-authored state failures. A failed
+cold-input test and independent recorder
+probes are preserved; corrections prevent fixture reseeding on cold resume, retain
+malformed-output attempts and archive mutated package bytes. An additional failing
+regression is [retained](../evidence/host-evaluation/replay-inventory-before.txt): replay
+now rejects unrecorded project files before they can influence validation. These checks validate
+the recorder, not the model. The previous report, review and checks are
+[preserved](../evidence/host-evaluation/previous-run/host-evaluation-01/codex-baseline/manifest.json).
+Existing runtime, POC and family receipts below were not regenerated by this evaluation.
+
+No live PixelLab generation, newly commissioned art, animation/tile continuity or
+engine acceptance was exercised. The exact trial records, source versions and
+limitations are retained separately from the [next task specifications](../evaluations/TODO.spec.md).
+
+Run `python scripts/verify.py` from the checkout. It validates the declared supplied-source inventory and all curated line ranges, rebuilds the catalog/example/plugin, executes the full test suite and method POCs, measures representation size, and records runtime hashes. See [`evidence/test-results.json`](../evidence/test-results.json), [`test-log.txt`](../evidence/test-log.txt), [`art-methods/poc-report.json`](../evidence/art-methods/poc-report.json) and [`representation-benchmark.json`](../evidence/representation-benchmark.json) for actual results.
+
+## Current family delivery operation, 2026-09-11
+
+The integrated run executes **325 tests: 324 passed, zero failures/errors, and one existing Windows symlink-privilege skip**. All **39 reference POCs** and **93 source ranges** pass. The 53 new tests comprise 23 family semantic checks, 21 delivery checks and nine actual CLI/MCP operation checks. They exercise exact approved baselines, selected member/destination proof, pending jobs, historical packages after amendments, unavailable engine requirements, changed selection, immutable storage and generic publication ordering.
+
+The [wheel probe](../evidence/wheel-check.json) passes **33 commands on an 83-file installation**. Copied-plugin verification passes 32 commands. Both include a twelve-command family operation beginning with a retained synthetic preaccepted checkpoint: snapshot real member bytes, leave collective checks unperformed, retain unavailable engine acceptance, amend membership and cold-read both old and new packages. The checkpoint's visual/live receipts are supplied test data, not actual artistic/engine evidence. All 90 bundle manifest entries match source and copied bytes. Exact current runtime identities and test counts are in [test-results.json](../evidence/test-results.json).
+
+Ruff passes; default mypy reports no issues in 18 modules, with some untyped function bodies excluded. Three Codex skill checks, Codex plugin validation, three native Claude checks and 50 relative links in 16 instruction/spec files pass in [instruction-checks.json](../evidence/family-delivery/instruction-checks.json). These are discovery/format checks, distinct from agent behavior and real outcomes.
+
+The [copied-plugin scenario](../evidence/family-delivery/plugin-scenario/record.json) records 49 isolated processes (43 CLI and six stdio MCP), with a separate import-origin check and all 90 source/plugin/copy identities verified. One fictional static-family workflow retained an unknown member attempt and rejected premature snapshotting, reconciled it through an explicitly supplied synthetic failure, preserved an earlier two-member package after saved membership amendment, and created a one-member package. The final delivery remains open: collective continuity is unperformed and engine acceptance unavailable. An N record and [concrete handoff](../evidence/family-delivery/plugin-scenario/handoff.md) identify the exact package and missing inspections. The earlier source-adapter walkthrough is retained separately. These scripted and inspected operations are not an independent profile-compliance benchmark, actual visual comparison or real provider/engine outcome.
+
+Failed attempts remain separate in the [implementation ledger](superpowers/plans/2026-09-11-family-delivery.md) and [semantic review](../evidence/family-delivery/semantic-task-report.md). Seventeen delivery tests first failed on the absent operation, and the new family fields and public adapters were exposed by initial failures. Two later structural regressions reproduced family candidates omitting their constituents and family report plans carrying a raster contract. Independent review then found generic snapshot publication could activate its task and identified manifest redirection. Both new regressions failed before correction, including a real Windows junction. The reviewer confirmed all 23 scoped follow-up checks passed with no open finding. Unrooted graph validation cannot inspect frozen manifest bytes; the required rooted family report/store path does so.
+
+The [previous milestone archive](../evidence/family-delivery/previous-run/family-delivery-01/manifest.json) preserves eleven exact provider-recovery files before regeneration. All five supplied source documents and PX1 specification/registry bytes remain unchanged. Registry 2.2.0 explicitly adds family fields; it does not silently upgrade old projects. The next development target is packaged-profile evaluation across hosts, with actual domain and destination outcomes still requiring their own observed evidence.
+
+The [family development summary](../evidence/family-delivery/development-summary.json) binds the final runtime, review, instruction, distribution and scenario evidence by hash.
+
+## Earlier provider recovery operation, 2026-09-11
+
+The integrated run executes **272 tests: 271 passed, zero failures/errors, and one Windows symlink-privilege skip**. All **39 reference POCs** and **93 source ranges** pass. The 70 new tests cover discovered requests, closed history replay, project/store integration and actual CLI/MCP subprocesses. Local concurrent dispatch returns only one request; the other writer receives a stale/locked diagnostic. Saved plans, retained immutable bytes and acceptance remain checked on generic publication as well as high-level operations.
+
+The [archived wheel probe](../evidence/family-delivery/previous-run/family-delivery-01/evidence/wheel-check.json) passes 21 command checks on a temporary 78-file installation. The copied-plugin test passes its original nine commands plus an eleven-command provider sequence. Both execute prepare, claim, cold unknown recovery, supplied success and local PNG import, then confirm all acceptance requirements remain unperformed. These tests use fictional discovery/authorization/provider observations; they do not call a live provider. The exact runtime identities are in the [archived test results](../evidence/family-delivery/previous-run/family-delivery-01/evidence/test-results.json). Standard Ruff and mypy checks pass; mypy's default does not check every untyped function body.
+
+Three skill-format checks, Codex plugin validation, three native Claude checks and 40 relative links pass in [instruction-checks.json](../evidence/provider-recovery/instruction-checks.json). Profile behavior and actual production outcomes remain distinct verification levels.
+
+The [independent recovery exercise](../evidence/provider-recovery/behavior-evaluation.json) follows the skill in one fictional scenario against a separately copied plugin. Restarted CLI/MCP sessions retained unknown state, reconciled a supplied remote identity without another dispatch, and imported one actual local PNG. A changed-contract branch rejected import with `job_stale` while retaining the store and downloaded file. Local dimensions/alpha measurement passed; visual and engine obligations remained unperformed, with concrete handoff records for both branches. This is one scripted and inspected developer-agent exercise with synthetic provider observations, not a controlled benchmark or actual provider/art/engine acceptance. Recorder mistakes are retained separately in its evidence.
+
+Failed attempts remain separate. Initial missing-request/history/operation APIs were exposed before implementation. Further regressions reproduced an imported candidate missing from typed context, changed-contract import, generic commits referencing unretained working files, backward event dates, credential defaults hidden through schema applicators/references, timestamp precision truncation and an MCP schema diagnostic echoing a supplied credential value. Each was corrected and rechecked; the independent reviewer reported no remaining findings after scoped re-review. Adapter test helpers initially parsed argparse output as JSON; their correction is recorded separately from product failures. The [implementation ledger](superpowers/plans/2026-09-11-provider-recovery.md) retains the sequence and rulings.
+
+The [previous milestone archive](../evidence/provider-recovery/previous-run/manifest.json) preserves eleven exact files before regeneration, including the earlier PX2 specification/registry and evidence. Existing PX1 specification and registry bytes and all five supplied domain documents remain unchanged. The new registry 2.1.0 fields explicitly opt into durable J semantics; no existing job is automatically upgraded.
+
+The [provider recovery development summary](../evidence/family-delivery/previous-run/family-delivery-01/evidence/provider-recovery/development-summary.json) binds that milestone's implementation, review, instruction and scenario evidence by hash. Its next target was family-scale planning, continuity and delivery, implemented locally in the current milestone above.
+
+## Earlier intake/sample lifecycle, 2026-09-11
+
+The integrated run executes **202 tests: 201 passed, zero failures/errors, and one Windows symlink-privilege skip**. All **39 reference POCs** still pass. PX1 canonical-byte tests and the original regression suite remain in the run. PX2 checks cover empty intake, conflicting/proposed/confirmed choices, planned outputs without files, research before adoption, criterion-specific evidence, rejected and unavailable verdicts, immutable history, scoped reopening and saved-plan ordering.
+
+The [archived wheel probe](../evidence/provider-recovery/previous-run/evidence/wheel-check.json) exercises ten operations from a temporary installation, including fresh PX2 intake, cold workflow inspection and the incomplete bundled example. The wheel contains 73 files. The copied-plugin tests exercise the same new operations separately. That milestone's runtime identities and exact counts are in [its archived test results](../evidence/provider-recovery/previous-run/evidence/test-results.json); the preceding source milestone remains preserved under [intake-sample/previous](../evidence/intake-sample/previous-run/manifest.json).
+
+The new tests first exposed absent lifecycle/format operations. Two persistence regressions then demonstrated that freshly invented or amended criteria could be published with their passing verdicts; saved-plan checks at initialization and commit now reject that. Another regression demonstrated that globally rejecting unresolved choices in C prevented retaining an old candidate during a new conflict. Such state is now retained while dependent activation is blocked. A CLI test initially tried to parse stdout from `encode --out`; the test now checks the written file, matching the actual CLI contract.
+
+No automatic PX1 migration, provider submission, visual-art acceptance or live engine result is supplied by the new state model. Fixture verdicts exercise local rules only. Profile behavior is evaluated separately from these tests.
+
+Independent review found a new V could claim to be already superseded and skip current proof checks. The regression reproduced an unsupported historical pass, then verified its rejection. Store initialization and commit now reject every newly introduced superseded V; existing published verdicts still supersede one way. The earlier planning-order test had also used newly superseded fixture verdicts; it was simplified to isolate changed criteria under this stronger rule. The reviewer confirmed pass/fail/unavailable rejection in both publication routes and preserved state on failure.
+
+The [recorded intake/sample exercise](../evidence/intake-sample/behavior-evaluation.json) covers two fictional scenarios performed by one independent developer-agent against a copied plugin: incomplete intake and rejected-sample revision. It retains 78 operations, 28 project files, cold CLI/MCP comparisons, completion rejections and the revision handoff. Both scenarios passed within that scope. The first copy's manifest mismatch and three recorder mistakes remain separate from the coherent evaluated snapshot and final outcomes. Supplied visual/engine verdicts are synthetic; these scripted and inspected scenarios are not a controlled benchmark or actual artistic acceptance. The broader 11 profile scenarios remain unexecuted. The [development summary](../evidence/intake-sample/development-summary.json) binds the final local evidence and lists remaining work.
+
+## Earlier source operation milestone, 2026-09-11
+
+That milestone's archived run executed **141 tests: 140 passed, zero failures/errors, and one Windows symlink-privilege skip**. All **39 bounded reference checks** passed for **43 methods**. All **93 source locators** resolved, and all **five supplied documents** matched their inventory identities. The two current research documents are distinct revisions; the earlier duplicate-file observation no longer applies.
+
+Run `python evidence/source-migration/verify_ranges.py` to reproduce the migration audit against the archived prior sources. It checks 25 byte-identical relocations, 68 formatting-only citation migrations, complete historical research-line correspondence, and preservation of all non-source fields across 43 methods. The [migration manifest](../knowledge/source-migration.json) identifies each old/current slice and the exact permitted normalization; the [review report](../evidence/source-migration/range-review.json) binds those results. The archive and audit helper are checkout resources; the installed package ships the current sources, inventory, migration manifest and review report.
+
+The [archived wheel check](../evidence/intake-sample/previous-run/evidence/wheel-check.json) built and temporarily installed a 66-file wheel, then exercised source discovery, knowledge, capabilities, initialization, project validation, installed-library validation, and all reference POCs from a separate project. Runtime dependencies were reused from the selected environment; nothing was installed globally. The full suite separately exercises a copied plugin and its own resource-package proofs.
+
+Failed evidence remains separate. The [initial scaffold review](../evidence/reviews/2026-09-11-scaffold/summary.json) recorded 45 errors among 123 tests before migration. The [prior-source archive](../evidence/source-migration/previous-run/manifest.json) preserves the old sources, generated knowledge and receipts. Development regressions reproduced and corrected publication after invalid package metadata, stale sources retained in wheel build output, and divergence between validated source snapshots and packaged bytes (including aliased paths). Known preflight failures now leave existing bundle files untouched. This does not claim transaction rollback after a crash during publication.
+
+A [separate developer-agent exercise](../evidence/source-migration/knowledge-operation-evaluation.json) followed the knowledge skill against a copied bundle from an empty project. It recorded 20 command executions, inspected both `silhouette-readability` and `dither-coverage`, retrieved all five method citations, verified nine source slices, and recovered from a deliberately stale hash through fresh inventory discovery. It retained a candidate and a specific proposed readability comparison, with missing references and assets explicit. It also identified the citations' limited support for broader curated procedures. One instruction ambiguity about stale expectations versus broken installations was clarified and reviewed separately; the report preserves the original evaluated snapshot. This single exercise is behavioral evidence for the bounded research operation, not a controlled model benchmark or production-art outcome. The broader scenarios in `evaluations/profile-scenarios.json` remain unexecuted.
+
+The local engine is tested through real filesystem operations, image files, compiler round trips, competing writers, and stdio MCP subprocesses. PixelLab responses in unit tests are explicitly supplied fixtures. Those tests do not impersonate a live service.
+
+## Evidence design
+
+| WHO | WHAT | WHERE | WHY / research | Observable proof |
+|---|---|---|---|---|
+| Language evaluator | Preserve type distinctions and reject ambiguous encodings | `tests/test_language.py` | Proprietary notation must remain deterministic; density alone says nothing about inference. | UTF-8 byte framing, duplicate rejection, limits, canonical hashes. |
+| State evaluator | Detect stale facts and rejected work | `tests/test_graph.py`, `tests/test_store.py` | Persistent agent context is useful only when its relationships remain current; [context-engineering research](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) motivates retrieval and note persistence. | Exact evidence/decision/method bindings, supersession, completion gates, stale/concurrent writers and reopening. |
+| Art evaluator | Measure the actual file and reference algorithms | `tests/test_assets.py`, `tests/test_poc.py` | Research procedures in the knowledge registry require concrete tests with known results. | Real PNG/GIF/TIFF measurements, mutation injection, 512 oriented tile-neighbor pairs and independent numeric oracles. |
+| Adapter evaluator | Keep provider arguments and observation history accurate | `tests/test_platform.py`, `tests/test_mcp.py` | Official PixelLab/MCP interfaces distinguish creation, observation and completion. | Exact supplied-schema validation, mode constraints, immutable remote identity, unknown outcomes and surviving malformed requests. |
+| Distribution evaluator | Make the kit work outside this repository | `tests/test_packaging.py`, `docs/AGENT-KIT.md` | Installed plugins run from caches and other projects. | Relocated runner, copied-resource hashes, host discovery and real MCP handshake. |
+
+## Failed attempts retained separately
+
+These are pre-fix observations, not final verification results:
+
+1. Initial parser/graph/store/catalog/assets test invocations failed because their modules were not implemented. The initial platform suite had 22 explicit missing-adapter failures; the POC suite had 15 explicit missing-runner failures. Implementation followed those baselines.
+2. A new graph regression showed an asset receipt could omit its visual contract. Binding coverage was added and the regression passed.
+3. Independent review reproduced a method borrowing an unrelated passing asset proof. Method and decision receipts now bind their own definitions and semantic sources; unrelated and stale proofs fail.
+4. Independent review replaced a red image during inspection. The old code returned red measurements with the replacement blue file's hash. Inspection now hashes and measures one in-memory byte snapshot; the regression checks both the original receipt and a failing reinspection of the replacement.
+5. A multi-frame TIFF bypassed limits using a tiny first frame and an oversized second frame. Every actual frame and cumulative pixel total are now checked before conversion. The first fix wrapped its own `image_limit` error; that exception handling was corrected and retested.
+6. An escaped lone surrogate in an MCP tool name terminated the server before a subsequent ping. Escaped JSON response encoding preserves the structured error and the following request.
+7. Evidence validation rebuilt adjacency for every asset binding. Independent review measured 1,000 X/E pairs at 2.316 seconds. Computing adjacency once reduced the same fixture to 0.0563 seconds in that review environment. These are local probe timings, not a cross-machine performance guarantee.
+8. A completed task could remain completed after its contract and proof changed. Commits now require reopening on any change in the task's reference closure. Existing E receipt content cannot be rewritten; supersede it and add a new ID.
+9. Exact source-slice testing initially expected LF while its Windows fixture wrote CRLF. The fixture now explicitly writes LF; the reader continues to preserve actual source newlines.
+10. A strict POC run exposed deprecated Pillow `getdata` usage. It was replaced with a supported operation and verified with deprecation warnings treated as errors.
+11. The root interpreter's `-I` mode hid user-site Pillow during bundle testing. The automated relocation harness now supplies only dependency site directories while excluding source/cwd paths. The independent agent exercise used a separate venv with dependencies and no PIXL installation, providing a second portability check.
+12. The first wheel probe disabled build isolation on an interpreter without setuptools, so pip could not import the build backend. The probe now uses the project's declared isolated build dependencies. `python scripts/check_wheel.py` then built and installed the wheel in a temporary target and exercised knowledge, capabilities, initialization and validation without source imports. Results are in [`wheel-check.json`](../evidence/wheel-check.json).
+13. Git's automatic newline conversion was observed normalizing several supplied CRLF sources in an intervening checkpoint. Their working bytes remained unchanged. `.gitattributes` now disables text conversion so subsequent commits/checkouts preserve exact source, snapshot and receipt bytes. Git can show those raw-byte restorations as changes even though the supplied working files were not edited.
+14. Independent review changed cited research and corrupted generated PNGs after a POC run. The compiler formerly rebound current source hashes and ignored the artifact manifest. Compilation now requires the exact source and artifact bytes recorded by the run. Compiled receipts bind fixture X records and their contracts, so later context validation also rejects artifact drift.
+15. Independent review altered a runner file after importing it. The loaded implementation formerly reported the hash of the changed, unexecuted file. A follow-up used an equal-size edit with an unchanged timestamp to make Python load stale bytecode. The runner now checks loaded module code against compilation of the captured source, binds its source identity at import, and rejects changes before or during execution. This guards accidental source/cache drift; it is not an attestation against hostile process manipulation.
+16. The session crossed midnight. Generated receipts now record their actual UTC observation time, and compiled E records retain that time instead of a fixed development date. The repeated-run test initially compared timestamps as if they were deterministic fixture values; it now verifies UTC timestamps separately and still requires identical measurements, artifact hashes and other payload. That pre-fix failure is retained in [`timestamp-transition-failure.txt`](../evidence/timestamp-transition-failure.txt).
+17. Workspace linting found that the packaged proof source imported a sibling module that had not been copied. The new resource-package regression first failed on its missing package initializer. Plugin and wheel builders now retain the complete source package, and the relocated package executes its own POCs. The portable launcher's minimum-version guard remains covered by a test; its local UP036 exception documents why an installer assumption does not apply to a copied launcher. Subprocess checks retain explicit return-code handling, and wheel verification uses the project's `uv` workflow.
+
+The independent code reviewer re-ran all five original findings after their fixes and found them resolved. It also exercised method changes, source changes, receipt supersession, rejected receipt reactivation and preserved historical bindings. Subsequent exact runtime hashes are in the final test report; the narrative timings above describe the reviewed snapshot.
+
+## What the results establish
+
+The reference runner covers all 43 knowledge methods with 39 bounded checks. Reference proofs include deliberately damaged variants and independent expected values. Project-specific, provider, visual and engine acceptance still require their own evidence: connected masks do not establish appealing silhouettes; corner compatibility does not establish attractive joins; material conservation does not establish a production physics implementation. The [fixture visual review](../evidence/visual-fixture-review.json) records only the landmarks actually inspected in the key contact sheet.
+
+`prepare` uses a caller-supplied input schema and never discovers or contacts a server. `job` records caller-supplied observations and never submits or polls. Receipts validate identity, freshness and local relationships; they are not remote attestations. PixelLab authentication, actual generation, account pricing, output quality and target-engine integration require real subsequent evidence.
+
+The representation comparison uses the same records, values and explicit reference/symbol distinctions. It reports tuple, compact and pretty JSON baselines, two tokenizer encodings when available, the separate specification/registry bootstrap cost, and closed retrieval of one method from the complete PIXL knowledge library. It does not measure model accuracy, artistic output, end-to-end latency or long-horizon recovery success rates. A controlled multi-model experiment would need fixed task instances, identical evidence, multiple trials and outcome scoring; none was silently substituted with byte counts.
+
+On this Windows machine the symlink-publication test is skipped when symlink creation privilege is unavailable. The report lists that skip explicitly. The ordinary path-confinement and writer tests still execute. All store guarantees assume local cooperative writers and a functioning filesystem; no distributed consensus, hostile filesystem protection or power-loss guarantee beyond the stated publication mechanism is claimed.
+
+The final wheel probe also validates the installed PIXL knowledge library and executes its POCs from a separate project. The plugin relocation test does the same with copied runtime/resources and verifies the runner and source hashes. For Git whitespace review, CRLF must be recognized as a line ending: `git -c core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol diff --check`. Supplied sources and historical archives preserve exact bytes, including any pre-existing whitespace. Plain `git diff --check` misidentifies CRLF endings in generated evidence as trailing whitespace because this repository disables checkout normalization.

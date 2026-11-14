@@ -131,7 +131,7 @@ No global configuration is changed by the kit.
 | [Pixel-art research](docs/research/pixel-art-knowledge.md) | Curated methods, source corrections and artistic scope |
 | [PixelLab research](docs/research/pixellab-platform.md) | Tool capabilities, API distinctions and execution constraints |
 | [Evidence by task](evidence/README.md) | Latest applicable receipts, currentness checks and preserved failure routes |
-| [Verification](docs/VERIFICATION.md) | Reproduction commands, failed attempts, final evidence and limitations |
+| [Verification](docs/VERIFICATION.md#choose-the-evidence-you-need) | Choose read-only, focused, native or rebuilding checks; see side effects and retained results |
 | [Test results](evidence/test-results.json) | Actual suite counts, runtime hashes and source preservation |
 | [Representation benchmark](evidence/representation-benchmark.json) | Equal-semantics byte/token measurements and bootstrap cost |
 

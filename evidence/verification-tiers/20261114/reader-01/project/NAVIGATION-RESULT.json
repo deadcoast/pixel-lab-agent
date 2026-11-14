@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "status": "complete",
+  "entrypoint": "README.md",
+  "route": [
+    "README.md",
+    "docs/VERIFICATION.md",
+    "docs/EVIDENCE-INTEGRITY.md",
+    "evidence/verification-tiers/README.md",
+    "evidence/verification-tiers/20261114/source-review-01.json",
+    "scripts/verify.py",
+    "evidence/deliverable-index/20261114/implementation-02/RESULT.json",
+    "evidence/deliverable-index/20261114/cold-01/independent-01.json",
+    "evidence/verification-runs/20261114T152255.619054Z/result.json",
+    "evidence/deliverable-index/20261114/cold-02/independent-01.json",
+    "evidence/deliverable-index/20261114/maintenance-01/RESULT.json",
+    "evidence/deliverable-index/20261114/integrity-02/report.json"
+  ],
+  "inspection": {
+    "command": [
+      "C:/github/pixel-lab-agent/.venv/Scripts/python.exe",
+      "-B",
+      "scripts/check_integrity.py"
+    ],
+    "exit_code": 1,
+    "stdout_path": "work/integrity.stdout.txt",
+    "stderr_path": "work/integrity.stderr.txt"
+  },
+  "answers": [
+    {
+      "id": "inspect",
+      "conclusion": "From the repository root, ran the documented .venv/Scripts/python.exe -B scripts/check_integrity.py using its absolute executable path. Actual child exit was 1; stdout says needs_review and stderr is empty. NF-07-CONSUMER and NF-07-FULL-VERIFICATION are intact/current passes. CORE-SETUP, CORE-INSTALL-UPDATE, CURRENT-FULL-VERIFICATION and CURRENT-CLAIM-REVIEW need review because tested inputs or inventories changed. Eleven historical claims remain intact, including CORE-CONTRACT partial and CORE-RECOVERY-CLAUDE-FAILURE fail. Release wheel/sdist source applicability also needs review. Preserve those outcomes; inspect changed paths and qualify affected work in a fresh attempt when current qualification is needed. Exit 0 means selected identity checks intact, 1 review needed, 2 invalid input; filtering claims still checks packages.",
+      "evidence": [
+        {
+          "path": "docs/VERIFICATION.md",
+          "sha256": "bd3a86b0805cbd4fc79552ea5c390d461aba430a3d1940def8d239d180fd7a68"
+        },
+        {
+          "path": "docs/EVIDENCE-INTEGRITY.md",
+          "sha256": "340016b51be5eb07f68b910b0b0e74897125464b20bebd7a4e8c3bc05a45de20"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/integrity-02/report.json",
+          "sha256": "54643cf8b9d9b7cee386b3a1f61fd199e447e3a141e2b9176be7e85e19d22087"
+        },
+        {
+          "path": "evidence/verification-runs/20261114T152255.619054Z/result.json",
+          "sha256": "0d26027ce23155a3d91b8199ca9c0dddd4bb6b288bd227a3a90992eecb4048fe"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/cold-02/independent-01.json",
+          "sha256": "740fbdc84bd634f7e33d5ff3a638aa0f490499594f4b336611522024a0457052"
+        }
+      ],
+      "limits": [
+        "The fresh raw stdout/stderr and child status are saved in work/; the cited retained report is separate corroborating evidence, not this execution.",
+        "Integrity checks registered receipt bytes, assertions and tested-input applicability; it does not repeat tests, execute native work, authenticate, generate art or establish acceptance.",
+        "Stale applicability does not demonstrate a runtime regression; intact failure remains failure.",
+        "An initial wrapper attempt failed to start the relative executable with WinError 2; no integrity child ran in that attempt. The saved files belong to the successful absolute-path launch."
+      ],
+      "prior_failures": [
+        {
+          "path": "evidence/deliverable-index/20261114/cold-01/independent-01.json",
+          "sha256": "4c3a9431cfc758414dc69525675ba14616355772c8c2a1373a594dc4937777a1"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/maintenance-01/RESULT.json",
+          "sha256": "680aafa1c4e2a6f16c21009465ec5bc28c18a91ce04bfe9ca3292b5f1a0f5082"
+        }
+      ]
+    },
+    {
+      "id": "focused",
+      "conclusion": "Useful exact command: .venv/Scripts/python.exe -B -m unittest tests.test_deliverable_index -v. It checks public consumer-index contents, lifecycle/refusal behavior and CLI/MCP parity using temporary production, asset, state and export fixtures; its Python CLI/MCP children also use -B. A pass establishes the assertions actually run against those inputs, with actual test count, skips and exit recorded. The retained implementation-02 receipt records a broader selected-module regression command and Ruff, both exit 0; it is not a fresh execution of this single-module command. Full unittest discovery is a different mutating choice: test_packaging rebuilds the live bundle and test_knowledge rebuilds live knowledge outputs.",
+      "evidence": [
+        {
+          "path": "docs/VERIFICATION.md",
+          "sha256": "bd3a86b0805cbd4fc79552ea5c390d461aba430a3d1940def8d239d180fd7a68"
+        },
+        {
+          "path": "evidence/verification-tiers/20261114/source-review-01.json",
+          "sha256": "99f63f9297a800587d62911b7d7d0becf64691ad10e7c8315168d08d99f2e5e9"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/implementation-02/RESULT.json",
+          "sha256": "1394e9ab2c44843b77a0f0457ab31ecf4e05dba1aa614be85335c72c1647d44c"
+        }
+      ],
+      "limits": [
+        "Neither test route was run in this assignment.",
+        "-B suppresses bytecode in that process, not application writes, every child process or tool caches.",
+        "Focused success is not whole-suite, host, provider, artistic, consumer or human acceptance."
+      ],
+      "prior_failures": [
+        {
+          "path": "evidence/deliverable-index/20261114/maintenance-01/RESULT.json",
+          "sha256": "680aafa1c4e2a6f16c21009465ec5bc28c18a91ce04bfe9ca3292b5f1a0f5082"
+        }
+      ]
+    },
+    {
+      "id": "rebuild",
+      "conclusion": "The full command is .venv/Scripts/python.exe -B scripts/verify.py. It creates evidence/verification-runs/<UTC>/ and archives declared prior outputs before importing build modules; verifies sources/catalog and citation ranges; executes reference POCs; rebuilds knowledge and examples; builds the bundle; discovers/runs all tests; benchmarks representation; rebuilds the bundle again; runs distribution builds/install/probes; then checks tested inputs for drift. It changes knowledge/, examples/, evidence/art-methods/, plugins/pixl/runtime/, plugins/pixl/resources/, bundle manifest, requirements and generated notice, plus relevant current evidence/test-results.json, test-log.txt, representation-benchmark.json and wheel-check.json. The attempt retains result/logs, previous.zip and previous-manifest.json. Archive coverage is all non-__pycache__ files in the five declared output roots (knowledge, examples, art-methods, plugin runtime/resources), current top-level evidence files, bundle manifest and requirements. It is not a checkout backup or rollback: generated plugin NOTICE, nested evidence outside art-methods, build metadata, environments and caches are outside that list. Completed failures record failed stage, error.txt and not_run stages, update dated/current results and return 1; completed pass returns 0. Attempt-creation/write failure or abrupt interruption can leave no complete report. --help is unsafe: no argument parser prevents execution, and the same warning applies to the linked direct builders, wheel checker and benchmark.",
+      "evidence": [
+        {
+          "path": "docs/VERIFICATION.md",
+          "sha256": "bd3a86b0805cbd4fc79552ea5c390d461aba430a3d1940def8d239d180fd7a68"
+        },
+        {
+          "path": "scripts/verify.py",
+          "sha256": "9d4ac27c11406635d3a9c7eb300c839ec694e499dac2d5f3ecf08045297a688d"
+        },
+        {
+          "path": "evidence/verification-tiers/20261114/source-review-01.json",
+          "sha256": "99f63f9297a800587d62911b7d7d0becf64691ad10e7c8315168d08d99f2e5e9"
+        },
+        {
+          "path": "evidence/verification-runs/20261114T152255.619054Z/result.json",
+          "sha256": "0d26027ce23155a3d91b8199ca9c0dddd4bb6b288bd227a3a90992eecb4048fe"
+        }
+      ],
+      "limits": [
+        "No rebuild or --help variant was executed.",
+        "Distribution requires uv and may download dependencies, create temporary environments and write packaging caches; tokenizer cache misses may download encoding data. These are distinct from model/PixelLab calls.",
+        "Direct builders do not archive prior outputs; bundle building can remove obsolete manifest-listed generated files after hash checks. Standalone wheel-check publishes its receipt only on success, so a failure may leave an old success in place.",
+        "Retained full verification reports 1393 passed, 3 privilege skips out of 1396, and 39 reference checks; this does not certify separate broad lint, native behavior or artwork."
+      ],
+      "prior_failures": [
+        {
+          "path": "evidence/deliverable-index/20261114/maintenance-01/RESULT.json",
+          "sha256": "680aafa1c4e2a6f16c21009465ec5bc28c18a91ce04bfe9ca3292b5f1a0f5082"
+        }
+      ]
+    },
+    {
+      "id": "tiers",
+      "conclusion": "Local implementation/reference/distribution evidence checks code assertions, fixture properties and installed/copied mechanics, not specialist instruction following. Native completion requires inspecting record.json returncode/execution_status and actual outputs: a successful outer runner may record a failed host. Independent grading judges retained work against its task; regrading unchanged output is not a new execution and must preserve the earlier grade and evaluator correction. Useful asset/consumer evidence additionally needs exact delivered art, destination execution/captures and explicit scoped visual judgments. Human acceptance remains separate and unrecorded here. The guide documents readiness prepare/run/grade: .venv/Scripts/python.exe -B -m evaluations.readiness_case prepare $trialDir --host codex --setup clean --python $consumerPython; then the same interpreter/module run $trialDir --timeout 600; then -m evaluations.grade_readiness $trialDir --output \"$trialDir/grade-01.json\". Readiness prepare checks selected bundle against its local manifest, creates an external temporary consumer and trial/config/input inventories and queries host version; run uses the authenticated model host and writes sessions/logs/outputs. Local readiness requests no provider production. Native-production preparation configures the official provider route without making a remote call; running the authorized production assignment may perform paid provider work. Resume may reuse consumer/session rather than create an isolated trial. Consumer execution uses local Node/browser/loopback and writes capture/check/import evidence. Cold-02 is a scoped 43/43 actual-browser consumer result on retained art; Cold-01 remains 38/39 due to source identity failure despite consumer checks passing.",
+      "evidence": [
+        {
+          "path": "docs/VERIFICATION.md",
+          "sha256": "bd3a86b0805cbd4fc79552ea5c390d461aba430a3d1940def8d239d180fd7a68"
+        },
+        {
+          "path": "evidence/verification-tiers/20261114/source-review-01.json",
+          "sha256": "99f63f9297a800587d62911b7d7d0becf64691ad10e7c8315168d08d99f2e5e9"
+        },
+        {
+          "path": "evidence/verification-runs/20261114T152255.619054Z/result.json",
+          "sha256": "0d26027ce23155a3d91b8199ca9c0dddd4bb6b288bd227a3a90992eecb4048fe"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/cold-02/independent-01.json",
+          "sha256": "740fbdc84bd634f7e33d5ff3a638aa0f490499594f4b336611522024a0457052"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/cold-01/independent-01.json",
+          "sha256": "4c3a9431cfc758414dc69525675ba14616355772c8c2a1373a594dc4937777a1"
+        }
+      ],
+      "limits": [
+        "No native assignment, model or provider call, grading, browser execution or art creation was performed.",
+        "An old grade does not qualify changed code, kit, artwork, host or consumer; current integrity only checks identities/applicability and never replays the result.",
+        "Provider generation, reused art, observed motion, visual review and target-engine acceptance are distinct. An unavailable-runtime probe is not observed playback.",
+        "Cold-02 establishes no fresh provider generation, generative improvement, Claude cold-consumer qualification, other-engine or human acceptance; M1/M2 and broader M3/M4/M5 remain open.",
+        "Legacy check_host_evidence.py/write_host_report.py write fixed evidence and invoke freeze/replay helpers; names do not imply read-only operation."
+      ],
+      "prior_failures": [
+        {
+          "path": "evidence/deliverable-index/20261114/cold-01/independent-01.json",
+          "sha256": "4c3a9431cfc758414dc69525675ba14616355772c8c2a1373a594dc4937777a1"
+        },
+        {
+          "path": "evidence/deliverable-index/20261114/maintenance-01/RESULT.json",
+          "sha256": "680aafa1c4e2a6f16c21009465ec5bc28c18a91ce04bfe9ca3292b5f1a0f5082"
+        }
+      ]
+    }
+  ],
+  "navigation_observations": [
+    "README links directly to the current verification choices and integrity guide; the opening command/side-effect guide clearly precedes the historical ledger.",
+    "The long dated ledger contains older commands and next-step statements; the explicit historical warning is necessary to avoid treating them as current routes.",
+    "CURRENT-FULL-VERIFICATION is stale while NF-07-FULL-VERIFICATION is current; the legacy CURRENT name can confuse readers, although the integrity guide explains the coexistence.",
+    "The QOL-09 ledger says qualification is in progress; its source-review pass is a documentation/source review, not final command/reader qualification. No final qualification pass was inferred.",
+    "Text integrity stdout abbreviates some findings and suggests --json; the saved text is exact but not an exhaustive per-path report.",
+    "No contradictory command effects or missing route needed for the four questions was found."
+  ]
+}

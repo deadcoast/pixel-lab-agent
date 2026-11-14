@@ -1,0 +1,220 @@
+"""Read-only QOL-09 document, workflow and historical-input audit; retained evaluation source."""
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "90e1ff370de0cfa2e6df611ca9f8436f08a4134f"
+CYCLE = "IDENTIFY-2026-11-09-01"
+MATRIX = "docs/CAPABILITY-OUTCOMES.md"
+REGISTRY = "evaluations/evidence-claims.json"
+DOCS = [
+    "TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md", "README.md",
+    MATRIX, "docs/VERIFICATION.md", "docs/INSTALL-SUPPORT.md",
+    "docs/EVIDENCE-INTEGRITY.md", "docs/workflows/IDENTIFY.md",
+    "evidence/README.md", "evidence/verification-tiers/README.md",
+]
+EDITABLE_EXISTING = {
+    "TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md", "README.md",
+    MATRIX, "docs/VERIFICATION.md", "docs/EVIDENCE-INTEGRITY.md",
+}
+INDEX_SHA256 = "edb6d41a3d5d3af9e9e5d2815a0e93b233f825e490e6e18ba366efcf154086be"
+HISTORICAL_HEADING = b"## Consumer deliverable index, 2026-11-14"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def git(*args):
+    return subprocess.check_output(["git", *args], cwd=ROOT)
+
+
+def original(name):
+    return git("show", f"{BASE}:{name}")
+
+
+def anchors(path):
+    body = path.read_text(encoding="utf-8-sig")
+    result = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', body))
+    seen = {}
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*#*$", body, re.M):
+        slug = re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        result.add(slug + (f"-{count}" if count else ""))
+    return result
+
+
+def anchor_lines(data):
+    result = {}
+    for line in data.splitlines():
+        for anchor in re.findall(rb'<a\s+id=["\']([^"\']+)["\']', line):
+            name = anchor.decode("utf-8")
+            if name in result:
+                raise ValueError(f"Duplicate explicit anchor: {name}")
+            result[name] = line
+    return result
+
+
+def audit(out):
+    checks = []
+
+    def check(name, passed, detail):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    for name in DOCS:
+        path = ROOT / name
+        check("document_exists:" + name, path.is_file(), name)
+        if not path.is_file():
+            continue
+        body = path.read_text(encoding="utf-8-sig")
+        body = re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)", "", body)
+        for target in re.findall(r"\]\(([^)]+)\)", body):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                continue
+            local, _, fragment = unquote(target).partition("#")
+            destination = (path.parent / local).resolve() if local else path
+            exists = destination.exists() or (destination == out and not fragment)
+            valid_anchor = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check(f"link:{name}:{target}", exists and valid_anchor, target)
+
+    findings_pattern = r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s"
+    findings = re.findall(findings_pattern, (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]", (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    original_findings = re.findall(findings_pattern, original("docs/IDENTIFIED.md").decode("utf-8"), re.M)
+    check("fifty_original_ids", len(findings) == len(set(findings)) == 50 and
+          len(backlog) == len(set(backlog)) == 50 and set(findings) == set(backlog) == set(original_findings),
+          {"findings": findings, "baseline": BASE})
+    for name in ("TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md"):
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("active_cycle:" + name, CYCLE in body and "QOL-09" in body and "SC-09" in body,
+              "Existing audit cycle and both bounded slice/continuation IDs retained")
+    backlog_body = (ROOT / "SHELVED.md").read_text(encoding="utf-8")
+    completed_row = re.search(r"^\| \[QOL-09\].+$", backlog_body, re.M)
+    next_row = re.search(r"^\| \[SC-09\].+$", backlog_body, re.M)
+    check("bounded_slice_and_next_backlog_disposition",
+          bool(completed_row and re.search(r"\bbounded complete\b", completed_row.group(), re.I)) and
+          bool(next_row and re.search(r"\bactive\b", next_row.group(), re.I)),
+          {"completed_row": completed_row.group() if completed_row else None,
+           "next_row": next_row.group() if next_row else None,
+           "scope": "Backlog disposition wording only; proof results retain their own scope"})
+    for name, prefix in (("TODO.md", "Active next increment:"), ("PLAN.md", "Active next group:"),
+                         ("SHELVED.md", "Current next group:"), ("docs/IDENTIFIED.md", "Current handoff after QOL-09:")):
+        body = (ROOT / name).read_text(encoding="utf-8")
+        handoff = next((line for line in body.splitlines() if line.startswith("**" + prefix)), "")
+        check("next_handoff:" + name, bool(handoff) and "SC-09" in handoff, handoff)
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    sections = dict(re.findall(r"(?ms)^## (M[1-5]) [^\n]+\n(.*?)(?=^## |\Z)", plan))
+    for milestone in ("M1", "M2", "M3", "M4", "M5"):
+        status = re.search(r"^\*\*Status:\*\* ([^\n]+)", sections.get(milestone, ""), re.M)
+        text = status.group(1).split("**Existing work:")[0] if status else ""
+        check("milestone_remains_open:" + milestone, bool(re.search(r"\b(open|active)\b", text, re.I)) and
+              not re.search(r"\b(closed|complete)\b", text, re.I), text)
+    for name in ("TODO.md", MATRIX, "evidence/README.md", "evidence/verification-tiers/README.md"):
+        path = ROOT / name
+        body = path.read_text(encoding="utf-8") if path.is_file() else ""
+        check("human_acceptance_separate:" + name,
+              bool(re.search(r"human acceptance.{0,120}(separate|unrecorded|not recorded)", body, re.I | re.S)),
+              "Wording check only; no human acceptance inferred")
+
+    registry_data = (ROOT / REGISTRY).read_bytes()
+    registry = json.loads(registry_data)
+    check("registry_bytes_unchanged", registry_data == original(REGISTRY), {"path": REGISTRY, "sha256": sha(registry_data)})
+    old_lines = anchor_lines(original(MATRIX))
+    new_lines = anchor_lines((ROOT / MATRIX).read_bytes())
+    registered = {claim["document"]["anchor"] for claim in registry["claims"] if claim["document"]["path"] == MATRIX}
+    check("matrix_anchor_set_preserved", len(old_lines) == len(new_lines) == 41 and set(old_lines) == set(new_lines),
+          {"before": len(old_lines), "after": len(new_lines)})
+    check("registered_matrix_anchor_count", len(registered) == 11,
+          {"registered_matrix_anchors": sorted(registered)})
+    for anchor in sorted(old_lines):
+        check("matrix_anchor_line_unchanged:" + anchor, old_lines[anchor] == new_lines.get(anchor),
+              {"registered": anchor in registered, "sha256": sha(new_lines.get(anchor, b""))})
+    for claim in registry["claims"]:
+        document = claim["document"]
+        lines = anchor_lines((ROOT / document["path"]).read_bytes())
+        current = lines.get(document["anchor"], b"")
+        baseline = anchor_lines(original(document["path"])).get(document["anchor"], b"")
+        check("registered_claim_line_preserved:" + claim["id"], bool(current) and current == baseline and
+              sha(current) == document["line_sha256"], document)
+    old_verification = original("docs/VERIFICATION.md")
+    new_verification = (ROOT / "docs/VERIFICATION.md").read_bytes()
+    has_one_heading = old_verification.count(HISTORICAL_HEADING) == new_verification.count(HISTORICAL_HEADING) == 1
+    old_retained = old_verification[old_verification.index(HISTORICAL_HEADING):] if has_one_heading else b""
+    new_retained = new_verification[new_verification.index(HISTORICAL_HEADING):] if has_one_heading else b""
+    check("dated_verification_body_bytes_preserved", has_one_heading and old_retained == new_retained,
+          {"heading": HISTORICAL_HEADING.decode(), "before_sha256": sha(old_retained),
+           "after_sha256": sha(new_retained), "bytes": len(new_retained),
+           "scope": "Exact bytes from the retained dated-results heading through end of file; the new guide precedes it"})
+
+    changed = git("diff", "--name-only", "--diff-filter=MDTRU", BASE, "--").decode("utf-8").splitlines()
+    historical = [name for name in changed if name.startswith("evidence/")]
+    check("all_previously_tracked_evidence_unchanged", not historical,
+          {"changed_existing_evidence": historical, "baseline": BASE, "exceptions": [],
+           "scope": "New evaluation outputs are additions; old receipts and ledgers have no mutation exemption"})
+    protected_changes = sorted(set(changed) - EDITABLE_EXISTING)
+    check("only_declared_existing_docs_changed", not protected_changes,
+          {"unexpected_changed_existing_paths": protected_changes, "allowed_existing_docs": sorted(EDITABLE_EXISTING),
+           "scope": "Covers tracked runtime, maintained evaluators/tests/scripts, profiles, skills, registry and generated bundle"})
+    additions = set(git("diff", "--name-only", "--diff-filter=A", BASE, "--").decode("utf-8").splitlines())
+    additions.update(name for name in git("ls-files", "--others", "--exclude-standard", "-z").decode("utf-8").split("\0") if name)
+    snapshot_paths = set()
+    snapshot_identities = []
+    for identity_path in sorted(Path(__file__).parent.glob("*/identity.json")):
+        identity = json.loads(identity_path.read_bytes())
+        attempt = identity_path.parent
+        snapshot_root = attempt / "source-snapshot"
+        expected = {**identity["documents"], **identity["sources"]}
+        expected_paths = set()
+        for name, digest in sorted(expected.items()):
+            snapshot = (snapshot_root / name).resolve()
+            confined = snapshot.is_relative_to(snapshot_root.resolve())
+            relative = str(snapshot.relative_to(ROOT)).replace("\\", "/") if snapshot.is_relative_to(ROOT) else str(snapshot)
+            actual = sha(snapshot.read_bytes()) if confined and snapshot.is_file() else None
+            check("retained_source_snapshot:" + relative, confined and actual == digest,
+                  {"identity": str(identity_path.relative_to(ROOT)), "source_path": name,
+                   "expected_sha256": digest, "actual_sha256": actual})
+            if confined:
+                expected_paths.add(relative)
+                snapshot_paths.add(relative)
+        observed = {path.relative_to(ROOT).as_posix() for path in snapshot_root.rglob("*") if path.is_file()}
+        check("retained_snapshot_inventory:" + attempt.name, observed == expected_paths,
+              {"expected": sorted(expected_paths), "unexpected": sorted(observed - expected_paths),
+               "missing": sorted(expected_paths - observed)})
+        snapshot_identities.append({"path": identity_path.relative_to(ROOT).as_posix(),
+                                    "sha256": sha(identity_path.read_bytes())})
+    retained_python = sorted(name for name in additions if Path(name).suffix == ".py" and name in snapshot_paths)
+    maintained_python = sorted(name for name in additions if Path(name).suffix == ".py" and name not in snapshot_paths)
+    check("no_new_maintained_python_source", not maintained_python,
+          {"new_python_paths": maintained_python, "retained_snapshot_python_count": len(retained_python),
+           "retained_snapshot_python_paths": retained_python, "snapshot_identities": snapshot_identities,
+           "scope": "Only identity-bound source-snapshot files under this new verification-tiers run are excluded from new .py inventory. Their exact bytes and inventory are checked separately above. Root pixl/scripts/evaluations/tests remain protected; .py.txt helpers are retained evaluation sources."})
+    check("qualified_index_bytes_unchanged", sha((ROOT / "evidence/README.md").read_bytes()) == INDEX_SHA256,
+          {"path": "evidence/README.md", "qualified_sha256": INDEX_SHA256})
+    return {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+            "scope": "Read-only document links/anchors, original workflow IDs, open milestone wording and historical-input preservation. Fresh local-command proof and native-reader semantic review are separate receipts; this document audit does not replay runtime checks or infer artistic quality or human/product acceptance.",
+            "source_sha256": sha(Path(__file__).read_bytes()), "baseline": BASE,
+            "documents": {name: sha((ROOT / name).read_bytes()) for name in DOCS if (ROOT / name).is_file()},
+            "status": "pass" if all(row["passed"] for row in checks) else "fail",
+            "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Use a fresh report; preserve earlier audits")
+    result = audit(args.out.resolve())
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)

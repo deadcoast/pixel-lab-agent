@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "status": "pass",
+  "observed_at": "2026-11-14T20:28:03.822188+00:00",
+  "reviewer": "Independent development source reviewer /root/qol09_verify_commands; did not author the guide.",
+  "scope": "Manual source-to-document review of the current QOL-09 command/effect guidance, not command execution, native behavior, artistic judgment or human acceptance. No mutating verifier/build/test/native/provider command was invoked by this reviewer.",
+  "source_revision": "90e1ff370de0cfa2e6df611ca9f8436f08a4134f",
+  "document": {
+    "path": "docs/VERIFICATION.md",
+    "sha256": "bd3a86b0805cbd4fc79552ea5c390d461aba430a3d1940def8d239d180fd7a68",
+    "section": "Opening command guide before Retained results and older commands"
+  },
+  "draft_reviewed": {
+    "path": "evidence/verification-tiers/20261114/source-review-draft-guide.md.txt",
+    "sha256": "ae3932bbf15728a3dcc57253aa003f4148bb3a4e5f4f56391047f8221cf2bb4b"
+  },
+  "draft_findings": [
+    {
+      "id": "readiness_manifest_scope",
+      "draft_text": "verifies the current bundle",
+      "resolution": "checks the selected bundle against its local manifest",
+      "status": "resolved_before_final_review",
+      "source": "pixl/readiness.py:163"
+    },
+    {
+      "id": "failure_record_boundary",
+      "draft_text": "Exit 0 is a successful verifier run; exit 1 records a failure",
+      "resolution": "Completed-run exit semantics separated from interruption and attempt creation/write failure; retain stderr and exit.",
+      "status": "resolved_before_final_review",
+      "source": "scripts/verify.py:232"
+    },
+    {
+      "id": "development_setup_vs_enforcement",
+      "draft_text": "The selected development environment must have the locked development tools",
+      "resolution": "Use selected development environment from locked setup; uv requirement identified separately. No claim all dev tools are enforced by verifier.",
+      "status": "resolved_before_final_review",
+      "source": "scripts/check_wheel.py:29"
+    }
+  ],
+  "unresolved_findings": [],
+  "passed": 20,
+  "total": 20,
+  "checks": [
+    {
+      "id": "tier_distinctions",
+      "status": "pass",
+      "reason": "Integrity, implementation assertions, native behavior and actual art/destination judgments remain separate; no human or broad milestone acceptance is inferred.",
+      "sources": [
+        "docs/VERIFICATION.md"
+      ]
+    },
+    {
+      "id": "integrity_stdout_only",
+      "status": "pass",
+      "reason": "Checker disables bytecode, calls pure release inspection, and has no build/test/process/write path; redirection is a separate caller write.",
+      "sources": [
+        "scripts/check_integrity.py",
+        "scripts/release_integrity.py"
+      ]
+    },
+    {
+      "id": "integrity_exit_and_filter_contract",
+      "status": "pass",
+      "reason": "Argparse supports documented flags; selected claims do not suppress release checks; status maps to exit 0/1/2.",
+      "sources": [
+        "scripts/check_integrity.py"
+      ]
+    },
+    {
+      "id": "focused_command_and_effects",
+      "status": "pass",
+      "reason": "Selected unittest module creates TemporaryDirectory fixtures; CLI/MCP/export subprocess vectors include -B; this suite does not call a host, browser or provider.",
+      "sources": [
+        "tests/test_deliverable_index.py"
+      ]
+    },
+    {
+      "id": "full_discovery_is_mutating",
+      "status": "pass",
+      "reason": "Packaging tests invoke live bundle build and knowledge tests invoke live knowledge build, so discovery is not an inspection route.",
+      "sources": [
+        "tests/test_packaging.py",
+        "tests/test_knowledge.py"
+      ]
+    },
+    {
+      "id": "bytecode_limit",
+      "status": "pass",
+      "reason": "-B is described narrowly, not as suppression of application outputs or every child/tool write.",
+      "sources": [
+        "docs/VERIFICATION.md",
+        "scripts/check_wheel.py"
+      ]
+    },
+    {
+      "id": "native_example_arguments",
+      "status": "pass",
+      "reason": "All three displayed readiness prepare/run/grade commands match their current argparse declarations, including --host/--setup/--python, timeout and fresh --output.",
+      "sources": [
+        "evaluations/readiness_case.py",
+        "evaluations/grade_readiness.py"
+      ]
+    },
+    {
+      "id": "native_prepare_manifest_scope",
+      "status": "pass",
+      "reason": "Prepare validates listed bundle bytes against its local manifest, creates external consumer/trial inputs and queries host/runtime; it does not prove canonical-current kit or model behavior.",
+      "sources": [
+        "evaluations/readiness_case.py",
+        "pixl/readiness.py"
+      ]
+    },
+    {
+      "id": "native_record_and_grader_boundary",
+      "status": "pass",
+      "reason": "Outer readiness runner can return normally after recording a nonzero native exit. Native completion status and separate grade are required; grade refuses an existing output.",
+      "sources": [
+        "evaluations/request_review_trials.py",
+        "evaluations/readiness_case.py",
+        "evaluations/grade_readiness.py"
+      ]
+    },
+    {
+      "id": "native_provider_scope",
+      "status": "pass",
+      "reason": "Native-production prepare calls provider configure without a remote call; running the authorized assignment exposes official provider tools and can perform paid work. Local readiness assigns no provider/art work.",
+      "sources": [
+        "evaluations/native_production_case.py",
+        "evaluations/native_provider.py",
+        "evaluations/readiness_case.py"
+      ]
+    },
+    {
+      "id": "report_helpers_are_mutating",
+      "status": "pass",
+      "reason": "Named legacy report helpers call freeze and write fixed evidence files; check_host_evidence also performs temporary local replay.",
+      "sources": [
+        "evaluations/check_host_evidence.py",
+        "evaluations/write_host_report.py",
+        "evaluations/host_trials.py"
+      ]
+    },
+    {
+      "id": "actual_consumer_execution_boundary",
+      "status": "pass",
+      "reason": "Declared Node/browser/loopback workflow writes capture/check/import evidence; state writes and automatic acceptance are not implied. Installed consumer probe intentionally checks unavailable capability with missing Node.",
+      "sources": [
+        "pixl/consumer_execution.py",
+        "spec/consumer-execution.md",
+        "scripts/consumer_execution_probe.py"
+      ]
+    },
+    {
+      "id": "no_argparse_help_guard",
+      "status": "pass",
+      "reason": "Direct verifier/builder/wheel/benchmark main blocks invoke their mutating function without argument parsing, so --help is not a safe inspection command.",
+      "sources": [
+        "scripts/verify.py",
+        "scripts/build_plugin.py",
+        "scripts/check_wheel.py",
+        "scripts/build_knowledge.py",
+        "scripts/build_examples.py",
+        "scripts/build_intake_example.py",
+        "scripts/benchmark.py"
+      ]
+    },
+    {
+      "id": "full_verifier_order_and_outputs",
+      "status": "pass",
+      "reason": "Archive precedes build-module imports; source/reference/knowledge/example work and first bundle precede tests; benchmark and second bundle precede distribution and final checked-input comparisons. Dated/current outputs described accurately.",
+      "sources": [
+        "scripts/verify.py"
+      ]
+    },
+    {
+      "id": "archive_coverage_not_rollback",
+      "status": "pass",
+      "reason": "Known-output archive covers explicit roots and current top-level evidence; it omits generated plugin NOTICE, build metadata and tool caches and does not roll back changes.",
+      "sources": [
+        "scripts/verify.py",
+        "scripts/build_plugin.py"
+      ]
+    },
+    {
+      "id": "full_verifier_failure_limits",
+      "status": "pass",
+      "reason": "Normal completed failure returns 1 and records failed/not_run stages; run-directory creation is outside try and abrupt interruption or record-write failure may prevent a complete report. Guide preserves this limit.",
+      "sources": [
+        "scripts/verify.py"
+      ]
+    },
+    {
+      "id": "distribution_and_external_effects",
+      "status": "pass",
+      "reason": "Wheel check uses uv build/venv/pip in temporary locations with fresh production dependencies, then public installed/copied probes. Standalone main publishes wheel-check only after success and has no full-run archive.",
+      "sources": [
+        "scripts/check_wheel.py",
+        "setup.py",
+        "scripts/provider_probe.py"
+      ]
+    },
+    {
+      "id": "benchmark_cache_network_limit",
+      "status": "pass",
+      "reason": "Benchmark calls installed tiktoken encoding loaders; inspected local loader downloads on cache miss and writes configured/default cache. This is not a model/provider call.",
+      "sources": [
+        "scripts/benchmark.py"
+      ]
+    },
+    {
+      "id": "direct_builder_effects",
+      "status": "pass",
+      "reason": "Bundle build writes/copies manifests, requirements, runtime/resources/NOTICE and can remove unchanged obsolete generated entries. Other builders overwrite documented knowledge/examples/benchmark outputs without prior-output archives.",
+      "sources": [
+        "scripts/build_plugin.py",
+        "scripts/build_knowledge.py",
+        "scripts/build_examples.py",
+        "scripts/build_intake_example.py",
+        "scripts/benchmark.py"
+      ]
+    },
+    {
+      "id": "preserved_dated_ledger",
+      "status": "pass",
+      "reason": "Old command/result sections remain history; current choices are distinct, and the guidance requires preserving failures, exact inputs and original grades when correcting evaluation.",
+      "sources": [
+        "docs/VERIFICATION.md"
+      ]
+    }
+  ],
+  "source_identities": [
+    {
+      "path": "scripts/check_integrity.py",
+      "sha256": "b5ebebd545178db2addb6b4276d9f600cc5ebc8c8cddd006d1418fb0acbc8626"
+    },
+    {
+      "path": "scripts/release_integrity.py",
+      "sha256": "a49ba797a789e448977505aa9a71d18af13a2b8b902ccd5f8996cca3e601e7e4"
+    },
+    {
+      "path": "scripts/verify.py",
+      "sha256": "9d4ac27c11406635d3a9c7eb300c839ec694e499dac2d5f3ecf08045297a688d"
+    },
+    {
+      "path": "scripts/build_plugin.py",
+      "sha256": "5280eb47b7933a3510feeb2042efd1a5af8683682d9305144be83e0fddcf7ad0"
+    },
+    {
+      "path": "scripts/check_wheel.py",
+      "sha256": "c878884900d17c5dc89e9e3c33045a5841f1da4155a2f63403a154ab3f75e5af"
+    },
+    {
+      "path": "scripts/build_knowledge.py",
+      "sha256": "81f2591f99355eab07e41bf2ddbedf49c31c6377d19ce723795fd136bc7b0dd6"
+    },
+    {
+      "path": "scripts/build_examples.py",
+      "sha256": "05baedec53bd201e9b8e3eb497e4b939df49037d33d2ffaa18f0df27df67622f"
+    },
+    {
+      "path": "scripts/build_intake_example.py",
+      "sha256": "b61c6c44ed5d24084f4b3c7424a042a58b8a744ca28c56f8066f1aadddb26cfd"
+    },
+    {
+      "path": "scripts/benchmark.py",
+      "sha256": "247c8b5ce8cf19f28bc2678219688954c26a2c19064d0d64e2c8a82123305956"
+    },
+    {
+      "path": "scripts/provider_probe.py",
+      "sha256": "0d125fb1bc1ad2b8489b2754908f9cd56c3fe37141b018d5fac6e0967def57b3"
+    },
+    {
+      "path": "scripts/consumer_execution_probe.py",
+      "sha256": "99a47a5ac73a448e8959cf8b09bf2aa7022c222d5ba2abfb6ab1996b651f2038"
+    },
+    {
+      "path": "setup.py",
+      "sha256": "2122748233bb78263666f2a096beb90ccb25f4d9bab8c04d1b4e7c0c06059281"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "6a704420181adea5821106b1945a36223ae983724b09305186252d2a2f37bb3e"
+    },
+    {
+      "path": "pixl/poc.py",
+      "sha256": "02a02bc89ae5a0d65955714c23b05f54cffc4bf901fef100ec5ace6db42923a1"
+    },
+    {
+      "path": "pixl/cli.py",
+      "sha256": "e6c4858aca2a61dcf4c4545b2ac822b31748c6ab8df7454708740af399f8e1db"
+    },
+    {
+      "path": "pixl/readiness.py",
+      "sha256": "91ad50458c505824e5da7b00ed47d74c59eb38c09c3f339d9ec0fd7ff5452051"
+    },
+    {
+      "path": "pixl/consumer_execution.py",
+      "sha256": "f0d66575811254ff705a0934c0d2074f70666fc2d4e57706b15a5bedee6d66e7"
+    },
+    {
+      "path": "spec/consumer-execution.md",
+      "sha256": "787aa562350e2eee4f7a8003f8cb06aa7ece46410c714aa22803c6ef221d2ba0"
+    },
+    {
+      "path": "evaluations/readiness_case.py",
+      "sha256": "1a0d25bf7a717599f6a626a58c2bc4c95693fb49d1deca32805e3279c6920996"
+    },
+    {
+      "path": "evaluations/request_review_trials.py",
+      "sha256": "3b4a3ecbbae62252aaa5abb106ffb4d07881618a9762353d1329ec325187f0f4"
+    },
+    {
+      "path": "evaluations/grade_readiness.py",
+      "sha256": "5fb9713fa7ee7e03b0a5a301f7a84253ad83efd7d15e655e8fcfedf523fdc5e4"
+    },
+    {
+      "path": "evaluations/host_trials.py",
+      "sha256": "46262e319dfcafcb00d8104933166e74c4d6343222ce767532eae04c31c76102"
+    },
+    {
+      "path": "evaluations/check_host_evidence.py",
+      "sha256": "f6da4e228b46db3d6dad0087ac4782af71b7e9b4b6f0c134fd225a5f5963b688"
+    },
+    {
+      "path": "evaluations/write_host_report.py",
+      "sha256": "4e2adfb9d104d29d9e3f231437b8dff02940650ba9af492833aa293089f69238"
+    },
+    {
+      "path": "evaluations/native_production_case.py",
+      "sha256": "edea6653b86f238c1af15db99887dbb12b438b5f96e44e626efd33fa5a3da4fd"
+    },
+    {
+      "path": "evaluations/native_provider.py",
+      "sha256": "09f7d33b0c14c8f23b7244359100e043f4618310c74341d711205bf17f54c652"
+    },
+    {
+      "path": "tests/test_deliverable_index.py",
+      "sha256": "b547f4a06ce183645d029e49716e6e97bb8eb36d41480ec86b11e23f1d1f9bef"
+    },
+    {
+      "path": "tests/test_packaging.py",
+      "sha256": "617a2e803d261f6f355dccc53b3ca2d18f2391cff45caf840b723ee93502ae1a"
+    },
+    {
+      "path": "tests/test_knowledge.py",
+      "sha256": "310cbcc5a245a7bcba9e3bcf5be198d719132308913650ccadc733bae526b9fa"
+    }
+  ],
+  "local_environment_sources": [
+    {
+      "path": ".venv/Lib/site-packages/tiktoken/load.py",
+      "sha256": "03f32d08811ae1ce9eec1141e7eb89e66a1ae264ab348906cdd5576b948322ea",
+      "scope": "Inspected installed dependency source; not a tracked project source or a new package qualification."
+    },
+    {
+      "path": ".venv/Lib/site-packages/tiktoken_ext/openai_public.py",
+      "sha256": "c1e4c453c2fcf8102342c2fc3771aa647f22012ce05cb9751d2bc55830738088",
+      "scope": "Inspected installed dependency source; not a tracked project source or a new package qualification."
+    }
+  ],
+  "limits": [
+    "Review judges these command routes against current source; it is not an exhaustive system-wide filesystem or network audit.",
+    "A complete source hash identifies bytes, not line/branch coverage.",
+    "No new Claude/Codex production, official art, renderer playback or human acceptance was performed."
+  ]
+}

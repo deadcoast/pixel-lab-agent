@@ -1,0 +1,249 @@
+"""QOL-09 actual command and input-preservation proof; retained run-local source."""
+import argparse
+import ast
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import time
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+OUTPUT_ROOT = ROOT / "evidence/verification-tiers"
+BASELINE = "90e1ff370de0cfa2e6df611ca9f8436f08a4134f"
+PRIOR_INSPECTION = "evidence/evidence-navigation/20261114/integrity-01/report.json"
+DOCUMENTS = ("README.md", "docs/VERIFICATION.md", "docs/EVIDENCE-INTEGRITY.md")
+SOURCES = (
+    "scripts/check_integrity.py", "scripts/release_integrity.py", "scripts/build_plugin.py",
+    "tests/test_deliverable_index.py", "tests/family_support.py", "tests/lifecycle_support.py",
+    "pixl/graph.py", "pixl/sources.py", "evaluations/evidence-claims.json",
+    "plugins/pixl/bundle-manifest.json", "pyproject.toml", PRIOR_INSPECTION,
+)
+EXCLUDED_DIRECTORIES = {".git", ".venv", "node_modules"}
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+
+
+def sha(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def value_hash(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def tracked_names():
+    raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
+    return sorted({name for name in raw.decode("utf-8").split("\0") if name})
+
+
+def inventory(names):
+    result = {}
+    for name in names:
+        path = ROOT / name
+        if path.is_symlink():
+            stat = path.lstat()
+            result[name] = {"symlink": os.readlink(path), "mtime_ns": stat.st_mtime_ns}
+        elif path.is_file():
+            stat = path.stat()
+            result[name] = {"sha256": sha(path), "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+        else:
+            result[name] = {"missing": True}
+    return result
+
+
+def directory_inventory():
+    """Names only, including ignored bytecode; do not walk environment/Git/node trees."""
+    entries = []
+    for current, directories, files in os.walk(ROOT, followlinks=False):
+        folder = Path(current)
+        kept = []
+        for name in sorted(directories):
+            path = folder / name
+            if name.casefold() in EXCLUDED_DIRECTORIES or path == OUTPUT_ROOT:
+                continue
+            entries.append(path.relative_to(ROOT).as_posix() + "/")
+            if not path.is_symlink():
+                kept.append(name)
+        directories[:] = kept
+        entries.extend((folder / name).relative_to(ROOT).as_posix() for name in sorted(files))
+    return sorted(entries)
+
+
+def retain_manifest(path, manifest, entries):
+    with zipfile.ZipFile(path, "x", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("tracked-files.json", json.dumps(manifest, sort_keys=True, separators=(",", ":")))
+        archive.writestr("directory-entries.json", json.dumps(entries, separators=(",", ":")))
+
+
+def run_command(attempt, name, arguments):
+    folder = attempt / name
+    folder.mkdir()
+    command = [str(ROOT / ".venv/Scripts/python.exe"), "-B", *arguments]
+    started = time.monotonic()
+    metadata = {"command": command, "cwd": str(ROOT), "started_at": datetime.now(UTC).isoformat()}
+    write(folder / "launch.json", metadata)
+    try:
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, timeout=600)
+        stdout, stderr = result.stdout, result.stderr
+        metadata.update(exit_code=result.returncode, execution_status="completed")
+    except subprocess.TimeoutExpired as error:
+        stdout, stderr = error.stdout or b"", error.stderr or b""
+        metadata.update(exit_code=None, execution_status="timeout", error="600-second command timeout")
+    except OSError as error:
+        stdout, stderr = b"", b""
+        metadata.update(exit_code=None, execution_status="launch_failed", error=str(error))
+    (folder / "stdout.txt").write_bytes(stdout)
+    (folder / "stderr.txt").write_bytes(stderr)
+    metadata.update(elapsed_seconds=round(time.monotonic() - started, 3),
+                    stdout_sha256=sha(folder / "stdout.txt"), stderr_sha256=sha(folder / "stderr.txt"))
+    write(folder / "execution.json", metadata)
+    return metadata, stdout, stderr
+
+
+def main(attempt):
+    if not attempt.is_relative_to(OUTPUT_ROOT.resolve()) or attempt == OUTPUT_ROOT.resolve():
+        raise ValueError("Select a fresh attempt below evidence/verification-tiers")
+    attempt.mkdir(parents=True, exist_ok=False)
+    checks = []
+    commands = {}
+    observed = {}
+    before = None
+    entries_before = None
+
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    def parsed_report(name, selected, registry):
+        execution, stdout, _ = commands[name]
+        report = json.loads(stdout)
+        claims = {row["id"]: row for row in registry["claims"]}
+        expected_receipts = {item for identity in selected for item in claims[identity]["receipts"]}
+        expected_receipts.update(item["receipt"] for item in registry["release"]["archives"])
+        check(name + ":actual_exit_matches_report", execution["exit_code"] == report.get("exit_code"),
+              {"process": execution["exit_code"], "reported": report.get("exit_code")})
+        check(name + ":expected_needs_review_preserved", execution["exit_code"] == 1 and report.get("status") == "needs_review")
+        check(name + ":declared_claims_and_receipts", set(report.get("selection", [])) == set(selected) and
+              {row["id"] for row in report.get("claims", [])} == set(selected) and
+              {row["id"] for row in report.get("receipts", [])} == expected_receipts,
+              {"claims": len(selected), "receipts": len(expected_receipts)})
+        expected_summary = {"claims_checked": len(selected), "receipts_checked": len(expected_receipts),
+            "current": sum(row["applicability"] == "current" for row in report["claims"]),
+            "historical": sum(row["applicability"] == "historical" for row in report["claims"]),
+            "needs_review": sum(row["status"] == "needs_review" for row in report["claims"])}
+        check(name + ":summary_matches_selected_rows", report.get("summary") == expected_summary, expected_summary)
+        check(name + ":release_still_checked", isinstance(report.get("release"), dict) and
+              report["release"].get("status") == "needs_review" and bool(report["release"].get("checks")))
+        return report
+
+    try:
+        revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        identity = {"version": 1, "source_revision": revision, "expected_baseline": BASELINE,
+                    "observed_at": datetime.now(UTC).isoformat(),
+                    "documents": {name: sha(ROOT / name) for name in DOCUMENTS},
+                    "sources": {name: sha(ROOT / name) for name in SOURCES},
+                    "evaluator_sha256": sha(Path(__file__)),
+                    "python": str(ROOT / ".venv/Scripts/python.exe")}
+        write(attempt / "identity.json", identity)
+        for name in DOCUMENTS + SOURCES:
+            destination = attempt / "source-snapshot" / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes((ROOT / name).read_bytes())
+        (attempt / "local-proof.py.txt").write_bytes(Path(__file__).read_bytes())
+        check("expected_baseline", revision == BASELINE, revision)
+        names = tracked_names()
+        before = inventory(names)
+        entries_before = directory_inventory()
+        retain_manifest(attempt / "before.zip", before, entries_before)
+        check("all_tracked_inputs_present_before", not any(row.get("missing") for row in before.values()))
+        print(json.dumps({"phase": "before", "tracked_files": len(before), "directory_entries": len(entries_before)}), flush=True)
+        registry = json.loads((ROOT / "evaluations/evidence-claims.json").read_bytes())
+        commands["integrity-human"] = run_command(attempt, "integrity-human", ["scripts/check_integrity.py"])
+        commands["integrity-json"] = run_command(attempt, "integrity-json", ["scripts/check_integrity.py", "--json"])
+        commands["integrity-selected"] = run_command(attempt, "integrity-selected",
+                                                     ["scripts/check_integrity.py", "--claim", "NF-07-CONSUMER", "--json"])
+        commands["focused-consumer-index"] = run_command(attempt, "focused-consumer-index",
+                                                         ["-m", "unittest", "tests.test_deliverable_index", "-v"])
+        full = parsed_report("integrity-json", [row["id"] for row in registry["claims"]], registry)
+        selected = parsed_report("integrity-selected", ["NF-07-CONSUMER"], registry)
+        prior = json.loads((ROOT / PRIOR_INSPECTION).read_bytes())
+        prior_applicability = {row["id"]: row["applicability"] for row in prior["claims"]}
+        check("existing_applicability_gaps_retained", {row["id"]: row["applicability"] for row in full["claims"]} == prior_applicability,
+              {"expected_from": PRIOR_INSPECTION, "observed_summary": full["summary"]})
+        check("selected_current_claim_does_not_hide_release_gaps", selected["claims"][0]["applicability"] == "current" and
+              selected["claims"][0]["status"] == "intact" and selected["status"] == "needs_review")
+        human_execution, human_bytes, _ = commands["integrity-human"]
+        human = human_bytes.decode("utf-8", errors="replace")
+        check("human_exit_and_report_agree_with_json", human_execution["exit_code"] == full["exit_code"] and
+              human.startswith("PIXL evidence/release integrity: " + full["status"]) and
+              all(row["id"] + ": " in human for row in full["claims"]) and "Release: needs_review" in human)
+        observed["read_only"] = {"status": full["status"], "summary": full["summary"],
+            "current_claims": [row["id"] for row in full["claims"] if row["applicability"] == "current"],
+            "selected_summary": selected["summary"],
+            "meaning": "Expected stale applicability/release gaps were reported without rebuilding. This is not a runtime pass or replay of any receipt."}
+        execution, stdout, stderr = commands["focused-consumer-index"]
+        combined = (stdout + b"\n" + stderr).decode("utf-8", errors="replace")
+        counts = re.findall(r"^Ran (\d+) tests? in ", combined, re.M)
+        tree = ast.parse((ROOT / "tests/test_deliverable_index.py").read_text(encoding="utf-8"))
+        expected_tests = sum(isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name.startswith("test_")
+                             for node in tree.body if isinstance(node, ast.ClassDef) for item in node.body)
+        ran = int(counts[-1]) if counts else None
+        check("focused_actual_unittest_outcome", execution["exit_code"] == 0 and ran == expected_tests and
+              re.search(r"^OK\s*$", combined, re.M) is not None,
+              {"ran": ran, "expected_test_methods": expected_tests, "exit_code": execution["exit_code"]})
+        observed["focused_tests"] = {"ran": ran, "expected_test_methods": expected_tests,
+            "status": "pass" if checks[-1]["passed"] else "fail", "exit_code": execution["exit_code"],
+            "scope": "Consumer-index temporary fixtures and actual local CLI/MCP/export/refusal checks. Temporary state/assets/exports are created and cleaned. No full discovery, builder, native model, provider or browser run."}
+    except Exception as error:
+        check("evaluator_completed", False, {"error": type(error).__name__, "detail": str(error)})
+    finally:
+        if before is not None and entries_before is not None:
+            try:
+                after = inventory(before)
+                entries_after = directory_inventory()
+                retain_manifest(attempt / "after.zip", after, entries_after)
+                changed = [name for name in before if before[name] != after[name]]
+                added = sorted(set(entries_after) - set(entries_before))
+                removed = sorted(set(entries_before) - set(entries_after))
+                tracked_added = sorted(set(tracked_names()) - set(before))
+                check("tracked_bytes_and_mtimes_preserved", not changed, {"files": len(before), "changed": changed})
+                check("workspace_directory_inventory_preserved", not added and not removed,
+                      {"before_entries": len(entries_before), "after_entries": len(entries_after), "added": added, "removed": removed})
+                check("tracked_inventory_not_expanded", not tracked_added, tracked_added)
+                preservation = {"status": "pass" if not changed and not added and not removed and not tracked_added else "fail",
+                    "tracked_files": len(before), "bytes": sum(row.get("bytes", 0) for row in before.values()),
+                    "before_tree_sha256": value_hash(before), "after_tree_sha256": value_hash(after),
+                    "changed": changed, "directory_entries": len(entries_before), "added_entries": added, "removed_entries": removed,
+                    "scope": "All tracked inputs retain exact bytes and mtimes across the three inspection commands and one focused suite. A names-only directory inventory also detects new/removed ignored files, including bytecode, outside excluded .git/.venv/node_modules and this task's output root. Existing untracked bytes, environment contents, external temporary fixtures, host stores and global caches are not hashed. This is not an OS sandbox or proof of no transient writes."}
+                write(attempt / "preservation.json", preservation)
+            except Exception as error:
+                check("preservation_completed", False, {"error": type(error).__name__, "detail": str(error)})
+        result = {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+                  "status": "pass" if checks and all(row["passed"] for row in checks) else "fail",
+                  "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks,
+                  "observed": observed, "commands": {name: row[0] for name, row in commands.items()},
+                  "source_sha256": sha(Path(__file__)),
+                  "scope": "Fresh documented-command qualification and focused local implementation checks, with preserved repository inputs. No full verifier, new native PIXL behavior, provider/artistic/target-engine outcome or human acceptance follows. All failed command output and evaluator checks remain retained."}
+        write(attempt / "RESULT.json", result)
+        print(json.dumps({key: result[key] for key in ("status", "passed", "total")}), flush=True)
+    return 0 if result["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True, help="Fresh attempt directory below evidence/verification-tiers")
+    arguments = parser.parse_args()
+    raise SystemExit(main(arguments.out.resolve()))
