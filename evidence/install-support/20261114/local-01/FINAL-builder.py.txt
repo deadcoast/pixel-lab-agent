@@ -1,0 +1,65 @@
+import hashlib
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[1]
+evidence = root / 'evidence/install-support/20261114'
+local = evidence / 'local-01'
+final_hash = '7c517c867e877bf469cd299638dbe4259d7c741d0380446ceb284c62a1788f50'
+names = ['windows-py311-02', 'windows-py312-02', 'windows-py313-02', 'windows-py314-06', 'wsl-py312-02']
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+def ref(path):
+    return {'path': path.relative_to(root).as_posix(), 'sha256': sha(path), 'bytes': path.stat().st_size}
+assert sha(root/'evaluations/install_support_check.py') == final_hash
+rows = []
+for name in names:
+    path = local/name/'RESULT.json'
+    value = json.loads(path.read_bytes())
+    assert value['status'] == 'pass'
+    assert value['script']['sha256'] == final_hash
+    assert sha(local/name/'harness.py.txt') == final_hash
+    assert value['wheel']['sha256'] == 'b1bfb390f9a45df4f9663ae62491883c12bec5f15af8a0a7d129fb72715e7846'
+    assert value['kit_manifest']['sha256'] == '48120249c0a10672db9c773f0ad89d2e178022f4a93edd80a2d8c4e5f2442b79'
+    routes = value['routes']
+    assert value['input_kit_unchanged'] and value['bare_bootstrap']['status'] == 'pass'
+    for kind in ['copied_kit','wheel']:
+        assert routes[kind]['identity'] == routes[kind]['cold_identity']
+        assert routes[kind]['runtime_payload_matches_frozen_kit']
+        assert len(routes[kind]['runtime_payload']) == 47
+    assert routes['retained_kit_update']['old_kit_preserved']
+    assert routes['retained_kit_update']['nonkit_files_preserved'] == 3032
+    rows.append({'name': name, 'result': ref(path), 'python': value['python_version'], 'platform': value['platform'],
+                 'command_count': value['command_count'], 'routes': list(routes), 'runtime_payload_files_verified': 47,
+                 'retained_nonkit_files_preserved': 3032,
+                 'cold_project_files_preserved': {kind: routes[kind]['consumer_files_preserved'] for kind in ['copied_kit','wheel']},
+                 'dependencies': {kind: routes[kind]['packages']['distributions'] for kind in ['copied_kit','wheel']}})
+prior = []
+for name in ['windows-py311-01','windows-py312-01','windows-py313-01','windows-py314-05','wsl-py312-01']:
+    path = local/name/'RESULT.json'
+    value = json.loads(path.read_bytes())
+    prior.append({'result':ref(path), 'status':value['status'], 'harness_sha256':value['script']['sha256'],
+                  'reason_for_new_final_row':'Harness lint cleanup: import sorting and exception logging only; prior actual results remain unchanged.'})
+result = {'version':1,'status':'pass','observed_at':datetime.now(UTC).isoformat(),
+          'scope':'Local installation, useful production preparation, copied-kit update and fresh-process read-only cold artifact recovery. PLAR probe uses synthetic schema/observations and a local dispatch claim; no provider/native-session/art/human acceptance.',
+          'current_harness':ref(root/'evaluations/install_support_check.py'),
+          'harness_checks':ref(local/'lint-02/RESULT.json'),
+          'distribution':ref(evidence/'distribution-02/RESULT.json'),
+          'tested_wheel':ref(evidence/'distribution-02/artifacts/pixl_agent-1.0.0-py3-none-any.whl'),
+          'kit_manifest':ref(root/'plugins/pixl/bundle-manifest.json'),
+          'qualified_cells':rows,'prior_candidate_cells_preserved':prior,
+          'older_development_history':ref(local/'development-history.json'),
+          'lint_failure_preserved':ref(local/'lint-01/RESULT.json'),
+          'unsupported_python310_rejection':ref(local/'python310-rejection-01/RESULT.json'),
+          'wsl_staging':ref(local/'wsl-native-staging-01/RESULT.json'),
+          'wsl_receipt_transfer':ref(local/'wsl-native-staging-01/RETURNED.json'),
+          'limits':['Windows 11 AMD64: tested Python 3.11.14, 3.12.10, 3.13.12, 3.14.3 only.',
+                    'Ubuntu WSL2 x86_64: final Python 3.12.3 run uses Linux-native /tmp filesystem; prior Windows-mounted run remains separate.',
+                    'Locked source uv sync --locked --no-dev: Windows Python 3.14.3 installation/use only; no source-relocation claim.',
+                    'Kit/consumer relocation moves files only; virtual environments remain fixed. Cold recovery reads identical saved state, requirements and prepared job in new CLI processes.',
+                    'No claim for macOS, native Linux hosts, ARM, other Python versions, provider credentials, real provider execution, or model/visual/human acceptance.']}
+with (local/'FINAL.json').open('x') as stream:
+    json.dump(result,stream,indent=2)
+    stream.write('\n')
+print(json.dumps({'status':result['status'],'cells':len(rows),'commands':sum(row['command_count'] for row in rows),'harness_sha256':final_hash}))

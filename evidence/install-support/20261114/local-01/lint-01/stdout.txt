@@ -1,0 +1,123 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> evaluations\install_support_check.py:7:1
+   |
+ 5 |   files and a copied kit; virtual environments stay at their original locations.
+ 6 |   """
+ 7 | / from __future__ import annotations
+ 8 | |
+ 9 | | import argparse
+10 | | import json
+11 | | import os
+12 | | from pathlib import Path
+13 | | import platform
+14 | | import shutil
+15 | | import sys
+16 | | import zipfile
+   | |______________^
+17 |
+18 |   ROOT = Path(__file__).resolve().parents[1]
+   |
+help: Organize imports
+   |
+11 | import os
+   - from pathlib import Path
+12 | import platform
+13 | import shutil
+14 | import sys
+15 | import zipfile
+16 + from pathlib import Path
+17 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> evaluations\install_support_check.py:22:1
+   |
+20 |       sys.path.insert(0, str(ROOT))
+21 |
+22 | / from evaluations.consumer_setup_check import (
+23 | |     Commands, FORBIDDEN, IGNORED, PACKAGE_CODE, SOURCE_DIRS, SOURCE_FILES, clean_environment, copy_exact, digest,
+24 | |     inventory, now, reference, runtime_python, source_inventory, write_json,
+25 | | )
+26 | | from scripts.plar_probe import run_plar_probe
+   | |_____________________________________________^
+27 |
+28 |   SCOPE = ("Local installation, saved production and cold artifact resume. PLAR probe "
+   |
+help: Organize imports
+   |
+22 | from evaluations.consumer_setup_check import (
+   -     Commands, FORBIDDEN, IGNORED, PACKAGE_CODE, SOURCE_DIRS, SOURCE_FILES, clean_environment, copy_exact, digest,
+   -     inventory, now, reference, runtime_python, source_inventory, write_json,
+23 +     FORBIDDEN,
+24 +     IGNORED,
+25 +     PACKAGE_CODE,
+26 +     SOURCE_DIRS,
+27 +     SOURCE_FILES,
+28 +     Commands,
+29 +     clean_environment,
+30 +     copy_exact,
+31 +     digest,
+32 +     inventory,
+33 +     now,
+34 +     reference,
+35 +     runtime_python,
+36 +     source_inventory,
+37 +     write_json,
+38 | )
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> evaluations\install_support_check.py:114:12
+    |
+112 |                       frozen_source=str(source), source_input_count=len(inputs), source_inputs_unchanged=True,
+113 |                       script=reference(__file__))
+114 |     except Exception as error:
+    |            ^^^^^^^^^
+115 |         result.update(status="fail", error={"type": type(error).__name__, "detail": str(error)})
+116 |     result.update(finished_at=now(), commands=commands.rows)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> evaluations\install_support_check.py:316:12
+    |
+314 |             raise RuntimeError("Qualification changed supplied source kit")
+315 |         result.update(status="pass", input_kit_unchanged=True)
+316 |     except Exception as error:
+    |            ^^^^^^^^^
+317 |         result.update(status="fail", error={"type": type(error).__name__, "detail": str(error)})
+318 |     result.update(finished_at=now(), command_count=len(commands.rows), commands=commands.rows)
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\test_install_support_check.py:2:1
+   |
+ 1 |   """Qualification harness boundaries: no accidental overwrite or unbound success."""
+ 2 | / import hashlib
+ 3 | | import json
+ 4 | | import copy
+ 5 | | from pathlib import Path
+ 6 | | import sys
+ 7 | | from tempfile import TemporaryDirectory
+ 8 | | import unittest
+ 9 | | from unittest.mock import patch
+10 | |
+11 | | from evaluations import install_support_check as check
+   | |______________________________________________________^
+help: Organize imports
+  |
+1 | """Qualification harness boundaries: no accidental overwrite or unbound success."""
+2 + import copy
+3 | import hashlib
+4 | import json
+  - import copy
+5 + import sys
+6 + import unittest
+7 | from pathlib import Path
+  - import sys
+8 | from tempfile import TemporaryDirectory
+  - import unittest
+9 | from unittest.mock import patch
+  |
+
+Found 5 errors.
+[*] 3 fixable with the `--fix` option.

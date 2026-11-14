@@ -8,6 +8,11 @@ Both ship with the common skill; setup and advanced surfaces remain below.
 The [capability/outcome matrix](CAPABILITY-OUTCOMES.md) maps useful tasks to these
 routes, exact retained outcomes and remaining host/renderer limits. Human acceptance
 is separate from development qualification and does not halt the next development step.
+The [installation/update support matrix](INSTALL-SUPPORT.md) distinguishes package
+requirements, tested Python/OS routes, host loading and practical relocation/resume.
+[TM-05 qualification](../evidence/install-support/README.md) adds final Windows and
+WSL local routes plus fresh current-kit Codex 19/19 and Claude 18/18 setup outcomes.
+Local cold artifact reads remain separate from native conversation continuation.
 
 ## Set up a consumer project
 
@@ -36,7 +41,9 @@ $pixlRunner = Join-Path $pixlKit 'scripts/pixl.py'
 & $pixlPython $pixlRunner readiness --root $pixlProject --host codex --installation $pixlKit
 ```
 
-Select Python 3.11 or newer. On POSIX use `bin/python` inside the environment.
+The package requires Python 3.11 or newer; that minimum does not qualify every
+Python/OS combination. Use the [support matrix](INSTALL-SUPPORT.md#local-runtime-qualification)
+for actual tested routes. On POSIX use `bin/python` inside the environment.
 Only Pillow and jsonschema are mandatory runtime dependencies. The bootstrap
 `readiness` command uses the standard library and can also run before dependency
 installation to report missing local prerequisites. It performs no generation
@@ -87,7 +94,7 @@ describes project `.codex/agents` files and parent MCP/provider inheritance.
 The explicit invocation registration above is the mechanism exercised in the
 [named-role evaluation](../evidence/named-codex-role/README.md); that trial used its
 own retained role bytes. File presence alone is not a loading or behavior proof.
-The fresh [consumer setup evaluation](../evidence/readiness/README.md) now qualifies
+The [earlier consumer setup evaluation](../evidence/readiness/README.md) qualifies
 this resolved portable template: its actual named child loads the instructions
 and completes local source/library reads, with 19/19 independent checks. The
 missing-registration case passes 16/16 without substituting a generic specialist. Preserve
@@ -111,7 +118,7 @@ Invoke `/pixl:pixl` for the plugin skill, or ask the caller to delegate to the
 actual plugin specialist it discovers. `--agent pixl:pixl` selects that specialist
 for the current session; it is a different operation from parent-to-child
 delegation. The source checkout's `/pixl` and `claude --agent pixl` refer to its
-checked-in adapters. Local folder loading is described in [Claude's plugin guide](https://code.claude.com/docs/en/plugins/install).
+checked-in adapters. Local folder loading is described in [Claude's session plugin guide](https://code.claude.com/docs/en/plugins/create#develop-without-a-marketplace).
 When adding local MCP, use the [session configuration below](#connect-the-local-runtime-for-one-session)
 without suppressing the existing official PixelLab connection. The [authenticated follow-ups](../evidence/readiness/20261110/RESULT.json) qualify
 the clean setup at 18/18 checks and intentionally omitted plugin loading at 16/16.
@@ -138,12 +145,19 @@ and returned identity separately when specialist delegation is assigned. If an
 isolated session has no official server configured, report that scope rather than
 asserting a service outage or authentication failure.
 
-A locally supplied wheel can be installed into the selected environment with
-`python -m pip install PATH_TO_WHEEL`; `python -m pixl readiness` and other local
-operations then use that installed runtime. The wheel carries profile/knowledge
-resources, but no host skill/role registration. Keep the host setup above when
-using the wheel. `uv sync --locked --no-dev` is a separate source-checkout option
-requiring this repository and lockfile; neither command replaces host loading.
+A locally supplied wheel can be installed using the selected interpreter and
+consumer root from [consumer setup](#set-up-a-consumer-project):
+
+```powershell
+& $pixlPython -m pip install 'C:/path/to/pixl_agent-1.0.0-py3-none-any.whl'
+& $pixlPython -m pixl readiness --root $pixlProject
+```
+
+These local operations use that installed runtime. The wheel carries profile/
+knowledge resources, but no host skill/role registration. Keep the host setup
+above when using the wheel. `uv sync --locked --no-dev` is a separate source-
+checkout option requiring this repository and lockfile; neither route replaces
+host loading.
 
 The [2026-11-09 fresh installation proof](../evidence/readiness/20261109/setup/attempt-01/RESULT.json)
 exercises those three routes on Windows/Python 3.14: the copied-kit requirements
@@ -154,8 +168,9 @@ pip-only environment also returns incomplete readiness JSON before dependency
 installation. [Exact distribution copies](../evidence/readiness/20261109/setup/retained-distribution-01/IDENTITY.json)
 and an [existing-output refusal](../evidence/readiness/20261109/setup/existing-output-rejection-01.json)
 retain the tested bytes and prior receipts. These local checks do not establish
-host role loading, provider visibility or authentication; other platforms and
-Python versions remain separate qualification work.
+host role loading, provider visibility or authentication. The dated proof keeps
+its original scope; the [support matrix](INSTALL-SUPPORT.md) records later
+platform/Python qualification separately.
 
 ## Operation references
 
@@ -363,6 +378,12 @@ PixelLab authentication remains a separate harness connection. Consult [PixelLab
 
 ## Preserve project sources when updating the kit
 
+Follow the [update and relocation steps](INSTALL-SUPPORT.md#update-a-kit-without-losing-saved-production)
+with the original kit retained. Keep consumer state outside the installation,
+retarget changed host/MCP paths, and reread the saved project in a fresh process.
+A copied environment or an already running host/MCP process does not establish
+that the new installation loaded.
+
 After a project imports library S records, use `retain-library` / `pixl_retain_library` to keep their exact revisions in the consumer project. An already affected project can recover from its preserved original kit through the same operation. The [agent workflow](../plugins/pixl/skills/pixl/references/library-retention.md) gives the callable sequence; [the contract](../spec/library-retention.md) explains why retained old proof does not establish new implementation or asset quality.
 
 ## Local operations and handoff
@@ -526,8 +547,10 @@ This setting points to the existing role file and leaves user-wide configuration
 unchanged. Inspect the actual tool declaration before claiming named-role access;
 the [qualification evidence](../evidence/named-codex-role/README.md) distinguishes
 configuration discovery, loaded instructions, useful work and continuation. The
-portable absolute-path template and automatic project discovery remain separately
-scoped from the tested repository-role/wrapper route. OpenAI's [custom-agent
+repository-role/wrapper route was the scope of that trial. The later
+[consumer setup result](../evidence/readiness/README.md) separately qualifies the
+resolved portable template; automatic project discovery remains a distinct claim.
+OpenAI's [custom-agent
 documentation](https://developers.openai.com/codex/subagents) describes the intended
 configuration model; observed installed behavior determines this result.
 

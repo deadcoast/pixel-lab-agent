@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-14T09:59:32.305944+00:00",
+  "status": "fail",
+  "audit_source": {
+    "path": "evidence\\install-support\\20261114\\independent-final-review-01.py",
+    "sha256": "b9f777269f234f2b8b7ee601bd91580309a424a6731d7b337a9abef88299f638",
+    "bytes": 32718
+  },
+  "frozen_before_execution": {
+    "version": 1,
+    "observed_at": "2026-11-14T09:59:20.607866+00:00",
+    "path": "evidence/install-support/20261114/independent-final-review-01.py",
+    "sha256": "b9f777269f234f2b8b7ee601bd91580309a424a6731d7b337a9abef88299f638",
+    "bytes": 32718,
+    "source_frozen_before_execution": true,
+    "scope": "Independent read-only evidence audit source; no execution has occurred yet."
+  },
+  "passed": 13,
+  "total": 15,
+  "checks": [
+    {
+      "check": "linux_native_live_inventory",
+      "pass": true,
+      "detail": {
+        "distribution": "Ubuntu",
+        "fixture_root": "/tmp/pixl-tm05-final-20261114-01",
+        "read_only_files": 3684,
+        "read_only_trees": 5,
+        "command": [
+          "wsl",
+          "--distribution",
+          "Ubuntu",
+          "--exec",
+          "python3",
+          "-B",
+          "-c",
+          "embedded read-only inventory"
+        ],
+        "returned_inventory_sha256": "327a0a9ca7869b577bc4e5738df73a6cf65b10bf0d9b2bf72fbdd176be348db6"
+      }
+    },
+    {
+      "check": "final_reference_test_and_source_bindings",
+      "pass": true,
+      "detail": {
+        "harness_tests": 12,
+        "grader_tests": 27,
+        "harness_sha256": "7c517c867e877bf469cd299638dbe4259d7c741d0380446ceb284c62a1788f50",
+        "grader_sha256": "5fb9713fa7ee7e03b0a5a301f7a84253ad83efd7d15e655e8fcfedf523fdc5e4",
+        "scope": "Existing final focused test logs and exact sources verified; tests were not rerun by this audit."
+      }
+    },
+    {
+      "check": "harness_review03_final_lint_delta",
+      "pass": true,
+      "detail": {
+        "review": "03",
+        "before_sha256": "6d0a0af08a64bbd9f82ec08189fe4c328e2bede3fe590e6f9011c98fc7fa76f7",
+        "final_sha256": "7c517c867e877bf469cd299638dbe4259d7c741d0380446ceb284c62a1788f50",
+        "earlier_reviewed_at": "2026-11-14 09:49:04 UTC",
+        "delta": "Import ordering/formatting, logging import/module logger, two existing exception-boundary diagnostics only.",
+        "normalized_ast_equal_after_removing_logging": true
+      }
+    },
+    {
+      "check": "distribution02_exact_inputs_and_wheel",
+      "pass": true,
+      "detail": {
+        "source_files": 435,
+        "wheel_sha256": "b1bfb390f9a45df4f9663ae62491883c12bec5f15af8a0a7d129fb72715e7846",
+        "runtime_payload_files": 47,
+        "historical_build_harness_sha256": "102d3b187d58dd9ba70756ce6830703d7768a1ccd5008e2fe830e550a244ce24",
+        "scope": "The build receipt used its earlier recorded harness revision; final installation cells separately bind the final harness and this exact wheel."
+      }
+    },
+    {
+      "check": "wsl_staging_and_byte_exact_return",
+      "pass": false,
+      "error": "AssertionError: WSL staged archive paths differ",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 112, in check\n    detail = function()\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 485, in <lambda>\n    check(\"wsl_staging_and_byte_exact_return\", lambda: staging_check(LOCAL_INDEX))\n                                                       ~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 295, in staging_check\n    need(set(archive.namelist()) == set(inputs), \"WSL staged archive paths differ\")\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 40, in need\n    raise AssertionError(detail)\nAssertionError: WSL staged archive paths differ\n"
+    },
+    {
+      "check": "local_cell_windows-py311-02",
+      "pass": true,
+      "detail": {
+        "name": "windows-py311-02",
+        "commands": 63,
+        "runtime_files": 47,
+        "cold_routes": {
+          "copied_kit": {
+            "files": 56,
+            "pending_jobs": [
+              "r.7a43e80ea31436ef.request"
+            ],
+            "state_sha256": "b8c89956546f8ea704d55f3ec0cadcd4af1a488748d2cb83654340d02a723046",
+            "raw_process_identity_equal": true
+          },
+          "wheel": {
+            "files": 56,
+            "pending_jobs": [
+              "r.6f444a83ce3fb6af.request"
+            ],
+            "state_sha256": "93add3d17707301d0c552aeabf92a1be7528cab31aaada39b325991bb31f9831",
+            "raw_process_identity_equal": true
+          }
+        },
+        "nonkit_files_preserved": 3032,
+        "retired_kit_files": 167,
+        "comparison_rows": 23,
+        "consumer_preservation_basis": "Raw saved before/after inventories for retained kit update. Cold route full-tree equality was enforced by the frozen harness; this audit independently checks the current 56-file count, source bytes, state and raw cold identity. No separate pre-move 56-file inventory was persisted."
+      }
+    },
+    {
+      "check": "local_cell_windows-py312-02",
+      "pass": true,
+      "detail": {
+        "name": "windows-py312-02",
+        "commands": 63,
+        "runtime_files": 47,
+        "cold_routes": {
+          "copied_kit": {
+            "files": 56,
+            "pending_jobs": [
+              "r.cb7a1ab3960a0410.request"
+            ],
+            "state_sha256": "909e2c618e6930e29b9b3358c8dd3ab6480402cfce49dc98987e16e43cf60bcb",
+            "raw_process_identity_equal": true
+          },
+          "wheel": {
+            "files": 56,
+            "pending_jobs": [
+              "r.4f1bdc3f651d9891.request"
+            ],
+            "state_sha256": "aedb6f14f72e6d29b5d5b6b67582d812797116fc8df179ab5aed0928f87fd9e6",
+            "raw_process_identity_equal": true
+          }
+        },
+        "nonkit_files_preserved": 3032,
+        "retired_kit_files": 167,
+        "comparison_rows": 23,
+        "consumer_preservation_basis": "Raw saved before/after inventories for retained kit update. Cold route full-tree equality was enforced by the frozen harness; this audit independently checks the current 56-file count, source bytes, state and raw cold identity. No separate pre-move 56-file inventory was persisted."
+      }
+    },
+    {
+      "check": "local_cell_windows-py313-02",
+      "pass": true,
+      "detail": {
+        "name": "windows-py313-02",
+        "commands": 63,
+        "runtime_files": 47,
+        "cold_routes": {
+          "copied_kit": {
+            "files": 56,
+            "pending_jobs": [
+              "r.6c8bdafd4d774819.request"
+            ],
+            "state_sha256": "7f41d1848c835b6b9fc64004393e5e9a0b43139e934880080951ce3cbac7a6cb",
+            "raw_process_identity_equal": true
+          },
+          "wheel": {
+            "files": 56,
+            "pending_jobs": [
+              "r.76bdb245f81be76f.request"
+            ],
+            "state_sha256": "903dcc5f9237db98b330b17e5746c4f348b12b4c077c00a228fdb2ec6b5c917e",
+            "raw_process_identity_equal": true
+          }
+        },
+        "nonkit_files_preserved": 3032,
+        "retired_kit_files": 167,
+        "comparison_rows": 23,
+        "consumer_preservation_basis": "Raw saved before/after inventories for retained kit update. Cold route full-tree equality was enforced by the frozen harness; this audit independently checks the current 56-file count, source bytes, state and raw cold identity. No separate pre-move 56-file inventory was persisted."
+      }
+    },
+    {
+      "check": "local_cell_windows-py314-06",
+      "pass": true,
+      "detail": {
+        "name": "windows-py314-06",
+        "commands": 89,
+        "runtime_files": 47,
+        "cold_routes": {
+          "copied_kit": {
+            "files": 56,
+            "pending_jobs": [
+              "r.d756ecd72953244d.request"
+            ],
+            "state_sha256": "b14796069b98881c5bf54c3602ee8cab9df34921c60c49a388be334bd09bd35b",
+            "raw_process_identity_equal": true
+          },
+          "wheel": {
+            "files": 56,
+            "pending_jobs": [
+              "r.3fe037dee8fc91f6.request"
+            ],
+            "state_sha256": "abfe48906a8a2f8b195d3d32f3a5c3ea0377706e9bc9db6eb8da2a7027053311",
+            "raw_process_identity_equal": true
+          }
+        },
+        "nonkit_files_preserved": 3032,
+        "retired_kit_files": 167,
+        "comparison_rows": 23,
+        "consumer_preservation_basis": "Raw saved before/after inventories for retained kit update. Cold route full-tree equality was enforced by the frozen harness; this audit independently checks the current 56-file count, source bytes, state and raw cold identity. No separate pre-move 56-file inventory was persisted."
+      }
+    },
+    {
+      "check": "local_cell_wsl-py312-02",
+      "pass": true,
+      "detail": {
+        "name": "wsl-py312-02",
+        "commands": 63,
+        "runtime_files": 47,
+        "cold_routes": {
+          "copied_kit": {
+            "files": 56,
+            "pending_jobs": [
+              "r.485c75b23ca20068.request"
+            ],
+            "state_sha256": "676a17aa75065e8be5a18686b54bb8ddef3e37f132c8f993fb89daa2a5e9796b",
+            "raw_process_identity_equal": true
+          },
+          "wheel": {
+            "files": 56,
+            "pending_jobs": [
+              "r.b6cef4e96dddb4f4.request"
+            ],
+            "state_sha256": "ecdbc6f1d00e7773845fd2c7b22f7d78794c44653e978d639dacb02c1079c85c",
+            "raw_process_identity_equal": true
+          }
+        },
+        "nonkit_files_preserved": 3032,
+        "retired_kit_files": 167,
+        "comparison_rows": 23,
+        "consumer_preservation_basis": "Raw saved before/after inventories for retained kit update. Cold route full-tree equality was enforced by the frozen harness; this audit independently checks the current 56-file count, source bytes, state and raw cold identity. No separate pre-move 56-file inventory was persisted."
+      }
+    },
+    {
+      "check": "native_original_traces_current_grader_replay",
+      "pass": false,
+      "error": "AssertionError: Native actual additions differ",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 112, in check\n    detail = function()\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 489, in <lambda>\n    check(\"native_original_traces_current_grader_replay\", lambda: native_check(NATIVE_INDEX))\n                                                                  ~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 415, in native_check\n    need({k: v[\"sha256\"] for k, v in current.items() if k not in identity[\"inputs\"]} == preservation[\"new\"], \"Native actual additions differ\")\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\independent-final-review-01.py\", line 40, in need\n    raise AssertionError(detail)\nAssertionError: Native actual additions differ\n"
+    },
+    {
+      "check": "unchanged_product_and_historical_sc06_verification",
+      "pass": true,
+      "detail": {
+        "baseline": "c4b8131d07930e1f5e0b2f821318354796e69e7c",
+        "raw_blob_equal_files": 316,
+        "product_inventory_sha256": "e3261b85df1cfb537ba0432294dcffd34fc0755714673c10bb49a85aaf796c44",
+        "retained_sc06_full_result": {
+          "path": "evidence\\verification-runs\\20261114T032134.229415Z\\result.json",
+          "sha256": "808126d4aa0ad78e2ce189f5153406059e2514f8222c28a1e3b064ae5c9fdc40",
+          "status": "pass"
+        },
+        "prior_passed": 1313,
+        "prior_skipped": 2,
+        "fresh_full_suite_run": false,
+        "scope": "All tracked pixl/, scripts/ and plugins/pixl/ bytes compared directly to baseline Git blobs. Prior SC06 result is historical evidence, not a new full-suite run."
+      }
+    },
+    {
+      "check": "prior_failures_preserved",
+      "pass": true,
+      "detail": {
+        "failed_development_and_native_grades": [
+          {
+            "path": "evidence\\install-support\\20261114\\distribution-01\\RESULT.json",
+            "sha256": "b0dbf18bb2a7b91f897cd13d4a86d0a5679cd79246345fa12e32ff877dbbce40",
+            "bytes": 1562
+          },
+          {
+            "path": "evidence\\install-support\\20261114\\local-01\\windows-py314-01\\RESULT.json",
+            "sha256": "256b8f66e55c945468d58e6a113334a09e789e4f480ae7bfb716db4acf40cff2",
+            "bytes": 18576
+          },
+          {
+            "path": "evidence\\install-support\\20261114\\local-01\\windows-py314-02\\RESULT.json",
+            "sha256": "d3f5674b1c09bbc35be59870802d3bc7eaa60a08225c44b72242b290d2cc1680",
+            "bytes": 19952
+          },
+          {
+            "path": "evidence\\install-support\\20261114\\native\\codex-clean-01\\independent-grade-01.json",
+            "sha256": "fe5ce788e6ec274e070a391dfa36bd39d21c6abd318eba94021b25129f07c107",
+            "bytes": 12003
+          },
+          {
+            "path": "evidence\\install-support\\20261114\\native\\claude-clean-01\\independent-grade-01.json",
+            "sha256": "861822c086510eba43bc7fcd6177fa1ace66c1429d7e29f1f13102402ae43427",
+            "bytes": 215
+          }
+        ],
+        "lint_failure_preserved": true,
+        "native_self_corrected_failure_preserved": true,
+        "prior_harness_review_mismatch_receipt": {
+          "sha256": "7ef47a1487918e7d4a8acde7d676f3579a7bbd426c1d547738025e840ffce1b6",
+          "bytes": 1271
+        }
+      }
+    },
+    {
+      "check": "final_process_total",
+      "pass": true,
+      "detail": {
+        "commands": 341
+      }
+    },
+    {
+      "check": "read_only_audit_preserved_prior_evidence",
+      "pass": true,
+      "detail": {
+        "files": 2886,
+        "independent_additions_allowed": true
+      }
+    }
+  ],
+  "verified_file_references": 844,
+  "source_indices": [
+    {
+      "path": "evidence\\install-support\\20261114\\local-01\\FINAL.json",
+      "sha256": "a9506b44f2b8be06fcb49127f1615f770e0a0ff49f0120b256e8d22b176e3f0f",
+      "bytes": 13275
+    },
+    {
+      "path": "evidence\\install-support\\20261114\\native\\RESULT.json",
+      "sha256": "a0910674b89ee111f982499cacffbf498fdd7b81ad46f54323783dbf46ab363e",
+      "bytes": 21896
+    }
+  ],
+  "scope": "Independent assistant evidence audit. Read-only source, receipt, archive and live fixture verification; current grader replay only. No installation or host rerun, fresh full suite, provider execution, native session continuation, visual or human acceptance.",
+  "milestones": "M1/M2 and broader M3/M4/M5 remain open."
+}

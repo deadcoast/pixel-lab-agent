@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-14T09:33:34.828261+00:00",
+  "scope": "Grader-only correction; native behavior, reports, original18/19 grade and old evidence remain unchanged. No productruntime or package change.",
+  "counterexample": {
+    "native_journal": {
+      "path": "evidence/install-support/20261114/native/codex-clean-01/native-01a1d961-d1cc-73a0-8a9e-f17d64eb9560.jsonl",
+      "sha256": "c0c856b7fb649ed47b58584eb497403a1857a9d5f241456386aa9b9dc748d80b"
+    },
+    "call_line": 16,
+    "result_line": 19,
+    "call_id": "call_c05bbf6c3abe415f82e9cab7d6eebb14",
+    "actual_input": "text(await tools.exec_command({cmd:\"Get-Content -LiteralPath READINESS-ASSIGNMENT.md; Test-Path -LiteralPath .codegraph\",\"max_output_tokens\":6000}));\ntext(ALL_TOOLS.filter(x=>/pixl/i.test(x.name+\" \"+x.description)));\n",
+    "returned_metadata_count": 41,
+    "returned_names_equal_saved_complete_inventory": true,
+    "old_parser_result": "No declarations recognized because only a name-only filter spelling was recognized",
+    "corrected_rule": "Recognize the same metadata-origin name-plus-description filter with one bound callback variable and matched space quotes; still require paired successful exec output with actual local metadata objects."
+  },
+  "original_grade": {
+    "path": "evidence/install-support/20261114/native/codex-clean-01/independent-grade-01.json",
+    "sha256": "fe5ce788e6ec274e070a391dfa36bd39d21c6abd318eba94021b25129f07c107"
+  },
+  "new_grade": {
+    "path": "evidence/install-support/20261114/native/codex-clean-01/independent-grade-02.json",
+    "sha256": "00a65768a7d669816c8577630ad38589dedda1fe3fab599d6fcff9bf2f6273f0"
+  },
+  "source_before": {
+    "path": "evidence/install-support/20261114/grader-checks-01/grade_readiness-before.py.txt",
+    "sha256": "41001312e757dabbf4da819cc0cedf690c14ac5be45a70f4e0a4da646002eb66"
+  },
+  "source_after": {
+    "path": "evaluations/grade_readiness.py",
+    "sha256": "c79bf358f8328da291956d827ce6981ffadea34ad59af4c9db1521295c55cde5"
+  },
+  "tests_after": {
+    "path": "tests/test_readiness_case.py",
+    "sha256": "14ad30d5ca1b863cc516ad360e079a2f221445609a2e2d12e57bc0ee7d8af715"
+  },
+  "tests": {
+    "run": 24,
+    "pass": 24,
+    "new_methods": 2,
+    "log": {
+      "path": "evidence/install-support/20261114/grader-checks-01/final-test-log.txt",
+      "sha256": "d775d575f4d33fe1756051d2858c346599ed4c8f4786d166eae42edaf0f08a9f"
+    },
+    "before_failure": {
+      "path": "evidence/install-support/20261114/grader-checks-01/before-test-log.txt",
+      "sha256": "ec9e6a6e138978a4fd67df9814d205306cba6f2566c364cf2a973afe6cab3c30"
+    },
+    "negative_cases": [
+      "Unpaired call ID",
+      "Unrelated tool",
+      "Failed tool result",
+      "Unrelated filter variable",
+      "Authored inventory instead of native ALL_TOOLS",
+      "Existing report-only and incomplete-inventory counterexamples"
+    ]
+  },
+  "historical_regrades": {
+    "retained-codex-clean-grade.json": {
+      "path": "evidence/install-support/20261114/grader-checks-01/retained-codex-clean-grade.json",
+      "sha256": "3c7b4f3d3bec2de2746715abb6d6a990fd000a7ac92744138f023789d3c2c518"
+    },
+    "retained-codex-missing-registration-grade.json": {
+      "path": "evidence/install-support/20261114/grader-checks-01/retained-codex-missing-registration-grade.json",
+      "sha256": "f602b98aa02d349df48bfef4290758bcfa2be694dfcdabf5f300fcba86743d8d"
+    }
+  },
+  "kit_manifest_sha256": "48120249c0a10672db9c773f0ad89d2e178022f4a93edd80a2d8c4e5f2442b79"
+}

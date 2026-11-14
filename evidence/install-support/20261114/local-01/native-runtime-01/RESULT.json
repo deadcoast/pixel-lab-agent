@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "status": "pass",
+  "runtime_python": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime\\Scripts\\python.exe",
+  "packages": {
+    "executable": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime\\Scripts\\python.exe",
+    "prefix": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime",
+    "site": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime\\Lib\\site-packages",
+    "pixl_origin": null,
+    "distributions": {
+      "attrs": "26.1.0",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "pillow": "13.0.0",
+      "pip": "25.3",
+      "referencing": "0.37.0",
+      "rpds-py": "2026.9.1"
+    }
+  },
+  "scope": "Clean deps-only Python for separate native-host setup trials; no native calls here",
+  "commands": [
+    {
+      "label": "create-venv",
+      "argv": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "venv",
+        "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime"
+      ],
+      "cwd": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01",
+      "started_at": "2026-11-14T09:26:29.683190+00:00",
+      "expected_returncode": 0,
+      "returncode": 0,
+      "finished_at": "2026-11-14T09:26:34.007967+00:00",
+      "elapsed_seconds": 4.325,
+      "stdout": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\01-create-venv.stdout.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\01-create-venv.stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    },
+    {
+      "label": "install-runtime-dependencies",
+      "argv": [
+        "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "C:\\github\\pixel-lab-agent\\plugins\\pixl\\requirements.txt"
+      ],
+      "cwd": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01",
+      "started_at": "2026-11-14T09:26:34.009762+00:00",
+      "expected_returncode": 0,
+      "returncode": 0,
+      "finished_at": "2026-11-14T09:26:37.424502+00:00",
+      "elapsed_seconds": 3.415,
+      "stdout": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\02-install-runtime-dependencies.stdout.txt",
+        "sha256": "c8d5960c5de1cfd41297f2640aa24acc685766225fa1637d40133bcc90259d51",
+        "bytes": 1747
+      },
+      "stderr": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\02-install-runtime-dependencies.stderr.txt",
+        "sha256": "ea4d169bd40ed61a26351bd8f53cc38e8eaa9a2406a8647a45f0018d9a640af9",
+        "bytes": 194
+      }
+    },
+    {
+      "label": "packages",
+      "argv": [
+        "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01\\runtime\\Scripts\\python.exe",
+        "-I",
+        "-B",
+        "-c",
+        "import importlib.metadata as m, importlib.util as u, json, sys, sysconfig\nspec = u.find_spec('pixl')\nprint(json.dumps({'executable':sys.executable,'prefix':sys.prefix,\n 'site':sysconfig.get_path('purelib'),'pixl_origin':spec.origin if spec else None,\n 'distributions':{d.metadata['Name'].lower().replace('_','-'):d.version for d in m.distributions()}}))\n"
+      ],
+      "cwd": "C:\\github\\pixel-lab-agent\\build\\tm05-native-runtime-01",
+      "started_at": "2026-11-14T09:26:37.434383+00:00",
+      "expected_returncode": 0,
+      "returncode": 0,
+      "finished_at": "2026-11-14T09:26:37.547902+00:00",
+      "elapsed_seconds": 0.114,
+      "stdout": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\03-packages.stdout.txt",
+        "sha256": "fae0429109209f7e2326d23ac64b69bcf5f1d41fb21231a70e3e21546246b6fe",
+        "bytes": 494
+      },
+      "stderr": {
+        "path": "C:\\github\\pixel-lab-agent\\evidence\\install-support\\20261114\\local-01\\native-runtime-01\\03-packages.stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    }
+  ]
+}

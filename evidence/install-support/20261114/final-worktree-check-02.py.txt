@@ -1,0 +1,80 @@
+"""Read-only whitespace and credential-shape scan for this increment's files."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import io
+import json
+from pathlib import Path
+import re
+import subprocess
+import tarfile
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+PATTERNS = (re.compile(rb"pixl_[0-9a-fA-F]{32}\b"),
+            re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", required=True, type=Path)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Preserve earlier checks; select a fresh output")
+    tracked = subprocess.check_output(["git", "diff", "--name-only", "HEAD"], cwd=ROOT, text=True).splitlines()
+    untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard"], cwd=ROOT, text=True).splitlines()
+    names = sorted(set(tracked + untracked))
+    findings, count, archive_members = [], 0, 0
+    def scan(name, data):
+        nonlocal archive_members
+        if any(pattern.search(data) for pattern in PATTERNS):
+            findings.append(name)
+        if name.endswith((".zip", ".whl")):
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                for member in archive.infolist():
+                    if not member.is_dir():
+                        archive_members += 1
+                        scan(name + "::" + member.filename, archive.read(member))
+        elif name.endswith(".tar.gz"):
+            with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as archive:
+                for member in archive:
+                    if member.isfile():
+                        archive_members += 1
+                        scan(name + "::" + member.name, archive.extractfile(member).read())
+    for name in names:
+        path = ROOT / name
+        if path.is_file():
+            count += 1
+            scan(name, path.read_bytes())
+    whitespace = subprocess.run(["git", "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff", "--check", "HEAD"], cwd=ROOT, capture_output=True, text=True)
+    raw_path = "evidence/install-support/20261114/grader-checks-01/before-test-log.txt"
+    raw_expected_sha256 = "ec9e6a6e138978a4fd67df9814d205306cba6f2566c364cf2a973afe6cab3c30"
+    raw_unchanged = hashlib.sha256((ROOT / raw_path).read_bytes()).hexdigest() == raw_expected_sha256
+    authored_whitespace = subprocess.run(["git", "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff", "--check", "HEAD", "--", ".", ":(exclude)" + raw_path],
+        cwd=ROOT, capture_output=True, text=True)
+    result = {"version": 2, "observed_at": datetime.now(UTC).isoformat(),
+        "scope": "Changed/untracked files and new ZIP/wheel/sdist members including nested archives only; credential shapes, not a complete secret audit. Existing CRLF conventions are preserved.",
+        "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "files_scanned": count, "archive_members_scanned": archive_members,
+        "credential_shape_paths": findings, "whitespace_exit_code": whitespace.returncode,
+        "whitespace_output": whitespace.stdout + whitespace.stderr,
+        "authored_whitespace_exit_code": authored_whitespace.returncode,
+        "authored_whitespace_output": authored_whitespace.stdout + authored_whitespace.stderr,
+        "preserved_raw_log_exception": {"path": raw_path, "sha256": raw_expected_sha256,
+            "unchanged": raw_unchanged,
+            "reason": "Original unittest output ends its first interrupted progress line with a space; preserving exact failed evidence. Only this hash-pinned raw log is excluded from the authored whitespace check."},
+        "prior_failed_scan": "evidence/install-support/20261114/worktree-check-02.json",
+        "status": "pass" if not findings and raw_unchanged and authored_whitespace.returncode == 0 else "fail"}
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "files_scanned", "archive_members_scanned", "credential_shape_paths", "whitespace_exit_code", "authored_whitespace_exit_code")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()

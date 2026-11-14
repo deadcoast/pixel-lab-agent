@@ -1,0 +1,1811 @@
+{
+  "version": 1,
+  "kind": "production_plan_review",
+  "plan": {
+    "id": "successor-adoption-02.plan",
+    "path": ".pixl/assets/queue.ready/production-plans/92694f6cbde85f60d5a44fb14feb4ed76418cfffcc447ad1fdeea51a28486b00.json",
+    "sha256": "92694f6cbde85f60d5a44fb14feb4ed76418cfffcc447ad1fdeea51a28486b00"
+  },
+  "baseline": {
+    "id": "ready.retained",
+    "fields": {
+      "ct": {
+        "$ref": "r.22e90a2a03fe453a.contract.ready"
+      },
+      "dg": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+      "kd": {
+        "$symbol": "sprite"
+      },
+      "nm": "Imported candidate ready.retained",
+      "of": {
+        "$ref": "r.22e90a2a03fe453a.output.ready"
+      },
+      "ur": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+    }
+  },
+  "criteria": [
+    {
+      "check": "Decode the delivered PNG as exactly 64x16: four horizontal 16x16 cells at x=0,16,32,48 with no gutters or added canvas between or around the cells (transparent margin inside a cell is composition, not padding). Basis: src/queue-view-successor.ts declares running frames 4, display.cell [16,16] and frameMs 100; the supplied renderer fixture renderer-successor/view.mjs draws only when width == 16*frames and height == 16, slices frame*16,0,16,16 and, under no-preference only, advances floor(elapsed/100) mod 4 (nominal 400 ms cycle). Under reduced motion it selects frame zero without changing the four-cell sheet geometry.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.working.q.geometry",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "e284f6f8cbbfa045c62889b8f3883d20597a7f1c027ab2af3f90d35182308e6f",
+      "record_status": "current",
+      "current_record_sha256": "e284f6f8cbbfa045c62889b8f3883d20597a7f1c027ab2af3f90d35182308e6f",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.working.q.transparent-exterior.diagnostic",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "f9485cc3bae877b1ead1587e2cdb02c623060b4cbf304e059c0c8df25837c166",
+      "record_status": "current",
+      "current_record_sha256": "f9485cc3bae877b1ead1587e2cdb02c623060b4cbf304e059c0c8df25837c166",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+      "domain": "visual",
+      "id": "successor-adoption-02.working.q.transparent-exterior",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "27eee39e798ebf306e61be12ab77af414cb9e39785a4f6666948f433349152c6",
+      "record_status": "current",
+      "current_record_sha256": "27eee39e798ebf306e61be12ab77af414cb9e39785a4f6666948f433349152c6",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "For this reuse-only successor, record the exact retained Working source cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc and verify the destination PNG is byte-identical. No new frame assembly, join, patch, resize, resample, recolor, duplication or drop is performed. Preserve the earlier raw provider outputs and assembly records unchanged. The obsolete prepared join and proposed seed-rotation step-two checks are non-applicable to this reuse path; a future construction change requires review of its own exact assembly policy.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.working.q.frame-assembly",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "e35018970053832fa90ecdc86d91159893b12f772e08861feceedcc95de2fa3e",
+      "record_status": "current",
+      "current_record_sha256": "e35018970053832fa90ecdc86d91159893b12f772e08861feceedcc95de2fa3e",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336 (beside the exact Ready baseline as the comparison method), the running loop and each individual frame read as ongoing activity and not as completion: no frame forms a check mark or another success-like terminal pose. Expert guidance, scoped to this branch: avoid frames that read as the static symbol of another member (for example the preserved Start arrowhead or paired pause bars); the binding distinction against the delivered Retry and Paused marks is judged in successor-adoption-02.delivery.q.distinction. For reduced motion, frame zero shown alone with its Working label must read as the stationary Working indicator, distinct from Ready and Paused; the frame choice is this specialist's proposal, not an owner-prescribed motif.",
+      "domain": "visual",
+      "id": "successor-adoption-02.working.q.activity-not-success",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "c0725727459c5c47ccdf24dbefada9cd25423530d4972e702e8ee163eae81d7b",
+      "record_status": "current",
+      "current_record_sha256": "c0725727459c5c47ccdf24dbefada9cd25423530d4972e702e8ee163eae81d7b",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Normal motion only: play all four existing Working frames at 100 ms per frame at 1x and 3x on #172336 including fourth-to-first wrap; required outcome is one continuous activity loop without a visible discontinuity at the wrap. Stable center/anchor and visual volume are scoped expert quality checks from the Working contract. Evenly paced angular motion/no near-hold is the specialist's chosen quality criterion for this exact reused rotating-segment design, not an owner requirement; a different expressive timing design could satisfy the brief after review. No universal fixed cluster-count/no-morph recipe is imposed. Reduced motion is evaluated separately as stationary frame zero.",
+      "domain": "visual",
+      "id": "successor-adoption-02.working.q.motion-continuity",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "148726e1c8e747cfa46256a8451bdc8de5d16fdc8f4707a1751a2055bd766bf9",
+      "record_status": "current",
+      "current_record_sha256": "148726e1c8e747cfa46256a8451bdc8de5d16fdc8f4707a1751a2055bd766bf9",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Readable compact silhouettes, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "domain": "visual",
+      "id": "successor-adoption-02.working.q.style-coherence",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "55ba1bf202edadf33f2a2b6eef69addc609b247e475dc867adf7518fc087fa42",
+      "record_status": "current",
+      "current_record_sha256": "55ba1bf202edadf33f2a2b6eef69addc609b247e475dc867adf7518fc087fa42",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise started -> running through stateAfter: both statusCell and compactStatus resolve the same descriptor {label Working, path renderer-successor/assets/working.png, frames 4}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render renderer-successor/assets/working.png with imageSmoothingEnabled false / image-rendering pixelated, composited over #172336, geometryMatches true. Normal-motion (no-preference) frame advance evidence: the capture timeline must report frame indices 0,0,1,1,2,2,3,3,0 at elapsed 0,99,100,199,200,299,300,399,400 ms (floor(elapsed/100) mod 4; wrap at 400 ms) and the live requestAnimationFrame loop must be observed cycling through all four frames; wall-clock frame duration is not measured by this fixture and is not claimed. Under prefers-reduced-motion: reduce, both consumers retain Working label and 64x16/four-cell source geometry but select stationary frame zero via statusFrame(state, elapsed, reduced) and suppress frame advancement. Observe the same frame and pixel hash over at least 800 ms while running in both consumers. Change the media preference to reduce while this page remains open: paint frame zero on both live and matrix Working cells when the media change event is delivered or when the next animation frame observes changed matchMedia.matches; reconcile only once per observed preference transition. Change back to no-preference in the same session: restart normal cycling at frame zero through all four 100 ms phases and wrap, without backend-state change, reload, stale canvas, or duplicate animation.",
+      "domain": "engine",
+      "id": "successor-adoption-02.working.q.consumers",
+      "mode": "live",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "working",
+      "output": "successor-adoption-02.working.output",
+      "record_sha256": "ee46a7128ff6f664ceb7292ed3ff5b7a426f74e46b6e6dea9d41ed0af7cf142e",
+      "record_status": "current",
+      "current_record_sha256": "ee46a7128ff6f664ceb7292ed3ff5b7a426f74e46b6e6dea9d41ed0af7cf142e",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.retry.q.geometry",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "678be13ab7a911f5aca5f1d265d8fb8a9b1a0f4c99c7586e6005a5580d326c7b",
+      "record_status": "current",
+      "current_record_sha256": "678be13ab7a911f5aca5f1d265d8fb8a9b1a0f4c99c7586e6005a5580d326c7b",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.retry.q.transparent-exterior.diagnostic",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "1a0982f525f0a67920c39e2d197f09d76dac98cb548f3fb4ec5afe1ab3a770e9",
+      "record_status": "current",
+      "current_record_sha256": "1a0982f525f0a67920c39e2d197f09d76dac98cb548f3fb4ec5afe1ab3a770e9",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+      "domain": "visual",
+      "id": "successor-adoption-02.retry.q.transparent-exterior",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "4d72ea9cc1b5cffc9af868a380c3efdeefcc304e46652404ddf7972e5f0c4a93",
+      "record_status": "current",
+      "current_record_sha256": "4d72ea9cc1b5cffc9af868a380c3efdeefcc304e46652404ddf7972e5f0c4a93",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as failed work with a retry action and is identifiable by shape alone against Ready, every Working frame, Paused and the preserved Start triangle; in particular it must not be confusable with the Working activity loop. No specific retry motif (such as an arrow) is required.",
+      "domain": "visual",
+      "id": "successor-adoption-02.retry.q.retry-meaning-without-color",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "9fe6a3fd90621542b96fd5591bca614990b9c81e99a79d93b383d24c3a5aaed2",
+      "record_status": "current",
+      "current_record_sha256": "9fe6a3fd90621542b96fd5591bca614990b9c81e99a79d93b383d24c3a5aaed2",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "domain": "visual",
+      "id": "successor-adoption-02.retry.q.style-coherence",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "8cdd331ae5d31aed838af0b9cebace5ae204d1c220f49d3f26bccf4061b9249c",
+      "record_status": "current",
+      "current_record_sha256": "8cdd331ae5d31aed838af0b9cebace5ae204d1c220f49d3f26bccf4061b9249c",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise error -> failed through stateAfter: both statusCell and compactStatus resolve {label Retry, path renderer-successor/assets/error-retry.png (not the superseded assets/retry.png), frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+      "domain": "engine",
+      "id": "successor-adoption-02.retry.q.consumers",
+      "mode": "live",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "retry",
+      "output": "successor-adoption-02.retry.output",
+      "record_sha256": "738557400f4d41ead92b69821690ee395be430d74c1210a6e5b6fd5c5e7e6e7e",
+      "record_status": "current",
+      "current_record_sha256": "738557400f4d41ead92b69821690ee395be430d74c1210a6e5b6fd5c5e7e6e7e",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Decode the delivered PNG as exactly one static 16x16 frame; no strip, animation or extra canvas.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.paused.q.geometry",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "676ceeeb9626d02614729f8d9ec333e1c28373d25a190810f0ff3517f5d71f8c",
+      "record_status": "current",
+      "current_record_sha256": "676ceeeb9626d02614729f8d9ec333e1c28373d25a190810f0ff3517f5d71f8c",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Retain per-cell alpha histogram and nonzero-alpha component boxes. Flag a component touching all four edges or covering more than half the cell for visual review only. No flag value is an acceptance/rejection threshold; a full-span glyph or deliberate backing can be valid. Alpha-zero RGB is insignificant.",
+      "domain": "mechanical",
+      "id": "successor-adoption-02.paused.q.transparent-exterior.diagnostic",
+      "mode": "local",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "470787a44cd4ca8d4883b2956cc1be6a352a3e3e00d4e361374d170dfc7a93b7",
+      "record_status": "current",
+      "current_record_sha256": "470787a44cd4ca8d4883b2956cc1be6a352a3e3e00d4e361374d170dfc7a93b7",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336, every frame's intended exterior shows the panel with no unintended opaque canvas matte, tile, halo or fringe. A deliberate backing shape is permitted if part of the recorded subject design with transparent exterior. Partial alpha and selective intentional anti-aliasing are permitted; binary alpha is not required. RGB values where alpha is zero are insignificant. This visual record decides transparency appearance; measured alpha/component flags do not reject artwork.",
+      "domain": "visual",
+      "id": "successor-adoption-02.paused.q.transparent-exterior",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "9fd036321dc377e47af1cce1275e1ab173ed15c9b0913677c31bde0296e5c37b",
+      "record_status": "current",
+      "current_record_sha256": "9fd036321dc377e47af1cce1275e1ab173ed15c9b0913677c31bde0296e5c37b",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Viewed at 1x and 3x nearest on #172336 in colour and in a non-colour comparison (grayscale or binarized silhouettes), the mark reads as paused work and is identifiable by shape alone against Ready (completion), every Working frame (activity), Retry and the preserved Start triangle. No specific pause motif (such as paired bars) is required.",
+      "domain": "visual",
+      "id": "successor-adoption-02.paused.q.pause-meaning-without-color",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "f5ac645197b887c84e0ba8f4e6dc079b50eca11df6453b2822c317b49e9320d6",
+      "record_status": "current",
+      "current_record_sha256": "f5ac645197b887c84e0ba8f4e6dc079b50eca11df6453b2822c317b49e9320d6",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Readable compact silhouette, deliberate coherent clusters and stepped edges consistent with the exact Ready baseline (selective, intentional anti-aliasing is permitted under the full-alpha contract; accidental resampling blur or stray noise is not), and a perceptible cool-blue accent related to the Ready baseline and the preserved Start accent, judged qualitatively at 1x and 3x on #172336; no exact hex, palette count, binary alpha, stroke width or margin rule.",
+      "domain": "visual",
+      "id": "successor-adoption-02.paused.q.style-coherence",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "bdff9ebd165168dd04e21d87930be696f3febda05cfa0a7ebb143012340bb420",
+      "record_status": "current",
+      "current_record_sha256": "bdff9ebd165168dd04e21d87930be696f3febda05cfa0a7ebb143012340bb420",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise pause -> paused through stateAfter: both statusCell and compactStatus resolve {label Paused, path renderer-successor/assets/paused.png, frames 1}; the live cells (scale 3) and the state-matrix cells (scale 1 and 3) render the PNG with imageSmoothingEnabled false / image-rendering pixelated over #172336, geometryMatches true, and no animation loop runs for the descriptor (frames 1).",
+      "domain": "engine",
+      "id": "successor-adoption-02.paused.q.consumers",
+      "mode": "live",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "paused",
+      "output": "successor-adoption-02.paused.output",
+      "record_sha256": "b5854aec2650d7a18d2f550be1e4132820e397ccfab2c4fab50fbfc395fd6c1f",
+      "record_status": "current",
+      "current_record_sha256": "b5854aec2650d7a18d2f550be1e4132820e397ccfab2c4fab50fbfc395fd6c1f",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "Compare all four actual members together at 1x and 3x nearest on #172336 against the exact Ready baseline: coherent deliberate pixel treatment, readable visual weight coherent with the Ready baseline (identical stroke width or footprint is not required), perceptible cool-blue accent and transparent exteriors, including Working's four frames, its actual 100 ms playback with the wrap under no-preference, and its stationary frame-zero presentation under reduce; no exact palette, alpha, stroke, margin or copied completion-motif requirement.",
+      "domain": "continuity",
+      "id": "successor-adoption-02.delivery.q.continuity",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "delivery",
+      "output": "successor-adoption-02.delivery.output",
+      "record_sha256": "936908f5a83d56807762e14bc52d6abe600a8320394e1cd34cffe59438549917",
+      "record_status": "current",
+      "current_record_sha256": "936908f5a83d56807762e14bc52d6abe600a8320394e1cd34cffe59438549917",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "View Ready, every Working frame and the running loop, Retry and Paused together at 1x and 3x including a grayscale/non-color comparison: Working never reads as success, and Retry and Paused are each distinct from activity, completion and from each other by shape or structure alone; the preserved Start triangle remains separately identifiable. Include stationary Working frame zero shown alone in the non-color comparison: required reduced-motion distinction is from Ready and Paused. Distinction from Retry and preserved Start is the shared-consumer inference from the same status set, not a literal owner motif requirement.",
+      "domain": "continuity",
+      "id": "successor-adoption-02.delivery.q.distinction",
+      "mode": "visual",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "delivery",
+      "output": "successor-adoption-02.delivery.output",
+      "record_sha256": "6fe7373fef7450b82720a7e8dcab0afa3abdc481ed8ca76db6671df312794611",
+      "record_status": "current",
+      "current_record_sha256": "6fe7373fef7450b82720a7e8dcab0afa3abdc481ed8ca76db6671df312794611",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    },
+    {
+      "check": "In the supplied browser fixture (renderer-successor/view.mjs executing the actual src/queue.ts and src/queue-view-successor.ts), exercise all backend transitions (started, ok, error, pause, plus idle) through both statusCell and compactStatus with the exact retained package files at the caller-reviewed proposed successor destination paths: labels, frame counts, horizontal slicing, under no-preference only, frame index floor(elapsed/100) mod frames at the timeline sample points including the 400 ms wrap (wall-clock duration not measured), nearest sampling at scale 1 (state matrix) and 3 (state matrix and live cells), alpha compositing on #172336, and - as the adopted destination-check method - recorded integer canvas placement matching the screenshot pixels; renderer-successor/assets/start.svg byte hash unchanged. Caller-reviewed proposed successor destination is src/queue-view-successor.ts plus renderer-successor/, with copied exact assets at renderer-successor/assets/{start.svg,working.png,ready-confirmed.png,error-retry.png,paused.png}; old src/queue-view.ts, renderer/ and assets/ remain byte-unchanged. Exercise running under both prefers-reduced-motion settings and switch each direction while open; assert both consumers update together without changing queue.ts backend state. Reduced mode draws stationary Working source rectangle [0,0,16,16] with no advancement, normal mode retains all four frames at 100 ms. Preference changes may be applied through the media change event or by comparing matchMedia.matches on the next animation frame; record the observed route. No requirement that this browser dispatch a change event is inferred. Reset the animation origin once per observed preference transition and repaint both live and matrix Working cells.",
+      "domain": "engine",
+      "id": "successor-adoption-02.delivery.q.destination",
+      "mode": "live",
+      "sources": [
+        "render.source.brief",
+        "render.source.caller",
+        "successor.source.view",
+        "successor.source.renderer",
+        "successor.source.assignment",
+        "successor.source.proposal",
+        "successor.source.comparison",
+        "successor.source.backend"
+      ],
+      "stage": "delivery",
+      "output": "successor-adoption-02.delivery.output",
+      "record_sha256": "d1a73fe33ea27240ed46aa2b3ecbd6329d1aca3b8166ce3dc8d7ada1e773cefc",
+      "record_status": "current",
+      "current_record_sha256": "d1a73fe33ea27240ed46aa2b3ecbd6329d1aca3b8166ce3dc8d7ada1e773cefc",
+      "authority": "unclassified",
+      "comparison": "unperformed"
+    }
+  ],
+  "sources": [
+    {
+      "path": "BRIEF.md",
+      "sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\BRIEF.md",
+      "observed_sha256": "aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab",
+      "line_count": 9,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            9
+          ],
+          "text": "# Asset brief\r\n\r\nCreate coherent pixel-art status assets for the queue UI. Preserve the existing vector Start control. Status cells are 16 by 16 logical pixels. Working uses four horizontal frames with a 100 ms frame duration. Ready and Retry are static images. Use transparent backgrounds, readable silhouettes and the existing UI's cool blue accent; a fixed palette is not required. Inspect at 1x and 3x nearest display scale on the actual dark panel. The working loop must communicate activity without looking like success. Error/retry must be distinguishable without color alone.\r\n\r\nAssets belong at the paths already used by the view. Account badges are provided by a server registry and are outside this local asset request. No approved style reference exists yet: propose a representative status sample before expanding the family.\r\n\r\nUpdate: the queue now supports a paused state. Its status image must be distinguishable from activity, completion and retry without relying on color alone. Keep the existing style and display requirements. The failure visual moved to the path in the updated view; its purpose is unchanged.\r\n\r\nCurrent update: Ready must visibly use a check mark with asymmetrical arms to convey successful completion. The destination now follows the updated view. Keep the existing 16x16 canvas, static behavior, transparent background and review display conditions.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "render.source.brief",
+      "record_sha256": "d331809661daaaeac55767f612df0e7bcf73d4015d298bd9add05308e87ba459",
+      "source_class": "local"
+    },
+    {
+      "path": "work/family-render-review/caller-comparison-final.json",
+      "sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\work\\family-render-review\\caller-comparison-final.json",
+      "observed_sha256": "ddacac1e4c7b10a063eb2dd3595edf6ff28dd39f3c24fabb9b945bcba879cde2",
+      "line_count": 211,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            211
+          ],
+          "text": "{\r\n  \"version\": 1,\r\n  \"role\": \"calling agent independent review\",\r\n  \"assignment\": \"RENDER-STAGE.md\",\r\n  \"status\": \"scoped decision complete; exact recorded placement and collective family acceptance unresolved\",\r\n  \"inputs\": [\r\n    {\r\n      \"path\": \"BRIEF.md\",\r\n      \"sha256\": \"aebe00949f3a9510a44f6f554b8fc97e53476d7658a4bb29419db85b417f02ab\",\r\n      \"bytes\": 1393\r\n    },\r\n    {\r\n      \"path\": \"src/queue.ts\",\r\n      \"sha256\": \"de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08\",\r\n      \"bytes\": 276\r\n    },\r\n    {\r\n      \"path\": \"src/queue-view.ts\",\r\n      \"sha256\": \"4d6ee92e40374d4dd4c6a49a3a20a6caf34e7f2d61a32a230c8ecf54691b5c49\",\r\n      \"bytes\": 893\r\n    },\r\n    {\r\n      \"path\": \"assets/start.svg\",\r\n      \"sha256\": \"ee2ba2fe20bd09a2c9a9c96d889f766e8af80fcdf704e8172934135e2b7e12d3\",\r\n      \"bytes\": 133\r\n    },\r\n    {\r\n      \"path\": \"assets/ready-confirmed.png\",\r\n      \"sha256\": \"fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5\",\r\n      \"bytes\": 210\r\n    },\r\n    {\r\n      \"path\": \"RENDER-STAGE.md\",\r\n      \"sha256\": \"b4dde8bee613b915cb5d3fe195beff0079be24930a33ee891a2a4a51a101f9d2\",\r\n      \"bytes\": 2473\r\n    },\r\n    {\r\n      \"path\": \"work/queue.ready-reassessment/candidate-plan.json\",\r\n      \"sha256\": \"f5e23c7c9673a60dfda42418913cf2005a7eecc67ac39b25d1a33e81a35a33d8\",\r\n      \"bytes\": 12781\r\n    },\r\n    {\r\n      \"path\": \"work/queue.ready-reassessment/art-assessment.json\",\r\n      \"sha256\": \"576d783693600154d4a6b736714be4f322d922e968a9f6777ab8c1e725f89f1d\",\r\n      \"bytes\": 12224\r\n    },\r\n    {\r\n      \"path\": \"work/caller-render-20261108-01/render.json\",\r\n      \"sha256\": \"18d6b536df947c7f9969a41f3b63c248475336968eb06a2dcdc3976d113bfb4f\",\r\n      \"bytes\": 17046\r\n    },\r\n    {\r\n      \"path\": \"work/caller-render-20261108-01/caller-check.json\",\r\n      \"sha256\": \"50fe8914cc94ed7e3f0c4cba6f7f00ddb77dc0f982c4e5fd58a47d556c77c31c\",\r\n      \"bytes\": 11621\r\n    },\r\n    {\r\n      \"path\": \"work/caller-render-20261108-01/caller-placement-diagnostic.json\",\r\n      \"sha256\": \"64bb3ae800cb53536152958e97c17e8b90a487d1db5cd53ac68610887656e568\",\r\n      \"bytes\": 1802\r\n    },\r\n    {\r\n      \"path\": \"work/caller-render-20261108-01/destination.png\",\r\n      \"sha256\": \"1d13cde1c01a24a91901382b2669b4ce34108f8751b92b13a14cc7f53036317e\",\r\n      \"bytes\": 41089\r\n    }\r\n  ],\r\n  \"historical_preservation_baseline\": [\r\n    {\r\n      \"path\": \"PARENT-RESULT.json\",\r\n      \"sha256\": \"902c613aa726aa23f865ae72b78a841775779ccbbc7d0fea34209ed1e0bee6c9\",\r\n      \"bytes\": 7250\r\n    },\r\n    {\r\n      \"path\": \"COLD-RESULT.json\",\r\n      \"sha256\": \"6b38569fd4ae4a6a4627ca1759792a19f49423fb7901225696386c39bfe29aa7\",\r\n      \"bytes\": 18173\r\n    },\r\n    {\r\n      \"path\": \"DELIVERY-RESULT.json\",\r\n      \"sha256\": \"2f32346b177c6e27da1f579d1e18064f123f4f8ff27ef91537a116034c450253\",\r\n      \"bytes\": 23326\r\n    },\r\n    {\r\n      \"path\": \"HANDOFF-RESULT.json\",\r\n      \"sha256\": \"75582aa6d6b2e98bec90d196e2bf9d1b87c4e91d8377b508768718f3ab593601\",\r\n      \"bytes\": 20103\r\n    },\r\n    {\r\n      \"path\": \"work/queue.ready-revision/request-review.json\",\r\n      \"sha256\": \"f7e968bd87997398555b728ab6ed659d38b09f7d8c12dc3f5fddcc4026147bc2\",\r\n      \"bytes\": 7836\r\n    },\r\n    {\r\n      \"path\": \"work/queue.ready-reassessment/request-review.json\",\r\n      \"sha256\": \"bef24027acbd0eb223cb96f2576823f9c17921c7a1435659bf848371670fe405\",\r\n      \"bytes\": 19475\r\n    },\r\n    {\r\n      \"path\": \"work/queue.ready-reassessment/contract-correction.json\",\r\n      \"sha256\": \"6a42dd118bdcc5e78f7883602d5b65130fa9e5e585854973ce76e4fdfea300ad\",\r\n      \"bytes\": 18228\r\n    }\r\n  ],\r\n  \"style_decision\": {\r\n    \"decision\": \"adopt\",\r\n    \"sample_candidate\": \"ready.retained\",\r\n    \"sample\": {\r\n      \"path\": \"assets/ready-confirmed.png\",\r\n      \"sha256\": \"fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5\",\r\n      \"bytes\": 210\r\n    },\r\n    \"scope\": \"Representative style for this consumer queue status family only; controlled fixture, no PixelLab-generated quality claim\",\r\n    \"carry_forward\": [\r\n      \"Readable compact silhouettes at 1x and 3x nearest on #172336\",\r\n      \"Coherent deliberate pixel clusters and stepped edge treatment\",\r\n      \"Perceptible cool-blue accent relating to preserved Start\",\r\n      \"Transparent background\"\r\n    ],\r\n    \"not_prescribed\": [\r\n      \"Exact hex or palette count\",\r\n      \"Binary alpha\",\r\n      \"Exact stroke weight, margin or footprint\",\r\n      \"Ready check silhouette for other meanings\"\r\n    ],\r\n    \"rationale\": \"Independently opened browser screenshot and Ready full/compact native/enlarged views: asymmetrical short-left/long-right check reads as completion, bright cool blue separates cleanly from panel, no matte/fringe or resampling blur. Start triangle has a distinct silhouette and related accent.\"\r\n  },\r\n  \"caller_viewing\": [\r\n    \"work/caller-render-20261108-01/destination.png\",\r\n    \"work/caller-render-20261108-01/view-001.png\",\r\n    \"work/caller-render-20261108-01/view-004.png\",\r\n    \"work/caller-render-20261108-01/view-005.png\",\r\n    \"work/caller-render-20261108-01/view-006.png\",\r\n    \"work/caller-render-20261108-01/view-007.png\",\r\n    \"assets/ready-confirmed.png\"\r\n  ],\r\n  \"comparison\": {\r\n    \"original_sources\": \"BRIEF requirements and both source modules independently read; corrected eight criteria preserve requirements while separating expert proposals. No new provider request authorized.\",\r\n    \"specialist_agreement\": \"Scoped adoption recommended and agreed; Ready versus preserved Start visibly distinct. Remaining three members absent, not rejected.\",\r\n    \"resolved_discrepancies\": [\r\n      {\r\n        \"prior\": \"Both contours step exactly one pixel per row; every interior row run is three pixels\",\r\n        \"resolution\": \"Only exposed straight diagonal runs follow that rhythm. Joined/tapered regions have different row lengths; no global contour rule is adopted.\"\r\n      },\r\n      {\r\n        \"prior\": \"7 left-arm and 19 right-arm pixels\",\r\n        \"resolution\": \"Those are a chosen column segmentation; remaining three junction pixels produce 29 total. They are not unique intrinsic arm counts or requirements.\"\r\n      },\r\n      {\r\n        \"prior\": \"Exact 1:2 ratio from 4:8 steps along 45-degree axes; exact 2.1px perpendicular thickness\",\r\n        \"resolution\": \"Caller checked endpoint arithmetic: (4,8)->(6,12)=(2,4) and (6,12)->(12,4)=(6,-8), neither a 45-degree axis displacement. Thus prior exact axis-length ratio is unsupported; unequal arms are visibly clear. Continuous stroke thickness depends on reconstruction convention. No exact ratio or thickness adopted.\"\r\n      }\r\n    ],\r\n    \"independence\": \"Caller ran unchanged renderer and selected-Python checker, read source mappings/criteria/prior assessment, inspected host images, and computed independent screenshot offset search.\",\r\n    \"returned_specialist_assessment\": {\r\n      \"path\": \"work/family-render-review/specialist-assessment.json\",\r\n      \"sha256\": \"63ff66194a32b28f1d16e32f75ba8c3c371d90bf5d707f2349c50069bc6db75e\",\r\n      \"finding\": \"Read complete returned findings; agree corrected eight-check informational review, measured identities, Start distinction, absent inventory and render limitation. No historical verdict relabel.\"\r\n    }\r\n  },\r\n  \"render\": {\r\n    \"capture\": \"work/caller-render-20261108-01\",\r\n    \"checker_status\": \"fail\",\r\n    \"failed_checks\": [\r\n      \"viewport dimensions\",\r\n      \"eight screenshot pixels at recorded bounds\"\r\n    ],\r\n    \"viewport\": [\r\n      1262,\r\n      904\r\n    ],\r\n    \"screenshot\": [\r\n      1280,\r\n      1000\r\n    ],\r\n    \"supplemental_finding\": \"All eight available canvas views match screenshot pixels exactly at recorded bounds plus (9,0); consistent with centered layout after viewport width change; cause unproven. Does not override checker fail.\",\r\n    \"accepted_scope\": \"Ready and preserved Start observed in both actual consumers, correct event mapping, Ready PNG alpha compositing and nearest blocks, readable rendered Ready at native/enlarged display.\",\r\n    \"unresolved\": \"Exact recorded-bound placement acceptance; overall checker remains fail.\",\r\n    \"edge_attempt\": \"work/caller-render-20261108-02-edge: browser exit 0 but no complete report; preserved, not accepted\",\r\n    \"absent\": [\r\n      \"assets/working.png\",\r\n      \"assets/error-retry.png\",\r\n      \"assets/paused.png\"\r\n    ],\r\n    \"animation\": \"Absent Working gives no playback-quality evidence\"\r\n  },\r\n  \"family_acceptance\": false,\r\n  \"remote_generation_calls\": 0,\r\n  \"next\": \"Specialist to retain this decision, source-bound baseline and open family plan; caller independently compares final fresh PLAR/workflow/family/jobs and exact handoff.\",\r\n  \"independent_decode\": {\r\n    \"size\": [\r\n      16,\r\n      16\r\n    ],\r\n    \"frames\": 1,\r\n    \"bbox\": [\r\n      3,\r\n      4,\r\n      14,\r\n      13\r\n    ],\r\n    \"transparent_pixels\": 227,\r\n    \"opaque_pixels\": 29,\r\n    \"opaque_rgba\": [\r\n      112,\r\n      185,\r\n      237,\r\n      255\r\n    ]\r\n  }\r\n}\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "render.source.caller",
+      "record_sha256": "fcaa1484887f812dfd1f0ad838d9c02d81da86a0c74c29c7eb58cc4284ac5939",
+      "source_class": "local"
+    },
+    {
+      "path": "src/queue-view-successor.ts",
+      "sha256": "4ace984b2b53d5b30d99f41b1f2ee72fa3581a29e552b340010e82b6f7b9e80a",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\src\\queue-view-successor.ts",
+      "observed_sha256": "4ace984b2b53d5b30d99f41b1f2ee72fa3581a29e552b340010e82b6f7b9e80a",
+      "line_count": 22,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            22
+          ],
+          "text": "import type { QueueState } from \"./queue\";\r\nexport const statusVisuals = {\r\n  idle: { label: \"Start\", path: \"renderer-successor/assets/start.svg\", frames: 1 },\r\n  running: { label: \"Working\", path: \"renderer-successor/assets/working.png\", frames: 4 },\r\n  paused: { label: \"Paused\", path: \"renderer-successor/assets/paused.png\", frames: 1 },\r\n  succeeded: { label: \"Ready\", path: \"renderer-successor/assets/ready-confirmed.png\", frames: 1 },\r\n  failed: { label: \"Retry\", path: \"renderer-successor/assets/error-retry.png\", frames: 1 },\r\n};\r\nexport const display = { cell: [16, 16], scale: 3, filter: \"nearest\", frameMs: 100, background: \"#172336\" };\r\nexport function statusCell(state: QueueState) { return statusVisuals[state]; }\r\nexport function compactStatus(state: QueueState) { return statusVisuals[state]; }\r\nexport function accountBadge(registry: Record<string, string>, account: string) {\r\n  return registry[account]; // Provided by the service; not enumerable in this checkout.\r\n}\r\n\r\n// Successor preserves descriptors and sheet geometry. Reduced motion changes the\r\n// selected cell, never the backend state, label, asset identity or sheet dimensions.\r\nexport const motionQuery = \"(prefers-reduced-motion: reduce)\";\r\nexport function statusFrame(state: QueueState, elapsed: number, reducedMotion: boolean) {\r\n  if (state === \"running\" && reducedMotion) return 0;\r\n  return Math.floor(Math.max(0, elapsed) / display.frameMs) % statusVisuals[state].frames;\r\n}\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "successor.source.view",
+      "record_sha256": "a6876067b724079def6652ae7a2b8951f26a1edb733f417ab7a6eaa057e22036",
+      "source_class": "local"
+    },
+    {
+      "path": "renderer-successor/view.mjs",
+      "sha256": "8e01a73c9144de815b5b573982a1931eee71935e6c31cc37e7730258ac99b862",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\renderer-successor\\view.mjs",
+      "observed_sha256": "8e01a73c9144de815b5b573982a1931eee71935e6c31cc37e7730258ac99b862",
+      "line_count": 158,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            158
+          ],
+          "text": "import { stateAfter } from '/src/queue.ts';\r\nimport { statusVisuals, statusCell, compactStatus, display, motionQuery, statusFrame } from '/src/queue-view-successor.ts';\r\n\r\nconst motion = matchMedia(motionQuery);\r\nconst preferenceChanges = [];\r\nlet observedReduced = motion.matches;\r\nconst panel = display.background;\r\ndocument.documentElement.style.setProperty('--panel', panel);\r\nconst cache = new Map();\r\nconst cells = [];\r\nconst consumers = { statusCell, compactStatus };\r\nconst events = ['idle', 'started', 'pause', 'ok', 'error'].filter(event => event === 'idle' || statusVisuals[stateAfter(event)]);\r\ndocument.querySelectorAll('[data-event]').forEach(button => { button.hidden = !events.includes(button.dataset.event); });\r\nconst errors = [];\r\nwindow.addEventListener('error', event => errors.push(event.message));\r\nwindow.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));\r\nconst digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(x => x.toString(16).padStart(2, '0')).join('');\r\n\r\nasync function imageFor(path) {\r\n  if (!cache.has(path)) cache.set(path, (async () => {\r\n    const response = await fetch(`/${path}`);\r\n    if (!response.ok) return { available: false, status: response.status, path };\r\n    const data = await response.arrayBuffer();\r\n    const image = new Image();\r\n    const url = URL.createObjectURL(new Blob([data], { type: response.headers.get('Content-Type') }));\r\n    try { image.src = url; await image.decode(); }\r\n    finally { URL.revokeObjectURL(url); }\r\n    return { available: true, image, path, sha256: await digest(data), width: image.naturalWidth, height: image.naturalHeight };\r\n  })());\r\n  return cache.get(path);\r\n}\r\n\r\nfunction paint(canvas, asset, frames, scale, elapsed, state) {\r\n  const [width, height] = display.cell;\r\n  const frame = statusFrame(state, elapsed, motion.matches);\r\n  const context = canvas.getContext('2d', { willReadFrequently: true });\r\n  context.imageSmoothingEnabled = display.filter !== 'nearest';\r\n  context.fillStyle = panel;\r\n  context.fillRect(0, 0, canvas.width, canvas.height);\r\n  if (asset.available && asset.width === width * frames && asset.height === height) {\r\n    context.drawImage(asset.image, frame * width, 0, width, height, 0, 0, width * scale, height * scale);\r\n  }\r\n  return frame;\r\n}\r\n\r\nasync function makeCell(consumer, state, scale, elapsed = 0, track = true) {\r\n  const descriptor = consumers[consumer](state);\r\n  const asset = await imageFor(descriptor.path);\r\n  const node = document.createElement('div');\r\n  node.className = `cell ${consumer === 'compactStatus' ? 'compact' : ''}`;\r\n  const glyph = document.createElement('span'); glyph.className = 'glyph';\r\n  const label = document.createElement('span'); label.textContent = descriptor.label;\r\n  node.append(glyph, label);\r\n  const info = { consumer, state, scale, descriptor, asset: { ...asset, image: undefined }, node, canvas: null, frame: 0 };\r\n  if (asset.available) {\r\n    const canvas = document.createElement('canvas');\r\n    canvas.width = display.cell[0] * scale; canvas.height = display.cell[1] * scale;\r\n    canvas.setAttribute('aria-label', `${descriptor.label} icon`);\r\n    info.canvas = canvas; info.frame = paint(canvas, asset, descriptor.frames, scale, elapsed, state);\r\n    info.geometryMatches = asset.width === display.cell[0] * descriptor.frames && asset.height === display.cell[1];\r\n    glyph.append(canvas);\r\n    if (!info.geometryMatches) { const warning = document.createElement('span'); warning.className = 'missing'; warning.textContent = 'Wrong sheet size'; node.append(warning); }\r\n  } else {\r\n    glyph.classList.add('missing'); glyph.textContent = 'Missing asset';\r\n  }\r\n  if (track) cells.push(info);\r\n  return info;\r\n}\r\n\r\nconst matrix = document.querySelector('#matrix');\r\nfor (const text of ['State', 'Full · 1×', `Full · ${display.scale}×`, 'Compact · 1×', `Compact · ${display.scale}×`]) {\r\n  const node = document.createElement('div'); node.className = 'heading'; node.textContent = text; matrix.append(node);\r\n}\r\nfor (const state of Object.keys(statusVisuals)) {\r\n  const label = document.createElement('div'); label.className = 'row-label'; label.textContent = state; matrix.append(label);\r\n  for (const consumer of Object.keys(consumers)) for (const scale of [1, display.scale]) matrix.append((await makeCell(consumer, state, scale)).node);\r\n}\r\nconst missing = [...cache.keys()].filter(path => !cells.find(cell => cell.descriptor.path === path)?.asset.available);\r\ndocument.querySelector('#coverage').textContent = missing.length ? `${missing.length} status assets are still missing: ${missing.join(', ')}` : 'Every mapped status asset is available; visual review remains separate.';\r\n\r\nlet livePromise;\r\nlet liveCells = [];\r\nlet origin = performance.now();\r\nasync function select(event) {\r\n  const state = event === 'idle' ? 'idle' : stateAfter(event);\r\n  liveCells = await Promise.all(Object.keys(consumers).map(consumer => makeCell(consumer, state, display.scale, 0, false)));\r\n  document.querySelector('#live').replaceChildren(...liveCells.map(cell => cell.node));\r\n  document.querySelector('#live-title').textContent = `Current queue state · ${state}`;\r\n  origin = performance.now();\r\n  return { event, state, consumers: liveCells.map(({ consumer, descriptor, asset }) => ({ consumer, descriptor, available: asset.available, sha256: asset.sha256 })) };\r\n}\r\ndocument.querySelectorAll('[data-event]').forEach(button => button.addEventListener('click', () => { livePromise = select(button.dataset.event); }));\r\nawait select('ok');\r\nfunction animate(now) {\r\n  // Some embedded/headless hosts update .matches without dispatching change.\r\n  // This shares the existing loop, preserving one animation scheduler.\r\n  applyMotionPreference('animation-frame');\r\n  for (const cell of liveCells) if (cell.canvas && cell.descriptor.frames > 1) {\r\n    cache.get(cell.descriptor.path).then(asset => { cell.frame = paint(cell.canvas, asset, cell.descriptor.frames, cell.scale, now - origin, cell.state); });\r\n  }\r\n  requestAnimationFrame(animate);\r\n}\r\nrequestAnimationFrame(animate);\r\nfunction applyMotionPreference(route) {\r\n  if (observedReduced === motion.matches) return;\r\n  observedReduced = motion.matches;\r\n  origin = performance.now();\r\n  preferenceChanges.push({ reduced: observedReduced, at: origin, route });\r\n  for (const cell of [...cells, ...liveCells]) if (cell.canvas) {\r\n    cache.get(cell.descriptor.path).then(asset => {\r\n      cell.frame = paint(cell.canvas, asset, cell.descriptor.frames, cell.scale, 0, cell.state);\r\n    });\r\n  }\r\n}\r\nmotion.addEventListener('change', () => applyMotionPreference('media-change-event'));\r\nwindow.successorReady = true;\r\nwindow.selectQueue = select;\r\nwindow.motionSnapshot = () => ({ reduced: motion.matches, changes: [...preferenceChanges],\r\n  errors: [...errors], matrixWorking: cells.filter(cell => cell.state === 'running').map(cell => ({ consumer: cell.consumer, scale: cell.scale, frame: cell.frame, png: cell.canvas?.toDataURL() })),\r\n  at: performance.now(), cells: liveCells.map(cell => ({ consumer: cell.consumer,\r\n    state: cell.state, frame: cell.frame, path: cell.descriptor.path, label: cell.descriptor.label,\r\n    width: cell.canvas?.width, height: cell.canvas?.height,\r\n    smoothing: cell.canvas?.getContext('2d').imageSmoothingEnabled,\r\n    png: cell.canvas?.toDataURL() })) });\r\n\r\nasync function capture() {\r\n  await document.fonts.ready;\r\n  const transitions = [];\r\n  for (const event of events) {\r\n    const button = document.querySelector(`[data-event=\"${event}\"]`);\r\n    button.click(); transitions.push(await livePromise);\r\n  }\r\n  document.querySelector('[data-event=\"ok\"]').click(); await livePromise;\r\n  const timeline = [];\r\n  for (const state of Object.keys(statusVisuals)) {\r\n    const descriptor = statusCell(state);\r\n    if (descriptor.frames <= 1) continue;\r\n    const boundaries = Array.from({ length: descriptor.frames }, (_, i) => [i * display.frameMs, (i + 1) * display.frameMs - 1]).flat();\r\n    for (const elapsed of [...boundaries, display.frameMs * descriptor.frames]) {\r\n      const cell = await makeCell('statusCell', state, 1, elapsed, false);\r\n      timeline.push({ state, elapsed, available: cell.asset.available, frame: cell.canvas ? cell.frame : null, png: cell.canvas?.toDataURL() });\r\n    }\r\n  }\r\n  const views = cells.map(({ node, canvas, ...info }) => ({ ...info, canvas: undefined,\r\n    smoothing: canvas?.getContext('2d').imageSmoothingEnabled,\r\n    bounds: canvas ? Object.fromEntries(['x', 'y', 'width', 'height'].map(key => [key, canvas.getBoundingClientRect()[key]])) : null,\r\n    imageRendering: canvas ? getComputedStyle(canvas).imageRendering : null,\r\n    png: canvas?.toDataURL(),\r\n  }));\r\n  return { reduced: motion.matches, preferenceChanges: [...preferenceChanges], version: 2, userAgent: navigator.userAgent, devicePixelRatio, viewport: { width: innerWidth, height: innerHeight, clientWidth: document.documentElement.clientWidth }, display, transitions, timeline, views, missing, errors,\r\n    scope: 'Actual browser execution of the supplied queue modules, decode, canvas crop/scale/compositing and DOM event handlers. Image provenance and visual/style acceptance are separate.' };\r\n}\r\nwindow.captureQueue = capture;\r\nif (new URL(location.href).searchParams.has('capture')) {\r\n  const report = await capture();\r\n  await fetch('/__capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(report) });\r\n  document.body.dataset.captureComplete = 'true';\r\n}\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "successor.source.renderer",
+      "record_sha256": "fcedc38f7dc4ac65e642530aaba1c3b9bcb59ed1c5848bc8e8bad28176af127e",
+      "source_class": "local"
+    },
+    {
+      "path": "SUCCESSOR-ADOPTION.md",
+      "sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\SUCCESSOR-ADOPTION.md",
+      "observed_sha256": "07db913443b80484db88bad07ee4676ee36a05e5e91639a326d91d7ffebf7cf8",
+      "line_count": 59,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            59
+          ],
+          "text": "# Adopt and complete the reviewed successor\r\n\r\nContinue FOCUSED-RESULT.json and work/focused-successor, preserving that attempt.\r\nThe prior native run used focused context and implemented/reviewed a versioned\r\nreduced-motion consumer. Its exact results, failures and any unperformed checks\r\nremain authoritative. Do not assume a pass that the retained result does not show.\r\n\r\nThe current kit's production-plan adapter now supports optional selection.replaces:\r\n{store, task, output}, exactly the current PLAR production link. New plan ID plus\r\ncurrent expected state hash append the successor, preserve the old plan/intent and\r\nPLAR history, and refuse unresolved jobs across earlier owned generations. It\r\ndoes not create a job or transfer acceptance. Read the current family-delivery and\r\nproduction-plan documentation and discover the tool schemas. Default context and\r\nthe focused authoring view retain their meaning. Save large reports through the\r\nCLI binary-stdout method in runtime.md instead of shell-embedding JSON.\r\n\r\n1. Read the retained focused result, current focused context and exact corrected\r\n   proposal/caller comparison. Have foreground PIXL address only the remaining\r\n   adoption/acceptance questions; retain its native identity. Use its pixel-art\r\n   judgment and actual image access. Do not re-author all historical comparisons\r\n   where the literal obligations and evidence remain unchanged.\r\n2. Ensure the successor PLAR branch describes the actual versioned consumer and\r\n   destination. Update tracked sources/consumer bindings, delivery paths and any\r\n   actual semantic requirement changes explicitly; preserve the original plar.txt\r\n   and old source files. Keep preserved Ready/Start and the dynamic account badge\r\n   coverage honest. Refresh obsolete status/next/evidence prose without inventing\r\n   new constraints. Read fresh requirement hashes after any semantic update.\r\n3. The previous public-plan-proposal.json, if present, is a draft. Compare it with\r\n   the retained corrected proposal and actual successor code. Add new source,\r\n   contract and destination records as needed through pixl_commit; preserve old\r\n   C/I/Q/S/D/E/V records. Scope normal 100ms animation separately from stationary\r\n   reduced-motion display. Keep the three split alpha diagnostics/visual decisions,\r\n   full alpha/selective AA, in-cell margins, scoped expert pacing, qualitative\r\n   coherence and inferred Start distinction. Retain an exact mapping from all 20\r\n   original criteria to the new literal checks, plus reduced-motion requirements.\r\n4. Author the new connected plan using explicit selection.replaces for the three\r\n   linked member assets. Resolve any still-prepared obsolete intent through its\r\n   evidenced local-abandonment lifecycle first; never assert a remote failure or\r\n   rebind the old request. Check that the result's allocations are actually revised\r\n   rather than merely that the graph was saved. Retain exact request_review output\r\n   and independently compare its actual new criteria/controls to the approved\r\n   successor proposal and original sources before accepting work. Coverage is not\r\n   semantic judgment. Preserve the original intent and prior partial trial.\r\n5. Reuse the exact existing PixelLab-produced assets if they satisfy the successor.\r\n   Retain new candidate X.of identities and provenance to the original bytes for\r\n   new outputs; do not claim a provider generated them under the new contract.\r\n   Use current public commit/inspection/completion/family operations for fresh\r\n   mechanical, visual and engine verdicts scoped to the new criteria. Preserve\r\n   failed views/captures. Run the versioned renderer again for normal/reduced modes,\r\n   both consumers, all states and live preference switching; verify actual pixels\r\n   and timing claims at their measured scope. All outputs need their required\r\n   verdicts before completion; then retain/review the family and refresh PLAR/handoff.\r\n   If an actual new PixelLab operation is warranted, retain its exact request for\r\n   the outer connected host rather than fabricating a provider result.\r\n6. Return SUCCESSOR-RESULT.json with exact plan, criterion, source, candidate,\r\n   job, verdict, renderer, allocation and handoff paths/hashes; demonstrate old\r\n   evidence preservation and identify any unmet acceptance. Distinguish actual\r\n   rendered/reviewed reuse from new model-generation quality. Overall quality,\r\n   general host reliability and the wider product remain in development.\r\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "successor.source.assignment",
+      "record_sha256": "0717c1779615951a650556a17444a3be677f37c0d4aad548ad7d1624570df929",
+      "source_class": "local"
+    },
+    {
+      "path": "work/focused-successor/specialist-proposal-r4.json",
+      "sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\work\\focused-successor\\specialist-proposal-r4.json",
+      "observed_sha256": "18e7e32cee467140464c7f08fa532093401c9609d16deec54e2220e13cb104cc",
+      "line_count": 3144,
+      "status": "needs_narrower_range",
+      "requested_lines": [
+        [
+          1,
+          3144
+        ]
+      ],
+      "id": "successor.source.proposal",
+      "record_sha256": "0df0c7296020e6c93dfbc7496dc6defd815df79959768fc9926df810ea31b6ea",
+      "source_class": "local"
+    },
+    {
+      "path": "work/focused-successor/caller-comparison-final.json",
+      "sha256": "38a2716f9439b8ea14622293cc6bec550390ba1679d5f644a2e891e0507711b8",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\work\\focused-successor\\caller-comparison-final.json",
+      "observed_sha256": "38a2716f9439b8ea14622293cc6bec550390ba1679d5f644a2e891e0507711b8",
+      "line_count": 747,
+      "status": "needs_narrower_range",
+      "requested_lines": [
+        [
+          1,
+          747
+        ]
+      ],
+      "id": "successor.source.comparison",
+      "record_sha256": "f0a4fdefcb94e607a93650df53db05caeb288a98c1cd9789735f283afd1dc5be",
+      "source_class": "local"
+    },
+    {
+      "path": "src/queue.ts",
+      "sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "locator": null,
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-04\\retained consumer\\src\\queue.ts",
+      "observed_sha256": "de271234087741c37ad6892a8802768ffcc38b440a0ae97ae66d8700ab0d1e08",
+      "line_count": 4,
+      "status": "resolved",
+      "excerpts": [
+        {
+          "lines": [
+            1,
+            4
+          ],
+          "text": "export type QueueState = \"idle\" | \"running\" | \"succeeded\" | \"failed\" | \"paused\";\nexport function stateAfter(result: \"started\" | \"ok\" | \"error\" | \"pause\"): QueueState {\n  return { started: \"running\", ok: \"succeeded\", error: \"failed\", pause: \"paused\" }[result] as QueueState;\n}\n"
+        }
+      ],
+      "scope": "Exact cited text only; its meaning and support for the criterion need caller comparison.",
+      "id": "successor.source.backend",
+      "record_sha256": "78ff543c243b6f39623be3e4be66001c95fcb441775c7e4c50c9f02519d941e3",
+      "source_class": "local"
+    }
+  ],
+  "controls": [
+    {
+      "output": "successor-adoption-02.working.output",
+      "task": "successor-adoption-02.working.task",
+      "record_sha256": "3da441e3f1a3559d72e7cf6ab6f942bc95a6159bf99a4fe1486538bf1337264f",
+      "fields": {
+        "bs": {
+          "$ref": "ready.retained"
+        },
+        "ct": {
+          "$ref": "successor.working.contract"
+        },
+        "kd": {
+          "$symbol": "animation"
+        },
+        "nm": "Working status strip from the accepted seed (reviewed reuse successor)",
+        "rq": [
+          {
+            "$ref": "successor-adoption-02.working.q.geometry"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.transparent-exterior.diagnostic"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.transparent-exterior"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.frame-assembly"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.activity-not-success"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.motion-continuity"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.style-coherence"
+          },
+          {
+            "$ref": "successor-adoption-02.working.q.consumers"
+          }
+        ],
+        "tk": {
+          "$ref": "successor-adoption-02.working.task"
+        }
+      },
+      "contract": {
+        "al": {
+          "$symbol": "full"
+        },
+        "ch": [
+          {
+            "$ref": "render.choice.style"
+          },
+          {
+            "$ref": "focused-successor.choice.destination"
+          }
+        ],
+        "li": "Four horizontal16x16 frames at100ms/frame under normal motion only; activity must not look like success. Review every frame and actual loop,loop boundary,anchor and volume stability. Transparent coherent pixel art; exact Ready baseline guides readable silhouettes,deliberate stepped clusters and perceptible cool-blue accent. No fixed palette,binary-alpha,exact stroke or margin rule. Reduced motion displays stationary source frame zero with Working label; all four source cells remain unchanged. Live preference switching preserves backend state.",
+        "nm": "Working status member",
+        "pl": [],
+        "px": [
+          64,
+          16
+        ],
+        "sa": {
+          "$symbol": "nearest"
+        },
+        "vw": {
+          "$symbol": "ui"
+        }
+      },
+      "inputs": [
+        {
+          "id": "ready.retained",
+          "fields": {
+            "ct": {
+              "$ref": "r.22e90a2a03fe453a.contract.ready"
+            },
+            "dg": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+            "kd": {
+              "$symbol": "sprite"
+            },
+            "nm": "Imported candidate ready.retained",
+            "of": {
+              "$ref": "r.22e90a2a03fe453a.output.ready"
+            },
+            "ur": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+          }
+        }
+      ]
+    },
+    {
+      "output": "successor-adoption-02.retry.output",
+      "task": "successor-adoption-02.retry.task",
+      "record_sha256": "bf74f2ac70fcc9564d04d1f41bb085016abce1d3e27ba5eb20bd432162581fdc",
+      "fields": {
+        "bs": {
+          "$ref": "ready.retained"
+        },
+        "ct": {
+          "$ref": "successor.retry.contract"
+        },
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Retry status icon (reviewed reuse successor)",
+        "rq": [
+          {
+            "$ref": "successor-adoption-02.retry.q.geometry"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.q.transparent-exterior.diagnostic"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.q.transparent-exterior"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.q.retry-meaning-without-color"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.q.style-coherence"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.q.consumers"
+          }
+        ],
+        "tk": {
+          "$ref": "successor-adoption-02.retry.task"
+        }
+      },
+      "contract": {
+        "al": {
+          "$symbol": "full"
+        },
+        "ch": [
+          {
+            "$ref": "render.choice.style"
+          },
+          {
+            "$ref": "focused-successor.choice.destination"
+          }
+        ],
+        "li": "Static16x16 error/retry meaning; distinguish without color alone. Transparent coherent pixel art; exact Ready baseline guides readable silhouettes,deliberate stepped clusters and perceptible cool-blue accent. No fixed palette,binary-alpha,exact stroke or margin rule.",
+        "nm": "Retry status member",
+        "pl": [],
+        "px": [
+          16,
+          16
+        ],
+        "sa": {
+          "$symbol": "nearest"
+        },
+        "vw": {
+          "$symbol": "ui"
+        }
+      },
+      "inputs": [
+        {
+          "id": "ready.retained",
+          "fields": {
+            "ct": {
+              "$ref": "r.22e90a2a03fe453a.contract.ready"
+            },
+            "dg": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+            "kd": {
+              "$symbol": "sprite"
+            },
+            "nm": "Imported candidate ready.retained",
+            "of": {
+              "$ref": "r.22e90a2a03fe453a.output.ready"
+            },
+            "ur": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+          }
+        }
+      ]
+    },
+    {
+      "output": "successor-adoption-02.paused.output",
+      "task": "successor-adoption-02.paused.task",
+      "record_sha256": "91153b2b728df5d3a4914911883b68b7d88f3f6c83ac01cc53fc1602861afcf4",
+      "fields": {
+        "bs": {
+          "$ref": "ready.retained"
+        },
+        "ct": {
+          "$ref": "successor.paused.contract"
+        },
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Paused status icon (reviewed reuse successor)",
+        "rq": [
+          {
+            "$ref": "successor-adoption-02.paused.q.geometry"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.q.transparent-exterior.diagnostic"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.q.transparent-exterior"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.q.pause-meaning-without-color"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.q.style-coherence"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.q.consumers"
+          }
+        ],
+        "tk": {
+          "$ref": "successor-adoption-02.paused.task"
+        }
+      },
+      "contract": {
+        "al": {
+          "$symbol": "full"
+        },
+        "ch": [
+          {
+            "$ref": "render.choice.style"
+          },
+          {
+            "$ref": "focused-successor.choice.destination"
+          }
+        ],
+        "li": "Static16x16 pause meaning; distinguish from activity,completion and retry without color alone. Transparent coherent pixel art; exact Ready baseline guides readable silhouettes,deliberate stepped clusters and perceptible cool-blue accent. No fixed palette,binary-alpha,exact stroke or margin rule.",
+        "nm": "Paused status member",
+        "pl": [],
+        "px": [
+          16,
+          16
+        ],
+        "sa": {
+          "$symbol": "nearest"
+        },
+        "vw": {
+          "$symbol": "ui"
+        }
+      },
+      "inputs": [
+        {
+          "id": "ready.retained",
+          "fields": {
+            "ct": {
+              "$ref": "r.22e90a2a03fe453a.contract.ready"
+            },
+            "dg": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+            "kd": {
+              "$symbol": "sprite"
+            },
+            "nm": "Imported candidate ready.retained",
+            "of": {
+              "$ref": "r.22e90a2a03fe453a.output.ready"
+            },
+            "ur": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+          }
+        }
+      ]
+    },
+    {
+      "output": "successor-adoption-02.delivery.output",
+      "task": "successor-adoption-02.delivery.task",
+      "record_sha256": "8bb9ce78c3382aea7f906fcc8d65ad79e765dc340463aeddc5d8ae11836bebdf",
+      "fields": {
+        "bs": {
+          "$ref": "ready.retained"
+        },
+        "ds": [
+          {
+            "$ref": "focused-successor.choice.destination"
+          }
+        ],
+        "kd": {
+          "$symbol": "report"
+        },
+        "mb": [
+          {
+            "$ref": "r.22e90a2a03fe453a.output.ready"
+          },
+          {
+            "$ref": "successor-adoption-02.working.output"
+          },
+          {
+            "$ref": "successor-adoption-02.retry.output"
+          },
+          {
+            "$ref": "successor-adoption-02.paused.output"
+          }
+        ],
+        "nm": "Reviewed versioned queue successor delivery with exact reused art",
+        "rq": [
+          {
+            "$ref": "successor-adoption-02.delivery.q.continuity"
+          },
+          {
+            "$ref": "successor-adoption-02.delivery.q.distinction"
+          },
+          {
+            "$ref": "successor-adoption-02.delivery.q.destination"
+          }
+        ],
+        "tk": {
+          "$ref": "successor-adoption-02.delivery.task"
+        }
+      },
+      "contract": null,
+      "inputs": [
+        {
+          "id": "ready.retained",
+          "fields": {
+            "ct": {
+              "$ref": "r.22e90a2a03fe453a.contract.ready"
+            },
+            "dg": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+            "kd": {
+              "$symbol": "sprite"
+            },
+            "nm": "Imported candidate ready.retained",
+            "of": {
+              "$ref": "r.22e90a2a03fe453a.output.ready"
+            },
+            "ur": ".pixl/assets/queue.ready/artifacts/fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5.png"
+          }
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "render.decision.style",
+      "fields": {
+        "pc": [
+          {
+            "$ref": "render.proof.style"
+          }
+        ],
+        "rs": [
+          {
+            "$ref": "render.source.brief"
+          },
+          {
+            "$ref": "render.source.assessment"
+          },
+          {
+            "$ref": "render.source.caller"
+          }
+        ],
+        "wh": {
+          "$ref": "render.caller"
+        },
+        "wr": [
+          {
+            "$ref": "ready.retained"
+          },
+          {
+            "$ref": "render.choice.style"
+          }
+        ],
+        "wt": "Adopt exact ready.retained as representative status-family style baseline under RENDER-STAGE scope.",
+        "wy": "Fresh corrected-contract specialist review and independent native/enlarged/browser viewing support the scoped treatment. Other members need their own meanings. Overall destination and family acceptance remain open."
+      }
+    },
+    {
+      "id": "recheck.decision.destination",
+      "fields": {
+        "pc": [
+          {
+            "$ref": "recheck.proof.destination"
+          }
+        ],
+        "rs": [
+          {
+            "$ref": "recheck.source.findings"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        },
+        "wr": [
+          {
+            "$ref": "ready.retained"
+          },
+          {
+            "$ref": "render.choice.destination"
+          }
+        ],
+        "wt": "Accept available-member destination checks for exact Ready baseline and preserved Start control through both source consumers under repaired renderer.",
+        "wy": "New viewport 1280x1000 matches screenshot and all eight recorded-bound crops. This scoped result supersedes the open placement question for available files only; historical failure remains true. No collective acceptance, contract migration, artwork or provider action."
+      }
+    }
+  ],
+  "selections": [
+    {
+      "asset": "queue.working",
+      "path": "authoring-plar.txt",
+      "replaces": {
+        "output": "successor-adoption.working.output",
+        "store": ".pixl/assets/queue.ready",
+        "task": "successor-adoption.working.task"
+      },
+      "requirements_hash": "1ab9df77ca2b8e1c5c6c97fe69e428c4a0db7fedb3dd497847cc96732ea149a6",
+      "current_requirements_hash": "1ab9df77ca2b8e1c5c6c97fe69e428c4a0db7fedb3dd497847cc96732ea149a6",
+      "current_requirements": {
+        "id": "queue.working",
+        "kind": "animated_status_sprite_strip",
+        "purpose": "Communicate ongoing work in both full and compact status cells without implying success. Caller update for this authoring branch: the reduced-motion mode must use a stationary Working symbol distinguishable from Ready and Paused. Confirm its consumer mapping before any further generation.",
+        "consumers": [
+          {
+            "source": "successor-view",
+            "symbol": "statusVisuals.running",
+            "usage": "Maps running to the Working image path and frame count."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "statusCell",
+            "usage": "Full status consumer returns the shared running descriptor."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "compactStatus",
+            "usage": "Compact status consumer returns the same running descriptor; reuse one asset."
+          },
+          {
+            "source": "queue-state",
+            "symbol": "stateAfter",
+            "usage": "A started result transitions to running, which resolves to the Working visual."
+          }
+        ],
+        "existing": [
+          {
+            "path": "assets/working.png",
+            "role": "Existing original-production artwork is present and retained unchanged. Exact-byte successor copies and fresh local renderer evidence are recorded in work/focused-successor/reuse-copy.json and caller-comparison.json; old acceptance is not transferred to authoring or successor criteria."
+          }
+        ],
+        "requirements": [
+          {
+            "property": "cell_size_px",
+            "value": [
+              16,
+              16
+            ],
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF fixes logical status cells and display.cell agrees."
+          },
+          {
+            "property": "background",
+            "value": "transparent",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+          },
+          {
+            "property": "pixel_art_readability",
+            "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+          },
+          {
+            "property": "panel_background",
+            "value": "#172336",
+            "authority": "observation",
+            "sources": [
+              "successor-view"
+            ],
+            "reason": "display.background is the supplied dark-panel color; use it for future previews."
+          },
+          {
+            "property": "color_direction",
+            "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+          },
+          {
+            "property": "existing_accent",
+            "value": "#70b9ed",
+            "authority": "observation",
+            "sources": [
+              "start-vector"
+            ],
+            "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+          },
+          {
+            "property": "approved_style_reference",
+            "value": {
+              "path": "assets/ready-confirmed.png",
+              "candidate": "ready.retained",
+              "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+              "scope": "Representative queue status-family treatment only"
+            },
+            "authority": "requirement",
+            "sources": [
+              "approved-ready",
+              "style-caller",
+              "style-specialist",
+              "render-stage"
+            ],
+            "reason": "Scoped caller decision under RENDER-STAGE after independent visual/contract/render comparison; this is a new adopted project choice,not an original brief requirement or upstream provider-quality result."
+          },
+          {
+            "property": "image_geometry",
+            "value": {
+              "width": 64,
+              "height": 16,
+              "frame_width": 16,
+              "frame_height": 16,
+              "frames": 4,
+              "layout": "horizontal"
+            },
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "Four horizontal frames in 16 by 16 cells imply a 64 by 16 image strip."
+          },
+          {
+            "property": "animation",
+            "value": {
+              "normal": {
+                "media": "prefers-reduced-motion: no-preference",
+                "frame_duration_ms": 100,
+                "loop": true,
+                "nominal_cycle_ms": 400
+              },
+              "reduced": {
+                "media": "prefers-reduced-motion: reduce",
+                "frame": 0,
+                "stationary": true,
+                "label": "Working",
+                "source_frames": 4
+              },
+              "live_switch": "Repaint both consumers without backend state change; reset origin once per observed preference transition"
+            },
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view",
+              "successor-assignment"
+            ],
+            "reason": "Normal motion retains original four-frame 100ms loop. Reviewed successor requires stationary Working frame zero under reduced motion, distinct from Ready and Paused; live preference switching preserves state/label/source geometry."
+          },
+          {
+            "property": "state_meaning",
+            "value": "Show activity, avoiding completion/success silhouettes or a success-like terminal pose.",
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "queue-state",
+              "successor-view"
+            ],
+            "reason": "The brief explicitly separates Working from success."
+          },
+          {
+            "property": "motion_motif",
+            "value": "Exact reused four-phase rotating segments selected for this successor; stationary frame zero under reduce. This scoped expert choice does not turn the original open motif into a universal requirement.",
+            "authority": "proposal",
+            "sources": [],
+            "reason": "The brief fixes timing and frame count but leaves the activity motif open."
+          },
+          {
+            "property": "renderer_frame_extraction",
+            "value": {
+              "implementation": "renderer-successor/view.mjs paint() and src/queue-view-successor.ts statusFrame()",
+              "frame_index": "normal: floor(max(elapsed,0)/display.frameMs) modulo frames; reduced:0",
+              "source_rectangle": "frame*16,0,16,16",
+              "destination_rectangle": "0,0,16*scale,16*scale",
+              "smoothing": "false when display.filter is nearest",
+              "working_result": "Original-production Working cf101610108f5a708987dfeb1a86ae9921525464d24c19953a889e20603176dc exists. Old renderer implementation/source binding remains unchanged; new src/queue-view-successor.ts and renderer-successor/ use reviewed copies. render-03 proves normal cycling, stationary reduced-motion frame0 and live switching in both consumers; no new UDL generation acceptance."
+            },
+            "authority": "observation",
+            "sources": [
+              "successor-view",
+              "successor-renderer",
+              "successor-assignment"
+            ],
+            "reason": "Current versioned fixture uses unchanged backend; fresh scope is work/successor-adoption/render-01 plus pixel-check.json and motion-check.json. Old fixtures remain historical."
+          },
+          {
+            "property": "paused_family_distinction",
+            "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+          }
+        ],
+        "delivery": {
+          "path": "renderer-successor/assets/working.png",
+          "checks": [
+            "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+            "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+            "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+            "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+            "Retain fresh visual review and integration evidence separately from mechanical checks. Original-production artwork and its earlier acceptance exist; this authoring allocation and the reviewed successor do not inherit that acceptance. Fresh acceptance is pending against this new connected successor; historical reviews do not transfer.",
+            "Verify exactly four horizontal 16x16 frames and no unintended frame gaps.",
+            "Under no-preference only, play the loop at 100 ms per frame and inspect the fourth-to-first transition for continuity and stable placement.",
+            "Compare Working against Ready at both scales and confirm activity cannot be mistaken for successful completion.",
+            "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+            "Under reduced motion display stationary Working frame zero in both consumers and repaint live when preference changes both ways, keeping backend state and labels unchanged."
+          ]
+        },
+        "depends_on": [
+          "queue.ready"
+        ],
+        "questions": [],
+        "references": [
+          {
+            "source": "approved-ready",
+            "role": "style",
+            "instructions": "Use exact ready.retained fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5 as this consumer family baseline. Preserve readable compact silhouettes,coherent deliberate clusters/stepped edges,perceptible cool-blue accent and transparency at1x/3x on#172336. Do not copy completion check into other states or impose exact hex,palette count,binary alpha,stroke width or margins."
+          }
+        ]
+      }
+    },
+    {
+      "asset": "queue.retry",
+      "path": "authoring-plar.txt",
+      "replaces": {
+        "output": "successor-adoption.retry.output",
+        "store": ".pixl/assets/queue.ready",
+        "task": "successor-adoption.retry.task"
+      },
+      "requirements_hash": "d8e7bcb014fc83eededb5498c83c7a8cf2f0cff80ce7114cb4ae65d8baf565f5",
+      "current_requirements_hash": "d8e7bcb014fc83eededb5498c83c7a8cf2f0cff80ce7114cb4ae65d8baf565f5",
+      "current_requirements": {
+        "id": "queue.retry",
+        "kind": "static_status_icon",
+        "purpose": "Show failed work and the Retry action in both full and compact status cells with a shape that remains distinguishable without color.",
+        "consumers": [
+          {
+            "source": "successor-view",
+            "symbol": "statusVisuals.failed",
+            "usage": "Maps failed to the Retry label, current renderer-successor/assets/error-retry.png path and one static frame."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "statusCell",
+            "usage": "Full status consumer returns the shared failed descriptor."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "compactStatus",
+            "usage": "Compact status consumer returns the same failed descriptor; reuse one asset."
+          },
+          {
+            "source": "queue-state",
+            "symbol": "stateAfter",
+            "usage": "An error result transitions to failed, which resolves to the Retry visual."
+          }
+        ],
+        "existing": [
+          {
+            "path": "assets/error-retry.png",
+            "role": "Existing original-production artwork is present and retained unchanged. Exact-byte successor copies and fresh local renderer evidence are recorded in work/focused-successor/reuse-copy.json and caller-comparison.json; old acceptance is not transferred to authoring or successor criteria."
+          }
+        ],
+        "requirements": [
+          {
+            "property": "cell_size_px",
+            "value": [
+              16,
+              16
+            ],
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF fixes logical status cells and display.cell agrees."
+          },
+          {
+            "property": "background",
+            "value": "transparent",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+          },
+          {
+            "property": "pixel_art_readability",
+            "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+          },
+          {
+            "property": "panel_background",
+            "value": "#172336",
+            "authority": "observation",
+            "sources": [
+              "successor-view"
+            ],
+            "reason": "display.background is the supplied dark-panel color; use it for future previews."
+          },
+          {
+            "property": "color_direction",
+            "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+          },
+          {
+            "property": "existing_accent",
+            "value": "#70b9ed",
+            "authority": "observation",
+            "sources": [
+              "start-vector"
+            ],
+            "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+          },
+          {
+            "property": "approved_style_reference",
+            "value": {
+              "path": "assets/ready-confirmed.png",
+              "candidate": "ready.retained",
+              "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+              "scope": "Representative queue status-family treatment only"
+            },
+            "authority": "requirement",
+            "sources": [
+              "approved-ready",
+              "style-caller",
+              "style-specialist",
+              "render-stage"
+            ],
+            "reason": "Scoped caller decision under RENDER-STAGE after independent visual/contract/render comparison; this is a new adopted project choice,not an original brief requirement or upstream provider-quality result."
+          },
+          {
+            "property": "image_geometry",
+            "value": {
+              "width": 16,
+              "height": 16,
+              "frames": 1
+            },
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "Retry is static and occupies one 16 by 16 logical cell."
+          },
+          {
+            "property": "state_meaning",
+            "value": "Signal failed work / retry and remain distinguishable from the other statuses without color alone.",
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "queue-state",
+              "successor-view"
+            ],
+            "reason": "BRIEF explicitly requires non-color differentiation for error/retry; failed maps to Retry."
+          },
+          {
+            "property": "retry_motif",
+            "value": "A return/retry arrow with a distinct silhouette is a proposal; avoid a shape that could be confused with the Working activity loop.",
+            "authority": "proposal",
+            "sources": [],
+            "reason": "The exact error/retry symbol is not specified and must be judged alongside the other statuses."
+          },
+          {
+            "property": "paused_family_distinction",
+            "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+          },
+          {
+            "property": "destination_update",
+            "value": "The current failure visual destination is assets/error-retry.png; the established queue.retry asset identity and failure/retry purpose are unchanged.",
+            "authority": "observation",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "The updated brief states that the failure visual moved while its purpose stayed unchanged; statusVisuals.failed supplies the new path. Previous allocation bytes remain in PLAR history."
+          }
+        ],
+        "delivery": {
+          "path": "renderer-successor/assets/error-retry.png",
+          "checks": [
+            "Decode the delivered PNG and confirm the row-specific dimensions and frame count.",
+            "Confirm a transparent background without opaque matte pixels; do not impose an unstated binary-alpha rule.",
+            "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, edge quality and cool blue family coherence.",
+            "Exercise both statusCell and compactStatus in an actual renderer and confirm the intended label and asset appear for the relevant queue transition.",
+            "Retain fresh visual review and integration evidence separately from mechanical checks. Original-production artwork and its earlier acceptance exist; this authoring allocation and the reviewed successor do not inherit that acceptance. Fresh acceptance is pending against this new connected successor; historical reviews do not transfer.",
+            "Inspect the silhouette and a grayscale comparison with Start, Ready and all Working frames at 1x and 3x to assess differentiation without color alone.",
+            "Verify the error-to-failed transition selects Retry in both full and compact consumers.",
+            "Compare the Paused silhouette against this status at 1x and 3x, including grayscale/non-color comparison, to confirm Paused remains distinct from activity, completion and retry.",
+            "Confirm statusVisuals.failed resolves renderer-successor/assets/error-retry.png; do not deliver new Retry art to the superseded renderer-successor/assets/retry.png path."
+          ]
+        },
+        "depends_on": [
+          "queue.ready"
+        ],
+        "questions": [],
+        "references": [
+          {
+            "source": "approved-ready",
+            "role": "style",
+            "instructions": "Use exact ready.retained fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5 as this consumer family baseline. Preserve readable compact silhouettes,coherent deliberate clusters/stepped edges,perceptible cool-blue accent and transparency at1x/3x on#172336. Do not copy completion check into other states or impose exact hex,palette count,binary alpha,stroke width or margins."
+          }
+        ]
+      }
+    },
+    {
+      "asset": "queue.paused",
+      "path": "authoring-plar.txt",
+      "replaces": {
+        "output": "successor-adoption.paused.output",
+        "store": ".pixl/assets/queue.ready",
+        "task": "successor-adoption.paused.task"
+      },
+      "requirements_hash": "e950d8dcba0738ee08a776138f16f874a501239af56bc8a4ddf98b3aee248bc8",
+      "current_requirements_hash": "e950d8dcba0738ee08a776138f16f874a501239af56bc8a4ddf98b3aee248bc8",
+      "current_requirements": {
+        "id": "queue.paused",
+        "kind": "static_status_icon",
+        "purpose": "Show paused work in both full and compact status cells, distinguishable from activity, completion and retry without color alone.",
+        "consumers": [
+          {
+            "source": "queue-state",
+            "symbol": "stateAfter",
+            "usage": "A pause result transitions to paused, which resolves to the Paused visual."
+          },
+          {
+            "source": "queue-state",
+            "symbol": "QueueState",
+            "usage": "The updated queue state union includes paused."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "statusVisuals.paused",
+            "usage": "Maps paused to the Paused label, renderer-successor/assets/paused.png path and one static frame."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "statusCell",
+            "usage": "Full status consumer returns the shared paused descriptor."
+          },
+          {
+            "source": "successor-view",
+            "symbol": "compactStatus",
+            "usage": "Compact status consumer returns the same paused descriptor; reuse one asset."
+          }
+        ],
+        "existing": [
+          {
+            "path": "assets/paused.png",
+            "role": "Existing original-production artwork is present and retained unchanged. Exact-byte successor copies and fresh local renderer evidence are recorded in work/focused-successor/reuse-copy.json and caller-comparison.json; old acceptance is not transferred to authoring or successor criteria."
+          }
+        ],
+        "requirements": [
+          {
+            "property": "cell_size_px",
+            "value": [
+              16,
+              16
+            ],
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF fixes logical status cells and display.cell agrees."
+          },
+          {
+            "property": "background",
+            "value": "transparent",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "BRIEF explicitly requires transparent status backgrounds; it does not restrict alpha to binary values."
+          },
+          {
+            "property": "pixel_art_readability",
+            "value": "Readable pixel-art silhouettes at 1x and 3x nearest-neighbor display scale.",
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "BRIEF requires both inspection scales; display uses scale 3 and nearest filtering."
+          },
+          {
+            "property": "panel_background",
+            "value": "#172336",
+            "authority": "observation",
+            "sources": [
+              "successor-view"
+            ],
+            "reason": "display.background is the supplied dark-panel color; use it for future previews."
+          },
+          {
+            "property": "color_direction",
+            "value": "Use the existing cool blue UI accent; no fixed palette is required.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "Preserves the explicit direction without imposing a palette count or exact color rejection rule."
+          },
+          {
+            "property": "existing_accent",
+            "value": "#70b9ed",
+            "authority": "observation",
+            "sources": [
+              "start-vector"
+            ],
+            "reason": "The preserved Start SVG uses this fill; it is a concrete color cue, not an approved pixel-art style sample."
+          },
+          {
+            "property": "approved_style_reference",
+            "value": {
+              "path": "assets/ready-confirmed.png",
+              "candidate": "ready.retained",
+              "sha256": "fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5",
+              "scope": "Representative queue status-family treatment only"
+            },
+            "authority": "requirement",
+            "sources": [
+              "approved-ready",
+              "style-caller",
+              "style-specialist",
+              "render-stage"
+            ],
+            "reason": "Scoped caller decision under RENDER-STAGE after independent visual/contract/render comparison; this is a new adopted project choice,not an original brief requirement or upstream provider-quality result."
+          },
+          {
+            "property": "image_geometry",
+            "value": {
+              "width": 16,
+              "height": 16,
+              "frames": 1
+            },
+            "authority": "requirement",
+            "sources": [
+              "brief",
+              "successor-view"
+            ],
+            "reason": "The updated Paused descriptor uses one frame in the existing 16 by 16 logical cell."
+          },
+          {
+            "property": "paused_family_distinction",
+            "value": "Paused must be distinguishable from activity, completion and retry without relying on color alone.",
+            "authority": "requirement",
+            "sources": [
+              "brief"
+            ],
+            "reason": "The updated brief adds a non-color distinction requirement for the Paused status; compare the family together during review."
+          },
+          {
+            "property": "paused_motif",
+            "value": "A pair of pause bars is a proposed starting point; confirm the final silhouette is distinct from the reviewed Ready, Working and Retry family.",
+            "authority": "proposal",
+            "sources": [],
+            "reason": "The updated brief specifies meaning and differentiation but leaves the exact pause motif open."
+          },
+          {
+            "property": "family_sample_dependency",
+            "value": "Exact retained Ready sample is the adopted scoped status-family baseline; other states retain their own required meanings.",
+            "authority": "requirement",
+            "sources": [
+              "approved-ready",
+              "style-caller"
+            ],
+            "reason": "Caller resolves representative choice within current authority; no collective family acceptance implied."
+          }
+        ],
+        "delivery": {
+          "path": "renderer-successor/assets/paused.png",
+          "checks": [
+            "Decode the delivered PNG and confirm one static 16x16 image.",
+            "Confirm a transparent background without an opaque matte; no fixed palette or binary-alpha constraint is specified.",
+            "Inspect at 1x and 3x nearest scaling on #172336 for readable silhouettes, clean edges and the shared cool blue accent.",
+            "Compare Paused with Ready, Retry and every Working frame at both scales, including grayscale/non-color comparison; require a clearly distinct silhouette.",
+            "Exercise pause -> paused through stateAfter and confirm both statusCell and compactStatus use renderer-successor/assets/paused.png with the Paused label in an actual renderer.",
+            "Retain fresh visual review and integration evidence separately from mechanical checks. Original-production artwork and its earlier acceptance exist; this authoring allocation and the reviewed successor do not inherit that acceptance. Fresh acceptance is pending against this new connected successor; historical reviews do not transfer."
+          ]
+        },
+        "depends_on": [
+          "queue.ready"
+        ],
+        "questions": [],
+        "references": [
+          {
+            "source": "approved-ready",
+            "role": "style",
+            "instructions": "Use exact ready.retained fc5e43ae9db53c12cdb419794b36ef09a8ae8cf2be996954ae7390396a268ac5 as this consumer family baseline. Preserve readable compact silhouettes,coherent deliberate clusters/stepped edges,perceptible cool-blue accent and transparency at1x/3x on#172336. Do not copy completion check into other states or impose exact hex,palette count,binary alpha,stroke width or margins."
+          }
+        ]
+      }
+    }
+  ],
+  "request": null,
+  "state": {
+    "path": ".pixl/assets/queue.ready/state.px",
+    "sha256": "42919eb8fb3f3fa6a05babfb5db4b7d21abc30e255b53f71be3fd13c42d5a145",
+    "revision": 126
+  },
+  "review_scope_sha256": "3d0aaf6a53dfb1c33f166863dcbbc197b1b59dda76f156bede9c27a3b7537e88",
+  "criterion_ids": [
+    "successor-adoption-02.working.q.geometry",
+    "successor-adoption-02.working.q.transparent-exterior.diagnostic",
+    "successor-adoption-02.working.q.transparent-exterior",
+    "successor-adoption-02.working.q.frame-assembly",
+    "successor-adoption-02.working.q.activity-not-success",
+    "successor-adoption-02.working.q.motion-continuity",
+    "successor-adoption-02.working.q.style-coherence",
+    "successor-adoption-02.working.q.consumers",
+    "successor-adoption-02.retry.q.geometry",
+    "successor-adoption-02.retry.q.transparent-exterior.diagnostic",
+    "successor-adoption-02.retry.q.transparent-exterior",
+    "successor-adoption-02.retry.q.retry-meaning-without-color",
+    "successor-adoption-02.retry.q.style-coherence",
+    "successor-adoption-02.retry.q.consumers",
+    "successor-adoption-02.paused.q.geometry",
+    "successor-adoption-02.paused.q.transparent-exterior.diagnostic",
+    "successor-adoption-02.paused.q.transparent-exterior",
+    "successor-adoption-02.paused.q.pause-meaning-without-color",
+    "successor-adoption-02.paused.q.style-coherence",
+    "successor-adoption-02.paused.q.consumers",
+    "successor-adoption-02.delivery.q.continuity",
+    "successor-adoption-02.delivery.q.distinction",
+    "successor-adoption-02.delivery.q.destination"
+  ],
+  "diagnostics": [
+    {
+      "source": "successor.source.proposal",
+      "status": "needs_narrower_range"
+    },
+    {
+      "source": "successor.source.comparison",
+      "status": "needs_narrower_range"
+    }
+  ],
+  "comparison_coverage": {
+    "path": "work/successor-adoption/caller-comparison.json",
+    "sha256": "fcb7c986cf1f2616a46c4863406d7cdc7b4780a4c7f3d6b1ceb480a81ee3ce80",
+    "expected": 23,
+    "observed": 23,
+    "missing": [],
+    "duplicates": [],
+    "unexpected": [],
+    "changed_identities": [],
+    "incomplete": [],
+    "scope_current": true,
+    "complete": true,
+    "semantic_verdict": "not_assessed"
+  },
+  "caller_comparison": "unperformed",
+  "consistent": null,
+  "instruction": "Compare each exact criterion, including collective rules, by source obligation, authority/basis, scope, literal delta, a discriminating alternative and disposition. Split mixed clauses in the interpretation. Preserve required qualitative outcomes; scope expert recipes rather than inventing owner rules. Retain corrections separately from historical records.",
+  "scope": "Read-only evidence and structural comparison coverage, not semantic consistency, adoption, provider execution or art acceptance. Current source records marked changed do not reconstruct their historical declarations.",
+  "hash_domains": {
+    "state.sha256": "canonical_state_sha256",
+    "plan.sha256": "file_sha256",
+    "review_scope_sha256": "review_scope_sha256"
+  }
+}

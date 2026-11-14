@@ -16,11 +16,13 @@ from evaluations.grade_readiness import (
     claude_loading_proof,
     codex_role_proof,
     declared_tools,
+    file_reference,
     generic_substitutions,
     grade,
     inventory_errors,
     native_calls,
     operation_proof,
+    reference,
     semantic_result,
     startup_discovery,
 )
@@ -158,6 +160,36 @@ class ReadinessNativeProofTests(unittest.TestCase):
         call["payload"]["input"] = 'text(JSON.parse(await read("tool-inventory.json")));'
         self.assertEqual(declared_tools([[call, output]]), set())
 
+    def test_catalog_name_and_description_enumeration_returns_native_declarations(self):
+        catalog = [{"name": "mcp__pixl_local__pixl_source", "description": "Read source"}]
+        output = {"payload": {"type": "custom_tool_call_output", "call_id": "catalog", "output": [
+            {"type": "input_text", "text": json.dumps(catalog)}]}}
+        for expression in ('entry.name+" "+entry.description', "entry.name+' '+entry.description"):
+            call = {"payload": {"type": "custom_tool_call", "name": "exec", "call_id": "catalog",
+                                "input": f"text(ALL_TOOLS.filter(entry=>/pixl/i.test({expression})));"}}
+            with self.subTest(expression=expression):
+                self.assertEqual(declared_tools([[call, output]]), {"pixl_source"})
+
+    def test_catalog_name_description_form_does_not_credit_unpaired_or_failed_output(self):
+        catalog = [{"name": "mcp__pixl_local__pixl_source", "description": "Read source"}]
+        for change in ("other_call", "other_tool", "failed", "other_variable", "authored_inventory"):
+            call = {"payload": {"type": "custom_tool_call", "name": "exec", "call_id": "catalog",
+                                "input": 'text(ALL_TOOLS.filter(x=>/pixl/i.test(x.name+" "+x.description)));'}}
+            output = {"payload": {"type": "custom_tool_call_output", "call_id": "catalog", "output": [
+                {"type": "input_text", "text": json.dumps(catalog)}]}}
+            if change == "other_call":
+                output["payload"]["call_id"] = "unrelated"
+            elif change == "other_tool":
+                call["payload"]["name"] = "another_tool"
+            elif change == "failed":
+                output["payload"]["is_error"] = True
+            elif change == "other_variable":
+                call["payload"]["input"] = call["payload"]["input"].replace("x.description", "unrelated.description")
+            else:
+                call["payload"]["input"] = 'text(saved_inventory.filter(x=>/pixl/i.test(x.name+" "+x.description)));'
+            with self.subTest(change=change):
+                self.assertEqual(declared_tools([[call, output]]), set())
+
     def test_auth_startup_discovery_is_distinct_from_child_loading(self):
         result = startup_discovery([{"type": "system", "subtype": "init", "agents": ["pixl:pixl"],
             "mcp_servers": [{"name": "pixl-local", "status": "connected"}]}, {"type": "result", "is_error": True,
@@ -181,6 +213,50 @@ class ReadinessNativeProofTests(unittest.TestCase):
         self.assertTrue(operation_proof(native_calls([journal]), "pixl_source", item, {}))
         result["isError"] = True
         self.assertFalse(operation_proof(native_calls([journal]), "pixl_source", item, {}))
+
+    def test_one_level_file_wrapper_preserves_reference_and_native_export_proof(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "source.json"
+            path.write_text('{"text":"exact native result"}', encoding="utf-8")
+            item = {"path": path.name, "sha256": sha(path)}
+            wrapped = {"tool": "pixl_source", "file": item, "notes": "Context is not proof"}
+            self.assertEqual(reference(root, item), path)
+            self.assertEqual(reference(root, wrapped), path)
+            result = {"isError": False, "structuredContent": {"result_path": path.name, "result_sha256": sha(path)}}
+            calls = [{"file": "native.jsonl", "line": 8, "tool": "pixl_source", "arguments": {},
+                      "success": True, "result": result}]
+            self.assertTrue(operation_proof(calls, "pixl_source", wrapped, {}))
+            result["structuredContent"]["result_sha256"] = "0" * 64
+            self.assertFalse(operation_proof(calls, "pixl_source", wrapped, {}))
+
+    def test_file_reference_rejects_ambiguous_incomplete_and_deeper_wrappers(self):
+        direct = {"path": "source.json", "sha256": "a" * 64}
+        for item in (None, []):
+            with self.subTest(item=item), self.assertRaises(TypeError):
+                file_reference(item)
+        invalid = ({"file": "source.json"}, {"file": {"file": direct}},
+                   {**direct, "file": direct}, {"path": "source.json", "file": direct},
+                   {"file": {"path": "source.json"}}, {"file": {"sha256": "a" * 64}},
+                   {"file": {"path": None, "sha256": "a" * 64}},
+                   {"file": {"path": "source.json", "sha256": "not-a-file-hash"}})
+        for item in invalid:
+            with self.subTest(item=item), self.assertRaises(ValueError):
+                file_reference(item)
+
+    def test_wrapped_reference_still_rejects_escape_and_hash_mismatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = base / "consumer"
+            root.mkdir()
+            outside = base / "outside.json"
+            outside.write_text("{}", encoding="utf-8")
+            saved = root / "source.json"
+            saved.write_text("{}", encoding="utf-8")
+            for item in ({"path": "../outside.json", "sha256": sha(outside)},
+                         {"path": "source.json", "sha256": "0" * 64}):
+                with self.subTest(item=item), self.assertRaises(ValueError):
+                    reference(root, {"file": item})
 
     def test_claude_actual_tool_result_matches_returned_json(self):
         saved = {"text": "actual source", "sha256": "b" * 64}

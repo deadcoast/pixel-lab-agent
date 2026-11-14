@@ -1,0 +1,305 @@
+{
+  "hash": "9d21ae8567b8af9c8208a340454a4997165baa07c1a430752a82f7e65890fca7",
+  "project_root": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-06\\kit consumer",
+  "path": "plar.txt",
+  "project": {
+    "name": "Queue UI",
+    "brief": "Pixel-art queue states integrated with existing backend behavior; preserve Start."
+  },
+  "coverage": {
+    "included": [
+      "src/queue-view.ts status visuals and two consumers",
+      "src/queue.ts backend state transitions",
+      "BRIEF.md",
+      "assets/start.svg"
+    ],
+    "excluded": [
+      "Backend functions with no visual consumer",
+      "Server-provided account badges"
+    ],
+    "unresolved": [
+      "The remote account badge registry is not present; this local inventory does not enumerate it."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "4e9cd8c992197e9aef7c3590d42d8938a8a256357a56e5cc4c942d536480910b",
+      "binding": "current",
+      "observed_sha256": "4e9cd8c992197e9aef7c3590d42d8938a8a256357a56e5cc4c942d536480910b",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-06\\kit consumer\\BRIEF.md"
+    },
+    {
+      "id": "view",
+      "path": "src/queue-view.ts",
+      "sha256": "dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375",
+      "binding": "current",
+      "observed_sha256": "dc768023e413944cfde8aebdb0e1a5af4f5b60cebba4d4861d2c6ecab2dc6375",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-06\\kit consumer\\src\\queue-view.ts"
+    },
+    {
+      "id": "backend",
+      "path": "src/queue.ts",
+      "sha256": "ddc00f9c72c5887fd4e90d663504d9764fdbfe0f0940ad35685a2b9743dc1987",
+      "binding": "current",
+      "observed_sha256": "ddc00f9c72c5887fd4e90d663504d9764fdbfe0f0940ad35685a2b9743dc1987",
+      "absolute_path": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-06\\kit consumer\\src\\queue.ts"
+    }
+  ],
+  "queue": [
+    {
+      "id": "queue.working",
+      "kind": "animation",
+      "purpose": "Communicate an active queue job",
+      "status": "in_progress",
+      "next": "Read this asset's production status; use its retained job action before another request.",
+      "issues": [],
+      "questions": [
+        "Choose and inspect the representative style sample.",
+        "Confirm tightly packed horizontal frames with the target renderer/loader."
+      ]
+    }
+  ],
+  "dependency_issues": {},
+  "asset": {
+    "id": "queue.working",
+    "kind": "animation",
+    "purpose": "Communicate an active queue job",
+    "status": "in_progress",
+    "consumers": [
+      {
+        "source": "view",
+        "symbol": "statusCell",
+        "usage": "working visual selected from shared statusVisuals backend-state mapping"
+      },
+      {
+        "source": "view",
+        "symbol": "compactStatus",
+        "usage": "working visual selected from shared statusVisuals backend-state mapping"
+      }
+    ],
+    "existing": [],
+    "requirements": [
+      {
+        "property": "raster_size",
+        "value": [
+          64,
+          16
+        ],
+        "authority": "proposal",
+        "sources": [
+          "view",
+          "brief"
+        ],
+        "reason": "Assumes tightly packed 16px frames with no gutters; confirm the target loader before integration."
+      },
+      {
+        "property": "state",
+        "value": "running",
+        "authority": "requirement",
+        "sources": [
+          "backend",
+          "view"
+        ],
+        "reason": "Keep backend state and visual meaning aligned."
+      },
+      {
+        "property": "style",
+        "value": "Coherent pixel art; cool blue accent; transparent background; no fixed palette",
+        "authority": "requirement",
+        "sources": [
+          "brief"
+        ],
+        "reason": "Preserve the requested style without inventing a palette restriction."
+      },
+      {
+        "property": "display",
+        "value": {
+          "scale": 3,
+          "filter": "nearest",
+          "background": "#172336"
+        },
+        "authority": "requirement",
+        "sources": [
+          "view"
+        ],
+        "reason": "Review native size and the consumer's actual display scale."
+      },
+      {
+        "property": "style_reference",
+        "value": null,
+        "authority": "unknown",
+        "sources": [
+          "brief"
+        ],
+        "reason": "A representative proposal must be inspected before expanding the family."
+      },
+      {
+        "property": "animation",
+        "value": {
+          "frames": 4,
+          "layout": "horizontal",
+          "frame_ms": 100
+        },
+        "authority": "requirement",
+        "sources": [
+          "brief",
+          "view"
+        ],
+        "reason": "Timing and layout match the UI."
+      }
+    ],
+    "delivery": {
+      "path": "assets/working.png",
+      "checks": [
+        "Verify file and canvas dimensions against the consumer.",
+        "Inspect native-size readability and state meaning.",
+        "Render in statusCell and compactStatus on the dark panel."
+      ]
+    },
+    "depends_on": [],
+    "questions": [
+      "Choose and inspect the representative style sample.",
+      "Confirm tightly packed horizontal frames with the target renderer/loader."
+    ],
+    "next": "Read this asset's production status; use its retained job action before another request.",
+    "evidence": [
+      {
+        "path": ".pixl/assets/queue.working/plans/efefb4e593c4c3817ef6080cc5860c4250737670f8f78e7d2d2d4731f9181b67.json",
+        "note": "Retained requirements, reviewed request and candidate plan; not asset acceptance."
+      }
+    ],
+    "production": {
+      "store": ".pixl/assets/queue.working",
+      "task": "task",
+      "output": "output.working"
+    }
+  },
+  "dependencies": [],
+  "visual_references": [],
+  "requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+  "production": {
+    "store": ".pixl/assets/queue.working",
+    "link_status": "linked",
+    "status": "available",
+    "state": "C:\\github\\pixel-lab-agent\\build\\tm05-win314-06\\kit consumer\\.pixl\\assets\\queue.working\\state.px",
+    "hash": "c526f83301173bfe5400e2d3f8eb6d72da0ab3011510f463f5ea5db588a0977c",
+    "revision": 1,
+    "task": "task",
+    "task_state": "open",
+    "outputs": [
+      {
+        "id": "output.working",
+        "name": "Working loop",
+        "candidate": null,
+        "requirements": [
+          {
+            "id": "criterion.working.meaning",
+            "name": "meaning",
+            "check": "Activity remains readable without implying completion at native and 3x scale.",
+            "domain": "visual",
+            "mode": "visual",
+            "status": "unperformed",
+            "verdict": null,
+            "reason": null,
+            "reviewer": null,
+            "evidence": []
+          }
+        ],
+        "candidates": []
+      }
+    ],
+    "delivery": null,
+    "selection_bindings": [
+      {
+        "input": "selection",
+        "snapshot": ".pixl/assets/queue.working/plans/efefb4e593c4c3817ef6080cc5860c4250737670f8f78e7d2d2d4731f9181b67.json",
+        "asset_id": "queue.working",
+        "binding": "pixl.plar.selection/1",
+        "plar_path": "plar.txt",
+        "requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+        "current_requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+        "selected_for_asset": true,
+        "linked_task": "task",
+        "linked_store": ".pixl/assets/queue.working",
+        "status": "current"
+      }
+    ],
+    "selection_current": true,
+    "jobs": [
+      {
+        "id": "first_request",
+        "state": "prepared",
+        "remote_id": null,
+        "next_action": "dispatch",
+        "durable": true,
+        "task": "task",
+        "provider": "pixellab",
+        "tool": "create_image_pro_flash",
+        "discovery": {
+          "evidence": {
+            "fixture": true
+          },
+          "observed_at": "2026-11-14T09:49:55.795099+00:00",
+          "source": "Installed-operation fixture schema"
+        },
+        "stale": [],
+        "blockers": [],
+        "candidates": []
+      }
+    ],
+    "pending_jobs": [
+      "first_request"
+    ],
+    "next_action": "dispatch",
+    "continuation": {
+      "store": ".pixl/assets/queue.working",
+      "state_hash": "c526f83301173bfe5400e2d3f8eb6d72da0ab3011510f463f5ea5db588a0977c",
+      "asset_id": "queue.working",
+      "requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+      "task": "task",
+      "action": "dispatch",
+      "delivery": null,
+      "jobs": [
+        {
+          "id": "first_request",
+          "task": "task",
+          "state": "prepared",
+          "provider": "pixellab",
+          "remote_id": null,
+          "next_action": "dispatch",
+          "discovery": {
+            "evidence": {
+              "fixture": true
+            },
+            "observed_at": "2026-11-14T09:49:55.795099+00:00",
+            "source": "Installed-operation fixture schema"
+          }
+        }
+      ],
+      "before_another_request": [
+        {
+          "job": "first_request",
+          "action": "dispatch",
+          "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset."
+        }
+      ],
+      "after_observation": {
+        "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+        "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+        "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+      },
+      "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+      "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+    },
+    "link_action": null,
+    "new_request_allowed": false,
+    "scope": "Observed local state and caller-supplied provider evidence; allocation status is not art or renderer acceptance."
+  },
+  "hash_domains": {
+    "hash": "file_sha256",
+    "production.continuation.state_hash": "canonical_state_sha256",
+    "requirements_hash": "selected_requirements_sha256"
+  }
+}

@@ -1,0 +1,74 @@
+import hashlib
+import json
+import os
+import platform
+import subprocess
+import sys
+import traceback
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+
+stage = Path('/mnt/c/github/pixel-lab-agent/evidence/install-support/20261114/local-01/wsl-native-staging-01')
+root = Path('/tmp/pixl-tm05-final-20261114-01').resolve()
+archive_path = stage / 'fixture-inputs.zip'
+cell = root / 'evidence/install-support/20261114/local-01/wsl-py312-02'
+work = root / 'build/tm05-wsl312-02'
+receipt = {'version': 1, 'started_at': datetime.now(UTC).isoformat(), 'platform': platform.platform(),
+           'fixture_root': str(root), 'filesystem_scope': 'Ubuntu WSL2 Linux-native /tmp filesystem; earlier mounted-NTFS execution retained separately',
+           'status': 'running'}
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+def inventory(folder):
+    return {p.relative_to(folder).as_posix(): {'sha256': sha(p), 'bytes': p.stat().st_size}
+            for p in sorted(folder.rglob('*')) if p.is_file()}
+def write(path, value):
+    with path.open('x') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+try:
+    expected = json.loads((stage/'INPUTS.json').read_bytes())
+    assert sha(archive_path) == expected['archive']['sha256']
+    assert root.parent == Path('/tmp') and not root.exists()
+    root.mkdir()
+    with zipfile.ZipFile(archive_path) as archive:
+        for item in archive.infolist():
+            destination = (root/item.filename).resolve()
+            assert destination.is_relative_to(root) and destination != root
+        archive.extractall(root)
+    rows = json.loads((root/'input-manifest.json').read_bytes())
+    actual = inventory(root)
+    del actual['input-manifest.json']
+    assert actual == rows
+    assert sha(root/'input-manifest.json') == expected['input_manifest_sha256']
+    assert sha(root/'evaluations/install_support_check.py') == expected['harness_sha256']
+    assert work.is_relative_to(root/'build') and cell.is_relative_to(root/'evidence/install-support')
+    assert not work.exists() and not cell.exists()
+    receipt.update(extracted_inputs_verified=True, input_count=len(rows), input_archive_sha256=sha(archive_path),
+                   filesystem_type=subprocess.check_output(['stat','-f','-c','%T',str(root)],text=True).strip())
+    argv = ['/usr/bin/python3','-B',str(root/'evaluations/install_support_check.py'),'cell',
+            '--work',str(work),'--evidence',str(cell),'--python','/usr/bin/python3',
+            '--kit',str(root/'plugins/pixl'),'--wheel',str(root/'evidence/install-support/20261114/distribution-02/artifacts/pixl_agent-1.0.0-py3-none-any.whl')]
+    receipt['argv'] = argv
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
+    process = subprocess.run(argv, cwd=root, env=env, capture_output=True)
+    (stage/'cell-stdout.txt').write_bytes(process.stdout)
+    (stage/'cell-stderr.txt').write_bytes(process.stderr)
+    receipt['exit_code'] = process.returncode
+    receipt['original_inputs_unchanged'] = all((root/name).stat().st_size == item['bytes'] and sha(root/name) == item['sha256'] for name,item in rows.items())
+    assert receipt['original_inputs_unchanged']
+    evidence_rows = inventory(cell)
+    write(stage/'returned-evidence-manifest.json', evidence_rows)
+    returned = stage/'returned-evidence.zip'
+    with zipfile.ZipFile(returned,'x',zipfile.ZIP_DEFLATED) as archive:
+        for name in evidence_rows:
+            archive.write(cell/name,name)
+    receipt['returned_archive'] = {'path':str(returned),'sha256':sha(returned),'bytes':returned.stat().st_size}
+    receipt['status'] = 'pass' if process.returncode == 0 else 'fail'
+except Exception as error:
+    receipt.update(status='fail',error={'type':type(error).__name__,'detail':str(error)})
+    (stage/'launcher-error.txt').write_text(traceback.format_exc())
+receipt['finished_at'] = datetime.now(UTC).isoformat()
+write(stage/'RESULT.json',receipt)
+print(json.dumps(receipt))
+sys.exit(0 if receipt['status']=='pass' else 1)

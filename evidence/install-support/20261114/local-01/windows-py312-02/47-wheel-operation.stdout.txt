@@ -1,0 +1,121 @@
+{
+  "result_saved": true,
+  "result_path": "probe/caller-result.json",
+  "result_sha256": "895198a0684b53bfdadafd428ce67a2933cd72fdbebb6e8e2b437bb6a4d4cd47",
+  "result_bytes": 4113,
+  "media_type": "application/json",
+  "path": ".pixl/handoffs/067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24.json",
+  "sha256": "067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24",
+  "asset_id": "queue.working",
+  "requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+  "state_hash": "8bec30523fc63d667eeae0474790c183bfc3b73e31c5b65c0979c9d5f983dfb5",
+  "next": "dispatch",
+  "scope": "Snapshot of derived state plus agent-authored observations. No automatic contract, art or delivery acceptance; reread current PLAR before acting.",
+  "view": "caller",
+  "store": ".pixl/assets/queue.working",
+  "assignment": {
+    "status": "partial",
+    "basis": "agent_authored"
+  },
+  "caller": {
+    "present": false,
+    "basis": "agent_authored",
+    "reason": "No details.caller block was supplied; read details_ref for the retained observations."
+  },
+  "production": {
+    "task": "task",
+    "task_state": "open",
+    "selection_current": true,
+    "criteria": {
+      "total": 1,
+      "by_status": {
+        "unperformed": 1
+      },
+      "unresolved": 1,
+      "scope": "Current nominees only; absent verdicts remain unperformed."
+    },
+    "jobs": {
+      "total": 1,
+      "pending": 1,
+      "by_state": {
+        "prepared": 1
+      }
+    },
+    "delivery_observed": false,
+    "delivery_complete": null,
+    "delivery_inline": true,
+    "scope": "Derived local state and supplied observations; these facts do not determine assignment status or establish undeclared visual/engine checks.",
+    "delivery": null
+  },
+  "details_ref": {
+    "path": ".pixl/handoffs/067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24.json",
+    "sha256": "067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24",
+    "start": 3,
+    "end": 8,
+    "bytes": 109,
+    "json_pointer": "/details"
+  },
+  "resume_ref": {
+    "path": ".pixl/handoffs/067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24.json",
+    "sha256": "067e3f1292776eedeecc23704ab2c5fc279db507fbe1f971849aa4f5ee03ed24",
+    "start": 11,
+    "end": 50,
+    "bytes": 1642,
+    "json_pointer": "/resume"
+  },
+  "resume_inline": true,
+  "resume_bytes": 1316,
+  "refresh": {
+    "operation": "pixl_plar_read",
+    "arguments": {
+      "path": "plar.txt",
+      "asset_id": "queue.working"
+    }
+  },
+  "resume": {
+    "store": ".pixl/assets/queue.working",
+    "state_hash": "8bec30523fc63d667eeae0474790c183bfc3b73e31c5b65c0979c9d5f983dfb5",
+    "asset_id": "queue.working",
+    "requirements_hash": "550dcb2e6faaecb5863ff0b4f8d06ea130d323f439b5341884efa438580230d7",
+    "task": "task",
+    "action": "dispatch",
+    "delivery": null,
+    "jobs": [
+      {
+        "id": "first_request",
+        "task": "task",
+        "state": "prepared",
+        "provider": "pixellab",
+        "remote_id": null,
+        "next_action": "dispatch",
+        "discovery": {
+          "evidence": {
+            "fixture": true
+          },
+          "observed_at": "2026-11-14T09:50:40.186646+00:00",
+          "source": "Installed-operation fixture schema"
+        }
+      }
+    ],
+    "before_another_request": [
+      {
+        "job": "first_request",
+        "action": "dispatch",
+        "requirement": "Resolve this retained attempt on its originating connection before preparing another request for this asset."
+      }
+    ],
+    "after_observation": {
+      "succeeded": "Retrieve the actual result and import it against this job's saved output plan; then review the candidate.",
+      "failed": "Retain the failure, compare the current contract and decide whether an explicit new request is needed.",
+      "pending_or_unknown": "Continue observation or reconciliation of the same attempt; retain its provider identity."
+    },
+    "refresh": "Reread focused PLAR after any observation or state change before following the next operation.",
+    "scope": "Derived local continuation, not a provider call, authorization or acceptance verdict."
+  },
+  "hash_domains": {
+    "requirements_hash": "selected_requirements_sha256",
+    "state_hash": "canonical_state_sha256",
+    "sha256": "file_sha256",
+    "result_sha256": "file_sha256"
+  }
+}

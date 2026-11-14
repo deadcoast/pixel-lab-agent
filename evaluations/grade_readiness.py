@@ -25,7 +25,24 @@ def read(path):
     return json.loads(Path(path).read_bytes())
 
 
+def file_reference(item: dict) -> dict:
+    """Accept a direct locator or one explicit file wrapper, never a deep search."""
+    if not isinstance(item, dict):
+        raise TypeError("Returned artifact reference must be an object")
+    if "file" in item:
+        if "path" in item or "sha256" in item:
+            raise ValueError("Returned artifact reference is ambiguous")
+        item = item["file"]
+    if (not isinstance(item, dict) or "file" in item
+            or not isinstance(item.get("path"), str) or not item["path"]
+            or not isinstance(item.get("sha256"), str)
+            or not re.fullmatch(r"[0-9a-f]{64}", item["sha256"])):
+        raise ValueError("Returned artifact needs one exact path and SHA-256 reference")
+    return {"path": item["path"], "sha256": item["sha256"]}
+
+
 def reference(root: Path, item: dict) -> Path:
+    item = file_reference(item)
     path = (root / item["path"]).resolve()
     if not path.is_relative_to(root.resolve()) or sha(path) != item["sha256"]:
         raise ValueError("Returned artifact escapes root or differs from declared bytes")
@@ -72,6 +89,7 @@ def native_calls(journals: list[list[dict]]) -> list[dict]:
 
 
 def operation_proof(calls: list[dict], tool: str, item: dict, saved: dict) -> list[dict]:
+    item = file_reference(item)
     proofs = []
     for call in calls:
         if call["tool"] != tool or not call["success"]:
@@ -101,8 +119,12 @@ def declared_tools(journals: list[list[dict]]) -> set[str]:
             payload = row.get("payload", {})
             # ALL_TOOLS is native metadata. Accept its returned catalog only
             # from the paired exec enumeration, never from an authored report.
+            # Both names-only and name-plus-description searches preserve that
+            # same metadata origin; bind both fields to the filter's variable.
             if (payload.get("type") == "custom_tool_call" and payload.get("name") == "exec"
-                    and re.search(r"text\(ALL_TOOLS\.filter\(\w+=>/pixl/i\.test\(\w+\.name\)\)\)", payload.get("input", ""))):
+                    and re.search(
+                        r'''text\(ALL_TOOLS\.filter\((?P<item>\w+)=>/pixl/i\.test\((?P=item)\.name(?:\+(?P<quote>["']) (?P=quote)\+(?P=item)\.description)?\)\)\)''',
+                        payload.get("input", ""))):
                 catalog_calls.add(payload.get("call_id"))
             if (payload.get("type") == "custom_tool_call_output" and payload.get("call_id") in catalog_calls
                     and not payload.get("is_error")):
