@@ -1,0 +1,206 @@
+"""Explicit current multi-output preparation, separate from a delivery link.
+
+The mutable head selects an exact retained preparation marker. Its old bytes are
+retained as immutable snapshots. No selection grants acceptance or provider access.
+"""
+
+import json
+from hashlib import sha256
+from pathlib import Path
+
+from . import codec, graph, jobs, store
+from .adapter_versions import require_version
+from .codec import PixlError
+
+NAME = "preparation-focus.json"
+
+
+def _require(value, message):
+    if not value:
+        raise PixlError("plar_focus", message)
+
+
+def _json(root, path, expected=None):
+    from .plar_prepare import _json_file
+
+    try:
+        return _json_file(root, path, expected)
+    except (PixlError, OSError, ValueError) as error:
+        raise PixlError("plar_focus", f"invalid preparation focus artifact: {error}") from error
+
+
+def _hex(value):
+    return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+
+def binding(document, root, folder, path, asset_id, task_id, marker_path, marker_hash):
+    """Validate an exact public preparation marker/task without choosing one."""
+    from . import platform
+
+    folder = Path(folder).resolve()
+    marker, digest, relative = _json(root, marker_path, marker_hash)
+    require_version(marker, "retained preparation marker")
+    fingerprint = marker.get("input_sha256")
+    intent = marker.get("input")
+    _require(isinstance(intent, dict) and _hex(fingerprint), "invalid retained preparation marker")
+    _require(platform._sha(intent) == fingerprint, "retained preparation fingerprint changed")
+    _require(graph.confined(root, relative) == graph.confined(folder, f"plans/{fingerprint}.json"), "preparation marker is outside its exact store location")
+    plar_path = graph.confined(root, path).relative_to(Path(root).resolve()).as_posix()
+    _require(isinstance(intent.get("plar_path"), str)
+             and graph.confined(root, intent["plar_path"]) == graph.confined(root, plar_path)
+             and intent.get("asset_id") == asset_id and _hex(intent.get("requirements_hash")), "preparation focus belongs to another allocation")
+    prefix = marker.get("prefix", "")
+    _require(isinstance(prefix, str) and task_id == prefix + "task", "preparation focus task differs from its marker")
+    task = document.records.get(task_id)
+    _require(task is not None and task.kind == "T", "preparation focus task is missing")
+    matches = []
+    for ref in task.fields["ip"]:
+        artifact = document.records[ref.id]
+        metadata = artifact.fields.get("mt", {})
+        if metadata.get("binding") != "pixl.plar.selection/1":
+            continue
+        if graph.confined(root, artifact.fields["ur"]) == graph.confined(root, relative):
+            matches.append(artifact.fields["dg"] == digest
+                           and metadata.get("asset_id") == asset_id
+                           and metadata.get("requirements_hash") == intent["requirements_hash"]
+                           and isinstance(metadata.get("plar_path"), str)
+                           and graph.confined(root, metadata.get("plar_path", "")) == graph.confined(root, plar_path))
+    _require(matches == [True], "preparation focus is not bound by its task's exact selection input")
+    job_id = prefix + "request" if prefix else "first_request"
+    job = document.records.get(job_id)
+    _require(job is not None and job.kind == "J" and "jr" in job.fields
+             and job.fields["tk"].id == task_id
+             and {r.id for r in job.fields["op"]} == {r.id for r in task.fields["op"]}, "preparation focus needs the exact durable first job")
+    return {"version": 1, "plar_path": plar_path, "asset_id": asset_id,
+            "requirements_hash": intent["requirements_hash"], "task": task_id, "job": job_id,
+            "marker": {"path": relative, "sha256": digest, "input_sha256": fingerprint}}
+
+
+def read(document, root, folder, path, asset_id):
+    """Absent legacy focus is distinct from a present invalid focus; never guess."""
+    location = graph.confined(folder, NAME)
+    if not location.exists():
+        return None
+    value, digest, _ = _json(root, location.relative_to(Path(root).resolve()).as_posix())
+    _require(set(value) == {"version", "plar_path", "asset_id", "requirements_hash", "task", "job", "marker"}
+             and type(value["version"]) is int and value["version"] == 1
+             and isinstance(value["marker"], dict)
+             and set(value["marker"]) == {"path", "sha256", "input_sha256"}, "unsupported preparation focus fields/version")
+    _require(isinstance(value["task"], str) and isinstance(value["marker"]["path"], str)
+             and _hex(value["marker"]["sha256"]), "invalid preparation focus identity")
+    expected = binding(document, root, folder, path, asset_id, value["task"],
+                       value["marker"]["path"], value["marker"]["sha256"])
+    _require(value == expected, "preparation focus does not match its retained marker/task")
+    return {"value": value, "sha256": digest, "path": location.relative_to(Path(root).resolve()).as_posix()}
+
+
+def task_store(document, root, task_id, artifact):
+    """Limit focus guards to direct prepare tasks, not connected family/stage inputs."""
+    location = graph.confined(root, artifact.fields["ur"])
+    if location.parent.name != "plans" or location.suffix != ".json" or not _hex(location.stem):
+        return None
+    marker, _, _ = _json(root, artifact.fields["ur"], artifact.fields["dg"])
+    if "version" in marker:
+        require_version(marker, "retained preparation marker")
+    if (not isinstance(marker.get("input"), dict)
+            or not {"packet", "request", "selection", "plar_path", "asset_id", "requirements_hash"} <= marker["input"].keys()):
+        return None
+    # A recognized direct preparation is not a legacy/connected input merely
+    # because its saved version is unsupported. Do not bypass its focus guard.
+    require_version(marker, "retained preparation marker")
+    if marker.get("input_sha256") != location.stem or not isinstance(marker.get("prefix", ""), str):
+        return None
+    if task_id != marker.get("prefix", "") + "task":
+        return None
+    return location.parent.parent
+
+
+def check_switch(document, root, folder, path, asset_id, task_id, *, marker=None,
+                 revise=False, expected=None, new_task=False, retained_marker=False):
+    """Reject a historical retry before it can create or replace anything."""
+    from .plar_workflow import owned_tasks
+
+    focus = read(document, root, folder, path, asset_id) if document is not None else None
+    if document is None:
+        _require(not graph.confined(folder, NAME).exists(), "focus exists without its production state")
+        return None
+    if focus and focus["value"]["task"] == task_id:
+        return focus
+    owned = owned_tasks(document, root, path, asset_id)
+    if not focus and owned == [task_id]:
+        return None  # Legacy single generation or interrupted initial publication.
+    explicit = revise and expected is not None and codec.digest(document) == expected
+    _require(explicit or (not owned and new_task), "reread current state and use explicit revise/expect to select this preparation")
+    if new_task:
+        if isinstance(marker, dict) and "preparation_focus" in marker:
+            transition = marker["preparation_focus"]
+            _require(isinstance(transition, dict) and set(transition) == {"version", "previous_sha256"}
+                     and type(transition["version"]) is int and transition["version"] == 1
+                     and transition["previous_sha256"] == (focus["sha256"] if focus else None),
+                     "another preparation was selected after this retained plan; do not revive the older plan")
+            if retained_marker and focus is None:
+                history = graph.confined(folder, "preparation-focus")
+                _require(not history.exists() or not any(history.iterdir()),
+                         "the focus head is missing but selection history exists; do not revive an older unmaterialized plan")
+        return focus
+    task_jobs = [r for r in document.records.values() if r.kind == "J" and r.fields["tk"].id == task_id]
+    others = [r for r in document.records.values() if r.kind == "J"
+              and r.fields["tk"].id in owned and r.fields["tk"].id != task_id]
+    prepared = len(task_jobs) == 1 and task_jobs[0].fields["si"].value == "prepared"
+    settled = all(r.fields["si"].value not in jobs.PENDING for r in others)
+    # The immutable marker records which explicit focus preceded a new plan.
+    # This lets an interrupted plan-before-job publication resume without letting
+    # an older no-job generation overtake a subsequently selected generation.
+    transition = marker.get("preparation_focus") if isinstance(marker, dict) else None
+    history = graph.confined(folder, "preparation-focus")
+    legacy_absence = focus is None and (not history.exists() or not any(history.iterdir()))
+    predecessor_matches = (isinstance(transition, dict) and type(transition.get("version")) is int and transition["version"] == 1
+                           and set(transition) == {"version", "previous_sha256"}
+                           and ((focus is not None and transition["previous_sha256"] == focus["sha256"])
+                                or (legacy_absence and transition["previous_sha256"] is None)))
+    _require(settled and (prepared or (not task_jobs and predecessor_matches)),
+             "historical preparation cannot replace current focus; select the exact still-prepared intent with explicit revise/expect")
+    return focus
+
+
+def publish(document, root, folder, path, selected, task_id, marker_path, marker_hash,
+            *, revise=False, expected=None, new_task=False, retained_marker=False):
+    """CAS publish after the durable job; PLAR and store writers cannot race it."""
+    from . import plar
+
+    target = binding(document, root, folder, path, selected["asset"]["id"], task_id, marker_path, marker_hash)
+    marker, _, _ = _json(root, marker_path, marker_hash)
+    with store.lock(graph.confined(root, ".pixl/plar-lock")), store.lock(folder):
+        current = store.load(folder)
+        _require(codec.digest(current) == codec.digest(document), "production changed before focus publication; reread and reconcile the retained intent")
+        latest = plar.read(root, path, selected["asset"]["id"], include_production=False)
+        _require(latest["requirements_hash"] == selected["requirements_hash"]
+                 and all(s["binding"] == "current" for s in latest["sources"]), "consumer requirements changed before focus publication")
+        focus = check_switch(current, root, folder, path, selected["asset"]["id"], task_id,
+                             marker=marker, revise=revise,
+                             expected=codec.digest(current) if expected is not None else None,
+                             new_task=new_task, retained_marker=retained_marker)
+        data = (json.dumps(target, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+        digest = sha256(data).hexdigest()
+        linked = latest["asset"].get("production")
+
+        def result(status, retained):
+            if linked and linked["task"] != task_id:
+                return {"status": "needs_reconciliation", **retained,
+                        "reason": "The existing explicit delivery-output link remains authoritative; this preparation focus is retained but is not the selected delivery work.",
+                        "next": "Inspect and explicitly reconcile the delivery link before continuing this preparation; no arbitrary member was linked as collective delivery."}
+            return {"status": status, **retained}
+
+        if focus and focus["value"] == target:
+            return result("unchanged", focus)
+        history = graph.confined(folder, "preparation-focus")
+        history.mkdir(exist_ok=True)
+        snapshot = graph.confined(history, digest + ".json")
+        if snapshot.exists():
+            _require(snapshot.read_bytes() == data, "retained preparation focus snapshot changed")
+        else:
+            store._atomic(snapshot, data)
+        location = graph.confined(folder, NAME)
+        store._atomic(location, data)
+        return result("selected", {"value": target, "sha256": digest,
+                                  "path": location.relative_to(Path(root).resolve()).as_posix()})

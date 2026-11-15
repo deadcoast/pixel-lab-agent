@@ -1,0 +1,81 @@
+import ctypes,hashlib,json,os,runpy,signal,sys
+from copy import deepcopy
+from pathlib import Path
+import pixl
+from pixl import codec,diagnostics,graph,store
+
+mode,project_text,fixture_text = sys.argv[1:4]
+project = Path(project_text).resolve()
+folder = project / ".pixl"
+modules = {name:str(Path(module.__file__).resolve()) for name,module in
+           (("pixl",pixl),("store",store),("codec",codec),("diagnostics",diagnostics),("graph",graph))}
+
+def document_info(doc):
+    return {"hash":codec.digest(doc),"revision":doc.revision,"task_state":doc.records["task"].fields["st"].value}
+
+def marker(phase):
+    path = Path(sys.argv[4])
+    value = {"pid":os.getpid(),"parent_pid":os.getppid(),"phase":phase,"modules":modules,"state":document_info(store.load(folder))}
+    with path.open("x",encoding="utf-8") as stream:
+        json.dump(value,stream,indent=2)
+    print(json.dumps(value),flush=True)
+
+def await_control():
+    command = sys.stdin.buffer.read(1)
+    if command == b"x":
+        return
+    if command != b"k":
+        raise RuntimeError("Controlled writer received neither release nor termination command")
+    method = "TerminateProcess(GetCurrentProcess(),137)" if os.name == "nt" else "SIGKILL self"
+    path = Path(sys.argv[4]).with_name("owner-termination.json")
+    value = {"pid":os.getpid(),"parent_pid":os.getppid(),"command":"k","method":method,
+             "scope":"Controlled worker self-termination; no lock metadata PID used."}
+    with path.open("x",encoding="utf-8") as stream:
+        json.dump(value,stream,indent=2)
+    print(json.dumps(value),flush=True)
+    if os.name == "nt":
+        kernel = ctypes.WinDLL("kernel32",use_last_error=True)
+        kernel.GetCurrentProcess.argtypes = []
+        kernel.GetCurrentProcess.restype = ctypes.c_void_p
+        kernel.TerminateProcess.argtypes = [ctypes.c_void_p,ctypes.c_uint]
+        kernel.TerminateProcess.restype = ctypes.c_int
+        if not kernel.TerminateProcess(kernel.GetCurrentProcess(),137):
+            raise ctypes.WinError(ctypes.get_last_error())
+        raise RuntimeError("Self TerminateProcess unexpectedly returned")
+    os.kill(os.getpid(),signal.SIGKILL)
+
+if mode == "setup":
+    sample = runpy.run_path(fixture_text)["sample"]
+    initial = sample(project)
+    store.initialize(folder,initial,root=project)
+    candidate = deepcopy(initial)
+    candidate.revision += 1
+    candidate.records["task"].fields["st"] = codec.Symbol("active")
+    with (project/"candidate-1.px").open("xb") as stream:
+        stream.write(codec.encode(candidate))
+    print(json.dumps({"initial":document_info(initial),"candidate":document_info(candidate),"modules":modules}))
+elif mode == "hold":
+    with store.lock(folder):
+        marker("lock_held_before_publication")
+        await_control()
+elif mode == "publish":
+    current = store.load(folder)
+    candidate = codec.parse((project/"candidate-1.px").read_bytes())
+    original_atomic = store._atomic
+    def stop_after_head(path,data):
+        original_atomic(path,data)
+        if Path(path).resolve() == (folder/"state.px").resolve():
+            marker("head_replaced_before_lock_cleanup")
+            await_control()
+    store._atomic = stop_after_head
+    store.commit(folder,candidate,codec.digest(current),root=project)
+elif mode == "next":
+    current = store.load(folder)
+    candidate = deepcopy(current)
+    candidate.revision += 1
+    candidate.records["task"].fields["st"] = codec.Symbol("blocked")
+    with (project/"candidate-2.px").open("xb") as stream:
+        stream.write(codec.encode(candidate))
+    print(json.dumps({"current":document_info(current),"candidate":document_info(candidate),"modules":modules}))
+else:
+    raise ValueError("Unknown controlled worker mode")

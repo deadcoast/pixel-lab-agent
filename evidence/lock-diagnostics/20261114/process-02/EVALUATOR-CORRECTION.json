@@ -1,0 +1,12 @@
+{
+  "predecessor": "C:\\github\\pixel-lab-agent\\evidence\\lock-diagnostics\\20261114\\process-01",
+  "result_sha256": "aa580538281b13c5d1e7de3b3873edc6b21b99471956d3e6705cf47167ffaeae",
+  "helper_sha256": "806cd9a376b9698e8fbbfc6ea9bad034371a7ddb0c968b9a2bb897c825c81e37",
+  "preserved_result": {
+    "status": "fail",
+    "passed": 40,
+    "total": 50
+  },
+  "cause": "On this Windows venv, Popen owns a launcher while the actual worker runs as its interpreter child. The original evaluator compared launcher PID with writer PID and killed only the launcher, so its quiescence claim was not established.",
+  "correction": "Bind the controlled marker PID/parent PID to the owned Popen; compare diagnostics with the actual worker PID. Request OS hard self-termination through controlled stdin, observe its flushed termination receipt and expected exit, then require verified quiescence before any explicit lock move. The predecessor remains failed and unchanged."
+}

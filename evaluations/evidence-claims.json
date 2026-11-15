@@ -739,6 +739,117 @@
           "equals": "pass"
         }
       ]
+    },
+    {
+      "id": "sc09-source-process",
+      "path": "evidence/lock-diagnostics/20261114/process-02/RESULT.json",
+      "sha256": "fe167469678dc5099513f96a765f58eb045c446e8aaca4cc0a17ca97b4fe5d13",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/passed",
+          "equals": 50
+        },
+        {
+          "pointer": "/total",
+          "equals": 50
+        },
+        {
+          "pointer": "/identity_sha256",
+          "equals": "60ad9aa54ab02f368c6b91588ae24fefa29611a9d88b0d47712c0b97c03e141c"
+        }
+      ]
+    },
+    {
+      "id": "sc09-source-identity",
+      "path": "evidence/lock-diagnostics/20261114/process-02/identity.json",
+      "sha256": "60ad9aa54ab02f368c6b91588ae24fefa29611a9d88b0d47712c0b97c03e141c",
+      "assertions": [
+        {
+          "pointer": "/mode",
+          "equals": "source_runtime"
+        }
+      ]
+    },
+    {
+      "id": "sc09-copied-process",
+      "path": "evidence/lock-diagnostics/20261114/process-03/RESULT.json",
+      "sha256": "804375bd26190c238de9806f7b075d28263dbf574cc49cdab234cc0ef0cfe4b5",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/passed",
+          "equals": 50
+        },
+        {
+          "pointer": "/total",
+          "equals": 50
+        },
+        {
+          "pointer": "/identity_sha256",
+          "equals": "1f0af444e89600e8944df4f11d0a6919c77f43127fe03b1bf74d79d25c00eec6"
+        }
+      ]
+    },
+    {
+      "id": "sc09-copied-identity",
+      "path": "evidence/lock-diagnostics/20261114/process-03/identity.json",
+      "sha256": "1f0af444e89600e8944df4f11d0a6919c77f43127fe03b1bf74d79d25c00eec6",
+      "assertions": [
+        {
+          "pointer": "/mode",
+          "equals": "complete_copied_kit"
+        }
+      ]
+    },
+    {
+      "id": "sc09-full-verification",
+      "path": "evidence/verification-runs/20261114T235749.451894Z/result.json",
+      "sha256": "d4562d2f59bb70f1a17a9ae7385650eb41d801ea4dc7c3288b773d78ac46f10c",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/tests/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/tests/run",
+          "equals": 1417
+        },
+        {
+          "pointer": "/tests/passed",
+          "equals": 1413
+        },
+        {
+          "pointer": "/tests/failures",
+          "equals": 0
+        },
+        {
+          "pointer": "/tests/errors",
+          "equals": 0
+        },
+        {
+          "pointer": "/art_pocs/passed",
+          "equals": 39
+        },
+        {
+          "pointer": "/art_pocs/total",
+          "equals": 39
+        },
+        {
+          "pointer": "/distribution/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -1673,6 +1784,142 @@
           "domain": "package",
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "nf07-full-verification",
+          "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SC-09-PROCESS-RECOVERY",
+      "task": "Inspect a blocked local writer and reconcile its interrupted publication",
+      "document": {
+        "path": "evidence/lock-diagnostics/README.md",
+        "anchor": "sc09-process-recovery",
+        "line_sha256": "1a5738471acf34b8e99b61d77048d510937df0484fd9fa8a930d2d3fb330ef8c"
+      },
+      "tier": "controlled Windows process and copied-kit recovery mechanics",
+      "scope": "SC-09 source-runtime and complete copied-kit proofs each pass 50/50 checks across graceful release, interruption before publication and interruption after publication; public CLI refusal and explicit quiescent recovery preserve state and lock evidence.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "Controlled evaluator-owned workers, not native model instruction following, provider execution, broad concurrency or artistic acceptance.",
+        "The original baseline ownership overclaim and 40/50 process-evaluator failure remain in the task ledger; these later proofs do not rewrite those attempts.",
+        "Metadata remains advisory; no age-based automatic reclaim or lock-PID termination is qualified."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "sc09-copied-process",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "sc09-source-process",
+        "sc09-source-identity",
+        "sc09-copied-process",
+        "sc09-copied-identity"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "sc09-source-identity",
+          "pointer": "/runtime_source_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl"
+            ],
+            "suffixes": [
+              ".py",
+              ".json"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "tests/support.py",
+          "receipt": "sc09-source-identity",
+          "pointer": "/fixture_sha256"
+        },
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "sc09-copied-identity",
+          "pointer": "/runtime_source_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl"
+            ],
+            "suffixes": [
+              ".py",
+              ".json"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "tests/support.py",
+          "receipt": "sc09-copied-identity",
+          "pointer": "/fixture_sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "sc09-copied-identity",
+          "pointer": "/kit_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "SC-09-FULL-VERIFICATION",
+      "task": "Check SC-09 maintained source and distributable payloads",
+      "document": {
+        "path": "evidence/lock-diagnostics/README.md",
+        "anchor": "sc09-full-verification",
+        "line_sha256": "e1713423cdb890377809edbfde79c732fd8c52316208cbb16a185e3420696913"
+      },
+      "tier": "local full-suite and installed/copied package checks",
+      "scope": "The exact retained SC-09 full verifier passes 1,413 tests with four Windows privilege skips, 39 reference checks and distribution checks; its source inventory and bundle identity govern current applicability.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "Reference fixtures and local checks do not establish native profile behavior, new provider work or art quality.",
+        "The four unavailable Windows symlink checks remain skipped; the earlier broad Ruff failure is retained separately."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "sc09-full-verification",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "sc09-full-verification"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "sc09-full-verification",
+          "pointer": "/checked_input_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl",
+              "scripts",
+              "tests",
+              "evaluations"
+            ],
+            "suffixes": [
+              ".py"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "sc09-full-verification",
           "pointer": "/bundle_manifest_sha256"
         }
       ]

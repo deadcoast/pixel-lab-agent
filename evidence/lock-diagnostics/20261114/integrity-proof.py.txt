@@ -1,0 +1,138 @@
+"""Retain one read-only SC-09 registry inspection with explicit preservation scope."""
+
+import argparse
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def write_json(path, value):
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
+    root = Path.cwd().resolve()
+    out = (root / args.output).resolve()
+    assert out.is_relative_to(root / "evidence/lock-diagnostics/20261114")
+    out.mkdir()
+    started = datetime.now(UTC).isoformat()
+    manifest_path = root / "evaluations/evidence-claims.json"
+    registry = json.loads(manifest_path.read_bytes())
+    old_bytes = subprocess.check_output(["git", "show", "HEAD:evaluations/evidence-claims.json"], cwd=root)
+    old = json.loads(old_bytes)
+    (out / "previous-registry.json").write_bytes(old_bytes)
+    trees = ["pixl", "scripts", "tests", "evaluations", "plugins/pixl", "docs",
+             "spec", ".agents", "knowledge", "training/original-docs",
+             "evidence/lock-diagnostics"]
+    explicit = {"README.md", "TODO.md", "PLAN.md", "SHELVED.md", "COMPLETED.md",
+                "pyproject.toml", "uv.lock"}
+    explicit.update(item["path"] for item in registry["receipts"])
+    explicit.update(item["document"]["path"] for item in registry["claims"])
+    receipts = {item["id"]: item for item in registry["receipts"]}
+    for claim in registry["claims"]:
+        for binding in claim["bindings"]:
+            if binding["kind"] == "file":
+                explicit.add(binding["path"])
+                continue
+            value = json.loads((root / receipts[binding["receipt"]]["path"]).read_bytes())
+            for token in binding["pointer"].split("/")[1:]:
+                token = token.replace("~1", "/").replace("~0", "~")
+                value = value[int(token)] if isinstance(value, list) else value[token]
+            prefix = binding.get("prefix", "")
+            explicit.update(f"{prefix}/{name}" if prefix else name for name in value)
+
+    def snapshot():
+        paths = set()
+        for name in trees:
+            paths.update(p for p in (root / name).rglob("*") if p.is_file() or p.is_symlink())
+        paths.update(root / name for name in explicit if (root / name).is_file())
+        result = {}
+        for path in sorted(paths):
+            if path.is_relative_to(out):
+                continue
+            value = path.lstat()
+            item = {"size": value.st_size, "mtime_ns": value.st_mtime_ns,
+                    "mode": value.st_mode}
+            if path.is_symlink():
+                item["symlink_target"] = os.readlink(path)
+            else:
+                item["sha256"] = sha(path.read_bytes())
+            result[path.relative_to(root).as_posix()] = item
+        return result
+
+    before = snapshot()
+    write_json(out / "before.json", before)
+    command = [sys.executable, "-B", "scripts/check_integrity.py", "--json"]
+    environment = os.environ.copy()
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    run = subprocess.run(command, cwd=root, env=environment, capture_output=True, timeout=120)
+    (out / "stdout.txt").write_bytes(run.stdout)
+    (out / "stderr.txt").write_bytes(run.stderr)
+    report = json.loads(run.stdout)
+    write_json(out / "report.json", report)
+    after = snapshot()
+    write_json(out / "after.json", after)
+    changed = sorted(path for path in before.keys() & after.keys() if before[path] != after[path])
+    added = sorted(after.keys() - before.keys())
+    removed = sorted(before.keys() - after.keys())
+    claims = {item["id"]: item for item in report["claims"]}
+    current = sorted(key for key, item in claims.items() if item["applicability"] == "current")
+    stale = sorted(key for key, item in claims.items() if item["applicability"] == "stale")
+    expected_stale = sorted(["CORE-SETUP", "CORE-INSTALL-UPDATE", "CURRENT-FULL-VERIFICATION",
+                             "CURRENT-CLAIM-REVIEW", "NF-07-CONSUMER", "NF-07-FULL-VERIFICATION"])
+    checks = {
+        "original_17_claims_unchanged": len(old["claims"]) == 17 and registry["claims"][:17] == old["claims"],
+        "original_57_receipts_unchanged": len(old["receipts"]) == 57 and registry["receipts"][:57] == old["receipts"],
+        "release_declarations_unchanged": registry["release"] == old["release"],
+        "registry_metadata_unchanged": all(registry[key] == old[key] for key in ("version", "scope", "cycle")),
+        "expected_review_exit": run.returncode == 1 and report["status"] == "needs_review",
+        "expected_claim_and_receipt_counts": report["summary"] == {"claims_checked": 19, "receipts_checked": 62, "current": 2, "historical": 11, "needs_review": 6},
+        "two_new_claims_current": current == ["SC-09-FULL-VERIFICATION", "SC-09-PROCESS-RECOVERY"],
+        "six_prior_claims_stale": stale == expected_stale,
+        "all_claim_receipts_intact": all(item["receipt_integrity"] == "intact" for item in claims.values()),
+        "all_pinned_anchor_lines_intact": all(item["document_status"] == "intact" for item in claims.values()),
+        "current_bundle_checks_pass": all(item["status"] == "current" for item in report["release"]["checks"] if item["code"].startswith("bundle_")),
+        "selected_files_bytes_metadata_and_inventory_unchanged": not changed and not added and not removed,
+    }
+    result = {
+        "version": 1,
+        "status": "pass" if all(checks.values()) else "fail",
+        "started_at": started,
+        "finished_at": datetime.now(UTC).isoformat(),
+        "command": command,
+        "command_exit_code": run.returncode,
+        "checks": checks,
+        "passed": sum(checks.values()),
+        "total": len(checks),
+        "registry_sha256": sha(manifest_path.read_bytes()),
+        "helper_sha256": sha(Path(__file__).read_bytes()),
+        "report_sha256": sha((out / "report.json").read_bytes()),
+        "summary": report["summary"],
+        "preservation": {"trees": trees, "explicit_files": sorted(explicit), "excluded": args.output,
+                         "files_before": len(before), "files_after": len(after),
+                         "changed": changed, "added": added, "removed": removed},
+        "scope": "One read-only inspection of the updated registry and declared release. The wrapper writes only this fresh evidence directory. Selected source/bundle/checker/SC-09 evidence trees and all registered retained receipts/claim documents are compared by bytes, metadata and file inventory; this is not a whole-checkout preservation claim.",
+        "limits": ["Expected stale applicability and retained archive source drift remain review gaps, not runtime failures.",
+                   "No builder, full verifier, host/model replay, provider, renderer or artistic/human acceptance is performed.",
+                   "M1/M2 and broader M3/M4/M5 remain open."],
+    }
+    write_json(out / "RESULT.json", result)
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total", "summary")}, indent=2))
+    return 0 if result["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

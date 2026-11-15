@@ -2,8 +2,12 @@
 
 import json
 import os
+import re
+import socket
+import stat
 import tempfile
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .codec import Document, PixlError, Record, Ref, Symbol, digest, encode, parse
@@ -25,6 +29,86 @@ JOB_TRANSITIONS = {
     "failed": set(),
 }
 
+LOCK_METADATA_LIMIT = 4096
+_LOCK_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)\Z")
+
+
+def _lock_owner(value):
+    """Accept recorded identity hints, never a claim that a process is alive."""
+    if not isinstance(value, dict) or type(value.get("pid")) is not int or not 0 < value["pid"] <= 2**32 - 1:
+        return {}
+    owner = {"pid": value["pid"]}
+    host = value.get("host")
+    if isinstance(host, str) and 0 < len(host) <= 255 and host.isprintable():
+        owner["host"] = host
+    acquired = value.get("acquired_at")
+    if isinstance(acquired, str) and len(acquired) <= 40 and acquired.isprintable() and _LOCK_TIME.fullmatch(acquired):
+        try:
+            observed = datetime.fromisoformat(acquired)
+            if observed.utcoffset() is not None and observed.utcoffset().total_seconds() == 0:
+                owner["acquired_at"] = acquired
+        except ValueError:
+            pass
+    return owner
+
+
+def _lock_signature(value):
+    # Windows path and descriptor ctime can mean different things. Compare it
+    # only within the same API before/after the read, not across these views.
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
+            value.st_mtime_ns)
+
+
+def _lock_pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate lock metadata field")
+        value[key] = item
+    return value
+
+
+def _lock_constant(_value):
+    raise ValueError("non-JSON lock metadata")
+
+
+def _lock_observation(path):
+    """Bounded best-effort metadata read; a failed observation never breaks a lock."""
+    result = {"path": str(path), "metadata_status": "unreadable", "owner_state": "unverified"}
+    try:
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode):
+            return {**result, "metadata_status": "non_regular"}
+        if before.st_size > LOCK_METADATA_LIMIT:
+            return {**result, "metadata_status": "oversized"}
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        with os.fdopen(os.open(path, flags), "rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if not stat.S_ISREG(opened.st_mode) or _lock_signature(before) != _lock_signature(opened):
+                return {**result, "metadata_status": "changed"}
+            data = stream.read(LOCK_METADATA_LIMIT + 1)
+            read = os.fstat(stream.fileno())
+        after = path.lstat()
+        if (_lock_signature(before) != _lock_signature(read) or _lock_signature(read) != _lock_signature(after)
+                or before.st_ctime_ns != after.st_ctime_ns or opened.st_ctime_ns != read.st_ctime_ns):
+            return {**result, "metadata_status": "changed"}
+    except FileNotFoundError:
+        return {**result, "metadata_status": "changed"}
+    except OSError:
+        return result
+    if len(data) > LOCK_METADATA_LIMIT:
+        return {**result, "metadata_status": "oversized"}
+    if not data.strip():
+        return {**result, "metadata_status": "incomplete"}
+    try:
+        owner = _lock_owner(json.loads(data.decode("utf-8"), object_pairs_hook=_lock_pairs,
+                                      parse_constant=_lock_constant))
+    except (ValueError, RecursionError):
+        owner = {}
+    if not owner:
+        return {**result, "metadata_status": "malformed"}
+    return {**result, "metadata_status": "readable", "owner": owner}
+
 
 @contextmanager
 def lock(folder):
@@ -33,14 +117,36 @@ def lock(folder):
     path = folder / ".lock"
     try:
         fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    except FileExistsError as error:
+    except (FileExistsError, PermissionError) as error:
+        if not isinstance(error, FileExistsError):
+            # Windows reports an existing directory at .lock as permission
+            # denied. Preserve ordinary access errors when no lock is observed.
+            try:
+                path.lstat()
+            except OSError:
+                raise error
+        observation = _lock_observation(path)
+        owner = observation.get("owner", {})
+        detail = f"{path}; owner metadata {observation['metadata_status']}"
+        if owner:
+            detail += f"; recorded PID {owner['pid']}"
+            if "host" in owner:
+                detail += f" on host {owner['host']!r}"
+            if "acquired_at" in owner:
+                detail += f"; acquired_at {owner['acquired_at']}"
         raise PixlError(
             "store_locked",
-            f"{path}; inspect owner PID and ensure no writer remains before removing a stale lock",
+            detail + "; owner liveness is unverified. Keep this lock until all writers are confirmed stopped; PID or age alone is not proof of an abandoned lock.",
+            context={"lock": observation},
         ) from error
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
-            json.dump({"pid": os.getpid()}, stream)
+            metadata = {"pid": os.getpid(), "acquired_at": datetime.now(UTC).isoformat()}
+            try:
+                metadata["host"] = socket.gethostname()
+            except OSError:
+                pass
+            json.dump(metadata, stream)
             stream.flush()
             os.fsync(stream.fileno())
         yield

@@ -1,0 +1,98 @@
+"""Preserve the SC-09 baseline gap using a real held and interrupted writer."""
+import hashlib
+import json
+import subprocess
+import sys
+import time
+import zipfile
+from copy import deepcopy
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from pixl import store
+from pixl.codec import Symbol, digest, encode
+from tests.support import sample
+
+OUT = Path(__file__).parent / "baseline-01"
+OUT.mkdir(exist_ok=False)
+project = OUT / "project"
+doc = sample(project)
+folder = project / ".pixl"
+store.initialize(folder, doc, root=project)
+candidate = deepcopy(doc)
+candidate.revision += 1
+candidate.records["task"].fields["st"] = Symbol("active")
+(project / "candidate.px").write_bytes(encode(candidate))
+state_before = (folder / "state.px").read_bytes()
+source_names = ["pixl/store.py", "pixl/diagnostics.py", "pixl/codec.py", "pixl/cli.py", "pixl/mcp.py", "tests/support.py"]
+source_hashes = {}
+for name in source_names:
+    target = OUT / "source-snapshot" / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes((ROOT / name).read_bytes())
+    source_hashes[name] = hashlib.sha256(target.read_bytes()).hexdigest()
+(OUT / "baseline-proof.py.txt").write_bytes(Path(__file__).read_bytes())
+kit = {}
+with zipfile.ZipFile(OUT / "previous-kit.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+    for path in sorted((ROOT / "plugins/pixl").rglob("*")):
+        if path.is_file() and "__pycache__" not in path.parts:
+            name = path.relative_to(ROOT).as_posix()
+            data = path.read_bytes()
+            archive.writestr(name, data)
+            kit[name] = hashlib.sha256(data).hexdigest()
+(OUT / "previous-kit-manifest.json").write_text(json.dumps(kit, indent=2) + "\n", encoding="utf-8")
+ready = OUT / "ready.json"
+child_code = """import json,os,sys
+from pathlib import Path
+from pixl.store import lock
+with lock(sys.argv[1]):
+    Path(sys.argv[2]).write_text(json.dumps({'pid':os.getpid()}),encoding='utf-8')
+    sys.stdin.buffer.read(1)
+"""
+child_command = [sys.executable, "-B", "-c", child_code, str(folder), str(ready)]
+child = subprocess.Popen(child_command, cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+result = {"version": 1, "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+          "sources": source_hashes, "owner_command": child_command, "owner_pid": child.pid, "previous_kit_files": len(kit), "observations": {}}
+
+def contender(label):
+    command = [sys.executable, "-B", "-m", "pixl", "commit", str(folder), str(project / "candidate.px"), "--expect", digest(doc), "--root", str(project)]
+    run = subprocess.run(command, cwd=ROOT, capture_output=True, timeout=30)
+    (OUT / (label + ".stdout.txt")).write_bytes(run.stdout)
+    (OUT / (label + ".stderr.txt")).write_bytes(run.stderr)
+    diagnostic = json.loads(run.stderr)
+    row = {"command": command, "exit_code": run.returncode, "diagnostic": diagnostic}
+    result["observations"][label] = row
+    return row
+
+try:
+    deadline = time.monotonic() + 15
+    while not ready.exists():
+        if child.poll() is not None or time.monotonic() >= deadline:
+            raise RuntimeError("Owner did not acquire the lock")
+        time.sleep(0.02)
+    lock_bytes = (folder / ".lock").read_bytes()
+    (OUT / "held-lock.json").write_bytes(lock_bytes)
+    live = contender("live-contender")
+    child.kill()
+    stdout, stderr = child.communicate(timeout=15)
+    (OUT / "owner.stdout.txt").write_bytes(stdout)
+    (OUT / "owner.stderr.txt").write_bytes(stderr)
+    result["owner_exit_code"] = child.returncode
+    interrupted = contender("interrupted-contender")
+    result["exclusion_preserved"] = all(row["exit_code"] == 2 and row["diagnostic"]["error"] == "store_locked" for row in (live, interrupted))
+    result["lock_bytes_preserved"] = (folder / ".lock").read_bytes() == lock_bytes
+    result["state_bytes_preserved"] = (folder / "state.px").read_bytes() == state_before
+    result["owner_reported_in_public_context"] = "lock" in live["diagnostic"]
+    result["lock_specific_recovery"] = live["diagnostic"].get("recovery", {}).get("action") == "inspect_lock_owner"
+    result["status"] = "gap_reproduced" if result["exclusion_preserved"] and not result["owner_reported_in_public_context"] and not result["lock_specific_recovery"] else "unexpected"
+    result["scope"] = "Real child acquires lock; live and hard-terminated owner both exclude a public CLI commit. Baseline owner-context/recovery gap remains visible. The leftover lock and original state are retained; no stale lock was removed and no provider work occurred."
+except Exception as error:
+    result.update(status="failed", error=type(error).__name__, detail=str(error))
+finally:
+    if child.poll() is None:
+        child.kill()
+        child.communicate(timeout=15)
+    (OUT / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+print(json.dumps({key: result.get(key) for key in ("status", "exclusion_preserved", "owner_reported_in_public_context", "lock_specific_recovery", "lock_bytes_preserved", "state_bytes_preserved")}))
+raise SystemExit(0 if result["status"] == "gap_reproduced" else 1)

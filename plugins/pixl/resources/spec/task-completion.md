@@ -19,7 +19,13 @@ active revision and then the done revision, retaining both snapshots; an active
 task needs one revision. The operation holds the writer lock throughout. Validation
 failure leaves state unchanged. Storage interruption between publications can leave
 a valid active state; read workflow/current hash and resume without repeating any
-provider request. Hard process termination may leave the existing store lock; follow the normal stale-lock owner check before recovery. This is not a multi-file all-or-nothing transaction.
+provider request. Hard process termination may leave the existing store lock.
+Confirm the owner ended, quiesce all writers and preserve the leftover record
+before deliberate recovery; then reread the actual published state. PID or age
+alone is insufficient. The detailed procedure is
+`plugins/pixl/skills/pixl/references/store-locking.md` in the source checkout, or
+`skills/pixl/references/store-locking.md` from a complete kit's root. This is not
+a multi-file all-or-nothing transaction.
 
 An already-done task with the same selection and expected hash returns
 `already_complete:true` without another revision. Results include state/hash/revision,

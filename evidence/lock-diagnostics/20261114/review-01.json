@@ -1,0 +1,197 @@
+{
+  "format": "pixl-sc09-independent-review-v1",
+  "reviewed_at": "2026-11-14T23:56:58.117793+00:00",
+  "reviewer": "/root/sc09_lock_paths",
+  "scope": "SC-09 writer-lock metadata, public diagnostics, isolated tests and recovery guide; read-only source review with isolated test execution.",
+  "status": "pass_with_declared_limits",
+  "base_commit": "cf952854f4e103d360d438cf3ca641ac32dd95d6",
+  "source_sha256": {
+    "pixl/store.py": "d3abacee231dd1f0bb07c0e58c4b6fe7deb8494272856189f4bb41689a68bdc0",
+    "pixl/diagnostics.py": "5297c95c62065bc78799f59ac40ec552968f5090a0e600b7d4e9c19da85a383c",
+    "tests/test_store_lock.py": "de33131a8e41a4a1b22caedb2001bddedf316cb4226f96ccfbc628988e9289a3",
+    "plugins/pixl/skills/pixl/references/store-locking.md": "42364fa4254413257e3a71d5b4734180208913c32056d4bcfefb3d5ede316ab8",
+    "plugins/pixl/skills/pixl/references/state-authority.md": "4f883c6832d63a5e8ff134f69dbbf6d90abdc96c3004b39cae7aec6a87715112",
+    "docs/AGENT-KIT.md": "25e3a388e4597c08d06a8a8c8383c577942f68cd65427d6682a5551e9579e897",
+    "pixl/cli.py": "e6c4858aca2a61dcf4c4545b2ac822b31748c6ab8df7454708740af399f8e1db",
+    "pixl/mcp.py": "3d8abe286b50a410791e0c885e5ae8b74c9dd247aaa62df8ca05e9ded1449bc6",
+    "pixl/service.py": "d16075fdea9a0b298a2faeeb14df0586d9992fd878eb013e0f4cf549803c30d7",
+    "pixl/codec.py": "8a3c500fe4822e18c021d9aec61dcab432e941ce10a9dd7a00f6fb63da92f775",
+    "pixl/caller_result.py": "56f6ea375164671464a680e0accfbaa40a03db8de3bd18fc0051988f4afe8992"
+  },
+  "sources_unchanged_during_independent_test_run": true,
+  "findings": [],
+  "checks": [
+    {
+      "id": "exclusive-writer-protocol",
+      "result": "pass",
+      "kind": "source_review_and_ast_comparison",
+      "sources": [
+        "pixl/store.py:114",
+        "pixl/store.py:382"
+      ],
+      "observation": "Exclusive O_CREAT|O_EXCL acquisition and finally release remain. Initialize, commit, load, publication and atomic-write function ASTs match HEAD; CAS reload/hash/revision checks are unchanged.",
+      "unchanged_functions": {
+        "initialize": true,
+        "commit": true,
+        "load": true,
+        "_publish": true,
+        "_atomic": true
+      }
+    },
+    {
+      "id": "bounded-best-effort-observation",
+      "result": "pass",
+      "kind": "source_review_and_isolated_tests",
+      "sources": [
+        "pixl/store.py:32",
+        "pixl/store.py:75"
+      ],
+      "observation": "At most 4097 bytes are read from a 4096-byte accepted record. Initial lstat rejects non-regular/oversized files; descriptor/path identity and before/after metadata checks discard detected changes. Read failures retain contention. O_NOFOLLOW/O_NONBLOCK are used where available. This is not a malicious-filesystem guarantee."
+    },
+    {
+      "id": "recorded-owner-only",
+      "result": "pass",
+      "kind": "source_review_and_isolated_tests",
+      "sources": [
+        "pixl/store.py:36",
+        "pixl/store.py:62",
+        "pixl/store.py:144"
+      ],
+      "observation": "New records add host and UTC acquisition time. Legacy PID-only JSON remains readable. PID is bounded and excludes booleans; optional host/time are bounded and validated. Duplicates, non-JSON constants, invalid UTF-8 and malformed/deep records do not expose payloads or grant recovery authority."
+    },
+    {
+      "id": "no-probe-break-or-retry",
+      "result": "pass",
+      "kind": "source_review_and_isolated_tests",
+      "sources": [
+        "pixl/store.py:114",
+        "pixl/diagnostics.py:179"
+      ],
+      "observation": "No PID liveness query, automatic age-based deletion, wait loop or retry was added. Existing locks stay in place on refusal, including old, malformed and unreadable records. A lock disappearing during observation is reported changed and is not reacquired by that call."
+    },
+    {
+      "id": "public-api-contract",
+      "result": "pass",
+      "kind": "source_review_and_actual_cli_mcp_test",
+      "sources": [
+        "pixl/diagnostics.py:114",
+        "pixl/diagnostics.py:179",
+        "pixl/diagnostics.py:222",
+        "pixl/cli.py:588",
+        "pixl/mcp.py:538",
+        "pixl/caller_result.py:26"
+      ],
+      "observation": "store_locked preserves error/detail and adds the existing unfinished_work category with inspect_lock_owner. The optional lock field copies only runtime error context and whitelisted fields; request arguments cannot invent observed owner data. CLI and MCP diagnostics agree. CLI exits 2; MCP returns isError in its successful transport process."
+    },
+    {
+      "id": "auxiliary-lock-recovery",
+      "result": "pass",
+      "kind": "source_review_and_isolated_tests",
+      "sources": [
+        "plugins/pixl/skills/pixl/references/store-locking.md:76",
+        "pixl/diagnostics.py:179"
+      ],
+      "observation": "The exact lock path is surfaced without manufacturing a state.px read beneath PLAR/handoff lock folders. Recovery directs the caller to reconcile the affected store, PLAR or handoff and preserves unknown remote attempts."
+    },
+    {
+      "id": "windows-failure-corrections",
+      "result": "pass",
+      "kind": "source_review_and_isolated_tests",
+      "sources": [
+        "pixl/store.py:55",
+        "pixl/store.py:92",
+        "pixl/store.py:120"
+      ],
+      "observation": "Path and descriptor ctime are compared within the same stat API; existing directory PermissionError becomes non_regular contention, while permission failure with no observed lock remains the original access failure. Both regressions are covered by passing tests."
+    },
+    {
+      "id": "guide-and-saved-state-boundary",
+      "result": "pass",
+      "kind": "source_review",
+      "sources": [
+        "plugins/pixl/skills/pixl/references/store-locking.md:1",
+        "plugins/pixl/skills/pixl/references/state-authority.md:15",
+        "docs/AGENT-KIT.md:404",
+        "spec/PIXL-1.md:70"
+      ],
+      "observation": "Guide requires establishing quiescence for all writers, preserving exact leftover bytes and owning-session evidence, then explicit movement to a fresh location. It explains successor-lock cleanup risk and does not claim atomic compare-and-unlink. The additive local lock metadata does not change saved PX1/PX2 document/registry semantics or require a migration."
+    }
+  ],
+  "independent_execution": {
+    "command": [
+      ".venv/Scripts/python.exe",
+      "-B",
+      "-m",
+      "unittest",
+      "tests.test_store_lock",
+      "-v"
+    ],
+    "tests_run": 21,
+    "passed": 20,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skip_reason": "Windows symlink creation unavailable: WinError 1314, required privilege not held.",
+    "returncode": 0,
+    "raw_receipt": "evidence/lock-diagnostics/20261114/reviewer-01/command.json",
+    "actual_cli_mcp_subprocesses_exercised": true
+  },
+  "preserved_failures": [
+    {
+      "path": "evidence/lock-diagnostics/20261114/implementation-01/RESULT.json",
+      "observed_exit_code": 1,
+      "scope": "Earlier source-bound isolated test failure retained; current passing result does not replace it."
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/implementation-03/RESULT.json",
+      "observed_ruff_exit_code": 1,
+      "scope": "Earlier source-bound Ruff failure retained; current passing result does not replace it."
+    }
+  ],
+  "retained_evidence": [
+    {
+      "path": "evidence/lock-diagnostics/20261114/reviewer-01/command.json",
+      "sha256": "b2997bdf42cb1bf1da88c79e798f6117dd608a54a3aae07d8d2e515b09eb5454"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/reviewer-01/stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/reviewer-01/stderr.txt",
+      "sha256": "4d4b8d6524c5e3bdd450555e6dc19866b52cc5a8449a7a86450d3622e7978b36"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/reviewer-01/sources-before.json",
+      "sha256": "85e508d7e67a0b974b879a99263f16e708d2bf4d9b7d04863de06328212db02d"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/reviewer-01/sources-after.json",
+      "sha256": "85e508d7e67a0b974b879a99263f16e708d2bf4d9b7d04863de06328212db02d"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/implementation-01/RESULT.json",
+      "sha256": "58fd916c020168781d331683cefe724bf792c169c52de6e85fbe1e711ae1228f"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/implementation-03/RESULT.json",
+      "sha256": "85f288f2c0535e535babdcc82dd1340f6fa0cedebe84c5516443efa62501af8a"
+    },
+    {
+      "path": "evidence/lock-diagnostics/20261114/implementation-04/RESULT.json",
+      "sha256": "6607dd1045ab535bd669886b14e399518c61e6d9426b1ad20f3061c31c37120a"
+    }
+  ],
+  "limits": [
+    "This review does not establish native model instruction following, artistic quality, real PixelLab execution, engine acceptance or human acceptance.",
+    "The Windows symlink test was skipped for privilege; non-regular handling was source-reviewed and directory behavior was executed.",
+    "Metadata is best-effort advisory observation, not proof of process liveness, distributed exclusion or protection from a malicious filesystem writer.",
+    "The reviewer did not run the full verification suite, rebuild generated bundles, or independently execute the parent process-crash recovery proof.",
+    "Source AST comparison establishes unchanged commit/publication code; broader concurrency/process evidence belongs to separately retained root verification.",
+    "M1/M2 and broader M3/M4/M5 remain open; human acceptance remains separate."
+  ],
+  "reviewer_changes": [
+    "evidence/lock-diagnostics/20261114/reviewer-01/",
+    "evidence/lock-diagnostics/20261114/review-01.json"
+  ]
+}

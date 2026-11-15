@@ -1,0 +1,49 @@
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests\test_store_lock.py:30:9
+   |
+29 |       def blocked(self, folder=None):
+30 | /         with self.assertRaises(PixlError) as caught:
+31 | |             with store.lock(self.folder if folder is None else folder):
+   | |_______________________________________________________________________^
+32 |                   self.fail("A contender acquired an existing lock")
+33 |           self.assertEqual(caught.exception.code, "store_locked")
+   |
+help: Combine `with` statements
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests\test_store_lock.py:58:9
+   |
+57 |       def test_body_failure_releases_normal_owned_lock(self):
+58 | /         with self.assertRaisesRegex(RuntimeError, "interrupted operation"):
+59 | |             with store.lock(self.folder):
+   | |_________________________________________^
+60 |                   raise RuntimeError("interrupted operation")
+61 |           self.assertFalse(self.path.exists())
+   |
+help: Combine `with` statements
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests\test_store_lock.py:66:9
+   |
+65 |       def test_unavailable_hostname_does_not_block_acquisition(self):
+66 | /         with patch.object(store.socket, "gethostname", side_effect=OSError("host unavailable")):
+67 | |             with store.lock(self.folder):
+   | |_________________________________________^
+68 |                   metadata = json.loads(self.path.read_bytes())
+69 |                   self.assertNotIn("host", metadata)
+   |
+help: Combine `with` statements
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> tests\test_store_lock.py:190:9
+    |
+189 |       def test_permission_denial_without_observed_lock_stays_access_error(self):
+190 | /         with patch.object(store.os, "open", side_effect=PermissionError("cannot create lock")):
+191 | |             with self.assertRaisesRegex(PermissionError, "cannot create lock"):
+    | |_______________________________________________________________________________^
+192 |                   with store.lock(self.folder):
+193 |                       self.fail("Unexpected acquisition")
+    |
+help: Combine `with` statements
+
+Found 4 errors.

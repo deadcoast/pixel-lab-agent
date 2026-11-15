@@ -6,6 +6,7 @@ Recovery operations, when supplied, are reads for reconciliation, never retries.
 
 import json
 import re
+from datetime import datetime
 from pathlib import PurePosixPath
 
 from .codec import PixlError
@@ -23,6 +24,8 @@ _INVALID = {
     "platform_arguments", "platform_json", "platform_request", "job_request", "job_event",
 }
 _UNAVAILABLE = {"file_read", "caller_artifact_unavailable"}
+_LOCK_STATUS = {"readable", "incomplete", "malformed", "oversized", "unreadable", "non_regular", "changed"}
+_LOCK_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)\Z")
 
 
 def _path(value):
@@ -108,6 +111,35 @@ def _state_read(operation, identity, jobs=False):
     return {"operation": "pixl_jobs" if jobs else "pixl_validate", "arguments": {"path": path}}
 
 
+def _lock_context(context):
+    """Whitelist runtime-observed lock metadata, not caller-supplied assertions."""
+    value = context.get("lock")
+    if not isinstance(value, dict):
+        return {}
+    result = {"owner_state": "unverified"}
+    path = value.get("path")
+    if isinstance(path, str) and 0 < len(path) <= 4096 and path.isprintable():
+        result["path"] = path
+    status = value.get("metadata_status")
+    if isinstance(status, str) and status in _LOCK_STATUS:
+        result["metadata_status"] = status
+    owner = value.get("owner")
+    if status == "readable" and isinstance(owner, dict) and type(owner.get("pid")) is int and 0 < owner["pid"] <= 2**32 - 1:
+        observed = {"pid": owner["pid"]}
+        host = owner.get("host")
+        if isinstance(host, str) and 0 < len(host) <= 255 and host.isprintable():
+            observed["host"] = host
+        acquired = owner.get("acquired_at")
+        if isinstance(acquired, str) and len(acquired) <= 40 and acquired.isprintable() and _LOCK_TIME.fullmatch(acquired):
+            try:
+                datetime.fromisoformat(acquired)
+                observed["acquired_at"] = acquired
+            except ValueError:
+                pass
+        result["owner"] = observed
+    return result
+
+
 def error_result(operation, error, args=None):
     """Preserve codes/text and add bounded recovery without executing anything."""
     operation = operation.removeprefix("pixl_").replace("-", "_") if isinstance(operation, str) else ""
@@ -143,6 +175,12 @@ def error_result(operation, error, args=None):
             "action": action,
             "detail": "Read the existing job and its next action before deciding what work remains. This error does not authorize another submission.",
             **(_state_read(operation, identity, jobs=True) or _selection_read(operation, args, identity)),
+        }
+    elif code == "store_locked":
+        category = "unfinished_work"
+        recovery = {
+            "action": "inspect_lock_owner",
+            "detail": "Keep the lock and inspect the recorded owner on its host. Confirm all writers are stopped before explicitly preserving and clearing an abandoned lock; PID, timestamp or age alone is not proof. Then reread the affected state, PLAR or handoff and reconcile any prior publication before a local retry. Do not resubmit provider work to repair a local lock.",
         }
     elif code in _STALE:
         category = "stale_local_state"
@@ -181,4 +219,9 @@ def error_result(operation, error, args=None):
     elif code == "result_exists":
         recovery = {"action": "choose_fresh_export_path", "detail": "Preserve the existing result and choose a fresh project-relative export path. Reconcile any prior operation outcome before repeating a mutation."}
 
-    return {"error": code, "detail": str(error), "category": category, "recovery": recovery, "identity": identity}
+    result = {"error": code, "detail": str(error), "category": category, "recovery": recovery, "identity": identity}
+    if code == "store_locked":
+        observed_lock = _lock_context(context)
+        if observed_lock:
+            result["lock"] = observed_lock
+    return result

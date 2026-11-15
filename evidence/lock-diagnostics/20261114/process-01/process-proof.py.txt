@@ -1,0 +1,374 @@
+"""SC-09 real-process exclusion and explicit interrupted-writer recovery proof.
+
+This retained evaluator writes only its fresh output directory and fixture
+projects. It kills only Popen children that it created, never a recorded PID.
+"""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[3]
+OUTPUT_ROOT = ROOT / "evidence/lock-diagnostics"
+FIXTURE = ROOT / "tests/support.py"
+
+WORKER = r'''import hashlib,json,os,runpy,sys
+from copy import deepcopy
+from pathlib import Path
+import pixl
+from pixl import codec,diagnostics,graph,store
+
+mode,project_text,fixture_text = sys.argv[1:4]
+project = Path(project_text).resolve()
+folder = project / ".pixl"
+modules = {name:str(Path(module.__file__).resolve()) for name,module in
+           (("pixl",pixl),("store",store),("codec",codec),("diagnostics",diagnostics),("graph",graph))}
+
+def document_info(doc):
+    return {"hash":codec.digest(doc),"revision":doc.revision,"task_state":doc.records["task"].fields["st"].value}
+
+def marker(phase):
+    path = Path(sys.argv[4])
+    value = {"pid":os.getpid(),"phase":phase,"modules":modules,"state":document_info(store.load(folder))}
+    with path.open("x",encoding="utf-8") as stream:
+        json.dump(value,stream,indent=2)
+    print(json.dumps(value),flush=True)
+
+if mode == "setup":
+    sample = runpy.run_path(fixture_text)["sample"]
+    initial = sample(project)
+    store.initialize(folder,initial,root=project)
+    candidate = deepcopy(initial)
+    candidate.revision += 1
+    candidate.records["task"].fields["st"] = codec.Symbol("active")
+    with (project/"candidate-1.px").open("xb") as stream:
+        stream.write(codec.encode(candidate))
+    print(json.dumps({"initial":document_info(initial),"candidate":document_info(candidate),"modules":modules}))
+elif mode == "hold":
+    with store.lock(folder):
+        marker("lock_held_before_publication")
+        sys.stdin.buffer.read(1)
+elif mode == "publish":
+    current = store.load(folder)
+    candidate = codec.parse((project/"candidate-1.px").read_bytes())
+    original_atomic = store._atomic
+    def stop_after_head(path,data):
+        original_atomic(path,data)
+        if Path(path).resolve() == (folder/"state.px").resolve():
+            marker("head_replaced_before_lock_cleanup")
+            sys.stdin.buffer.read(1)
+    store._atomic = stop_after_head
+    store.commit(folder,candidate,codec.digest(current),root=project)
+elif mode == "next":
+    current = store.load(folder)
+    candidate = deepcopy(current)
+    candidate.revision += 1
+    candidate.records["task"].fields["st"] = codec.Symbol("blocked")
+    with (project/"candidate-2.px").open("xb") as stream:
+        stream.write(codec.encode(candidate))
+    print(json.dumps({"current":document_info(current),"candidate":document_info(candidate),"modules":modules}))
+else:
+    raise ValueError("Unknown controlled worker mode")
+'''
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def runtime_files(runtime):
+    return {path.relative_to(runtime).as_posix(): sha(path)
+            for path in sorted((runtime / "pixl").rglob("*"))
+            if path.is_file() and path.suffix in {".py", ".json"} and "__pycache__" not in path.parts}
+
+
+def image(project):
+    folder = project / ".pixl"
+    state = folder / "state.px"
+    return {"state_sha256": sha(state),
+            "history": {path.name: sha(path) for path in sorted((folder / "history").glob("*.px"))},
+            "source_files": {path.name: sha(path) for path in sorted(project.glob("*.txt"))}}
+
+
+def main(attempt, kit):
+    if attempt == OUTPUT_ROOT.resolve() or not attempt.is_relative_to(OUTPUT_ROOT.resolve()):
+        raise ValueError("Choose a fresh output directory below evidence/lock-diagnostics")
+    attempt.mkdir(parents=True, exist_ok=False)
+    worker = attempt / "worker.py.txt"
+    worker.write_text(WORKER, encoding="utf-8", newline="\n")
+    (attempt / "process-proof.py.txt").write_bytes(Path(__file__).read_bytes())
+    checks, records, owners = [], {}, []
+    runtime = ROOT
+    selected_kit = None
+    if kit is not None:
+        kit = kit.resolve()
+        if not (kit / "runtime/pixl/store.py").is_file() or not (kit / "scripts/pixl.py").is_file():
+            raise ValueError("--kit requires an existing complete kit")
+        selected_kit = attempt / "copied kit"
+        shutil.copytree(kit, selected_kit, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        runtime = selected_kit / "runtime"
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(runtime)
+    environment["PYTHONNOUSERSITE"] = "1"
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    environment.pop("PIXL_RESOURCE_ROOT", None)
+    if selected_kit is not None:
+        environment["PIXL_PLUGIN_ROOT"] = str(selected_kit)
+    else:
+        environment.pop("PIXL_PLUGIN_ROOT", None)
+    cli = [sys.executable, "-B", str(selected_kit / "scripts/pixl.py")] if selected_kit else [sys.executable, "-B", "-m", "pixl"]
+    before_sources = runtime_files(runtime)
+    for name in before_sources:
+        destination = attempt / "source-snapshot/runtime" / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((runtime / name).read_bytes())
+    fixture_snapshot = attempt / "source-snapshot/tests/support.py"
+    fixture_snapshot.parent.mkdir(parents=True, exist_ok=True)
+    fixture_snapshot.write_bytes(FIXTURE.read_bytes())
+    identity = {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+                "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+                "python": sys.executable, "python_version": sys.version,
+                "runtime_root": str(runtime), "runtime_source_hashes": before_sources,
+                "fixture_source": str(FIXTURE), "fixture_runtime_path": str(fixture_snapshot), "fixture_sha256": sha(FIXTURE),
+                "helper_sha256": sha(Path(__file__)), "worker_sha256": sha(worker),
+                "environment_overrides": {name: environment.get(name) for name in ("PYTHONPATH", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PIXL_PLUGIN_ROOT")},
+                "mode": "complete_copied_kit" if selected_kit else "source_runtime",
+                "kit_input": str(kit) if kit else None,
+                "kit_manifest_sha256": sha(kit / "bundle-manifest.json") if kit else None,
+                "scope": "Local controlled fixtures, real exclusive writers, public CLI refusals and explicit recovery after owned processes exit. Source-authored fixtures do not qualify artistic/native model/provider behavior."}
+    write(attempt / "identity.json", identity)
+
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    def run(case, label, command):
+        output = case / label
+        output.mkdir()
+        metadata = {"command": command, "cwd": str(case), "started_at": datetime.now(UTC).isoformat()}
+        write(output / "launch.json", metadata)
+        started = time.monotonic()
+        failure = None
+        try:
+            result = subprocess.run(command, cwd=case, env=environment, capture_output=True, timeout=45)
+            stdout, stderr = result.stdout, result.stderr
+            metadata.update(exit_code=result.returncode, execution_status="completed")
+        except subprocess.TimeoutExpired as error:
+            stdout, stderr = error.stdout or b"", error.stderr or b""
+            metadata.update(exit_code=None, execution_status="timeout")
+            failure = "Command exceeded its 45-second bound"
+        except OSError as error:
+            stdout, stderr = b"", b""
+            metadata.update(exit_code=None, execution_status="launch_failed", error=str(error))
+            failure = "Command could not launch"
+        (output / "stdout.txt").write_bytes(stdout)
+        (output / "stderr.txt").write_bytes(stderr)
+        metadata.update(elapsed_seconds=round(time.monotonic() - started, 3),
+                        stdout_sha256=sha(output / "stdout.txt"), stderr_sha256=sha(output / "stderr.txt"))
+        write(output / "execution.json", metadata)
+        if failure:
+            raise RuntimeError(failure)
+        payload = json.loads(stdout if metadata["exit_code"] == 0 else stderr)
+        return metadata["exit_code"], payload
+
+    def check_modules(label, payload):
+        expected = {"pixl": runtime / "pixl/__init__.py", **{name: runtime / "pixl" / (name + ".py") for name in ("store", "codec", "diagnostics", "graph")}}
+        check(label + ":selected_runtime_modules", all(Path(payload["modules"][name]).resolve() == path.resolve()
+                                                     for name, path in expected.items()), payload["modules"])
+
+    def start_owner(case, project, mode):
+        marker = case / "owner-ready.json"
+        command = [sys.executable, "-B", str(worker), mode, str(project), str(fixture_snapshot), str(marker)]
+        stdout = (case / "owner.stdout.txt").open("xb")
+        stderr = (case / "owner.stderr.txt").open("xb")
+        row = {"command": command, "cwd": str(case),
+               "started_at": datetime.now(UTC).isoformat(), "mode": mode}
+        write(case / "owner-launch.json", row)
+        try:
+            process = subprocess.Popen(command, cwd=case, env=environment, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
+        except OSError as error:
+            stdout.close()
+            stderr.close()
+            write(case / "owner-launch-failure.json", {**row, "error": type(error).__name__, "detail": str(error)})
+            raise
+        row["pid"] = process.pid
+        owner = {"process": process, "stdout": stdout, "stderr": stderr, "case": case, "row": row}
+        owners.append(owner)
+        deadline = time.monotonic() + 15
+        while not marker.exists():
+            if process.poll() is not None or time.monotonic() >= deadline:
+                raise RuntimeError("Controlled writer did not reach its marker; inspect owner stderr")
+            time.sleep(0.02)
+        # The writer finishes/flushes the marker before printing; wait for stable JSON.
+        while True:
+            try:
+                observed = json.loads(marker.read_bytes())
+                break
+            except json.JSONDecodeError:
+                if process.poll() is not None or time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.02)
+        check(case.name + ":actual_owner_marker", observed["pid"] == process.pid and process.poll() is None, observed)
+        check_modules(case.name + ":owner", observed)
+        return owner, observed
+
+    def finish_owner(owner, killed):
+        process, case = owner["process"], owner["case"]
+        if killed:
+            process.kill()  # Only this explicitly owned Popen, never lock-record PID.
+        else:
+            process.stdin.write(b"x")
+            process.stdin.flush()
+        process.wait(timeout=15)
+        process.stdin.close()
+        owner["stdout"].close()
+        owner["stderr"].close()
+        owner["row"].update(exit_code=process.returncode, hard_terminated=killed,
+                             stdout_sha256=sha(case / "owner.stdout.txt"), stderr_sha256=sha(case / "owner.stderr.txt"))
+        write(case / "owner-execution.json", owner["row"])
+        check(case.name + ":owner_stopped", process.poll() is not None and (process.returncode != 0 if killed else process.returncode == 0), owner["row"])
+
+    def refused(case, project, label, expected, pid, reference_image, lock_bytes):
+        code, payload = run(case, label, cli + ["commit", str(project / ".pixl"), str(project / "candidate-1.px"), "--expect", expected, "--root", str(project)])
+        lock = payload.get("lock", {})
+        check(case.name + ":" + label + ":refused_with_observed_owner",
+              code == 2 and payload.get("error") == "store_locked" and payload.get("category") == "unfinished_work" and
+              payload.get("recovery", {}).get("action") == "inspect_lock_owner" and "operation" not in payload.get("recovery", {}) and
+              lock.get("owner", {}).get("pid") == pid and lock.get("owner_state") == "unverified" and
+              lock.get("metadata_status") == "readable" and Path(lock.get("path", "")).resolve() == (project / ".pixl/.lock").resolve(), payload)
+        check(case.name + ":" + label + ":no_publication_or_lock_change", image(project) == reference_image and
+              (project / ".pixl/.lock").read_bytes() == lock_bytes)
+        return payload
+
+    def recover(case, project, owner, lock_bytes):
+        path = project / ".pixl/.lock"
+        all_stopped = all(row["process"].poll() is not None for row in owners)
+        if not all_stopped or owner["process"].poll() is None or path.read_bytes() != lock_bytes:
+            raise RuntimeError("Refusing recovery before owned-writer quiescence and exact record verification")
+        evidence = case / "manual-recovery"
+        evidence.mkdir(exist_ok=False)
+        destination = evidence / "original.lock"
+        if not path.resolve().is_relative_to(attempt) or not destination.resolve().is_relative_to(attempt):
+            raise RuntimeError("Recovery paths leave the owned attempt")
+        before = image(project)
+        path.rename(destination)
+        row = {"action": "explicit_move_after_owned_writer_quiescence", "lock_path": str(path), "preserved_path": str(destination),
+               "sha256": sha(destination), "all_owned_writers_stopped": all_stopped,
+               "owner_exit_code": owner["process"].returncode,
+               "scope": "All writers in this isolated evaluator-owned fixture are controlled and stopped. This is not a generic PID/age stale-lock detector or automatic recovery operation."}
+        write(evidence / "receipt.json", row)
+        check(case.name + ":recovery_preserves_exact_record_and_state", destination.read_bytes() == lock_bytes and not path.exists() and image(project) == before, row)
+        code, current = run(case, "reread-current-state", cli + ["validate", str(project / ".pixl/state.px"), "--root", str(project)])
+        check(case.name + ":public_state_reread", code == 0 and bool(current.get("hash")), current)
+        return current
+
+    try:
+        for name, mode, hard in (("live-graceful", "hold", False), ("interrupted-before-head", "hold", True), ("interrupted-after-head", "publish", True)):
+            case = attempt / name
+            case.mkdir()
+            project = case / "consumer project"
+            project.mkdir()
+            code, setup = run(case, "setup", [sys.executable, "-B", str(worker), "setup", str(project), str(fixture_snapshot)])
+            check(name + ":fixture_setup", code == 0 and setup["initial"]["revision"] == 0)
+            check_modules(name + ":setup", setup)
+            before = image(project)
+            initial_hash = setup["initial"]["hash"]
+            owner, marker = start_owner(case, project, mode)
+            locked_image = image(project)
+            lock_bytes = (project / ".pixl/.lock").read_bytes()
+            (case / "original-lock.bin").write_bytes(lock_bytes)
+            write(case / "before.json", {"fixture": setup, "before_owner": before, "while_locked": locked_image,
+                                        "lock_sha256": hashlib.sha256(lock_bytes).hexdigest(), "marker": marker})
+            if mode == "publish":
+                check(name + ":head_published_before_termination", marker["state"]["hash"] == setup["candidate"]["hash"] and
+                      marker["state"]["revision"] == 1 and locked_image["state_sha256"] == sha(project / "candidate-1.px") and
+                      len(locked_image["history"]) == len(before["history"]) + 1)
+            else:
+                check(name + ":no_head_publication_yet", locked_image == before)
+            refused(case, project, "live-contender", initial_hash, owner["process"].pid, locked_image, lock_bytes)
+            finish_owner(owner, killed=hard)
+            if hard:
+                check(name + ":hard_termination_left_exact_lock", (project / ".pixl/.lock").read_bytes() == lock_bytes and image(project) == locked_image)
+                refused(case, project, "interrupted-contender", initial_hash, owner["process"].pid, locked_image, lock_bytes)
+                old_time = 946684800
+                os.utime(project / ".pixl/.lock", (old_time, old_time))
+                write(case / "old-mtime-injection.json", {"intentional_test_injection": "Set lock mtime to 2000-01-01 after the owned writer stopped; content unchanged.",
+                      "mtime_ns": (project / ".pixl/.lock").stat().st_mtime_ns, "lock_sha256": hashlib.sha256(lock_bytes).hexdigest()})
+                refused(case, project, "old-mtime-contender", initial_hash, owner["process"].pid, locked_image, lock_bytes)
+                current = recover(case, project, owner, lock_bytes)
+            else:
+                check(name + ":graceful_exit_released_lock", not (project / ".pixl/.lock").exists() and image(project) == before)
+                code, current = run(case, "reread-current-state", cli + ["validate", str(project / ".pixl/state.px"), "--root", str(project)])
+                check(name + ":public_state_reread", code == 0 and current.get("hash") == initial_hash, current)
+            if mode == "publish":
+                stale_before = image(project)
+                code, stale = run(case, "stale-original-retry", cli + ["commit", str(project / ".pixl"), str(project / "candidate-1.px"), "--expect", initial_hash, "--root", str(project)])
+                check(name + ":old_expected_hash_remains_rejected", code == 2 and stale.get("error") == "stale_write" and
+                      image(project) == stale_before and not (project / ".pixl/.lock").exists(), stale)
+                code, next_ = run(case, "reconcile-next-local-intent", [sys.executable, "-B", str(worker), "next", str(project), str(fixture_snapshot)])
+                check_modules(name + ":next", next_)
+                check(name + ":reconciliation_uses_published_head", code == 0 and next_["current"]["hash"] == current["hash"] == setup["candidate"]["hash"] and next_["candidate"]["revision"] == 2)
+                candidate_path, expected_result = project / "candidate-2.px", next_["candidate"]
+            else:
+                candidate_path, expected_result = project / "candidate-1.px", setup["candidate"]
+            code, committed = run(case, "reconciled-commit", cli + ["commit", str(project / ".pixl"), str(candidate_path), "--expect", current["hash"], "--root", str(project)])
+            after = image(project)
+            expected_history = {**locked_image["history"], expected_result["hash"] + ".px": sha(candidate_path)}
+            check(name + ":one_reconciled_publication", code == 0 and committed.get("hash") == expected_result["hash"] and
+                  committed.get("revision") == expected_result["revision"] and after["state_sha256"] == sha(candidate_path) and
+                  after["history"] == expected_history and after["source_files"] == before["source_files"] and not (project / ".pixl/.lock").exists(), committed)
+            write(case / "after.json", {"state_and_history": after, "commit": committed})
+            records[name] = {"initial_hash": initial_hash, "published_hash": committed.get("hash"), "revision": committed.get("revision"),
+                             "controlled_interruption": mode == "publish", "owner_pid": owner["process"].pid, "owner_exit_code": owner["process"].returncode}
+        check("selected_runtime_source_bytes_unchanged", runtime_files(runtime) == before_sources)
+        check("repository_fixture_source_unchanged", sha(FIXTURE) == identity["fixture_sha256"])
+        check("executed_fixture_snapshot_unchanged", sha(fixture_snapshot) == identity["fixture_sha256"])
+        check("copied_kit_uses_distinct_runtime", selected_kit is None or runtime.resolve() != ROOT.resolve())
+    except Exception as error:
+        check("evaluator_completed", False, {"error": type(error).__name__, "detail": str(error)})
+    finally:
+        for owner in owners:
+            if owner["process"].poll() is None:
+                owner["process"].kill()
+                owner["process"].wait(timeout=15)
+                write(owner["case"] / "emergency-cleanup.json", {"scope": "Only evaluator-owned Popen was terminated after evaluator failure; its lock is not removed.", "pid": owner["process"].pid, "exit_code": owner["process"].returncode})
+            for stream in (owner["process"].stdin, owner["stdout"], owner["stderr"]):
+                if stream is not None and not stream.closed:
+                    stream.close()
+        result = {"version": 1, "observed_at": datetime.now(UTC).isoformat(),
+                  "status": "pass" if checks and all(row["passed"] for row in checks) else "fail",
+                  "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks, "cases": records,
+                  "identity_sha256": sha(attempt / "identity.json"), "source_sha256": sha(Path(__file__)),
+                  "scope": "Three controlled local real-process fixtures. Exact public CLI refusal/reconciliation is separate from unit tests, native model behavior, official provider work, broad concurrency, artistic quality and human acceptance. No PID from lock metadata was probed or killed; no age-based lock reclaim occurred. Explicit recovery moved only a fixture lock after every evaluator-owned writer had stopped."}
+        write(attempt / "RESULT.json", result)
+        print(json.dumps({key: result[key] for key in ("status", "passed", "total")}), flush=True)
+    return 0 if result["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--kit", type=Path, help="Copy and exercise this complete kit instead of importing the source runtime")
+    args = parser.parse_args()
+    destination = args.out.resolve()
+    existed = destination.exists()
+    try:
+        code = main(destination, args.kit)
+    except Exception as error:
+        if not existed and destination.is_dir():
+            write(destination / "PREPARATION-FAILURE.json", {"status": "fail", "error": type(error).__name__, "detail": str(error),
+                  "scope": "Evaluator preparation or final recording failed; existing outputs remain retained and no previous attempt is overwritten."})
+        raise
+    raise SystemExit(code)
