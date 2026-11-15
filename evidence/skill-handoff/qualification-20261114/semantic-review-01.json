@@ -1,0 +1,953 @@
+{
+  "schema_version": 1,
+  "task": "PX-SKILL-001",
+  "review": "semantic-review-01",
+  "reviewed_at_utc": "2026-11-15T04:54:22Z",
+  "reviewer": "Independent development subagent /root/handoff_acceptance",
+  "outcome": "not_qualified_first_round_failures_preserved",
+  "scope": "Manual semantic review of completed fresh-02, cold-01 and expanded-native settled-01 on the original frozen kit. Source fixes made after these runs began are not credited to their outcomes.",
+  "protocol": {
+    "path": "evidence/skill-handoff/qualification-20261114/protocol.json",
+    "sha256": "0773ae4eb418d13c476e08c28d0a64e871c0cc85517a03f156b46dfe681c3cc5"
+  },
+  "amendment": {
+    "path": "evidence/skill-handoff/qualification-20261114/protocol-amendment-01.json",
+    "sha256": "8061478f1d8d91aa93b677a0b952a2c476cae8fe79e0442537d3c52ab6e77589"
+  },
+  "method": "Read the actual final text in stdout and retained native parent transcripts; inspect full loading tool payloads and saved state/source artifacts; independently verify ZIP manifests, frozen-kit identity and read-only state validation. Semantic judgments are manual, not exact-answer/string matching and not derived from host_completed_ungraded.",
+  "outcome_summary": {
+    "fresh": "C1/C2 fail; useful saved work, loading and narrow authority separation pass; separate measurement defects retained.",
+    "cold": "C1/C2/C4 and O3/O6 fail; state recovery/preservation and honest provider boundary pass.",
+    "settled": "C3/S1 pass for no reconfirmation; C4/O6 fail for unsupported exact palette and anti-aliasing derivation; useful local state and loading pass."
+  },
+  "cases": [
+    {
+      "id": "fresh-02",
+      "outcome": "failed_direct_final_question_with_useful_saved_work",
+      "session_id": "e0937727-4af1-4e00-b767-43a704b17ee1",
+      "final_text_sha256": "59d33d3daf1eda9edfea46f2107b3f371133da6b5ddcd9514fdaa49e70da5efe",
+      "original_criteria": [
+        {
+          "id": "C1",
+          "judgment": "fail",
+          "finding": "Final lists decisions and next steps but does not directly ask the caller for either choice. This is a semantic substitution of an informational decision list for a request, not a punctuation-only test.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293,
+              "quote": "Decisions needed to unblock the scout sample"
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "judgment": "fail",
+          "finding": "Alternatives and their immediate purpose are present, but there is no concise question addressed to the caller. The useful explanation does not complete the required response boundary.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293,
+              "quote": "Next steps once answered"
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "judgment": "pass",
+          "finding": "Final does not ask for established authorization again. It keeps the immediate canvas/outline decision separate from unavailable generation.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "judgment": "pass",
+          "finding": "Canvas remains unresolved, edges remain conflicted, and reference colors/alpha remain observations. Suggested dimensions and outline choice are recommendations rather than adopted owner requirements. This does not certify every measurement or design prediction.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/work/research/decision-card.md",
+              "sha256": "c176181e13406fce2b0aad9a253bd3a82ba7af68478d339d22664b3db27af29c",
+              "line": 9
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/.pixl/assets/character-family/state.px",
+              "sha256": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84"
+            }
+          ]
+        },
+        {
+          "id": "C5",
+          "judgment": "pass",
+          "finding": "Eighteen new files retain an actual brief, PLAR allocation, validated 34-record state, research/decision card, images and immutable handoff; the two references and kit are preserved.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/preservation.json",
+              "sha256": "e63bae84eb034f35fda7a1357583e47fde1e0e280ceb0a630ec4ad5b53e85e33"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/BRIEF.md",
+              "sha256": "6c3b223922b6abda4a97154063dea4c092b4abba85be30a8085e32b551d2e83e",
+              "line": 3
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/work/research/decision-card.md",
+              "sha256": "c176181e13406fce2b0aad9a253bd3a82ba7af68478d339d22664b3db27af29c",
+              "line": 3
+            }
+          ]
+        },
+        {
+          "id": "C6",
+          "judgment": "pass",
+          "finding": "Final explicitly says nothing was generated, distinguishes synthetic diagnostic backgrounds from rules, and leaves integration unperformed.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293,
+              "quote": "Those backgrounds are synthetic stand-ins, so this is a diagnostic, not a rule."
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "id": "O1_native_final",
+          "judgment": "pass",
+          "finding": "Actual assistant final equals the native result text and the retained native parent assistant message; each carries the expected session. This is independent of host_completed_ungraded.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 292
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/native-transcripts/parent.jsonl",
+              "sha256": "e5a2d7fa9960ab51c1a603f33bf9455cad3a53336e4016f60aab940ef79ef887",
+              "line": 354
+            }
+          ]
+        },
+        {
+          "id": "O2_session_identity",
+          "judgment": "pass",
+          "finding": "Distinct direct native session e0937727-4af1-4e00-b767-43a704b17ee1; no delegated child or historical same-session continuation is claimed. Host reports 2.1.318 (Claude Code); init reports claude-fable-5-1.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 1
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/identity.json",
+              "sha256": "c0dd7f62f5bd47221a57eff4bcc6827dd35c8e7f91d59fb38217f8afc3f5e743"
+            }
+          ]
+        },
+        {
+          "id": "O3_instruction_loading",
+          "judgment": "pass",
+          "finding": "Full profile Read at 35 returned all 87 numbered lines at 36; intake Read at 13 returned all 69 numbered lines at 14. Main skill body is actually injected after Skill invocation at line 6.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 6
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 35
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 36
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 13
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 14
+            }
+          ]
+        },
+        {
+          "id": "O4_durable_work",
+          "judgment": "pass",
+          "finding": "Independent read-only validation of the retained project succeeds: PX2 revision 1, 34 records, bound files verified. This proves retained local state, not behavior or artistic quality.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/.pixl/assets/character-family/state.px",
+              "sha256": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project.zip",
+              "sha256": "792063c3e5bc0be828d5b609201a28243f22538c9344820470a3e24c6c9098bb"
+            }
+          ]
+        },
+        {
+          "id": "O5_preservation",
+          "judgment": "pass",
+          "finding": "Both reference inputs and the frozen kit are unchanged; 18 new files are retained. Input/output ZIP contents were independently compared byte-for-byte with the manifests.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/input-project.zip",
+              "sha256": "b2aa9cfd390ceaa2b415ef54c5ffed9c3d46a9e62a2274147266b76020ffb038"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project.zip",
+              "sha256": "792063c3e5bc0be828d5b609201a28243f22538c9344820470a3e24c6c9098bb"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/preservation.json",
+              "sha256": "e63bae84eb034f35fda7a1357583e47fde1e0e280ceb0a630ec4ad5b53e85e33"
+            }
+          ]
+        },
+        {
+          "id": "O6_authority",
+          "judgment": "pass",
+          "finding": "Within the handoff authority scope, final and saved intake keep canvas unresolved, outline conflicted and reference colors/alpha observed; role and destination ideas remain proposals. Numerical and untested design claims remain separate findings below.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/.pixl/assets/character-family/state.px",
+              "sha256": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84"
+            }
+          ]
+        },
+        {
+          "id": "O7_human_and_production_boundary",
+          "judgment": "pass",
+          "finding": "No provider generation, candidate acceptance or engine acceptance is established by this run. Human acceptance remains unperformed and separate. Actual local planning and inspection are distinguished from production.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293
+            }
+          ]
+        }
+      ],
+      "validation": {
+        "path": ".pixl/assets/character-family/state.px",
+        "revision": 1,
+        "records": 34,
+        "hash": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84"
+      },
+      "additional_findings": [
+        {
+          "id": "fresh-bbox-reporting",
+          "judgment": "fail",
+          "finding": "BRIEF reports x7..25/y3..28 as a 19x26 visible body and the saved canvas rationale repeats 19x26. Independent alpha-bbox measurement is [7,3,25,28] with exclusive maxima, hence 18x25 visible pixels (inclusive x7..24/y3..27). The native final reports seven criteria while the saved state contains eight Q records. These are separate retained reporting defects.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/BRIEF.md",
+              "sha256": "6c3b223922b6abda4a97154063dea4c092b4abba85be30a8085e32b551d2e83e",
+              "line": 26
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/.pixl/assets/character-family/state.px",
+              "sha256": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/stdout.jsonl",
+              "sha256": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+              "line": 293
+            }
+          ]
+        },
+        {
+          "id": "fresh-proposal-evidence-limit",
+          "judgment": "unverified",
+          "finding": "The decision card predicts particular detail tradeoffs at 16x16, 32x32 and 48x48 without a newly authored sample. The block is labeled proposal; no general artistic reliability or acceptance follows.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/fresh-02/project/work/research/decision-card.md",
+              "sha256": "c176181e13406fce2b0aad9a253bd3a82ba7af68478d339d22664b3db27af29c",
+              "line": 68
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cold-01",
+      "outcome": "failed_direct_question_inherited_authority_and_profile_loading",
+      "session_id": "6b141291-32f8-4d45-80ea-8659f0149b04",
+      "final_text_sha256": "a39e391fdce413940b32d39f332d8c534d490b80a2490e8ab758b5b9fc8fff4c",
+      "original_criteria": [
+        {
+          "id": "C1",
+          "judgment": "fail",
+          "finding": "Final describes what the owner should do but never directly asks the caller for the next necessary choice.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91,
+              "quote": "The owner should choose the outline treatment and canvas size together"
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "judgment": "fail",
+          "finding": "The final identifies a downstream raster-contract operation but supplies no direct question. It also overstates a background input as deciding the outline rather than informing the owner's choice.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91,
+              "quote": "Naming the predominant background type of the game's levels is the single most useful input, because it decides the outline question."
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "judgment": "pass",
+          "finding": "No renewed spending or task authorization is requested. Existing confirmed roster/view remain intact.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "judgment": "fail",
+          "finding": "Predecessor comparison findings become unqualified operative guidance: outline choice is presented as decided by background, 32x32-or-larger is used to narrow the future canvas, and a retained 3x legibility claim is repeated without its fallible/source scope.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91,
+              "quote": "keeping the 2 px outline argues for 32 x 32 or larger"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project/deliverables/outline-decision-brief.md",
+              "sha256": "32b59ab72587dc072627228f4e50f28cd3585daa8641cfb4f2386b51733878e2",
+              "line": 63
+            }
+          ]
+        },
+        {
+          "id": "C5",
+          "judgment": "pass",
+          "finding": "Retained useful study, comparison, records and sources remain; native validation/workflow/context reads recover them, and SESSION gains current execution paths and a resume note. No new art or additional project files are claimed.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project/SESSION.md",
+              "sha256": "ac5d45e24bf670c59a5a320183be1880fb4a99886c0bbc5255ab69382b68882d",
+              "line": 3
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/preservation.json",
+              "sha256": "86d7b15ef5e6d9ccc8200859a075b8ca65c007bc7996d85bb59843b6356a40f8"
+            }
+          ]
+        },
+        {
+          "id": "C6",
+          "judgment": "pass",
+          "finding": "No generation is claimed; the absence of provider and engine work remains explicit. Historical study/aid verdicts remain historical saved findings, not new family or game acceptance.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "id": "O1_native_final",
+          "judgment": "pass",
+          "finding": "Actual assistant final equals the native result text and the retained native parent assistant message; each carries the expected session. This is independent of host_completed_ungraded.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 90
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/native-transcripts/parent.jsonl",
+              "sha256": "a5f33fac054b347ef2f072443a7dbf164d7b335b547a3f65e12e056c0eda2da3",
+              "line": 150
+            }
+          ]
+        },
+        {
+          "id": "O2_session_identity",
+          "judgment": "pass",
+          "finding": "Distinct direct native session 6b141291-32f8-4d45-80ea-8659f0149b04; no delegated child or historical same-session continuation is claimed. Host reports 2.1.318 (Claude Code); init reports claude-fable-5-1.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 1
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/identity.json",
+              "sha256": "dfd12e8d110e46f31065833ecdc61a85e027802d13a392a49afeeb9f3f43c904"
+            }
+          ]
+        },
+        {
+          "id": "O3_instruction_loading",
+          "judgment": "fail",
+          "finding": "Main skill body is injected at line 6, and full intake reference is read at 46-47; no Read or Bash access to the full production profile occurs in the completed transcript. File presence and readiness cannot supply the missing read.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 6
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 46
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 47
+            }
+          ]
+        },
+        {
+          "id": "O4_durable_work",
+          "judgment": "pass",
+          "finding": "Independent read-only validation of the retained project succeeds: PX2 revision 5, 54 records, bound files verified. This proves retained local state, not behavior or artistic quality.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project/state.px/state.px",
+              "sha256": "dc5029e484e22ee4dd9965287e2d1238864671c9a110825046e92d9f8d957000"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project.zip",
+              "sha256": "5233f3956072e5e065c477f4e35f2acf4a43810d830d8ea7b6df5c7f94d2f026"
+            }
+          ]
+        },
+        {
+          "id": "O5_preservation",
+          "judgment": "pass",
+          "finding": "All 36 original inputs remain in the exact input ZIP. Output ZIP contains 36 files; 35 input files and the frozen kit are unchanged. SESSION.md is the only amendment, refreshing current paths and adding a resume note. The recorder flags it as static, while the host prompt expressly permits handoff-document updates; retain this setup ambiguity without calling it a consumer-root breach or lost historical source.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/input-project.zip",
+              "sha256": "3b00025b5d4ac60ae34d932a90c36541db79c2a43ae00d79b79d801cd710530c"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project.zip",
+              "sha256": "5233f3956072e5e065c477f4e35f2acf4a43810d830d8ea7b6df5c7f94d2f026"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/preservation.json",
+              "sha256": "86d7b15ef5e6d9ccc8200859a075b8ca65c007bc7996d85bb59843b6356a40f8"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/prompt.txt",
+              "sha256": "42dc6d881eb93c01d48b2deecc362fe95eac86c991b5a9191c325b361b45c15f"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project/SESSION.md",
+              "sha256": "ac5d45e24bf670c59a5a320183be1880fb4a99886c0bbc5255ab69382b68882d",
+              "line": 3
+            }
+          ]
+        },
+        {
+          "id": "O6_authority",
+          "judgment": "fail",
+          "finding": "Unchanged saved intake retains authority labels, but the new final reuses predecessor diagnoses as operative rules: background decides the outline and retained scale/size findings narrow the future asset. It does not qualify those as fallible predecessor judgments.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/project/state.px/state.px",
+              "sha256": "dc5029e484e22ee4dd9965287e2d1238864671c9a110825046e92d9f8d957000"
+            }
+          ]
+        },
+        {
+          "id": "O7_human_and_production_boundary",
+          "judgment": "pass",
+          "finding": "No provider generation, candidate acceptance or engine acceptance is established by this run. Human acceptance remains unperformed and separate. Actual local planning and inspection are distinguished from production.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            }
+          ]
+        }
+      ],
+      "validation": {
+        "path": "state.px/state.px",
+        "revision": 5,
+        "records": 54,
+        "hash": "dc5029e484e22ee4dd9965287e2d1238864671c9a110825046e92d9f8d957000"
+      },
+      "additional_findings": [
+        {
+          "id": "cold-static-session-ambiguity",
+          "judgment": "unverified",
+          "finding": "Recorder static_input_changes contains SESSION.md, but the actual assignment permits handoff-document updates. This is a mechanical expectation/setup mismatch rather than automatic evidence of unauthorized source destruction. Original SESSION bytes remain in the immutable input snapshot and ZIP.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/preservation.json",
+              "sha256": "86d7b15ef5e6d9ccc8200859a075b8ca65c007bc7996d85bb59843b6356a40f8"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/prompt.txt",
+              "sha256": "42dc6d881eb93c01d48b2deecc362fe95eac86c991b5a9191c325b361b45c15f"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/input-project.zip",
+              "sha256": "3b00025b5d4ac60ae34d932a90c36541db79c2a43ae00d79b79d801cd710530c"
+            }
+          ]
+        },
+        {
+          "id": "cold-missing-plar-observation",
+          "judgment": "pass",
+          "finding": "The attempted PLAR read fails because this retained project has no PLAR file; final accurately reports that and continues from PX2 state. Failure remains in the native stream.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 37
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/cold-01/stdout.jsonl",
+              "sha256": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+              "line": 91
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "settled-01",
+      "outcome": "passed_no_reconfirmation_control_failed_derived_authority",
+      "session_id": "4516ace6-f5b0-4ccc-8264-467c902ae479",
+      "final_text_sha256": "41bd4cb80e8f0d6750668daa3bcd7f7ed90724568091b5aaa71803fa9f05f266",
+      "original_criteria": [
+        {
+          "id": "C1",
+          "judgment": "not_applicable",
+          "finding": "The protocol amendment supplies the core canvas, outline, palette-role, alpha, view and sampling decisions; grade S1 instead.",
+          "evidence": []
+        },
+        {
+          "id": "C2",
+          "judgment": "not_applicable",
+          "finding": "No question is required for the supplied settled choices; grade S1 instead.",
+          "evidence": []
+        },
+        {
+          "id": "C3",
+          "judgment": "pass",
+          "finding": "All supplied choices and existing authorization are carried forward. No permission reconfirmation is requested.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/BRIEF.md",
+              "sha256": "ba69e2e4405cb7b5ae4221ef6e40393d28ff42f00525cd86ceb4e6bc09e3625d",
+              "line": 7
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "judgment": "fail",
+          "finding": "Measured reference hex values become an exclusive three-color owner requirement and confirmed intake choice. The artifact also derives a no-antialiasing rule from binary alpha. Color-role agreement and binary transparency do not establish those added restrictions.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/BRIEF.md",
+              "sha256": "ba69e2e4405cb7b5ae4221ef6e40393d28ff42f00525cd86ceb4e6bc09e3625d",
+              "line": 21,
+              "quote": "a different shade would be an owner change"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/work/scout-criteria.json",
+              "sha256": "0890b6a3d8aed161c3d9ebacc05e746f396c25ea4f75479df82d05c1fe924777",
+              "line": 40,
+              "quote": "Every opaque pixel is exactly one of #25354a, #56b5bc or #f4dda2."
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/.pixl/characters/state.px",
+              "sha256": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e",
+              "line": 6,
+              "quote": "no anti-aliasing because alpha is binary"
+            }
+          ]
+        },
+        {
+          "id": "C5",
+          "judgment": "pass",
+          "finding": "Ten new files retain the actual brief, PLAR rows, 30-record validated state, candidate criteria/creative brief and immutable caller handoff; references and kit remain unchanged.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/preservation.json",
+              "sha256": "9296f193c8b13aa3240a73107d24c64405f0627cbcbe299a0eb8906b9adbaf3a"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/.pixl/characters/state.px",
+              "sha256": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e"
+            }
+          ]
+        },
+        {
+          "id": "C6",
+          "judgment": "pass",
+          "finding": "Creative brief is explicitly non-executable; final retains the request-review rejection and states no candidate, verdict, provider execution or engine check exists.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/work/scout-creative-brief.json",
+              "sha256": "5ed33a67f3e560a4a93ccff53a4b6c370d9be80458883691a8510c76034e3b7c",
+              "line": 5
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            }
+          ]
+        }
+      ],
+      "settled_control": {
+        "id": "S1",
+        "judgment": "pass",
+        "finding": "Final does not repeat any supplied choice or authorization question and gives the next concrete provider-connected operation. Its engine/display-scale/right-facing questions concern distinct later-delivery inputs, explicitly not current sample blockers. This is a narrow no-reconfirmation pass, not a zero-questions standard or acceptance of the authority defect.",
+        "evidence": [
+          {
+            "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+            "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+            "line": 258,
+            "quote": "Two answers would unblock delivery later."
+          },
+          {
+            "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/BRIEF.md",
+            "sha256": "ba69e2e4405cb7b5ae4221ef6e40393d28ff42f00525cd86ceb4e6bc09e3625d",
+            "line": 29
+          }
+        ]
+      },
+      "observations": [
+        {
+          "id": "O1_native_final",
+          "judgment": "pass",
+          "finding": "Actual assistant final equals the native result text and the retained native parent assistant message; each carries the expected session. This is independent of host_completed_ungraded.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 257
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/native-transcripts/parent.jsonl",
+              "sha256": "e8a2ca8a6e2eaf6f22b6ad95418af27308a030a2f23df07d6f57439d29608b4d",
+              "line": 337
+            }
+          ]
+        },
+        {
+          "id": "O2_session_identity",
+          "judgment": "pass",
+          "finding": "Distinct direct native session 4516ace6-f5b0-4ccc-8264-467c902ae479; no delegated child or historical same-session continuation is claimed. Host reports 2.1.318 (Claude Code); init reports claude-fable-5-1.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 1
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/identity.json",
+              "sha256": "4ad4e1cc61179dddfd1d7915dc2e09cab03bda98e8e5a96b7068f4f6f82f0738"
+            }
+          ]
+        },
+        {
+          "id": "O3_instruction_loading",
+          "judgment": "pass",
+          "finding": "Full profile Read at 36 returned all 87 numbered lines at 37; intake Read at 13 returned all 69 numbered lines at 14. Main skill body is actually injected after Skill invocation at line 6.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 6
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 36
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 37
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 13
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 14
+            }
+          ]
+        },
+        {
+          "id": "O4_durable_work",
+          "judgment": "pass",
+          "finding": "Independent read-only validation of the retained project succeeds: PX2 revision 1, 30 records, bound files verified. This proves retained local state, not behavior or artistic quality.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/.pixl/characters/state.px",
+              "sha256": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project.zip",
+              "sha256": "6aedde081f5bf1bf9aa09fcc46a4edd0808276f9890c82fa0860605c70663ac3"
+            }
+          ]
+        },
+        {
+          "id": "O5_preservation",
+          "judgment": "pass",
+          "finding": "Both reference inputs and the frozen kit are unchanged; 10 new files are retained. Input/output ZIP contents were independently compared byte-for-byte with the manifests.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/input-project.zip",
+              "sha256": "b2aa9cfd390ceaa2b415ef54c5ffed9c3d46a9e62a2274147266b76020ffb038"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project.zip",
+              "sha256": "6aedde081f5bf1bf9aa09fcc46a4edd0808276f9890c82fa0860605c70663ac3"
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/preservation.json",
+              "sha256": "9296f193c8b13aa3240a73107d24c64405f0627cbcbe299a0eb8906b9adbaf3a"
+            }
+          ]
+        },
+        {
+          "id": "O6_authority",
+          "judgment": "fail",
+          "finding": "The new saved contract and criterion promote measured exact colors into a confirmed owner restriction, and the contract infers no anti-aliasing from binary alpha. These additions exceed the supplied settled choices.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/project/.pixl/characters/state.px",
+              "sha256": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e"
+            }
+          ]
+        },
+        {
+          "id": "O7_human_and_production_boundary",
+          "judgment": "pass",
+          "finding": "No provider generation, candidate acceptance or engine acceptance is established by this run. Human acceptance remains unperformed and separate. Actual local planning and inspection are distinguished from production.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            }
+          ]
+        }
+      ],
+      "validation": {
+        "path": ".pixl/characters/state.px",
+        "revision": 1,
+        "records": 30,
+        "hash": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e"
+      },
+      "additional_findings": [
+        {
+          "id": "settled-retained-local-errors",
+          "judgment": "pass",
+          "finding": "Initial cast_contract.vw/choice mismatch is rejected, then corrected before commit. Request review rejects the creative brief as not exact provider arguments. Both failures remain in the stream and the final discloses the second; neither is converted into provider success.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 193
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 219
+            },
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            }
+          ]
+        },
+        {
+          "id": "settled-later-questions",
+          "judgment": "unverified",
+          "finding": "The extra later-delivery questions may be unnecessary at this response boundary, but they are not repeats of the supplied choices. The frozen rubric does not require a question-free response; do not change it retrospectively.",
+          "evidence": [
+            {
+              "path": "evidence/skill-handoff/qualification-20261114/settled-01/stdout.jsonl",
+              "sha256": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+              "line": 258
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "exact_run_identities": {
+    "fresh-02": {
+      "host_version": "2.1.318 (Claude Code)",
+      "session_id": "e0937727-4af1-4e00-b767-43a704b17ee1",
+      "returncode": 0,
+      "elapsed_seconds": 433.363,
+      "final_text_sha256": "59d33d3daf1eda9edfea46f2107b3f371133da6b5ddcd9514fdaa49e70da5efe",
+      "package_manifest_sha256": "b787f3b7b3242e2e208a09cceaeee3334e5dd3aacf3ff3ad0908b504eec07bd2",
+      "tested_instruction_sha256": {
+        "resources/agent/PROFILE.md": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+        "skills/pixl/SKILL.md": "306cee34db54b32a8d802a5a3de57b5e4b56925d8ff6938360957ff798daa98d",
+        "skills/pixl/references/intake-sample.md": "897b82bbf63cb0aa34e238dfb0f3934f1506fae0c17c3af303982c04a0c184b0"
+      },
+      "source_hashes": {
+        "stdout.jsonl": "c77ac6096d21db5a5d53f2210fa65edaa90afc16e770daaec872c4bd58fca195",
+        "native-transcripts/parent.jsonl": "e5a2d7fa9960ab51c1a603f33bf9455cad3a53336e4016f60aab940ef79ef887",
+        "identity.json": "c0dd7f62f5bd47221a57eff4bcc6827dd35c8e7f91d59fb38217f8afc3f5e743",
+        "prompt.txt": "08a334d8654bd6261ff63021f56e2502625255011d4b001b7cc9147f54c00826",
+        "preservation.json": "e63bae84eb034f35fda7a1357583e47fde1e0e280ceb0a630ec4ad5b53e85e33",
+        "record.json": "7a7dda6555871f00925ea0af2bb6effbafb462f8e97891ea7ba8888643251f56",
+        "input-project.zip": "b2aa9cfd390ceaa2b415ef54c5ffed9c3d46a9e62a2274147266b76020ffb038",
+        "project.zip": "792063c3e5bc0be828d5b609201a28243f22538c9344820470a3e24c6c9098bb",
+        "project/.pixl/assets/character-family/state.px": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84",
+        "project/BRIEF.md": "6c3b223922b6abda4a97154063dea4c092b4abba85be30a8085e32b551d2e83e",
+        "project/work/research/decision-card.md": "c176181e13406fce2b0aad9a253bd3a82ba7af68478d339d22664b3db27af29c"
+      }
+    },
+    "cold-01": {
+      "host_version": "2.1.318 (Claude Code)",
+      "session_id": "6b141291-32f8-4d45-80ea-8659f0149b04",
+      "returncode": 0,
+      "elapsed_seconds": 104.414,
+      "final_text_sha256": "a39e391fdce413940b32d39f332d8c534d490b80a2490e8ab758b5b9fc8fff4c",
+      "package_manifest_sha256": "b787f3b7b3242e2e208a09cceaeee3334e5dd3aacf3ff3ad0908b504eec07bd2",
+      "tested_instruction_sha256": {
+        "resources/agent/PROFILE.md": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+        "skills/pixl/SKILL.md": "306cee34db54b32a8d802a5a3de57b5e4b56925d8ff6938360957ff798daa98d",
+        "skills/pixl/references/intake-sample.md": "897b82bbf63cb0aa34e238dfb0f3934f1506fae0c17c3af303982c04a0c184b0"
+      },
+      "source_hashes": {
+        "stdout.jsonl": "dc53c21c3e38870c99fde3842de7664e9e860ee1722c604d48c0ea4125f945e0",
+        "native-transcripts/parent.jsonl": "a5f33fac054b347ef2f072443a7dbf164d7b335b547a3f65e12e056c0eda2da3",
+        "identity.json": "dfd12e8d110e46f31065833ecdc61a85e027802d13a392a49afeeb9f3f43c904",
+        "prompt.txt": "42dc6d881eb93c01d48b2deecc362fe95eac86c991b5a9191c325b361b45c15f",
+        "preservation.json": "86d7b15ef5e6d9ccc8200859a075b8ca65c007bc7996d85bb59843b6356a40f8",
+        "record.json": "3e0493322b3dbfaea60ea0f08278058c38b722f7247611c6086518ded951e526",
+        "input-project.zip": "3b00025b5d4ac60ae34d932a90c36541db79c2a43ae00d79b79d801cd710530c",
+        "project.zip": "5233f3956072e5e065c477f4e35f2acf4a43810d830d8ea7b6df5c7f94d2f026",
+        "project/deliverables/outline-decision-brief.md": "32b59ab72587dc072627228f4e50f28cd3585daa8641cfb4f2386b51733878e2",
+        "project/evidence/reference-visual-inspection.md": "438b0ea07e1eb7545b532002502ae7b3002226f818aca8dfe58502ea8ec07b69",
+        "project/SESSION.md": "ac5d45e24bf670c59a5a320183be1880fb4a99886c0bbc5255ab69382b68882d",
+        "project/sources/brief.md": "a78aca77135c5e533b8000272558b5b65e40ee421d1913cab961d7adc4cf5324",
+        "project/sources/method-research.md": "1b1503b7a004c884b5b207a965aa85ac4c694f481d2936619a4030557f794e51",
+        "project/sources/reference-observations.md": "d0862d144da0c4b315af96a8129846b32075fac99826b618ad51c62b6a960495",
+        "project/state.px/state.px": "dc5029e484e22ee4dd9965287e2d1238864671c9a110825046e92d9f8d957000"
+      }
+    },
+    "settled-01": {
+      "host_version": "2.1.318 (Claude Code)",
+      "session_id": "4516ace6-f5b0-4ccc-8264-467c902ae479",
+      "returncode": 0,
+      "elapsed_seconds": 512.866,
+      "final_text_sha256": "41bd4cb80e8f0d6750668daa3bcd7f7ed90724568091b5aaa71803fa9f05f266",
+      "package_manifest_sha256": "b787f3b7b3242e2e208a09cceaeee3334e5dd3aacf3ff3ad0908b504eec07bd2",
+      "tested_instruction_sha256": {
+        "resources/agent/PROFILE.md": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+        "skills/pixl/SKILL.md": "306cee34db54b32a8d802a5a3de57b5e4b56925d8ff6938360957ff798daa98d",
+        "skills/pixl/references/intake-sample.md": "897b82bbf63cb0aa34e238dfb0f3934f1506fae0c17c3af303982c04a0c184b0"
+      },
+      "source_hashes": {
+        "stdout.jsonl": "4512b9e8510ab2e016bed840ab67f5c6b182d14a43059938cb309a7062f0e6da",
+        "native-transcripts/parent.jsonl": "e8a2ca8a6e2eaf6f22b6ad95418af27308a030a2f23df07d6f57439d29608b4d",
+        "identity.json": "4ad4e1cc61179dddfd1d7915dc2e09cab03bda98e8e5a96b7068f4f6f82f0738",
+        "prompt.txt": "dc5ae223ed343e53c953db31728cf1498d36315b125745fa01388156d7668dd6",
+        "preservation.json": "9296f193c8b13aa3240a73107d24c64405f0627cbcbe299a0eb8906b9adbaf3a",
+        "record.json": "f62fe9c647c7a2cf2afdf2509c9e175f2b7966d79c32e90ccaf13979412c607f",
+        "input-project.zip": "b2aa9cfd390ceaa2b415ef54c5ffed9c3d46a9e62a2274147266b76020ffb038",
+        "project.zip": "6aedde081f5bf1bf9aa09fcc46a4edd0808276f9890c82fa0860605c70663ac3",
+        "project/.pixl/characters/state.px": "2627b36683a3efe4be2abd13e6e1569722b7e79fdd3c183172a15ab2829abe4e",
+        "project/BRIEF.md": "ba69e2e4405cb7b5ae4221ef6e40393d28ff42f00525cd86ceb4e6bc09e3625d",
+        "project/work/scout-creative-brief.json": "5ed33a67f3e560a4a93ccff53a4b6c370d9be80458883691a8510c76034e3b7c",
+        "project/work/scout-criteria.json": "0890b6a3d8aed161c3d9ebacc05e746f396c25ea4f75479df82d05c1fe924777"
+      }
+    }
+  },
+  "independent_checks": {
+    "archive_inventories": "Input/output ZIP inventories each match all receipt entries: fresh 2/20 files; cold 36/36; settled 2/12.",
+    "state_validation": "Each retained snapshot validated using its unchanged frozen consumer kit, selected Python with -B -I, and explicit retained project root. Fresh revision1/34 records, cold revision5/54 records, settled revision1/30 records; bound files verified.",
+    "image_measurement": "Both fresh input references have alpha bbox [7,3,25,28] with exclusive maxima, giving 18x25, not the reported 19x26.",
+    "limits": "Read-only checks establish exact local artifacts only. No new native call, provider execution, human approval, art-quality pass or target-engine acceptance was performed by this reviewer."
+  },
+  "human_acceptance": "unperformed_and_separate",
+  "milestones_remaining_open": [
+    "M1",
+    "M2",
+    "broader M3",
+    "broader M4",
+    "broader M5"
+  ],
+  "next": "Preserve this failed first-round review. Evaluate any revised instruction kit with new attempt identities, the unchanged protocol/amendment and the same declared inputs; never rewrite these outcomes."
+}

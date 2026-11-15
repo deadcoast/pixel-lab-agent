@@ -1,0 +1,551 @@
+{
+  "revision": 1,
+  "records": [
+    {
+      "id": "actor",
+      "kind": "A",
+      "fields": {
+        "nm": "PIXL",
+        "rl": {
+          "$symbol": "agent"
+        }
+      }
+    },
+    {
+      "id": "alpha_policy",
+      "kind": "I",
+      "fields": {
+        "ky": "alpha_policy",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          },
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": "binary",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Measured: both references have zero fractional-alpha pixels on a transparent background. Binary transparency is a reasonable working assumption for the sample; it is not an owner requirement until adopted."
+      }
+    },
+    {
+      "id": "animation_set",
+      "kind": "I",
+      "fields": {
+        "ky": "animation_set",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "No poses or animations were specified for the scout or medic. The first sample is planned as a single static side-view pose; the required animation set affects canvas and sheet layout."
+      }
+    },
+    {
+      "id": "brief",
+      "kind": "S",
+      "fields": {
+        "at": "2026-11-14",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "6c41188fac651673728792049e18197c4549e4b9d7eeb5903029d89c38cbec65",
+        "ln": [
+          1,
+          28
+        ],
+        "ur": "BRIEF.md"
+      }
+    },
+    {
+      "id": "canvas",
+      "kind": "I",
+      "fields": {
+        "ky": "px",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner has not chosen the final per-frame canvas size (BRIEF.md owner instruction 5). Both references measure 32x32, which is an observation recorded separately and not an adoption."
+      }
+    },
+    {
+      "id": "destination",
+      "kind": "I",
+      "fields": {
+        "ky": "destination",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Target engine or renderer, destination paths, display scale and pivot conventions were not supplied (BRIEF.md 'Unknown until supplied')."
+      }
+    },
+    {
+      "id": "f_scout_sample",
+      "kind": "F",
+      "fields": {
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Scout representative sample (single side-view pose)",
+        "rq": [
+          {
+            "$ref": "q_size"
+          },
+          {
+            "$ref": "q_scout_identity"
+          },
+          {
+            "$ref": "q_edge_treatment"
+          },
+          {
+            "$ref": "q_style_kinship"
+          }
+        ],
+        "tk": {
+          "$ref": "t_scout_sample"
+        }
+      }
+    },
+    {
+      "id": "handoff_1",
+      "kind": "N",
+      "fields": {
+        "bl": [
+          {
+            "$ref": "t_scout_sample"
+          }
+        ],
+        "fo": [
+          {
+            "$ref": "project"
+          },
+          {
+            "$ref": "canvas"
+          },
+          {
+            "$ref": "outline"
+          },
+          {
+            "$ref": "f_scout_sample"
+          }
+        ],
+        "nx": [
+          {
+            "$ref": "t_scout_sample"
+          }
+        ],
+        "rv": 1,
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "members",
+      "kind": "I",
+      "fields": {
+        "ky": "members",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": [
+          "scout",
+          "medic"
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner named the two family members (BRIEF.md owner instruction 2)."
+      }
+    },
+    {
+      "id": "outline",
+      "kind": "I",
+      "fields": {
+        "ky": "edge_treatment",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          }
+        ],
+        "st": {
+          "$symbol": "conflict"
+        },
+        "vl": [
+          "continuous 2px dark outline around the whole silhouette (reference.png)",
+          "no outline; fill edge directly against transparency (reference-b.png)"
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The two supplied style references disagree about outline treatment and the owner has not chosen (BRIEF.md owner instruction 4). A third option such as selective/partial outlines is possible but not supplied by either reference."
+      }
+    },
+    {
+      "id": "palette_roles",
+      "kind": "I",
+      "fields": {
+        "ky": "palette_roles",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          },
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": {
+          "body": "#56B5BC",
+          "eyes": "#F4DDA2",
+          "outline": "#25354A"
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Measured color roles shared by the references: teal body fill, cream eye accent, and (reference.png only) a dark navy outline. These are role observations for style kinship, not an exclusive allowed-color list."
+      }
+    },
+    {
+      "id": "project",
+      "kind": "P",
+      "fields": {
+        "br": "Side-view game character family with a scout and a medic. References reference.png and reference-b.png disagree about outline treatment; the final canvas size is not chosen. Isolated evaluation: no provider assigned.",
+        "in": [
+          {
+            "$ref": "canvas"
+          },
+          {
+            "$ref": "outline"
+          },
+          {
+            "$ref": "projection"
+          },
+          {
+            "$ref": "members"
+          },
+          {
+            "$ref": "alpha_policy"
+          },
+          {
+            "$ref": "palette_roles"
+          },
+          {
+            "$ref": "reference_canvas"
+          },
+          {
+            "$ref": "animation_set"
+          },
+          {
+            "$ref": "destination"
+          }
+        ],
+        "nm": "Side-view character family: scout and medic",
+        "ow": {
+          "$ref": "user"
+        },
+        "sc": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "projection",
+      "kind": "I",
+      "fields": {
+        "ky": "projection",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "side",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner stated the family is for a side-view game (BRIEF.md owner instruction 1)."
+      }
+    },
+    {
+      "id": "q_edge_treatment",
+      "kind": "Q",
+      "fields": {
+        "ck": "The sample applies the owner's resolved edge_treatment choice consistently around the whole silhouette, with no unplanned mixture of outlined and outline-free edges.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "resolved edge treatment",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_scout_identity",
+      "kind": "Q",
+      "fields": {
+        "ck": "At native scale and at an integer zoom the sample reads as a side-view character and its scout identity landmarks are distinguishable from the body silhouette.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "side-view scout readability",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_size",
+      "kind": "Q",
+      "fields": {
+        "ck": "The actual file matches the confirmed canvas size and the alpha policy recorded for this project at the time of review.",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "canvas and alpha",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_style_kinship",
+      "kind": "Q",
+      "fields": {
+        "ck": "Viewed beside both references at the same zoom, the sample shares their flat-fill color-role construction (body fill family plus light eye accent) and simple rounded forms; exact hex values, the 32x32 canvas and the mascot silhouette are not required.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "reference style kinship",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "ref_a",
+      "kind": "S",
+      "fields": {
+        "at": "2026-11-14",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+        "ln": [],
+        "ur": "reference.png"
+      }
+    },
+    {
+      "id": "ref_b",
+      "kind": "S",
+      "fields": {
+        "at": "2026-11-14",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a",
+        "ln": [],
+        "ur": "reference-b.png"
+      }
+    },
+    {
+      "id": "reference_canvas",
+      "kind": "I",
+      "fields": {
+        "ky": "reference_canvas",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "ref_a"
+          },
+          {
+            "$ref": "ref_b"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": [
+          32,
+          32
+        ],
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Measured: both references are 32x32 with the visible silhouette in x 7..25, y 3..28 (19x26 visible). Recorded so the canvas decision can weigh it; it does not resolve the px choice."
+      }
+    },
+    {
+      "id": "t_scout_sample",
+      "kind": "T",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [],
+        "ip": [],
+        "kn": [],
+        "nm": "Prove the scout as the family's representative sample before the medic",
+        "op": [
+          {
+            "$ref": "f_scout_sample"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "sample"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "open"
+        },
+        "vr": []
+      }
+    },
+    {
+      "id": "user",
+      "kind": "A",
+      "fields": {
+        "nm": "Project owner",
+        "rl": {
+          "$symbol": "user"
+        }
+      }
+    }
+  ],
+  "format": 2
+}

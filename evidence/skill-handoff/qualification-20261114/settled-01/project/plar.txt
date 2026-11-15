@@ -1,0 +1,393 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Teal and cream side-view character family",
+    "brief": "Scout and medic characters for a side-view game: 32x32, the reference's dark outline, agreed teal and cream palette, binary transparency, nearest-neighbor display. See BRIEF.md."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md",
+      "reference.png",
+      "reference-b.png"
+    ],
+    "excluded": [
+      "No game code, renderer or engine project is part of this consumer; consumers are described by the owner's brief only.",
+      "Animation, additional facings and UI are not requested."
+    ],
+    "unresolved": [
+      "Target engine and display multiple are not named; engine import cannot be verified here.",
+      "No generation provider is connected in this session."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "ba69e2e4405cb7b5ae4221ef6e40393d28ff42f00525cd86ceb4e6bc09e3625d"
+    },
+    {
+      "id": "ref_a",
+      "path": "reference.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    },
+    {
+      "id": "ref_b",
+      "path": "reference-b.png",
+      "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a"
+    }
+  ],
+  "assets": [
+    {
+      "id": "character.scout",
+      "kind": "sprite",
+      "purpose": "Scout character for the side-view game; the family's representative sample that fixes outline, color roles, ground line and head height for the medic.",
+      "status": "in_progress",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Family members",
+          "usage": "Side-view game character sprite (BRIEF.md line 5)"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose a 32 by 32 canvas (BRIEF.md line 11)."
+        },
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Side view for a side-view game (BRIEF.md lines 4 and 14)."
+        },
+        {
+          "property": "alpha",
+          "value": "binary",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose binary transparency (BRIEF.md line 13)."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose nearest-neighbor display (BRIEF.md line 15)."
+        },
+        {
+          "property": "outline",
+          "value": "continuous dark outline as in reference.png",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_a"
+          ],
+          "reason": "Owner chose the reference's dark outline (BRIEF.md line 10)."
+        },
+        {
+          "property": "palette",
+          "value": [
+            "#25354a",
+            "#56b5bc",
+            "#f4dda2"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Owner agreed the teal and cream palette plus the dark outline (BRIEF.md lines 10, 12); exact values are measured from the references (BRIEF.md lines 18-21)."
+        },
+        {
+          "property": "facing",
+          "value": "right-facing profile",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Facing not stated (BRIEF.md line 32); proposed for the sample."
+        },
+        {
+          "property": "identity",
+          "value": "lighter build, forward lean, hood or cap, small pack; teal body, cream face and strap accents",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Expert proposal for a readable scout (BRIEF.md line 24)."
+        },
+        {
+          "property": "color_roles",
+          "value": "teal body fill, cream face/accents, dark only for outline and interior separations",
+          "authority": "observation",
+          "sources": [
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Observed in both references (BRIEF.md lines 18-20); carried as a scoped continuity choice."
+        },
+        {
+          "property": "engine",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "No target engine named (BRIEF.md line 30)."
+        }
+      ],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Preserve the continuous dark outline, flat teal body and cream features with binary edges. Do not copy the block silhouette; the scout is a new character."
+        },
+        {
+          "source": "ref_b",
+          "role": "palette",
+          "instructions": "Preserve teal #56b5bc and cream #f4dda2 as the two fills. Its missing outline is the alternative the owner did not choose."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/scout.png",
+        "checks": [
+          "asset-check: 32x32, binary alpha, palette membership of the three colors.",
+          "Visual review at native and integer-enlarged scale: continuous outline, profile pose on a ground line, scout landmark readable on light and dark backgrounds.",
+          "Engine display at an integer nearest-neighbor scale once a target engine is named."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Which engine or runtime displays the sprites, and at what integer scale?",
+        "Is a right-facing profile the correct facing for the game?"
+      ],
+      "next": "When a PixelLab connection is available: discover the generation tool, translate work/scout-creative-brief.json into its exact arguments with reference.png as a style input, prepare a durable job on task scout_sample output scout in .pixl/characters, dispatch, import and review against the saved criteria.",
+      "evidence": [
+        {
+          "path": "work/request-review.json",
+          "note": "Request/criteria packet for the first scout candidate (creative brief, not executable arguments)."
+        },
+        {
+          "path": "work/scout-criteria.json",
+          "note": "Candidate plan mirrored in .pixl/characters Q records q_canvas .. q_color_roles."
+        }
+      ],
+      "production": {
+        "store": ".pixl/characters",
+        "task": "scout_sample",
+        "output": "scout"
+      }
+    },
+    {
+      "id": "character.medic",
+      "kind": "sprite",
+      "purpose": "Medic character for the side-view game; second family member produced against the accepted scout baseline.",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Family members",
+          "usage": "Side-view game character sprite (BRIEF.md line 5)"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose a 32 by 32 canvas (BRIEF.md line 11)."
+        },
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Side view for a side-view game (BRIEF.md lines 4 and 14)."
+        },
+        {
+          "property": "alpha",
+          "value": "binary",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose binary transparency (BRIEF.md line 13)."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose nearest-neighbor display (BRIEF.md line 15)."
+        },
+        {
+          "property": "outline",
+          "value": "continuous dark outline as in reference.png",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_a"
+          ],
+          "reason": "Owner chose the reference's dark outline (BRIEF.md line 10)."
+        },
+        {
+          "property": "palette",
+          "value": [
+            "#25354a",
+            "#56b5bc",
+            "#f4dda2"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Same confirmed palette as the scout (BRIEF.md lines 10, 12, 18-21)."
+        },
+        {
+          "property": "identity",
+          "value": "sturdier stance, satchel or armband with a cream cross or plus mark as the role landmark",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Expert proposal for a medic distinct from the scout (BRIEF.md line 25)."
+        },
+        {
+          "property": "cast_alignment",
+          "value": "same ground line and head height as the accepted scout",
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Continuity proposal so both read as one cast (BRIEF.md line 26)."
+        }
+      ],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Preserve the continuous dark outline, flat teal body and cream features with binary edges."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/medic.png",
+        "checks": [
+          "asset-check: 32x32, binary alpha, palette membership of the three colors.",
+          "Visual review beside the accepted scout at native and enlarged scale: same outline weight, ground line and head height; cross or plus mark readable.",
+          "Engine display at an integer nearest-neighbor scale once a target engine is named."
+        ]
+      },
+      "depends_on": [
+        "character.scout"
+      ],
+      "questions": [],
+      "next": "After the scout sample is accepted, author the connected family plan with pixl_production_plan: medic production stage with the scout candidate as baseline and a delivery of both members with continuity criteria; then stage-prepare the medic request with the scout bytes as identity/style input.",
+      "evidence": []
+    },
+    {
+      "id": "character.family",
+      "kind": "delivery-package",
+      "purpose": "Collective delivery of the scout and medic as one side-view cast.",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Assignment",
+          "usage": "Character family for the side-view game (BRIEF.md lines 4-5)"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "members",
+          "value": [
+            "character.scout",
+            "character.medic"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner named a scout and a medic (BRIEF.md line 5)."
+        },
+        {
+          "property": "continuity",
+          "value": "same outline treatment, palette roles, ground line and head height across both members",
+          "authority": "proposal",
+          "sources": [
+            "brief",
+            "ref_a"
+          ],
+          "reason": "Owner requires one family in one style; the specific comparison points are expert proposals (BRIEF.md lines 10, 26)."
+        },
+        {
+          "property": "destination",
+          "value": {
+            "scout": "assets/characters/scout.png",
+            "medic": "assets/characters/medic.png"
+          },
+          "authority": "proposal",
+          "sources": [
+            "brief"
+          ],
+          "reason": "No destination supplied; proposed paths (BRIEF.md line 27)."
+        },
+        {
+          "property": "display",
+          "value": "nearest-neighbor at an integer scale",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner chose nearest-neighbor display (BRIEF.md line 15); the integer multiple is unresolved (line 31)."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters",
+        "checks": [
+          "family-snapshot of both accepted members; side-by-side contact sheet at native and 4x for continuity review.",
+          "Engine import with nearest-neighbor sampling and intact binary transparency once a target engine is named; otherwise record unavailable."
+        ]
+      },
+      "depends_on": [
+        "character.scout",
+        "character.medic"
+      ],
+      "questions": [
+        "Confirm the destination paths and the target engine before delivery activation."
+      ],
+      "next": "Create through pixl_production_plan together with the medic stage once the scout baseline exists; snapshot and review the family after both members are accepted.",
+      "evidence": []
+    }
+  ]
+}

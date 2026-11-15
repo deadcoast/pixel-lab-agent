@@ -1,0 +1,52 @@
+{
+  "status": "pass",
+  "commands": [
+    {
+      "name": "packaging",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_packaging",
+        "-v"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 36.557
+    },
+    {
+      "name": "readiness",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-c",
+        "import json;from pathlib import Path;from pixl.readiness import verify_manifest;print(json.dumps(verify_manifest(Path('plugins/pixl').resolve()),indent=2))"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.988
+    }
+  ],
+  "packaging_tests": 4,
+  "source_counts": {
+    "source_inputs": 214,
+    "runtime_source": 49,
+    "kit": 257
+  },
+  "changed_files": {
+    "source_inputs": [],
+    "runtime_source": [],
+    "kit": []
+  },
+  "readiness": {
+    "status": "verified",
+    "sha256": "14458f18ce7eafba7c5d7864a24a59ca4baae212330315b378b8671d2c7c461d",
+    "files_checked": 256,
+    "issues": [],
+    "meaning": "Listed payload bytes match this local manifest; publisher authenticity and host loading are not established."
+  },
+  "discovery_routes_status": "pass",
+  "discovery_skill_count": 6,
+  "source_revision": "f9103cd532ce03cf4eb61520c02ad9d68f1d40a2",
+  "runner_sha256": "03f459ea869035dbac4e5d1a60e731a6c853463c4768da93dced60c6bcde1e67",
+  "scope": "Four local packaging tests, manifest readiness, and skill discovery routes. Bundle builder writes are expected; before/after hashes identify any actual byte changes. Synthetic provider/family probes do not execute remote tools or establish artwork, native host, or engine acceptance."
+}

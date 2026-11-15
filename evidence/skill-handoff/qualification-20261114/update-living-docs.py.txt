@@ -1,0 +1,121 @@
+"""Reconcile the partial qualification without closing unmet native criteria."""
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+LEDGER = "evidence/skill-handoff/qualification-20261114/README.md"
+NEXT = ("**PX-SKILL-001 / PX-EVAL-005 — autonomous cold-handoff authority review "
+        "[M1, linked CF-02]**: use the retained cold state and failure findings to "
+        "qualify source-grounded correction through native caller/specialist review "
+        "without maintainer-authored feedback. Preserve the unaided direct-profile "
+        "failures and keep answer scope, proposed policies and remaining tool "
+        "dependencies explicit. Human acceptance stays separate; M1/M2 and broader "
+        "M3/M4/M5 remain open.")
+SUMMARY = (
+    "**PX-SKILL-001 qualification remains open:** the [current Claude ledger](" + LEDGER + ") "
+    "retains completed native attempts, frozen revisions and independent behavioral/artifact reviews. "
+    "Fresh and settled-choice handoffs have bounded passes; unaided continuation of the actual "
+    "interrupted Claude project still promotes unadopted policies or overstates what an answer unlocks. "
+    "The shared guidance now requires direct questions, preserves qualitative/exact artistic authority, "
+    "and uses a saved cold decision table with an actual prerequisite check. A recorded caller-reviewed "
+    "artifact correction is separate from the failed unaided cases. The reusable isolated recorder "
+    "retains complete input/output ZIPs, exact native sessions and all failures. "
+    "[Local verification](evidence/skill-handoff/qualification-20261114/local-02/RESULT.json) "
+    "passes 32 tests (nine new harness tests and 23 existing recorder tests) and scoped Ruff; "
+    "[four packaging tests](evidence/skill-handoff/qualification-20261114/package-check-01/RESULT.json) "
+    "pass on revision 03, with separate [final-kit compatibility](evidence/skill-handoff/qualification-20261114/package-check-02/RESULT.json). "
+    "The profile, Python runtime and saved formats remain unchanged. No full verifier, provider execution "
+    "or human acceptance is newly claimed. Earlier numerical/reporting defects and all unaided "
+    "cold failures remain open within their recorded scope; M1/M2 and broader M3/M4/M5 remain open."
+)
+
+
+def read(name):
+    raw = (ROOT / name).read_bytes()
+    return raw.decode().replace("\r\n", "\n"), "\r\n" if b"\r\n" in raw else "\n"
+
+
+def write(name, text, newline):
+    (ROOT / name).write_bytes(text.replace("\n", newline).encode())
+
+
+def replace_line(text, prefix, replacement):
+    lines = text.splitlines()
+    matches = [i for i, line in enumerate(lines) if line.startswith(prefix)]
+    if len(matches) != 1:
+        raise ValueError(f"Expected one {prefix!r}; got {len(matches)}")
+    lines[matches[0]] = replacement
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    name = "TODO.md"
+    text, nl = read(name)
+    text = replace_line(text, "**Active next increment:**", "**Active next increment:** " + NEXT)
+    text = text.replace("\n**Bounded TM-02 complete:**", "\n" + SUMMARY + "\n\n**Bounded TM-02 complete:**", 1)
+    write(name, text, nl)
+
+    name = "PLAN.md"
+    text, nl = read(name)
+    text = replace_line(text, "**Active next group:**", SUMMARY + "\n\n**Active next group:** " + NEXT)
+    text = replace_line(text, "**Work source:** TM-02", "**Work source:** Continue the earliest unfinished M1 outcome through CF-02's linked [PX-SKILL-001 qualification](" + LEDGER + "). The original direct cold cases remain failed, while caller-reviewed correction is a distinct intervention. CF-08's separate profile-loading gap remains open; no premature promotion, new IDENTIFY cycle or conditional framework extraction follows.")
+    write(name, text, nl)
+
+    name = "SHELVED.md"
+    text, nl = read(name)
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("| [CF-02]"):
+            start = line.index("**Active linked continuation:**")
+            lines[i] = line[:start] + "**Active linked continuation:** [PX-SKILL-001](" + LEDGER + ") now has bounded fresh/settled passes and a separately recorded caller-reviewed correction, but unaided legacy cold authority/dependency fidelity remains open. Continue native caller/specialist review without maintainer-written feedback; preserve the completed literal-criteria comparison and every failed predecessor. |"
+    text = "\n".join(lines) + "\n"
+    text = replace_line(text, "**Current next group:**", "**Current next group:** " + NEXT + " The [qualification ledger](" + LEDGER + ") keeps the failed unaided cold cases separate from guided correction. TM-02's bounded measurement/correctness result and conditional SC-07/NF-05/NF-09 triggers retain their existing dispositions; the active PLAN cycle continues.")
+    write(name, text, nl)
+
+    name = "docs/IDENTIFIED.md"
+    text, nl = read(name)
+    text += "\n**PX-SKILL-001 within-cycle result, 2026-11-14:** " + SUMMARY.replace(
+        "**PX-SKILL-001 qualification remains open:** ", "").replace(
+        "](evidence/", "](../evidence/") + "\n\n**Current handoff after PX-SKILL-001 qualification:** " + NEXT + " Keep all 50 findings and the existing cycle. [A–E and exact limits](../" + LEDGER + "#ae-review) distinguish local implementation, source loading, native behavior, useful outcomes and human acceptance.\n"
+    text = text.replace("**Current handoff after TM-02:**", "**Historical handoff after TM-02:**")
+    write(name, text, nl)
+
+    name = "evaluations/TODO.spec.md"
+    text, nl = read(name)
+    old = "- **Status:** implemented, 2026-09-14; bounded Codex fresh/cold handoffs verified;\n  completed Claude comparison remains unverified after the fixed-time trials."
+    new = "- **Status:** implementation refined, 2026-11-14; qualification remains open. Bounded\n  native Claude fresh/settled handoffs pass, but unaided legacy cold authority and\n  answer-to-operation fidelity remain failed. Recorded caller-reviewed correction\n  is a separate guided outcome, not completion of the unaided criterion."
+    if old not in text:
+        raise ValueError("Detailed specification status changed unexpectedly")
+    text = text.replace(old, new, 1)
+    text = text.replace("- **Result:** unchanged native Codex fresh/cold controls", "- **Historical 2026-09-14 result:** unchanged native Codex fresh/cold controls", 1)
+    text = text.replace("The current Claude\n  fresh attempt has no final response", "The historical Claude\n  fresh attempt has no final response", 1)
+    old = "- **Remaining boundary:** completed Claude intake behavior and PX-SKILL-002's\n  unsupported artistic rules still need focused evaluation. A passing unchanged\n  micro-control shows omission is not universal; these small trials do not prove\n  general reliability. The historical seed/package mismatch is PX-OPS-002 below."
+    new = ("- **Current qualification:** [new frozen native trials and independent review](../" + LEDGER + ")\n"
+           "  preserve direct-question failures, authority overreach, loading omissions,\n"
+           "  local harness/grader failures and the exact corrected sources. Fresh/settled\n"
+           "  scoped passes, caller-reviewed correction and unaided cold failure are\n"
+           "  reported separately. The actual Claude seed has five project-owned sources\n"
+           "  and needs no library migration. No provider or human acceptance follows.\n"
+           "- **Remaining boundary:** qualify cold authority correction through native\n"
+           "  caller/specialist review without maintainer-authored feedback; retain the\n"
+           "  failed direct-profile cases. Prior PX-SKILL-002 artistic-authority outcomes\n"
+           "  keep their recorded scope. These trials do not prove general reliability.\n"
+           "  The separate historical common-seed/package mismatch remains PX-OPS-002."
+    )
+    if old not in text:
+        raise ValueError("Detailed specification boundary changed unexpectedly")
+    text = text.replace(old, new, 1)
+    write(name, text, nl)
+
+    name = "docs/CAPABILITY-OUTCOMES.md"
+    text, nl = read(name)
+    note = ("**PX-SKILL-001 handoff qualification:** [current native evidence](../" + LEDGER + ") "
+            "qualifies bounded fresh/settled behavior while retaining unaided legacy cold authority failures. "
+            "Caller-reviewed correction is a distinct guided outcome; direct questions and valid state alone "
+            "do not establish correct adoption or continuation. The shared skill and isolated recorder are "
+            "updated, while the profile/runtime/formats stay unchanged. Human acceptance stays separate.\n\n")
+    text = text.replace("**NF-07 consumer-index qualification:**", note + "**NF-07 consumer-index qualification:**", 1)
+    write(name, text, nl)
+
+
+if __name__ == "__main__":
+    main()

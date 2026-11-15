@@ -1,8 +1,8 @@
 # Find evidence for a PIXL task
 
 Start with the task below, then open its exact result and failure ledger. This is
-a navigation index, first reviewed **2026-11-14 against `611a513`**. SC-09, TM-01 and TM-02
-update the current checkpoints and local maintenance routes below; the earlier
+a navigation index, first reviewed **2026-11-14 against `611a513`**. SC-09, TM-01, TM-02 and PX-SKILL-001
+update the checkpoints and qualification routes below; the earlier
 QOL-07 reader qualification applies to its retained version, not these updated bytes. The
 [capability matrix](../docs/CAPABILITY-OUTCOMES.md) defines supported scope;
 individual ledgers preserve attempts, interventions and tested identities. A newer
@@ -12,12 +12,20 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
+- **Consequential-choice and cold handoffs:** [PX-SKILL-001](skill-handoff/qualification-20261114/README.md)
+  records partial qualification across twelve completed native attempts. Final-kit
+  fresh and settled controls pass narrowly; unaided legacy cold authority still
+  fails. Explicit caller-reviewed correction passes separately. [Semantic outcomes](skill-handoff/qualification-20261114/semantic-review-04.json)
+  and [guided correction](skill-handoff/qualification-20261114/semantic-review-05.json)
+  keep these scopes distinct. Local verification passes 33 tests and Ruff; four
+  earlier packaging tests and final-kit compatibility remain separate proofs.
 - **Latest full local checkpoint:** [TM-02 verification](verification-runs/20261115T023402.446790Z/result.json)
   records 1,434 passing tests, 4 Windows privilege skips (1,438 run), 39 reference checks
   and distribution checks. This includes four new authoring and four new lock-reader regressions, plus
   thirteen new maintainer measurement tests. The [TM-01 checkpoint](verification-runs/20261115T003322.792746Z/result.json)
-  remains retained with its original inputs. These are local/package checks,
-  not new native, artistic or human acceptance.
+  remains retained with its original inputs. TM-02 full applicability is now stale
+  after the new maintainer harness/tests and shared guidance; no new full verifier
+  ran. These are local/package checks, not artistic or human acceptance.
 - **Measured operation costs:** [TM-02](performance/README.md) measures four
   retained histories and 39 operations, with stable outputs and unchanged
   5,207 inputs. Authoring medians are 84–290 ms on the measured Windows host.
@@ -36,14 +44,15 @@ M3/M4/M5 remain open.**
   preserves the wider untyped-body baseline and intermediate integration/lint
   failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [TM-02 inspection](performance/20261114/integrity-01/report.json) covers
-  23 claims and 68 receipts: two current TM-02 claims, eleven historical and
-  ten stale applicability claims. Both TM-01 bindings now join the earlier
-  eight stale claims after the authoring repair and new maintainer tests.
-  Original outcomes remain intact; `needs_review` is not a runtime failure.
+  The [current inspection](skill-handoff/qualification-20261114/integrity-01/report.json)
+  covers 24 claims and 77 receipts: two current (TM-02 measurements and the explicitly
+  **partial** PX-SKILL-001 qualification), eleven historical and eleven stale.
+  TM-02's full-checkpoint binding is now stale after the new harness/tests and
+  guidance. The inspection preserves 2,935 scoped input entries' bytes/mtimes;
+  its exit 1 retains applicability/release gaps, not a new runtime-failure claim.
+  [TM-02](performance/20261114/integrity-01/report.json),
   [TM-01](boundary-typing/20261114/integrity-01/report.json) and
-  [SC-09](lock-diagnostics/20261114/integrity-02/report.json) keep their
-  earlier inspection results.
+  [SC-09](lock-diagnostics/20261114/integrity-02/report.json) keep their earlier results.
 
 **Blocked by `store_locked`?** Follow the [local writer-lock recovery guide](../plugins/pixl/skills/pixl/references/store-locking.md)
 and [SC-09 evidence ledger](lock-diagnostics/README.md). Its retained source-runtime
@@ -61,7 +70,7 @@ identities without rebuilding or replaying evidence. It does not rerun a host,
 provider or renderer. The registry ID `CURRENT-FULL-VERIFICATION` deliberately
 tracks the **older SC-06** receipt; `NF-07-FULL-VERIFICATION` and
 `SC-09-FULL-VERIFICATION` retain their later, now-stale checkpoints. Use
-`TM-02-FULL-VERIFICATION` for the latest registered full checkpoint. Claim filtering still checks retained releases, so
+`TM-02-FULL-VERIFICATION` for the latest retained full checkpoint; its current applicability is stale. Claim filtering still checks retained releases, so
 an overall exit 1 can coexist with an intact current selected claim.
 
 ## Choose the core task

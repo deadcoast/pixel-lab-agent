@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Side-view character family: scout and medic",
+    "brief": "Pixel-art character family for a side-view game matching reference.png / reference-b.png. Outline treatment and canvas size are unresolved owner decisions. Local-only PIXL evaluation; no generation provider assigned."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md owner instruction",
+      "reference.png and reference-b.png inspected at 1x, 4x and 8x and measured",
+      "research/outline-comparison-sheet.png (reference pixels on four backgrounds)",
+      "research/outline-and-canvas-decision-card.md"
+    ],
+    "excluded": [
+      "pixl-kit installation (tooling, not project art)"
+    ],
+    "unresolved": [
+      "No game code, renderer or asset loader exists in this consumer; consumers, display scale, destination paths and engine import behaviour are unknown.",
+      "No PixelLab provider connection is assigned; no generation can be prepared against a discovered schema in this session."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "bb034f519881fb1d498a0feb08aef5b5639a51f64d0242ab92cd912ad6c38203"
+    },
+    {
+      "id": "ref_a",
+      "path": "reference.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    },
+    {
+      "id": "ref_b",
+      "path": "reference-b.png",
+      "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a"
+    },
+    {
+      "id": "card",
+      "path": "research/outline-and-canvas-decision-card.md",
+      "sha256": "0545a2503843feff7b8333eaa0120c6437f977dcb4e971415cacaaa186c7a842"
+    },
+    {
+      "id": "sheet",
+      "path": "research/outline-comparison-sheet.png",
+      "sha256": "21623641f2ab363efe12b5f5e896e0775b833b6ff570e8e1e50332e48e54ffaf"
+    }
+  ],
+  "assets": [
+    {
+      "id": "characters.scout",
+      "kind": "character-sprite",
+      "purpose": "Scout: the representative family sample that establishes side-view construction, edge treatment, canvas and colour roles for the family",
+      "status": "todo",
+      "consumers": [],
+      "existing": [],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Preserve the blocky proportions, teal fill and cream eye colour roles. This file shows the continuous 2 px dark outline direction; whether the outline is kept is an open owner decision."
+        },
+        {
+          "source": "ref_b",
+          "role": "style",
+          "instructions": "Same figure without any outline. Preserve the same proportions and colour roles; whether the outline-free treatment is kept is an open owner decision."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The owner states a side-view game. Both references are frontal, so the sample must establish the side-facing construction."
+        },
+        {
+          "property": "family_role",
+          "value": "scout",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Named family member; role must be readable at native size."
+        },
+        {
+          "property": "edge_treatment",
+          "value": {
+            "alternatives": [
+              "continuous dark outline (reference.png)",
+              "no outline (reference-b.png)"
+            ],
+            "proposal": "outline direction with 1 px line weight at the chosen canvas"
+          },
+          "authority": "unknown",
+          "sources": [
+            "brief",
+            "card"
+          ],
+          "reason": "The references disagree and the owner has not chosen. The proposal is PIXL's, recorded in the decision card."
+        },
+        {
+          "property": "canvas",
+          "value": {
+            "proposal": [
+              32,
+              32
+            ],
+            "alternative": [
+              48,
+              48
+            ]
+          },
+          "authority": "unknown",
+          "sources": [
+            "brief",
+            "card"
+          ],
+          "reason": "The owner has not chosen a canvas. Both references are 32x32 with a 19x26 subject; that is an observation, not a choice."
+        },
+        {
+          "property": "colour_roles",
+          "value": {
+            "fill": "#56B5BC",
+            "eyes": "#F4DDA2",
+            "outline": "#25354A (reference.png only)"
+          },
+          "authority": "observation",
+          "sources": [
+            "ref_a",
+            "ref_b",
+            "card"
+          ],
+          "reason": "Measured from the references. Carry as colour roles; no exclusive fixed palette has been adopted."
+        },
+        {
+          "property": "alpha",
+          "value": "binary observed in both references",
+          "authority": "observation",
+          "sources": [
+            "card"
+          ],
+          "reason": "Not adopted as a requirement; the contract alpha policy is set when the sample is prepared."
+        },
+        {
+          "property": "provider",
+          "value": "none assigned in this evaluation session",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Do not invoke a generation provider in this session."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/scout.png",
+        "checks": [
+          "Measure canvas size and alpha policy against the confirmed contract.",
+          "Inspect at 1x and integer zoom: side-facing silhouette, head and limbs readable, ground contact visible.",
+          "Compare colour roles and chosen edge treatment with the owner-selected reference direction.",
+          "Engine/display check once a destination is named."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Outline treatment: continuous dark outline as in reference.png, no outline as in reference-b.png, or the proposed 1 px outline adaptation?",
+        "Canvas size per member: 32x32 (proposed), 48x48, or another value?",
+        "Delivery destination, display scale and engine are not specified."
+      ],
+      "next": "Ask the owner for outline treatment and canvas size; when answered, prepare the scout representative sample request against an assigned PixelLab connection.",
+      "production": {
+        "store": "production/characters",
+        "task": "t_sample",
+        "output": "f_scout_sample"
+      },
+      "evidence": [
+        {
+          "path": "research/outline-and-canvas-decision-card.md",
+          "note": "Authority table, measurements, visual findings on four backgrounds, knowledge citations and PIXL proposals."
+        },
+        {
+          "path": "research/outline-comparison-sheet.png",
+          "note": "Both references, pixels unchanged, at 4x and 1x on light, dark, mid-teal and busy backgrounds."
+        }
+      ]
+    },
+    {
+      "id": "characters.medic",
+      "kind": "character-sprite",
+      "purpose": "Medic: second family member produced from the accepted scout baseline, distinguishable by role while sharing construction, edge treatment and colour roles",
+      "status": "todo",
+      "consumers": [],
+      "existing": [],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Same style role as for the scout; the accepted scout sample becomes the primary baseline once it exists."
+        },
+        {
+          "source": "ref_b",
+          "role": "style",
+          "instructions": "Same style role as for the scout; the accepted scout sample becomes the primary baseline once it exists."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Same side-view game."
+        },
+        {
+          "property": "family_role",
+          "value": "medic",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Named family member; must be distinguishable from the scout at native size without relying on colour alone (proposal: a visible medic mark or satchel)."
+        },
+        {
+          "property": "family_continuity",
+          "value": "same canvas, edge treatment, colour roles, proportions and ground line as the accepted scout",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The owner asked for a family; shared construction is what makes it one."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/medic.png",
+        "checks": [
+          "Measure canvas size and alpha policy against the confirmed contract.",
+          "Inspect beside the scout at 1x and integer zoom: same construction, distinguishable role.",
+          "Engine/display check once a destination is named."
+        ]
+      },
+      "depends_on": [
+        "characters.scout"
+      ],
+      "questions": [
+        "Inherits the scout's open questions.",
+        "Which visual mark identifies the medic? (PIXL proposal: a light cross or satchel; owner may prefer another cue.)"
+      ],
+      "next": "Wait for the accepted scout sample, then bind it as baseline and prepare the medic member request.",
+      "production": {
+        "store": "production/characters",
+        "task": "t_medic",
+        "output": "f_medic"
+      },
+      "evidence": []
+    },
+    {
+      "id": "characters.family",
+      "kind": "delivery-package",
+      "purpose": "Collective delivery of scout and medic with continuity review and destination integration",
+      "status": "todo",
+      "consumers": [],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "members",
+          "value": [
+            "characters.scout",
+            "characters.medic"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The owner named exactly these two members."
+        },
+        {
+          "property": "destination",
+          "value": null,
+          "authority": "unknown",
+          "sources": [],
+          "reason": "No engine, path layout, display scale or import settings have been given."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/",
+        "checks": [
+          "Collective continuity: both members viewed together at 1x and integer zoom.",
+          "Destination choices confirmed and an engine/display check performed or recorded as unavailable."
+        ]
+      },
+      "depends_on": [
+        "characters.scout",
+        "characters.medic"
+      ],
+      "questions": [
+        "Delivery destination, display scale and engine."
+      ],
+      "next": "After the scout sample is accepted, author the connected family plan with the medic as member, destination choices and continuity criteria.",
+      "evidence": []
+    }
+  ]
+}

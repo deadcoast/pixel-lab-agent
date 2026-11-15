@@ -1,0 +1,378 @@
+{
+ "version": 1,
+ "project": {
+  "name": "Side-view character family: scout and medic",
+  "brief": "Two-member side-view character family (scout, medic) for a side-view game. Owner-confirmed: 32x32 canvas, the reference's dark outline, the agreed teal and cream palette, binary transparency, side view, nearest-neighbor display. Owner instruction retained in BRIEF.md."
+ },
+ "coverage": {
+  "included": [
+   "BRIEF.md (owner instruction, read)",
+   "reference.png (style reference, inspected at native scale and 8x)",
+   "reference-b.png (palette/silhouette reference without outline, inspected at native scale and 8x)"
+  ],
+  "excluded": [
+   "pixl-kit/ (installed PIXL kit, not project art)"
+  ],
+  "unresolved": [
+   "No game code or renderer is present in this consumer project; consumer bindings, destination paths and display scale are owner-supplied or still open."
+  ]
+ },
+ "sources": [
+  {
+   "id": "brief",
+   "path": "BRIEF.md",
+   "sha256": "388d33dd51e0595917583860687b76ccbdb8e9e40b618e203fc50d073e21bc3e"
+  },
+  {
+   "id": "reference",
+   "path": "reference.png",
+   "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+  },
+  {
+   "id": "reference_b",
+   "path": "reference-b.png",
+   "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a"
+  }
+ ],
+ "assets": [
+  {
+   "id": "character.scout",
+   "kind": "character sprite (static side-view pose, representative family sample)",
+   "purpose": "Scout character for the side-view game; first member and representative sample that fixes the family's treatment before the medic is produced.",
+   "status": "review",
+   "consumers": [
+    {
+     "source": "brief",
+     "symbol": "Assignment",
+     "usage": "Owner brief names the scout as a family member for a side-view game; no game code is present in this project."
+    }
+   ],
+   "existing": [
+    {
+     "path": "candidates/scout-local-01.png",
+     "role": "accepted sample candidate (deterministic local construction by PIXL, not provider-generated); nominated on task scout_sample"
+    }
+   ],
+   "requirements": [
+    {
+     "property": "canvas",
+     "value": [
+      32,
+      32
+     ],
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose a 32 by 32 canvas."
+    },
+    {
+     "property": "outline",
+     "value": "continuous dark outline as in reference.png",
+     "authority": "requirement",
+     "sources": [
+      "brief",
+      "reference"
+     ],
+     "reason": "Owner chose the reference's dark outline."
+    },
+    {
+     "property": "palette_roles",
+     "value": [
+      "teal body",
+      "cream accent",
+      "dark outline"
+     ],
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose the agreed teal and cream palette; the dark outline color comes from the chosen outline treatment."
+    },
+    {
+     "property": "palette_hex",
+     "value": [
+      "#56b5bc",
+      "#f4dda2",
+      "#25354a"
+     ],
+     "authority": "proposal",
+     "sources": [
+      "reference",
+      "reference_b"
+     ],
+     "reason": "Working exact colors measured from the references (teal 186 px, cream 24 px, outline 180 px in reference.png); proposed as the family's fixed working palette, not an owner hex restriction."
+    },
+    {
+     "property": "alpha",
+     "value": "binary",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose binary transparency."
+    },
+    {
+     "property": "view",
+     "value": "side",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose side view for a side-view game."
+    },
+    {
+     "property": "sampling",
+     "value": "nearest",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose nearest-neighbor display."
+    },
+    {
+     "property": "reference_style_observations",
+     "value": {
+      "outline_width_px": 2,
+      "shading": "flat, no ramps, no anti-aliasing",
+      "eyes": "two 2x4 cream blocks",
+      "figure": "blocky rectangular body with two upright posts, front-facing, occupying columns 7-24 and rows 3-27"
+     },
+     "authority": "observation",
+     "sources": [
+      "reference",
+      "reference_b"
+     ],
+     "reason": "Measured and visually inspected from the references; informs the treatment but is not itself a rejection rule."
+    },
+    {
+     "property": "role_identity",
+     "value": "readable as a scout (light, fast, lookout role) in silhouette and equipment",
+     "authority": "proposal",
+     "sources": [],
+     "reason": "Expert proposal for how the scout is told apart from the medic; the owner named roles only."
+    }
+   ],
+   "delivery": {
+    "path": "assets/characters/scout.png",
+    "checks": [
+     "32x32 PNG, binary alpha, opaque pixels within the working palette",
+     "dark outline continuous around the figure at native scale",
+     "reads as a side-view scout at native and integer-enlarged scale",
+     "family continuity with the medic reviewed in the collective delivery"
+    ]
+   },
+   "depends_on": [],
+   "questions": [
+    "Owner decision: keep the local construction candidates/scout-local-01.png as the family baseline, or replace it with a PixelLab-generated scout by revision once a connection is assigned?",
+    "Destination path assets/characters/scout.png is a proposal; confirm the game project's actual path.",
+    "Intended display scale (e.g. 3x, 4x) is unknown; affects readability review.",
+    "Single static pose for now; animation not requested."
+   ],
+   "next": "Owner reviews candidates/scout-local-01.png (8x views under .pixl/characters/inspections) and either adopts it as baseline or asks for a PixelLab revision; then confirm the proposed exact palette and flat shading so production stages can activate.",
+   "production": {
+    "store": ".pixl/characters",
+    "task": "scout_sample",
+    "output": "scout_sprite"
+   },
+   "evidence": [
+    {
+     "path": "candidates/scout-local-01.png",
+     "note": "Nominated sample candidate scout_local_01; 32x32, binary alpha, 3 palette colors (measured)."
+    },
+    {
+     "path": ".pixl/characters/inspections/fc730ca2eb83da4612ff3801a192cd122578fce6c799c0a01af0a9d1ce4ad111/manifest.json",
+     "note": "Inspection packet scout_inspect_01: native and 8x views on white and #202838 with reference.png; review scout_review_01 passed all six criteria (self-review by PIXL)."
+    },
+    {
+     "path": "work/scripts/build_scout.py",
+     "note": "Deterministic construction script for the local candidates (provenance)."
+    },
+    {
+     "path": "work/request/scout-creative-brief.md",
+     "note": "Creative brief for the future PixelLab request; no tool schema discovered, not executable."
+    }
+   ],
+   "references": [
+    {
+     "source": "reference",
+     "role": "style",
+     "instructions": "Preserve the continuous dark outline, flat teal fill, cream accents, blocky cluster scale and absence of anti-aliasing."
+    },
+    {
+     "source": "reference_b",
+     "role": "palette",
+     "instructions": "Teal and cream roles; the figure without outline shows the fill and accent relationship only."
+    }
+   ]
+  },
+  {
+   "id": "character.medic",
+   "kind": "character sprite (static side-view pose, family member)",
+   "purpose": "Medic character for the side-view game; produced against the accepted scout sample as baseline.",
+   "status": "in_progress",
+   "consumers": [
+    {
+     "source": "brief",
+     "symbol": "Assignment",
+     "usage": "Owner brief names the medic as a family member for a side-view game; no game code is present in this project."
+    }
+   ],
+   "existing": [
+    {
+     "path": "candidates/medic-local-01.png",
+     "role": "preview draft (deterministic local construction by PIXL, not provider-generated); not yet a reviewed candidate"
+    }
+   ],
+   "requirements": [
+    {
+     "property": "canvas",
+     "value": [
+      32,
+      32
+     ],
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose a 32 by 32 canvas."
+    },
+    {
+     "property": "outline",
+     "value": "continuous dark outline as in reference.png",
+     "authority": "requirement",
+     "sources": [
+      "brief",
+      "reference"
+     ],
+     "reason": "Owner chose the reference's dark outline."
+    },
+    {
+     "property": "palette_roles",
+     "value": [
+      "teal body",
+      "cream accent",
+      "dark outline"
+     ],
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose the agreed teal and cream palette."
+    },
+    {
+     "property": "alpha",
+     "value": "binary",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose binary transparency."
+    },
+    {
+     "property": "view",
+     "value": "side",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose side view."
+    },
+    {
+     "property": "sampling",
+     "value": "nearest",
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner chose nearest-neighbor display."
+    },
+    {
+     "property": "role_identity",
+     "value": "readable as a medic (cross or satchel marker in the cream accent) while sharing the scout's volume, outline and palette",
+     "authority": "proposal",
+     "sources": [],
+     "reason": "Expert proposal for family distinction; the owner named roles only."
+    }
+   ],
+   "delivery": {
+    "path": "assets/characters/medic.png",
+    "checks": [
+     "32x32 PNG, binary alpha, opaque pixels within the working palette",
+     "dark outline continuous around the figure at native scale",
+     "reads as a side-view medic distinct from the scout at native and integer-enlarged scale",
+     "shares the scout baseline's volume, ground line and outline weight"
+    ]
+   },
+   "depends_on": [
+    "character.scout"
+   ],
+   "questions": [
+    "Destination path assets/characters/medic.png is a proposal; confirm the game project's actual path.",
+    "Production activation needs the proposed exact palette and flat shading confirmed by the owner."
+   ],
+   "next": "Being re-planned: connected plan family_plan_02 binds this row to its stage/delivery.",
+   "evidence": [],
+   "references": [
+    {
+     "source": "reference",
+     "role": "style",
+     "instructions": "Preserve the continuous dark outline, flat teal fill, cream accents, blocky cluster scale and absence of anti-aliasing."
+    }
+   ]
+  },
+  {
+   "id": "character.family",
+   "kind": "family delivery package (scout + medic)",
+   "purpose": "Collective delivery of the scout and medic with continuity review and destination integration.",
+   "status": "in_progress",
+   "consumers": [
+    {
+     "source": "brief",
+     "symbol": "Assignment",
+     "usage": "Owner asked for a character family; the package is the collective deliverable."
+    }
+   ],
+   "existing": [],
+   "requirements": [
+    {
+     "property": "members",
+     "value": [
+      "character.scout",
+      "character.medic"
+     ],
+     "authority": "requirement",
+     "sources": [
+      "brief"
+     ],
+     "reason": "Owner named exactly these two members."
+    },
+    {
+     "property": "continuity",
+     "value": "matching outline weight, ground line, head height and palette roles across both members",
+     "authority": "proposal",
+     "sources": [],
+     "reason": "Expert continuity condition for the collective review."
+    }
+   ],
+   "delivery": {
+    "path": "assets/characters/",
+    "checks": [
+     "both members present at their confirmed destination paths",
+     "side-by-side continuity reviewed at native and enlarged scale",
+     "destination engine import unverified until a game project is available"
+    ]
+   },
+   "depends_on": [
+    "character.scout",
+    "character.medic"
+   ],
+   "questions": [
+    "Which game project and paths receive the delivered files?",
+    "Is any engine import check required, and in which engine?"
+   ],
+   "next": "Being re-planned: connected plan family_plan_02 binds this row to its stage/delivery.",
+   "evidence": []
+  }
+ ]
+}

@@ -1,0 +1,773 @@
+{
+ "revision": 2,
+ "records": [
+  {
+   "id": "actor",
+   "kind": "A",
+   "fields": {
+    "nm": "PIXL",
+    "rl": {
+     "$symbol": "agent"
+    }
+   }
+  },
+  {
+   "id": "alpha",
+   "kind": "I",
+   "fields": {
+    "ky": "al",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": {
+     "$symbol": "binary"
+    },
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose binary transparency (BRIEF.md item 4)."
+   }
+  },
+  {
+   "id": "brief",
+   "kind": "S",
+   "fields": {
+    "at": "2026-11-15",
+    "au": {
+     "$symbol": "local"
+    },
+    "dg": "388d33dd51e0595917583860687b76ccbdb8e9e40b618e203fc50d073e21bc3e",
+    "ln": [
+     1,
+     33
+    ],
+    "ur": "BRIEF.md"
+   }
+  },
+  {
+   "id": "canvas",
+   "kind": "I",
+   "fields": {
+    "ky": "px",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": [
+     32,
+     32
+    ],
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose a 32 by 32 canvas per character (BRIEF.md item 2)."
+   }
+  },
+  {
+   "id": "destination_engine",
+   "kind": "I",
+   "fields": {
+    "ky": "destination_engine",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "unresolved"
+    },
+    "vl": null,
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "No game project or engine is present in this consumer; nearest-neighbor display and import behavior cannot be exercised until one is named."
+   }
+  },
+  {
+   "id": "destination_medic",
+   "kind": "I",
+   "fields": {
+    "ky": "destination_medic",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "assets/characters/medic.png",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+   }
+  },
+  {
+   "id": "destination_scout",
+   "kind": "I",
+   "fields": {
+    "ky": "destination_scout",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "assets/characters/scout.png",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+   }
+  },
+  {
+   "id": "display_scale",
+   "kind": "I",
+   "fields": {
+    "ky": "display_scale",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "unresolved"
+    },
+    "vl": null,
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "The game's integer display scale is not known (BRIEF.md, left open). Readability is reviewed at native scale and 8x until the owner states it."
+   }
+  },
+  {
+   "id": "facing",
+   "kind": "I",
+   "fields": {
+    "ky": "facing",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "single static standing pose facing screen right; mirror in-engine for left",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposal: one static right-facing pose is the smallest useful sample for a side-view game; no animation was requested."
+   }
+  },
+  {
+   "id": "family_contract",
+   "kind": "C",
+   "fields": {
+    "al": {
+     "$symbol": "binary"
+    },
+    "ch": [
+     {
+      "$ref": "canvas"
+     },
+     {
+      "$ref": "outline"
+     },
+     {
+      "$ref": "palette_roles"
+     },
+     {
+      "$ref": "palette_hex"
+     },
+     {
+      "$ref": "alpha"
+     },
+     {
+      "$ref": "view"
+     },
+     {
+      "$ref": "sampling"
+     },
+     {
+      "$ref": "lighting"
+     }
+    ],
+    "li": "flat fill: no shading ramps, no anti-aliasing",
+    "nm": "Family side-view sprite contract (sample interpretation)",
+    "pl": [
+     "#56b5bc",
+     "#f4dda2",
+     "#25354a"
+    ],
+    "px": [
+     32,
+     32
+    ],
+    "sa": {
+     "$symbol": "nearest"
+    },
+    "vw": {
+     "$symbol": "side"
+    }
+   }
+  },
+  {
+   "id": "lighting",
+   "kind": "I",
+   "fields": {
+    "ky": "li",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "reference"
+     }
+    ],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "flat fill: no shading ramps, no anti-aliasing",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "Observed in reference.png (three flat colors, hard edges). PIXL proposes keeping the family flat so the three-color palette stays intact; owner may instead adopt shading, which would need more colors."
+   }
+  },
+  {
+   "id": "medic_identity",
+   "kind": "I",
+   "fields": {
+    "ky": "medic_identity",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "same creature and volume as the scout with a cream cross marker on the body side and a satchel at the front instead of the backpack",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposal for family distinction; the owner named the role only."
+   }
+  },
+  {
+   "id": "outline",
+   "kind": "I",
+   "fields": {
+    "ky": "edge_treatment",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     },
+     {
+      "$ref": "reference"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": "continuous dark outline as in reference.png",
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose the reference's dark outline (BRIEF.md item 1). Measured in reference.png the outline is #25354a and 2 px wide; the width is an observation carried as part of the proposed working treatment, not a separate owner rule."
+   }
+  },
+  {
+   "id": "palette_hex",
+   "kind": "I",
+   "fields": {
+    "ky": "pl",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "reference"
+     },
+     {
+      "$ref": "reference_b"
+     }
+    ],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": [
+     "#56b5bc",
+     "#f4dda2",
+     "#25354a"
+    ],
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposes fixing the owner's teal/cream/outline roles to the exact colors measured in both references (teal #56b5bc, cream #f4dda2, outline #25354a) as the family's working palette. Awaiting owner confirmation before production; sample work may use it."
+   }
+  },
+  {
+   "id": "palette_roles",
+   "kind": "I",
+   "fields": {
+    "ky": "palette_roles",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": [
+     "teal body",
+     "cream accent",
+     "dark outline"
+    ],
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose the agreed teal and cream palette (BRIEF.md item 3); the dark outline color is implied by the chosen outline treatment."
+   }
+  },
+  {
+   "id": "project",
+   "kind": "P",
+   "fields": {
+    "br": "Two-member side-view character family (scout, medic) on 32x32 canvases with the reference's dark outline, the agreed teal and cream palette, binary transparency and nearest-neighbor display. Owner instruction retained in BRIEF.md.",
+    "in": [
+     {
+      "$ref": "canvas"
+     },
+     {
+      "$ref": "outline"
+     },
+     {
+      "$ref": "palette_roles"
+     },
+     {
+      "$ref": "palette_hex"
+     },
+     {
+      "$ref": "alpha"
+     },
+     {
+      "$ref": "view"
+     },
+     {
+      "$ref": "sampling"
+     },
+     {
+      "$ref": "lighting"
+     },
+     {
+      "$ref": "facing"
+     },
+     {
+      "$ref": "scout_identity"
+     },
+     {
+      "$ref": "medic_identity"
+     },
+     {
+      "$ref": "display_scale"
+     },
+     {
+      "$ref": "destination_scout"
+     },
+     {
+      "$ref": "destination_medic"
+     },
+     {
+      "$ref": "destination_engine"
+     }
+    ],
+    "nm": "Side-view character family: scout and medic",
+    "ow": {
+     "$ref": "user"
+    },
+    "sc": [
+     {
+      "$ref": "brief"
+     },
+     {
+      "$ref": "reference"
+     },
+     {
+      "$ref": "reference_b"
+     }
+    ]
+   }
+  },
+  {
+   "id": "q_canvas_alpha",
+   "kind": "Q",
+   "fields": {
+    "ck": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+    "dm": {
+     "$symbol": "mechanical"
+    },
+    "md": {
+     "$symbol": "local"
+    },
+    "nm": "canvas and binary alpha",
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "wh": {
+     "$ref": "user"
+    }
+   }
+  },
+  {
+   "id": "q_outline",
+   "kind": "Q",
+   "fields": {
+    "ck": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+    "dm": {
+     "$symbol": "visual"
+    },
+    "md": {
+     "$symbol": "visual"
+    },
+    "nm": "continuous dark outline",
+    "so": [
+     {
+      "$ref": "brief"
+     },
+     {
+      "$ref": "reference"
+     }
+    ],
+    "wh": {
+     "$ref": "user"
+    }
+   }
+  },
+  {
+   "id": "q_palette",
+   "kind": "Q",
+   "fields": {
+    "ck": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a. This fixes the owner's teal, cream and dark-outline roles to exact values for this sample; the exact values are PIXL's proposal.",
+    "dm": {
+     "$symbol": "mechanical"
+    },
+    "md": {
+     "$symbol": "local"
+    },
+    "nm": "working palette membership",
+    "so": [
+     {
+      "$ref": "brief"
+     },
+     {
+      "$ref": "reference"
+     },
+     {
+      "$ref": "reference_b"
+     }
+    ],
+    "wh": {
+     "$ref": "actor"
+    }
+   }
+  },
+  {
+   "id": "q_scout_read",
+   "kind": "Q",
+   "fields": {
+    "ck": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a scout character: head, body, eye, feet on a common ground line, and the scout's backpack and goggle-strap marks stay separate and recognizable.",
+    "dm": {
+     "$symbol": "visual"
+    },
+    "md": {
+     "$symbol": "visual"
+    },
+    "nm": "scout readability",
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "wh": {
+     "$ref": "actor"
+    }
+   }
+  },
+  {
+   "id": "q_side_view",
+   "kind": "Q",
+   "fields": {
+    "ck": "The figure reads as seen from the side, facing one screen direction, rather than the front-facing pose of the reference.",
+    "dm": {
+     "$symbol": "visual"
+    },
+    "md": {
+     "$symbol": "visual"
+    },
+    "nm": "side view",
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "wh": {
+     "$ref": "user"
+    }
+   }
+  },
+  {
+   "id": "q_style_match",
+   "kind": "Q",
+   "fields": {
+    "ck": "Compared with reference.png at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and a similar blocky cluster scale and outline weight.",
+    "dm": {
+     "$symbol": "visual"
+    },
+    "md": {
+     "$symbol": "visual"
+    },
+    "nm": "reference style match",
+    "so": [
+     {
+      "$ref": "reference"
+     }
+    ],
+    "wh": {
+     "$ref": "actor"
+    }
+   }
+  },
+  {
+   "id": "reference",
+   "kind": "S",
+   "fields": {
+    "at": "2026-11-15",
+    "au": {
+     "$symbol": "local"
+    },
+    "dg": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+    "ln": [],
+    "ur": "reference.png"
+   }
+  },
+  {
+   "id": "reference_b",
+   "kind": "S",
+   "fields": {
+    "at": "2026-11-15",
+    "au": {
+     "$symbol": "local"
+    },
+    "dg": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a",
+    "ln": [],
+    "ur": "reference-b.png"
+   }
+  },
+  {
+   "id": "sampling",
+   "kind": "I",
+   "fields": {
+    "ky": "sa",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": {
+     "$symbol": "nearest"
+    },
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose nearest-neighbor display (BRIEF.md item 6)."
+   }
+  },
+  {
+   "id": "scout_identity",
+   "kind": "I",
+   "fields": {
+    "ky": "scout_identity",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "reference"
+     }
+    ],
+    "st": {
+     "$symbol": "proposed"
+    },
+    "vl": "same blocky creature as the reference seen from the side: block body with two ear posts set back, one cream eye and a muzzle at the front, short legs, a backpack on the back and a cream goggle strap running to the eye",
+    "wh": {
+     "$ref": "actor"
+    },
+    "wy": "PIXL proposal for how the scout reads as a scout while matching the reference's forms; the owner named the role only."
+   }
+  },
+  {
+   "id": "scout_sample",
+   "kind": "T",
+   "fields": {
+    "ca": [],
+    "dc": [],
+    "dp": [],
+    "ip": [],
+    "kn": [],
+    "nm": "Representative sample: scout side-view sprite",
+    "op": [
+     {
+      "$ref": "scout_sprite"
+     }
+    ],
+    "ow": {
+     "$ref": "actor"
+    },
+    "ph": {
+     "$symbol": "sample"
+    },
+    "pr": {
+     "$ref": "project"
+    },
+    "st": {
+     "$symbol": "open"
+    },
+    "vr": []
+   }
+  },
+  {
+   "id": "scout_sprite",
+   "kind": "F",
+   "fields": {
+    "ct": {
+     "$ref": "family_contract"
+    },
+    "kd": {
+     "$symbol": "sprite"
+    },
+    "nm": "Scout side-view sprite, 32x32, static pose",
+    "rq": [
+     {
+      "$ref": "q_canvas_alpha"
+     },
+     {
+      "$ref": "q_palette"
+     },
+     {
+      "$ref": "q_outline"
+     },
+     {
+      "$ref": "q_side_view"
+     },
+     {
+      "$ref": "q_scout_read"
+     },
+     {
+      "$ref": "q_style_match"
+     }
+    ],
+    "tk": {
+     "$ref": "scout_sample"
+    }
+   }
+  },
+  {
+   "id": "user",
+   "kind": "A",
+   "fields": {
+    "nm": "Project owner",
+    "rl": {
+     "$symbol": "user"
+    }
+   }
+  },
+  {
+   "id": "view",
+   "kind": "I",
+   "fields": {
+    "ky": "vw",
+    "pr": {
+     "$ref": "project"
+    },
+    "so": [
+     {
+      "$ref": "brief"
+     }
+    ],
+    "st": {
+     "$symbol": "confirmed"
+    },
+    "vl": {
+     "$symbol": "side"
+    },
+    "wh": {
+     "$ref": "user"
+    },
+    "wy": "Owner chose side view for a side-view game (BRIEF.md item 5)."
+   }
+  },
+  {
+   "id": "scout_local_01",
+   "kind": "X",
+   "fields": {
+    "nm": "Scout local construction 01 (deterministic, not provider-generated)",
+    "ur": "candidates/scout-local-01.png",
+    "dg": "24b9dd206c638157b9e44365f18a4f3763e9a60bae93feec9c432f86051a03b6",
+    "ct": {
+     "$ref": "family_contract"
+    },
+    "kd": {
+     "$symbol": "sprite"
+    },
+    "of": {
+     "$ref": "scout_sprite"
+    },
+    "mt": {
+     "provenance": "deterministic_local_construction",
+     "generated_by_provider": "false",
+     "script": "work/scripts/build_scout.py",
+     "script_sha256": "b95c79b4ad064c13826a0d2572dd077cd313af3beeb9a46fe30e7c534c49bf51",
+     "note": "Built by PIXL from rectangles in the working palette during the 2026-11-15 session because no PixelLab connection is assigned. Exercises the contract and review pipeline; adoption as the family baseline is the owner's decision."
+    }
+   }
+  }
+ ],
+ "format": 2
+}

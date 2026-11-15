@@ -1,0 +1,189 @@
+{
+  "intake": [
+    {
+      "id": "alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": {
+        "$symbol": "binary"
+      },
+      "sources": [
+        "ref_a",
+        "ref_b"
+      ],
+      "rationale": "Both references have no fractional alpha pixels. Observed, not confirmed as a project rule."
+    },
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner has not chosen the final canvas size. Both references are 32x32; that is an observation of the reference files, not the project canvas."
+    },
+    {
+      "id": "color_roles",
+      "project": "project",
+      "key": "color_roles",
+      "status": "observed",
+      "value": [
+        "body: teal #56B5BC",
+        "eyes: cream #F4DDA2",
+        "outline: dark #25354A (reference.png only)"
+      ],
+      "sources": [
+        "ref_a",
+        "ref_b",
+        "brief_notes"
+      ],
+      "rationale": "Measured from the references. The roles carry as style; the exact hex values are not an adopted fixed palette."
+    },
+    {
+      "id": "destination",
+      "project": "project",
+      "key": "destination",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Target engine, file paths, display scale and import settings were not supplied."
+    },
+    {
+      "id": "members",
+      "project": "project",
+      "key": "family_members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner instruction names a scout and a medic as the family members."
+    },
+    {
+      "id": "outline",
+      "project": "project",
+      "key": "outline_treatment",
+      "status": "conflict",
+      "value": [
+        "continuous dark outline around the whole silhouette (reference.png, 2px #25354A)",
+        "no outline; body color reaches the silhouette edge (reference-b.png)"
+      ],
+      "sources": [
+        "brief",
+        "ref_a",
+        "ref_b"
+      ],
+      "rationale": "The two supplied references share one silhouette but disagree on outline treatment; the owner stated the disagreement and has not chosen."
+    },
+    {
+      "id": "sample_member",
+      "project": "project",
+      "key": "representative_sample",
+      "status": "proposed",
+      "value": "scout",
+      "sources": [
+        "brief_notes"
+      ],
+      "rationale": "PIXL proposal: prove outline treatment, color roles and proportions on the scout before producing the medic from it as baseline."
+    },
+    {
+      "id": "view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "side"
+      },
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner instruction: the family is for a side-view game."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "sample_scout",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: scout_sample needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "scout_sample",
+          "name": "Scout representative sample",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "canvas and alpha",
+              "check": "The actual file matches the confirmed canvas size and the confirmed alpha policy.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_identity",
+              "name": "scout identity in side view",
+              "check": "At native scale and at integer zoom the sample reads as a scout character seen from the side, with its role landmarks visible on light and dark backgrounds.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_reference",
+              "name": "reference match",
+              "check": "Body construction, proportions and color roles (teal body, cream eyes) visibly match the supplied references when compared side by side at native scale and integer zoom.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_outline",
+              "name": "confirmed outline treatment",
+              "check": "The silhouette edge uses the owner-confirmed outline treatment consistently around the whole body; no mixed treatment unless the owner adopted one.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 1,
+  "hash": "0ca83e2d42959bf8766f119deffbabc9e1f1b4ae66f02496a32fefaca89032af",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

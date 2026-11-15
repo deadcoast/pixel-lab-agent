@@ -1,0 +1,74 @@
+"""Register a partial outcome and exact receipts without changing prior claims."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+PREFIX = "evidence/skill-handoff/qualification-20261114/"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    path = ROOT / "evaluations/evidence-claims.json"
+    registry = json.loads(path.read_bytes())
+    if any(claim["id"] == "PX-SKILL-001-QUALIFICATION" for claim in registry["claims"]):
+        raise ValueError("Qualification already registered")
+    entries = {
+        "pxskill001-qualification": "RESULT.json",
+        "pxskill001-native-review": "semantic-review-04.json",
+        "pxskill001-guided-review": "semantic-review-05.json",
+        "pxskill001-mechanical": "mechanical-04-corrected.json",
+        "pxskill001-guided-mechanical": "mechanical-05-corrected.json",
+        "pxskill001-local": "local-03/RESULT.json",
+        "pxskill001-preparation": "prep-proof-01/RESULT.json",
+        "pxskill001-package-tests": "package-check-01/RESULT.json",
+        "pxskill001-package-compatibility": "package-check-02/RESULT.json",
+    }
+    for identifier, name in entries.items():
+        file = ROOT / PREFIX / name
+        result = json.loads(file.read_bytes())
+        key = "status" if "status" in result else "outcome"
+        registry["receipts"].append({"id": identifier, "path": PREFIX + name, "sha256": sha(file),
+                                     "assertions": [{"pointer": "/" + key, "equals": result[key]}]})
+    anchor = "pxskill001-qualification"
+    document = "evidence/skill-handoff/README.md"
+    lines = (ROOT / document).read_text(encoding="utf-8").splitlines()
+    pinned = [line for line in lines if f'id="{anchor}"' in line]
+    if len(pinned) != 1:
+        raise ValueError("Expected one exact dated qualification claim")
+    bindings = [{"kind": "map", "domain": "source", "receipt": "pxskill001-qualification",
+                 "pointer": "/source_hashes", "prefix": ""},
+                {"kind": "file", "domain": "package", "path": "plugins/pixl/bundle-manifest.json",
+                 "receipt": "pxskill001-qualification", "pointer": "/bundle_manifest_sha256"}]
+    review = json.loads((ROOT / PREFIX / "semantic-review-04.json").read_bytes())
+    for name in ("protocol", "amendment"):
+        bindings.append({"kind": "file", "domain": "source", "path": review[name]["path"],
+                         "receipt": "pxskill001-native-review", "pointer": f"/{name}/sha256"})
+    review = json.loads((ROOT / PREFIX / "semantic-review-05.json").read_bytes())
+    for index, item in enumerate(review["amendments"]):
+        bindings.append({"kind": "file", "domain": "source", "path": item["path"],
+                         "receipt": "pxskill001-guided-review", "pointer": f"/amendments/{index}/sha256"})
+    registry["claims"].append({
+        "id": "PX-SKILL-001-QUALIFICATION", "task": "Qualify consequential-choice and cold handoffs",
+        "document": {"path": document, "anchor": anchor,
+                     "line_sha256": hashlib.sha256(pinned[0].encode()).hexdigest()},
+        "tier": "native direct-profile behavior, independent artifact review and separately guided correction",
+        "scope": "Partial qualification: fresh and settled controls pass narrowly, unaided legacy cold authority still fails, and an explicit caller-reviewed artifact correction passes. Twelve native completions are not twelve behavioral passes.",
+        "limits": ["PX-SKILL-001 remains open; guided correction cannot pass the unaided criterion.",
+                   "All attempts retain their exact source/package/runner identities and failures.",
+                   "Final default fixture path was repaired after native trials using byte-identical tracked inputs; local preparation parity is separate from model evidence.",
+                   "Local draft sprites and self-reviews are not PixelLab generation, engine acceptance or human acceptance.",
+                   "No named-child, same-native-session, broad artistic or general host-reliability claim.",
+                   "Human acceptance is separate and unrecorded; M1/M2 and broader M3/M4/M5 remain open."],
+        "policy": "current", "outcome": {"receipt": "pxskill001-qualification", "pointer": "/status"},
+        "receipts": list(entries), "bindings": bindings})
+    path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"claims": len(registry["claims"]), "receipts": len(registry["receipts"]),
+                      "registered_outcome": "partial"}))
+
+
+if __name__ == "__main__":
+    main()

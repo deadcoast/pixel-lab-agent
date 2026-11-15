@@ -1,0 +1,310 @@
+"""Independent read-only mechanics review; no semantic or artistic grading."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import zipfile
+
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+ATTEMPTS = ("fresh-02", "cold-01", "settled-01")
+OUT = BASE / "independent-checks"
+CHECKS = []
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def sha(path):
+    return digest(path.read_bytes())
+
+
+def inventory(root, excluded=()):
+    return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob("*"))
+            if p.is_file() and not any(part in excluded for part in p.relative_to(root).parts)}
+
+
+def archive(path):
+    with zipfile.ZipFile(path) as z:
+        names = z.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate archive members")
+        return {name: digest(z.read(name)) for name in names if not name.endswith("/")}
+
+
+def check(name, passed, detail=None):
+    CHECKS.append({"check": name, "pass": bool(passed), "detail": detail})
+
+
+def events(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def text(event):
+    parts = event.get("message", {}).get("content", [])
+    return "".join(part.get("text", "") for part in parts if isinstance(part, dict) and part.get("type") == "text")
+
+
+def reference(path):
+    return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def source_reads(stream, consumer, package_files, frozen):
+    """Bind actual successful Read payloads to exact frozen source line ranges."""
+    calls, results = {}, {}
+    for line, event in enumerate(stream, 1):
+        for block in event.get("message", {}).get("content", []):
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use":
+                calls[block["id"]] = (line, block)
+            elif block.get("type") == "tool_result":
+                results[block["tool_use_id"]] = (line, block, event.get("tool_use_result"))
+    observed, failures = [], []
+    for call_id, (line, call) in calls.items():
+        if call["name"] not in {"Read", "Grep"}:
+            continue
+        file_path = Path(call.get("input", {}).get("file_path" if call["name"] == "Read" else "path", ""))
+        if not file_path.is_relative_to(consumer / "pixl-kit"):
+            continue
+        relative = file_path.relative_to(consumer / "pixl-kit").as_posix()
+        if relative not in package_files:
+            continue
+        result_line, block, result = results.get(call_id, (None, {}, None))
+        if call["name"] == "Grep" and isinstance(result, dict) and result.get("mode") == "content" and not block.get("is_error"):
+            original = frozen.read(relative).decode("utf-8-sig").splitlines()
+            delivered, omitted, mismatched = [], [], []
+            for item in result.get("content", "").splitlines():
+                match = re.fullmatch(r"(\d+)[:-](.*)", item)
+                if match is None:
+                    continue
+                number, value = int(match[1]), match[2]
+                if value == "[Omitted long context line]":
+                    omitted.append(number)
+                elif 1 <= number <= len(original) and value == original[number - 1]:
+                    delivered.append(number)
+                else:
+                    mismatched.append(number)
+            if not delivered and not omitted and not mismatched:
+                failures.append({"source": relative, "call_line": line, "result_line": result_line,
+                                 "delivery_tool": "Grep", "outcome": "search_returned_no_source_lines", "error": False})
+                continue
+            observed.append({"source": relative, "file_sha256": package_files[relative], "delivery_tool": "Grep",
+                "call_line": line, "result_line": result_line, "tool_use_id": call_id,
+                "coverage_lines": sorted(set(delivered)), "explicitly_omitted_lines": omitted,
+                "read_payload_matches_frozen_lines": bool(delivered) and not mismatched,
+                "complete_file_observed": set(delivered) == set(range(1, len(original) + 1))})
+            continue
+        if block.get("is_error") or not isinstance(result, dict) or result.get("type") != "text":
+            failures.append({"source": relative, "call_line": line, "result_line": result_line,
+                             "error": block.get("is_error", False)})
+            continue
+        file = result["file"]
+        start, count = file["startLine"], file["numLines"]
+        original = frozen.read(relative).decode("utf-8-sig").splitlines()
+        loaded = file["content"].splitlines()
+        observed.append({"source": relative, "file_sha256": package_files.get(relative),
+            "delivery_tool": "Read", "coverage_lines": list(range(start, start + len(loaded))),
+            "call_line": line, "result_line": result_line, "tool_use_id": call_id,
+            "start_line": start, "reported_lines": count, "total_lines": file["totalLines"],
+            "read_payload_matches_frozen_lines": loaded == original[start - 1:start - 1 + count],
+            "complete_file_observed": start == 1 and count >= len(original) and loaded == original})
+    return observed, failures, calls, results
+
+
+def main():
+    global ATTEMPTS, OUT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--attempts", nargs="+", default=list(ATTEMPTS))
+    parser.add_argument("--output", default="mechanical-01.json")
+    parser.add_argument("--checks-dir", default="independent-checks")
+    parser.add_argument("--frozen-kit", default="frozen-kit.zip")
+    parser.add_argument("--baseline", default="baseline.json")
+    args = parser.parse_args()
+    ATTEMPTS = tuple(args.attempts)
+    OUT = (BASE / args.checks_dir).resolve()
+    result_path = (BASE / args.output).resolve()
+    checker_snapshot = result_path.with_name(result_path.stem + ".checker.py.txt")
+    frozen_path = (BASE / args.frozen_kit).resolve()
+    baseline_path = (BASE / args.baseline).resolve()
+    if not OUT.is_relative_to(BASE) or not result_path.is_relative_to(BASE):
+        raise RuntimeError("Review output must stay within the qualification directory")
+    if result_path.exists() or checker_snapshot.exists() or OUT.exists():
+        raise RuntimeError("Choose a new review identity; retained results cannot be overwritten")
+    for name in ATTEMPTS:
+        attempt = BASE / name
+        if read(attempt / "continuation.json")["status"] == "running" or not (attempt / "preservation.json").exists():
+            raise RuntimeError(f"{name} has not completed and retained outputs; review not started")
+    OUT.mkdir()
+    checker_snapshot.write_bytes(Path(__file__).read_bytes())
+    baseline = read(baseline_path)
+    source_changes = [name for name, expected in baseline["source_files"].items() if not (ROOT / name).is_file() or sha(ROOT / name) != expected]
+    runtime_sources = {name: expected for name, expected in baseline["source_files"].items() if name.startswith("pixl/")}
+    runtime_changes = [name for name, expected in runtime_sources.items() if not (ROOT / name).is_file() or sha(ROOT / name) != expected]
+    check("source_runtime_inputs_unchanged", not runtime_changes, {"files": len(runtime_sources), "changed": runtime_changes})
+    frozen_files = archive(frozen_path)
+    check("frozen_package_contains_runtime_profile_and_skill", all(name in frozen_files for name in
+          ("runtime/pixl/__main__.py", "resources/agent/PROFILE.md", "skills/pixl/SKILL.md", "skills/pixl/references/intake-sample.md")))
+    historical = {name: expected for name, expected in baseline["prior_handoff_files"].items()
+                  if name not in {"evidence/skill-handoff/README.md", "evidence/skill-handoff/.gitignore"}}
+    changed_history = [name for name, expected in historical.items() if not (ROOT / name).is_file() or sha(ROOT / name) != expected]
+    check("historical_attempts_reports_archives_preserved", not changed_history, {"files": len(historical), "changed": changed_history,
+          "excluded_living_navigation": ["evidence/skill-handoff/README.md", "evidence/skill-handoff/.gitignore"]})
+    results, sessions = {}, []
+    with zipfile.ZipFile(frozen_path) as frozen:
+        for name in ATTEMPTS:
+            attempt = BASE / name
+            ident, launch = read(attempt / "identity.json"), read(attempt / "launch.json")
+            saved, continuation = read(attempt / "preservation.json"), read(attempt / "continuation.json")
+            consumer = Path(launch["cwd"])
+            session = launch["expected_session_id"]
+            is_cold = ident["case"] == "cold"
+            sessions.append(session)
+            stream = events(attempt / "stdout.jsonl")
+            parent = events(attempt / "native-transcripts/parent.jsonl")
+            terminal = [event for event in stream if event.get("type") == "result"]
+            final = terminal[-1] if terminal else {}
+            stream_finals = [event for event in stream if event.get("type") == "assistant" and
+                             event.get("parent_tool_use_id") is None and event.get("session_id") == session and text(event)]
+            parent_finals = [event for event in parent if event.get("type") == "assistant" and not event.get("isSidechain")
+                             and event.get("sessionId") == session and event.get("message", {}).get("stop_reason") == "end_turn" and text(event)]
+            check(name + ":native_terminal_success", len(terminal) == 1 and final.get("subtype") == "success" and
+                  final.get("is_error") is False and final.get("session_id") == session and bool(final.get("result")))
+            check(name + ":actual_parent_final_matches_stream_result", bool(parent_finals) and bool(stream_finals)
+                  and text(parent_finals[-1]) == final.get("result") == text(stream_finals[-1]))
+            check(name + ":native_parent_transcript_identity", sha(attempt / "native-transcripts/parent.jsonl") == continuation["transcripts"]["parent"]["sha256"])
+            check(name + ":fresh_session_no_resume_flags", not any(arg in launch["command"] for arg in ("--resume", "--continue", "-r", "-c"))
+                  and continuation.get("predecessor") is None and continuation.get("session_id") == session)
+            check(name + ":cold_mode_explicit", launch["continuation_mode"] == ("file_only_cold" if is_cold else "new_session"))
+            check(name + ":no_child_execution", final.get("subagent_stats", {}).get("spawned") == 0 and not continuation.get("children"))
+            for field in ("launch", "prompt", "mcp", "runtime_environment"):
+                item = ident[field]
+                check(name + ":prepared_" + field + "_unchanged", sha(Path(item["path"])) == item["sha256"])
+            check(name + ":runner_snapshot_identity", sha(attempt / "runner.py.txt") == ident["runner"]["sha256"])
+            check(name + ":input_snapshot_matches_declared", inventory(attempt / "input-project") == ident["inputs"])
+            check(name + ":input_zip_matches_declared", archive(attempt / "input-project.zip") == ident["inputs"] and
+                  sha(attempt / "input-project.zip") == ident["input_archive"]["sha256"])
+            check(name + ":output_snapshot_matches_declared", inventory(attempt / "project", ("__pycache__",)) == saved["outputs"])
+            check(name + ":output_zip_matches_declared", archive(attempt / "project.zip") == saved["outputs"] and
+                  sha(attempt / "project.zip") == saved["output_archive"]["sha256"])
+            check(name + ":consumer_matches_retained_output", inventory(consumer, ("pixl-kit", "__pycache__")) == saved["outputs"])
+            # The invocation permits handoff-document updates. Preserve their original
+            # input snapshots and observe active amendments; protect images/library bytes.
+            immutable_inputs = {path: expected for path, expected in ident["static_inputs"].items()
+                                if path not in {"SESSION.md", "AGENTS.md", "CLAUDE.md"}}
+            check(name + ":immutable_inputs_preserved", all(saved["outputs"].get(path) == expected for path, expected in immutable_inputs.items()))
+            check(name + ":frozen_kit_preserved", inventory(consumer / "pixl-kit", ("__pycache__",)) == ident["package_files"] == frozen_files)
+            if is_cold:
+                original = read(BASE / "seed-preflight/seed-manifest.json")
+                check(name + ":exact_36_original_seed_inputs", ident["inputs"] == original and len(original) == 36)
+                check(name + ":all_original_files_still_present", all(path in saved["outputs"] for path in original))
+                historical_files = {path: expected for path, expected in original.items() if "history" in Path(path).parts}
+                check(name + ":original_published_history_unchanged", all(saved["outputs"].get(path) == expected for path, expected in historical_files.items()))
+            reads, failed_reads, calls, tool_results = source_reads(stream, consumer, ident["package_files"], frozen)
+            check(name + ":actual_read_payloads_match_frozen_sources", bool(reads) and all(row["read_payload_matches_frozen_lines"] for row in reads))
+            intake_path = "skills/pixl/references/intake-sample.md"
+            intake_lines = frozen.read(intake_path).decode("utf-8-sig").splitlines()
+            cold_start = next(index for index, line in enumerate(intake_lines, 1) if line == "## Cold intake handoff")
+            cold_end = next((index for index, line in enumerate(intake_lines, 1) if index > cold_start and line.startswith("## ")), len(intake_lines) + 1)
+            intake_coverage = {number for row in reads if row["source"] == intake_path and row["read_payload_matches_frozen_lines"] for number in row["coverage_lines"]}
+            check(name + ":required_intake_source_content_observed",
+                  any(row["source"] == intake_path and row["complete_file_observed"] for row in reads)
+                  or (is_cold and set(range(cold_start, cold_end)).issubset(intake_coverage)),
+                  {"cold_required_section_lines": [cold_start, cold_end - 1] if is_cold else None,
+                   "actual_verified_line_numbers": sorted(intake_coverage),
+                   "complete_file_claimed": any(row["source"] == intake_path and row["complete_file_observed"] for row in reads)})
+            check(name + ":complete_profile_read_observed", any(row["source"] == "resources/agent/PROFILE.md" and row["complete_file_observed"] for row in reads))
+            skill_calls = [(line, call) for line, call in calls.values() if call["name"] == "Skill" and call.get("input", {}).get("skill") == "pixl:pixl"]
+            skill_body = frozen.read("skills/pixl/SKILL.md").decode("utf-8-sig").split("---", 2)[-1].strip().replace("\r\n", "\n")
+            skill_delivery = [(line, event) for line, event in enumerate(stream, 1) if event.get("type") == "user" and
+                              text(event).startswith("Base directory for this skill:") and skill_body in text(event).replace("\r\n", "\n")]
+            check(name + ":actual_skill_invocation_and_frozen_body_delivery", bool(skill_calls) and bool(skill_delivery))
+            tools = sorted({call["name"] for _, call in calls.values()})
+            remote = [tool for tool in tools if tool.startswith("mcp__") and not tool.startswith("mcp__pixl-local__")]
+            check(name + ":no_remote_provider_or_engine_tools", not remote and not any(tool in tools for tool in
+                  ("mcp__pixl-local__pixl_consumer_execute", "mcp__pixl-local__pixl_destination_import")))
+            before = {path: {"sha256": sha(consumer / path), "mtime_ns": (consumer / path).stat().st_mtime_ns}
+                      for path in inventory(consumer, ("__pycache__",))}
+            state_paths = [path for path in saved["outputs"] if Path(path).name == "state.px" and "history" not in Path(path).parts]
+            check(name + ":one_published_state_store", len(state_paths) == 1, state_paths)
+            commands = []
+
+            def run(label, arguments):
+                command = [sys.executable, "-B", "-I", str(consumer / "pixl-kit/scripts/pixl.py"), *arguments]
+                completed = subprocess.run(command, cwd=consumer, capture_output=True, timeout=60,
+                                           env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"})
+                stdout, stderr = OUT / (name + "-" + label + ".stdout.txt"), OUT / (name + "-" + label + ".stderr.txt")
+                stdout.write_bytes(completed.stdout)
+                stderr.write_bytes(completed.stderr)
+                commands.append({"command": command, "cwd": str(consumer), "returncode": completed.returncode,
+                                 "stdout": reference(stdout), "stderr": reference(stderr)})
+                check(name + ":independent_" + label, completed.returncode == 0)
+                return json.loads(completed.stdout) if completed.returncode == 0 else None
+
+            decoded, validation, workflow = None, None, None
+            if len(state_paths) == 1:
+                state = str(consumer / state_paths[0])
+                decoded = run("decode", ["decode", state])
+                validation = run("validate", ["validate", state, "--root", str(consumer)])
+                workflow = run("workflow", ["workflow", state, "--root", str(consumer)])
+                run("jobs", ["jobs", state, "--root", str(consumer)])
+                run("family", ["family", state, "--root", str(consumer)])
+                tasks = [row for row in (decoded or {}).get("records", []) if row["kind"] == "T"]
+                available = [row for row in tasks if row["fields"]["st"].get("$symbol") != "done"] or tasks
+                if available:
+                    run("authoring", ["context", state, available[0]["id"], "--view", "authoring", "--root", str(consumer)])
+                check(name + ":durable_local_plan_and_sources", bool(tasks) and any(row["kind"] == "S" for row in decoded["records"]))
+            check(name + ":independent_reads_preserved_all_consumer_bytes_mtimes", before == {
+                path: {"sha256": sha(consumer / path), "mtime_ns": (consumer / path).stat().st_mtime_ns}
+                for path in inventory(consumer, ("__pycache__",))})
+            if not is_cold:
+                check(name + ":new_durable_project_files", bool(saved["new"]) and bool(state_paths))
+            errors = [{"stream_line": line, "tool_use_id": block.get("tool_use_id"), "content": block.get("content")}
+                      for line, event in enumerate(stream, 1) for block in event.get("message", {}).get("content", [])
+                      if isinstance(block, dict) and block.get("type") == "tool_result" and block.get("is_error")]
+            results[name] = {"session_id": session, "final_response_sha256": digest(final.get("result", "").encode()),
+                "stream": reference(attempt / "stdout.jsonl"), "native_parent": reference(attempt / "native-transcripts/parent.jsonl"),
+                "host_reported_models": sorted({event.get("model") for event in stream if event.get("type") == "system" and event.get("model")}),
+                "assistant_event_models": sorted({event["message"]["model"] for event in stream if event.get("type") == "assistant" and event.get("message", {}).get("model")}),
+                "actual_source_reads": reads, "failed_or_nontext_package_reads": failed_reads,
+                "complete_profile_read_observed": any(row["source"] == "resources/agent/PROFILE.md" and row["complete_file_observed"] for row in reads),
+                "skill_delivery_lines": [line for line, _ in skill_delivery], "tool_names": tools, "tool_errors": errors,
+                "state_paths": state_paths, "state_hash": (validation or {}).get("hash"), "revision": (validation or {}).get("revision"),
+                "new_files": saved["new"], "changed_files": saved["changed"], "removed_files": saved["removed"],
+                "original_static_classification_flags": saved.get("static_input_changes", []),
+                "authorized_control_note_amendments": [path for path in saved["changed"] if path in {"SESSION.md", "AGENTS.md", "CLAUDE.md"}],
+                "independent_commands": commands,
+                "durable_work_scope": "Exact original inputs and history preserved; active state/handoff amendments observed separately." if is_cold else "New local state and artifacts; usefulness and artistic claims require separate semantic review."}
+    check("distinct_native_sessions", len(set(sessions)) == len(ATTEMPTS))
+    result = {"status": "pass" if all(row["pass"] for row in CHECKS) else "fail",
+              "passed": sum(row["pass"] for row in CHECKS), "total": len(CHECKS), "checks": CHECKS, "attempts": results,
+              "reviewer": "Independent development collaborator; direct native PIXL profile qualification.",
+              "checker": reference(checker_snapshot), "checker_entrypoint": str(Path(__file__)),
+              "baseline": reference(baseline_path), "frozen_kit": reference(frozen_path),
+              "current_source_applicability": {"baseline_source_files": len(baseline["source_files"]), "changed_since_baseline": source_changes,
+                  "current_repository_package_matches_tested_frozen_kit": inventory(ROOT / "plugins/pixl", ("__pycache__",)) == frozen_files,
+                  "meaning": "Current source changes do not rewrite the frozen package actually used by these attempts."},
+              "limits": ["Mechanical facts and read-only local operation checks only; wording and artistic judgment are reviewed separately.",
+                         "Successful source reads establish observed payload delivery, not internal understanding.",
+                         "No child, provider, engine, human acceptance or general host reliability is established.",
+                         "Host/model identifiers are observed labels, not independent attestation."]}
+    result_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "failures": [row for row in CHECKS if not row["pass"]]}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

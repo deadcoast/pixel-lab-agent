@@ -1,0 +1,39 @@
+{
+  "status": "portability_finding_corrected_and_locally_qualified",
+  "prior_review": {
+    "path": "C:\\github\\pixel-lab-agent\\evidence\\skill-handoff\\qualification-20261114\\source-review.json",
+    "sha256": "0403fad91b1855891f397896b949bd68a693bf8b7a4c922551685c42f3552861",
+    "bytes": 4632
+  },
+  "finding": {
+    "severity": "P1",
+    "source": "evaluations/skill_handoff_trials.py:25",
+    "problem": "The default fresh/settled fixture locator pointed to an ignored expanded predecessor directory. Preparation worked in this retained workspace but failed in a clean checkout without that ignored tree."
+  },
+  "why_prior_review_missed_it": "The expanded predecessor existed locally and every earlier harness test supplied an explicit seed. The initial source review checked runtime input hashing and preservation but did not check whether default fixture dependencies were tracked and available after checkout.",
+  "correction": "Only the FIXTURES constant now points to tracked evidence/host-evaluation/fixture-inputs. Both image SHA256 values match the original ignored predecessor exactly; prompts, commands, isolation and recorder logic are unchanged.",
+  "new_test": "test_default_fresh_preparation_uses_only_tracked_checkout_fixtures creates a temporary checkout containing only the tracked fixture tree, prepares fresh without an explicit seed, checks exact two input hashes and proves the ignored predecessor is absent and no native sampler was called.",
+  "verification": {
+    "local": {
+      "path": "C:\\github\\pixel-lab-agent\\evidence\\skill-handoff\\qualification-20261114\\local-03\\RESULT.json",
+      "sha256": "cb55e40f21c91235d75cf473850985aaaa2b8670c77093dcfe48d0aa60e85e53",
+      "bytes": 1369
+    },
+    "actual_unused_default_preparation": {
+      "path": "C:\\github\\pixel-lab-agent\\evidence\\skill-handoff\\qualification-20261114\\prep-proof-01\\RESULT.json",
+      "sha256": "a2d3a14a1fd08560ab704eed8e1e865dbb4ede9eb351a64b255065ea2a49c6be",
+      "bytes": 1994
+    },
+    "passed_tests": 33,
+    "new_harness_tests_total": 10,
+    "existing_recorder_tests": 23,
+    "ruff": "pass",
+    "preparation_parity_checks": "9/9"
+  },
+  "current_source": {
+    "path": "C:\\github\\pixel-lab-agent\\evaluations\\skill_handoff_trials.py",
+    "sha256": "a3c5b53594323f4c706ad93b0df5f862df8dafbdda8925db98c5807338315f2d",
+    "bytes": 16365
+  },
+  "evidence_boundary": "Prior source-review and local/native receipts remain unchanged and retain their original source identities. This note corrects the missed portability limitation rather than rewriting the earlier review. No new native inference, provider, build, artwork or human acceptance is claimed."
+}

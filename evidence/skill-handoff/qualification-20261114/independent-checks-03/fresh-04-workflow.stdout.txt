@@ -1,0 +1,259 @@
+{
+  "intake": [
+    {
+      "id": "alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": "binary",
+      "sources": [
+        "card"
+      ],
+      "rationale": "Both references contain no fractional alpha. Observation only; the contract alpha policy is chosen when the sample is prepared."
+    },
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner has not chosen the final canvas size. Both references are 32x32 with a 19x26 subject; PIXL proposes 32x32 (alternative 48x48) in the decision card, which is not an adoption."
+    },
+    {
+      "id": "colour_roles",
+      "project": "project",
+      "key": "colour_roles",
+      "status": "observed",
+      "value": {
+        "eyes": "#F4DDA2",
+        "fill": "#56B5BC",
+        "outline": "#25354A (reference.png only)"
+      },
+      "sources": [
+        "card"
+      ],
+      "rationale": "Measured from both references. Colour roles, not an exclusive fixed palette; no palette restriction has been adopted."
+    },
+    {
+      "id": "destination",
+      "project": "project",
+      "key": "destination",
+      "status": "unresolved",
+      "value": null,
+      "sources": [],
+      "rationale": "No engine, delivery path layout, display scale or import settings have been given. Needed before family delivery."
+    },
+    {
+      "id": "edge_treatment",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "continuous dark outline (reference.png, 2 px at 32x32)",
+        "no outline (reference-b.png)"
+      ],
+      "sources": [
+        "brief",
+        "card"
+      ],
+      "rationale": "The two supplied references disagree and the owner has not chosen. PIXL proposes the outline direction at 1 px weight; the owner must resolve the conflict."
+    },
+    {
+      "id": "members",
+      "project": "project",
+      "key": "family_members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner named exactly these two family members."
+    },
+    {
+      "id": "provider",
+      "project": "project",
+      "key": "provider",
+      "status": "confirmed",
+      "value": "none assigned in this evaluation session",
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner instructed that no generation provider be invoked in this session; no PixelLab connection is configured."
+    },
+    {
+      "id": "reference_facing",
+      "project": "project",
+      "key": "reference_facing",
+      "status": "observed",
+      "value": "frontal symmetrical face",
+      "sources": [
+        "card"
+      ],
+      "rationale": "Neither reference shows a side view. The side-view limb placement, facing and ground contact must be established by the representative scout sample."
+    },
+    {
+      "id": "view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": "side",
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner states the game is side-view. Both references are frontal, so the sample must establish the side-facing construction."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t_medic",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: t_sample is open; it must be done",
+        "output_contract: f_medic needs a concrete raster contract",
+        "task_decision: t_medic needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "f_medic",
+          "name": "Medic member sprite",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "size",
+              "check": "The actual PNG matches the confirmed canvas size choice and the alpha policy recorded in its contract.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "readability",
+              "check": "At native size and integer zoom the character reads as a side-facing figure with head, body and limbs distinguishable and a visible ground contact, on both light and dark backgrounds.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_match",
+              "name": "style_match",
+              "check": "Blocky proportions and the teal fill and cream eye colour roles match the references, and the edge treatment matches the owner-resolved outline choice.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_distinction",
+              "name": "role_distinction",
+              "check": "Viewed beside the accepted scout at native size, the medic shares canvas, edge treatment, colour roles, proportions and ground line, and is distinguishable by role without relying on colour alone.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "t_research",
+      "project": "project",
+      "phase": "research",
+      "state": "open",
+      "blockers": [],
+      "outputs": [],
+      "selection_bindings": []
+    },
+    {
+      "id": "t_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: f_scout_sample needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "f_scout_sample",
+          "name": "Scout representative sample",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "size",
+              "check": "The actual PNG matches the confirmed canvas size choice and the alpha policy recorded in its contract.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_readability",
+              "name": "readability",
+              "check": "At native size and integer zoom the character reads as a side-facing figure with head, body and limbs distinguishable and a visible ground contact, on both light and dark backgrounds.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_match",
+              "name": "style_match",
+              "check": "Blocky proportions and the teal fill and cream eye colour roles match the references, and the edge treatment matches the owner-resolved outline choice.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    }
+  ],
+  "ready": [
+    "t_research"
+  ],
+  "format": 2,
+  "revision": 1,
+  "hash": "88614a3a712bd03fdf78e2cea338d7e88c0fcecbba3d4d354e0198357bcb1034",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

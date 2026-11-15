@@ -1,0 +1,103 @@
+"""Prepare an additive caller-reviewed artifact restart; never rewrite an old trial."""
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import sys
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+
+from evaluations.host_trials import inventory, write_json
+from evaluations.native_trial_records import reference
+from evaluations.skill_handoff_trials import prepare
+
+
+def main():
+    series = Path(__file__).parent
+    predecessor = series / "cold-04"
+    seed = series / "reviewed-cold-seed"
+    attempt = series / "cold-reviewed-01"
+    amendment = series / "protocol-amendment-02.json"
+    if not amendment.is_file():
+        raise ValueError("Freeze the additive guided protocol before preparation")
+    if seed.exists() or attempt.exists():
+        raise ValueError("Use fresh seed and attempt directories")
+    preservation = json.loads((predecessor / "preservation.json").read_bytes())
+    expected = preservation["outputs"]
+    seed.mkdir()
+    with zipfile.ZipFile(predecessor / "project.zip") as archive:
+        if set(archive.namelist()) != set(expected):
+            raise ValueError("Predecessor archive inventory differs from retained output")
+        for name, digest in expected.items():
+            relative = PurePosixPath(name)
+            if relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
+                raise ValueError("Unsafe predecessor member")
+            data = archive.read(name)
+            if hashlib.sha256(data).hexdigest() != digest:
+                raise ValueError("Predecessor archive member changed")
+            target = seed / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+    review = """# Caller review of the retained continuation
+
+This is a recorded development-evaluation review of the preceding handoff, not an
+answer from the artwork owner. It supplies no new artistic choices or permission.
+Continue the existing assignment under its existing authorization and local-only
+environment. Preserve the predecessor's note and history; save a corrected
+successor continuation and keep its authority consistent with the saved state.
+
+The note at deliverables/continuation-2026-11-14.md has these review findings:
+
+- Its outline row says an answer moves the observed palette to confirmed. Its
+  palette row says that also adopts the exclusive q_palette restriction, while
+  acknowledging that exclusivity was derived rather than instructed by the owner.
+- Its next-operation list uses confirmed palette, nearest sampling and binary
+  alpha after answers about outline, canvas and design language. Those other
+  properties have separate observed/proposed I records and no new owner adoption.
+- These claims need an authority check in the actual source, current choices,
+  criteria and proposed next operation. A useful working proposal can support an
+  authorized trial without becoming an owner requirement. Keep that distinction
+  through any contract, continuation note and final response.
+
+Independently resolve the findings against the installed profile/workflow and
+the actual project. Correct unsupported adoption or prerequisites wherever they
+propagate; retain useful independent work and honest tool boundaries. Explain
+the resulting useful continuation to the caller. Do not invent answers to close
+unresolved choices or erase the earlier report.
+"""
+    if (seed / "CALLER-REVIEW.md").exists():
+        raise ValueError("Review path collides with predecessor")
+    (seed / "CALLER-REVIEW.md").write_text(review, encoding="utf-8")
+    manifest = series / "reviewed-cold-seed-manifest.json"
+    write_json(manifest, inventory(seed))
+    write_json(series / "reviewed-cold-preparation.json", {
+        "mode": "guided_file_only_restart", "predecessor": reference(predecessor / "project.zip"),
+        "predecessor_manifest": reference(predecessor / "preservation.json"),
+        "predecessor_files": expected, "added_review": reference(seed / "CALLER-REVIEW.md"),
+        "seed_manifest": reference(manifest), "script": reference(Path(__file__)),
+        "owner_answers_supplied": False, "same_native_session": False,
+        "limit": "Guided correction does not replace or pass any unaided cold attempt."})
+    prepare(attempt, "cold", seed=seed, seed_manifest=manifest)
+    prompt = attempt / "prompt.txt"
+    (attempt / "unreviewed-prompt.txt").write_bytes(prompt.read_bytes())
+    prompt.write_text(prompt.read_text(encoding="utf-8") +
+        "\nRead CALLER-REVIEW.md as the caller's review of the preceding handoff. "
+        "Correct the continuation within existing authorization; the review supplies no owner answers.\n",
+        encoding="utf-8")
+    identity = json.loads((attempt / "identity.json").read_bytes())
+    identity["prompt"] = reference(prompt)
+    identity["intervention"] = {"mode": "guided_file_only_restart",
+                                "review": reference(seed / "CALLER-REVIEW.md"),
+                                "protocol": reference(amendment)}
+    write_json(attempt / "identity.json", identity)
+    write_json(attempt / "protocol-binding.json", {
+        "protocol": reference(series / "protocol.json"), "amendment": reference(amendment),
+        "guidance_revision": reference(series / "revision-05/RESULT.json"),
+        "mode": "guided_file_only_restart", "predecessor_attempt": "cold-04",
+        "owner_answers_supplied": False, "prepared_case": "cold"})
+    print(json.dumps({"attempt": str(attempt), "seed_files": len(inventory(seed)), "launched": False}))
+
+
+if __name__ == "__main__":
+    main()

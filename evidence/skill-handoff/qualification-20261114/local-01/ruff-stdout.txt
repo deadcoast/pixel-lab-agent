@@ -1,0 +1,61 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> evaluations\skill_handoff_trials.py:3:1
+   |
+ 1 |   """Record fresh and file-only cold PIXL handoffs without assigning behavioral passes."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import argparse
+ 6 | | import hashlib
+ 7 | | import json
+ 8 | | import re
+ 9 | | import shutil
+10 | | import subprocess
+11 | | import tempfile
+12 | | import uuid
+13 | | import zipfile
+14 | | from pathlib import Path, PurePosixPath
+15 | |
+16 | | from evaluations.host_trials import CASES, inventory, sha, write_json
+17 | | from evaluations.native_trial_records import reference
+18 | | from evaluations.request_review_trials import ROOT, run as run_native
+19 | | from pixl.readiness import verify_manifest
+   | |__________________________________________^
+20 |
+21 |   KIT = "pixl-kit"
+   |
+help: Organize imports
+   |
+17 | from evaluations.native_trial_records import reference
+   - from evaluations.request_review_trials import ROOT, run as run_native
+18 + from evaluations.request_review_trials import ROOT
+19 + from evaluations.request_review_trials import run as run_native
+20 | from pixl.readiness import verify_manifest
+   |
+
+TRY004 Prefer `TypeError` exception for invalid type
+  --> evaluations\skill_handoff_trials.py:45:9
+   |
+43 |     manifest = json.loads(value.read_bytes()) if isinstance(value, Path) else value
+44 |     if not isinstance(manifest, dict):
+45 |         raise ValueError("Seed manifest must map relative file paths to SHA256 hashes")
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |     for name, digest in manifest.items():
+47 |         if (not isinstance(name, str) or not name or "\\" in name or ":" in name
+   |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> tests\test_skill_handoff_trials.py:131:9
+    |
+129 |               raise OSError("simulated host failure")
+130 |
+131 | /         with patch.object(trials, "run_native", side_effect=fail):
+132 | |             with self.assertRaisesRegex(OSError, "simulated host failure"):
+    | |___________________________________________________________________________^
+133 |                   trials.run(destination)
+134 |           self.assertEqual((destination / "stderr.txt").read_text(), "native launch failed\n")
+    |
+help: Combine `with` statements
+
+Found 3 errors.
+[*] 1 fixable with the `--fix` option.

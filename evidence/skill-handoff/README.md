@@ -1,5 +1,20 @@
 # PX-SKILL-001: consequential choice at the handoff
 
+## Current qualification, 2026-11-14
+
+<a id="pxskill001-qualification"></a> **PX-SKILL-001: partial qualification, 2026-11-14.** Fresh and settled native controls pass narrowly; unaided legacy cold authority remains failed. Recorded caller-reviewed correction passes separately and does not complete the unaided criterion. [Exact results](qualification-20261114/RESULT.json).
+
+The [current ledger](qualification-20261114/README.md) retains all twelve new
+native attempts, original failures, frozen revisions and independent reviews.
+The actual interrupted Claude project is resumed through new file-only sessions;
+no original-session continuation or named-child qualification is claimed.
+Shared guidance and a reusable isolated recorder are updated. Human acceptance
+is separate; M1/M2 and broader M3/M4/M5 remain open. The next development slice
+qualifies cold correction through native caller/specialist review without
+maintainer-authored feedback.
+
+## Historical 2026-09-14 increment
+
 The skill now carries a necessary unanswered choice into the final response and
 routes cold resumes without an accepted sample through that guidance. This pace
 changes two shared skill files; the production profile, Python runtime and PX1/PX2

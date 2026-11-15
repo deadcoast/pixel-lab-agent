@@ -111,8 +111,10 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** implemented, 2026-09-14; bounded Codex fresh/cold handoffs verified;
-  completed Claude comparison remains unverified after the fixed-time trials.
+- **Status:** implementation refined, 2026-11-14; qualification remains open. Bounded
+  native Claude fresh/settled handoffs pass, but unaided legacy cold authority and
+  answer-to-operation fidelity remain failed. Recorded caller-reviewed correction
+  is a separate guided outcome, not completion of the unaided criterion.
 - **WHO:** shared PIXL skill owns the handoff; user owns consequential style choices.
 - **WHAT:** make an unresolved choice actionable at the response boundary when it is
   the next necessary user input, while continuing independent inspection and planning.
@@ -125,23 +127,30 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   authorization, imposing source dimensions, or turning every proposal into a blocker.
 - **Stopping condition:** the actual final response gives the user the required next
   decision and retains useful work. Do not count an expected answer as observed behavior.
-- **Result:** unchanged native Codex fresh/cold controls omitted the final question.
+- **Historical 2026-09-14 result:** unchanged native Codex fresh/cold controls omitted the final question.
   A reference-only revision failed because cold resume never loaded that reference.
   Adding an explicit cold-intake route produced an actionable final question in
   both current Codex cases; choices and proposed trials remained distinct. Paired
   already-decided micro-controls retained authorization without new questions.
   All twelve native attempts, including access confounds and three timeouts, are
-  preserved in [the evidence](../evidence/skill-handoff/README.md). The current Claude
+  preserved in [the evidence](../evidence/skill-handoff/README.md). The historical Claude
   fresh attempt has no final response; no cross-host reliability claim follows.
-- **Verification:** complete discovery ran 388 tests (387 pass, one privilege skip),
+- **Historical 2026-09-14 verification:** complete discovery ran 388 tests (387 pass, one privilege skip),
   39 reference checks and the default sdist-to-wheel/install path passed. Maintained
   source Ruff and expanded Mypy passed. Broad repository Ruff failed on retained
   and supplied scripts; its output remains. Nine saved states pass 36 correctly
   addressed read-only replay operations; four initial evaluator-path failures remain.
-- **Remaining boundary:** completed Claude intake behavior and PX-SKILL-002's
-  unsupported artistic rules still need focused evaluation. A passing unchanged
-  micro-control shows omission is not universal; these small trials do not prove
-  general reliability. The historical seed/package mismatch is PX-OPS-002 below.
+- **Current qualification:** [new frozen native trials and independent review](../evidence/skill-handoff/qualification-20261114/README.md)
+  preserve direct-question failures, authority overreach, loading omissions,
+  local harness/grader failures and the exact corrected sources. Fresh/settled
+  scoped passes, caller-reviewed correction and unaided cold failure are
+  reported separately. The actual Claude seed has five project-owned sources
+  and needs no library migration. No provider or human acceptance follows.
+- **Remaining boundary:** qualify cold authority correction through native
+  caller/specialist review without maintainer-authored feedback; retain the
+  failed direct-profile cases. Prior PX-SKILL-002 artistic-authority outcomes
+  keep their recorded scope. These trials do not prove general reliability.
+  The separate historical common-seed/package mismatch remains PX-OPS-002.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 

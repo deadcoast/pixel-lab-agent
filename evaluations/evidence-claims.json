@@ -956,6 +956,105 @@
           "equals": "pass"
         }
       ]
+    },
+    {
+      "id": "pxskill001-qualification",
+      "path": "evidence/skill-handoff/qualification-20261114/RESULT.json",
+      "sha256": "a1187c1c221fc24895ffa9d37de720cb6fb545e9e411dab7d59db9575f07a91d",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "partial"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-native-review",
+      "path": "evidence/skill-handoff/qualification-20261114/semantic-review-04.json",
+      "sha256": "2fee6a73f81010eeb37494cc7dacc37d5c580ff812044b3991b433d397696cc3",
+      "assertions": [
+        {
+          "pointer": "/outcome",
+          "equals": "revision05_fresh_and_settled_bounded_pass_unaided_cold_still_failed"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-guided-review",
+      "path": "evidence/skill-handoff/qualification-20261114/semantic-review-05.json",
+      "sha256": "093968ba553abbacd8c138db7eafb3e99982e4e392b1a25ba00f2a306d86ef3a",
+      "assertions": [
+        {
+          "pointer": "/outcome",
+          "equals": "guided_file_only_correction_pass_unaided_cold_qualification_remains_open"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-mechanical",
+      "path": "evidence/skill-handoff/qualification-20261114/mechanical-04-corrected.json",
+      "sha256": "5a1a1b3469774ba9937c1612038afe6b01d24c312dae9557c0471c46c4a493bd",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-guided-mechanical",
+      "path": "evidence/skill-handoff/qualification-20261114/mechanical-05-corrected.json",
+      "sha256": "d4a3e8b868681c608deec8626f4e1afd620da60011569e887dde1b64b0a794d8",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-local",
+      "path": "evidence/skill-handoff/qualification-20261114/local-03/RESULT.json",
+      "sha256": "cb55e40f21c91235d75cf473850985aaaa2b8670c77093dcfe48d0aa60e85e53",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-preparation",
+      "path": "evidence/skill-handoff/qualification-20261114/prep-proof-01/RESULT.json",
+      "sha256": "a2d3a14a1fd08560ab704eed8e1e865dbb4ede9eb351a64b255065ea2a49c6be",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-package-tests",
+      "path": "evidence/skill-handoff/qualification-20261114/package-check-01/RESULT.json",
+      "sha256": "6832c51e934aa2819692504e1a45f6cb35e45c8de7a6f5cf5ce77566f2f1f51b",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-package-compatibility",
+      "path": "evidence/skill-handoff/qualification-20261114/package-check-02/RESULT.json",
+      "sha256": "17a10d3db37c8dadb807f005189bcee00b032d6fb93e2bdcc0595b71b1e1d0ba",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -2241,6 +2340,85 @@
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "tm02-full-verification",
           "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PX-SKILL-001-QUALIFICATION",
+      "task": "Qualify consequential-choice and cold handoffs",
+      "document": {
+        "path": "evidence/skill-handoff/README.md",
+        "anchor": "pxskill001-qualification",
+        "line_sha256": "0decd21a8c1736387a8320e22175dffc092f81dc2fc46f160c77ef1325a43856"
+      },
+      "tier": "native direct-profile behavior, independent artifact review and separately guided correction",
+      "scope": "Partial qualification: fresh and settled controls pass narrowly, unaided legacy cold authority still fails, and an explicit caller-reviewed artifact correction passes. Twelve native completions are not twelve behavioral passes.",
+      "limits": [
+        "PX-SKILL-001 remains open; guided correction cannot pass the unaided criterion.",
+        "All attempts retain their exact source/package/runner identities and failures.",
+        "Final default fixture path was repaired after native trials using byte-identical tracked inputs; local preparation parity is separate from model evidence.",
+        "Local draft sprites and self-reviews are not PixelLab generation, engine acceptance or human acceptance.",
+        "No named-child, same-native-session, broad artistic or general host-reliability claim.",
+        "Human acceptance is separate and unrecorded; M1/M2 and broader M3/M4/M5 remain open."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "pxskill001-qualification",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "pxskill001-qualification",
+        "pxskill001-native-review",
+        "pxskill001-guided-review",
+        "pxskill001-mechanical",
+        "pxskill001-guided-mechanical",
+        "pxskill001-local",
+        "pxskill001-preparation",
+        "pxskill001-package-tests",
+        "pxskill001-package-compatibility"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-qualification",
+          "pointer": "/source_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "pxskill001-qualification",
+          "pointer": "/bundle_manifest_sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "evidence/skill-handoff/qualification-20261114/protocol.json",
+          "receipt": "pxskill001-native-review",
+          "pointer": "/protocol/sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "evidence/skill-handoff/qualification-20261114/protocol-amendment-01.json",
+          "receipt": "pxskill001-native-review",
+          "pointer": "/amendment/sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "evidence/skill-handoff/qualification-20261114/protocol-amendment-01.json",
+          "receipt": "pxskill001-guided-review",
+          "pointer": "/amendments/0/sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "path": "evidence/skill-handoff/qualification-20261114/protocol-amendment-02.json",
+          "receipt": "pxskill001-guided-review",
+          "pointer": "/amendments/1/sha256"
         }
       ]
     }

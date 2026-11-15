@@ -1,0 +1,368 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Side-view character family: scout and medic",
+    "brief": "Two side-view game characters, a scout and a medic, as one visual family on a 32 by 32 canvas, matching the dark outline of reference.png, the agreed teal and cream palette, binary transparency and nearest-neighbor display."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md",
+      "reference.png",
+      "reference-b.png"
+    ],
+    "excluded": [
+      "No game source code was supplied, so no code consumers can be mapped in this evaluation project."
+    ],
+    "unresolved": [
+      "The target engine or project and the asset destination paths are unnamed; the delivery paths below are proposals.",
+      "No remote PixelLab provider is configured in this session; no operation schema has been discovered."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "e62384b98920bd30ef78eba33f6e85d889ed956b899f5c84d0d6be368e26dfea"
+    },
+    {
+      "id": "ref_outline",
+      "path": "reference.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    },
+    {
+      "id": "ref_fill",
+      "path": "reference-b.png",
+      "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a"
+    }
+  ],
+  "assets": [
+    {
+      "id": "character.scout",
+      "kind": "sprite",
+      "purpose": "Scout character in side view; the family's representative sample and style baseline",
+      "status": "in_progress",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Assignment",
+          "usage": "Scout member of the side-view character family"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 2: a 32 by 32 canvas."
+        },
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 5: side view for a side-view game."
+        },
+        {
+          "property": "alpha",
+          "value": "binary",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 4: binary transparency."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 6: nearest-neighbor display."
+        },
+        {
+          "property": "outline",
+          "value": "continuous dark outline as in reference.png",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_outline"
+          ],
+          "reason": "Owner choice 1: the dark outline of reference.png; reference-b.png is the un-outlined alternative that was not chosen."
+        },
+        {
+          "property": "palette_roles",
+          "value": [
+            "dark outline",
+            "teal",
+            "cream"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_outline"
+          ],
+          "reason": "Owner choice 3: the agreed teal and cream palette, named by role."
+        },
+        {
+          "property": "palette_exact",
+          "value": [
+            "#25354A",
+            "#56B5BC",
+            "#F4DDA2"
+          ],
+          "authority": "proposal",
+          "sources": [
+            "ref_outline"
+          ],
+          "reason": "Specialist proposal for the first sample: the three opaque colours measured in reference.png. Whether this exact set is exclusive for the family is open until the sample is reviewed."
+        },
+        {
+          "property": "identity_landmarks",
+          "value": "peaked cap or hood brim and a shoulder-strap satchel, facing the family's shared direction",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "Specialist design proposal so a scout is distinguishable from the medic at 32 px; alternatives remain open."
+        }
+      ],
+      "references": [
+        {
+          "source": "ref_outline",
+          "role": "style",
+          "instructions": "Preserve the continuous dark outline, flat teal fill, cream accents and blocky cluster scale. The figure itself is a style anchor, not the scout's silhouette."
+        },
+        {
+          "source": "ref_fill",
+          "role": "palette",
+          "instructions": "Shows the same teal and cream fill without the outline; use it for the colour pair only, not for edge treatment."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/scout.png",
+        "checks": [
+          "asset-check: 32 by 32, single frame, alpha only 0 or 255",
+          "Visual: continuous dark outline, flat teal and cream fill, side view, reads as a scout at native scale and integer enlargement",
+          "Compare beside reference.png at native and enlarged scale",
+          "Engine display with nearest-neighbor sampling is deferred to the family delivery row"
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Is the exact three-colour set the family palette, or may additional shades be added?",
+        "Which engine or project consumes the sprites, and at which paths?"
+      ],
+      "next": "In a session with the official PixelLab connection, discover the character or image operation, bind reference.png as the style input, translate work/scout/creative-brief.json into provider arguments, re-point work/scout/request-review.json to them, run pixl_request_review and then pixl_plar_prepare.",
+      "evidence": [
+        {
+          "path": "work/scout/request-review.json",
+          "note": "Reviewed request/criteria packet; request is a non-executable creative brief because no provider operation was discovered."
+        },
+        {
+          "path": "work/scout/candidate-plan.json",
+          "note": "Candidate plan: contract and six criteria for the scout sample; validated against asset-plan.schema.json."
+        },
+        {
+          "path": "work/scout/creative-brief.json",
+          "note": "Creative brief with owner requirements, labelled specialist proposals, reference roles and advisory operation options."
+        },
+        {
+          "path": "work/scout/self-review.json",
+          "note": "Specialist self-review of the packet; independent caller comparison unperformed."
+        }
+      ],
+      "production": {
+        "store": "production/characters",
+        "task": "scout_sample",
+        "output": "scout"
+      }
+    },
+    {
+      "id": "character.medic",
+      "kind": "sprite",
+      "purpose": "Medic character in side view; second family member produced against the accepted scout baseline",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Assignment",
+          "usage": "Medic member of the side-view character family"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "dimensions",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 2."
+        },
+        {
+          "property": "view",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 5."
+        },
+        {
+          "property": "alpha",
+          "value": "binary",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 4."
+        },
+        {
+          "property": "sampling",
+          "value": "nearest",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choice 6."
+        },
+        {
+          "property": "outline",
+          "value": "continuous dark outline as in reference.png",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_outline"
+          ],
+          "reason": "Owner choice 1."
+        },
+        {
+          "property": "palette_roles",
+          "value": [
+            "dark outline",
+            "teal",
+            "cream"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_outline"
+          ],
+          "reason": "Owner choice 3."
+        },
+        {
+          "property": "baseline",
+          "value": "the accepted scout sample candidate",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The medic belongs to the same visual family; it is produced against the reviewed scout baseline."
+        },
+        {
+          "property": "identity_landmarks",
+          "value": "a cream cross on an arm band or chest and a carried medical bag",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "Specialist design proposal so the medic is distinguishable from the scout at 32 px using only the family palette."
+        }
+      ],
+      "references": [
+        {
+          "source": "ref_outline",
+          "role": "style",
+          "instructions": "Same style anchor as the scout."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/medic.png",
+        "checks": [
+          "asset-check: 32 by 32, single frame, alpha only 0 or 255",
+          "Visual: same outline, palette and cluster scale as the scout; reads as a medic",
+          "Compare beside the accepted scout at native and enlarged scale"
+        ]
+      },
+      "depends_on": [
+        "character.scout"
+      ],
+      "questions": [],
+      "next": "After the scout sample is accepted, author the connected production plan with the scout as baseline and prepare the medic stage.",
+      "evidence": []
+    },
+    {
+      "id": "family.characters",
+      "kind": "character-family",
+      "purpose": "Collective delivery of the scout and medic as one side-view family",
+      "status": "todo",
+      "consumers": [
+        {
+          "source": "brief",
+          "symbol": "Assignment",
+          "usage": "The two-member family delivered together for the side-view game"
+        }
+      ],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "members",
+          "value": [
+            "character.scout",
+            "character.medic"
+          ],
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner named the two family members."
+        },
+        {
+          "property": "continuity",
+          "value": "shared outline treatment, palette roles, cluster scale, facing direction and ground line across both members",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_outline"
+          ],
+          "reason": "One visual family matching the reference's outline and palette."
+        },
+        {
+          "property": "display",
+          "value": "nearest-neighbor sampling with binary alpha in the destination",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Owner choices 4 and 6; verifiable only in the actual destination."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters",
+        "checks": [
+          "Family continuity reviewed on a side-by-side sheet at native and enlarged scale",
+          "Destination displays both sprites with nearest-neighbor sampling and binary alpha (engine check, unavailable until a destination is named)"
+        ]
+      },
+      "depends_on": [
+        "character.scout",
+        "character.medic"
+      ],
+      "questions": [
+        "Which engine or project consumes the sprites, and at which paths?"
+      ],
+      "next": "After both members are accepted, snapshot the family and review continuity; the engine check stays unavailable until a destination exists.",
+      "evidence": []
+    }
+  ]
+}

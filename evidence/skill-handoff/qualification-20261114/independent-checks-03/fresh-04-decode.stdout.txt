@@ -1,0 +1,666 @@
+{
+  "revision": 1,
+  "records": [
+    {
+      "id": "actor",
+      "kind": "A",
+      "fields": {
+        "nm": "PIXL",
+        "rl": {
+          "$symbol": "agent"
+        }
+      }
+    },
+    {
+      "id": "alpha",
+      "kind": "I",
+      "fields": {
+        "ky": "al",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "card"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": "binary",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Both references contain no fractional alpha. Observation only; the contract alpha policy is chosen when the sample is prepared."
+      }
+    },
+    {
+      "id": "brief",
+      "kind": "S",
+      "fields": {
+        "at": "2026-11-15",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "bb034f519881fb1d498a0feb08aef5b5639a51f64d0242ab92cd912ad6c38203",
+        "ln": [
+          1,
+          17
+        ],
+        "ur": "BRIEF.md"
+      }
+    },
+    {
+      "id": "canvas",
+      "kind": "I",
+      "fields": {
+        "ky": "px",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner has not chosen the final canvas size. Both references are 32x32 with a 19x26 subject; PIXL proposes 32x32 (alternative 48x48) in the decision card, which is not an adoption."
+      }
+    },
+    {
+      "id": "card",
+      "kind": "S",
+      "fields": {
+        "at": "2026-11-15",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "0545a2503843feff7b8333eaa0120c6437f977dcb4e971415cacaaa186c7a842",
+        "ln": [
+          1,
+          65
+        ],
+        "ur": "research/outline-and-canvas-decision-card.md"
+      }
+    },
+    {
+      "id": "colour_roles",
+      "kind": "I",
+      "fields": {
+        "ky": "colour_roles",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "card"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": {
+          "eyes": "#F4DDA2",
+          "fill": "#56B5BC",
+          "outline": "#25354A (reference.png only)"
+        },
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Measured from both references. Colour roles, not an exclusive fixed palette; no palette restriction has been adopted."
+      }
+    },
+    {
+      "id": "destination",
+      "kind": "I",
+      "fields": {
+        "ky": "destination",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "No engine, delivery path layout, display scale or import settings have been given. Needed before family delivery."
+      }
+    },
+    {
+      "id": "edge_treatment",
+      "kind": "I",
+      "fields": {
+        "ky": "edge_treatment",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "card"
+          }
+        ],
+        "st": {
+          "$symbol": "conflict"
+        },
+        "vl": [
+          "continuous dark outline (reference.png, 2 px at 32x32)",
+          "no outline (reference-b.png)"
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The two supplied references disagree and the owner has not chosen. PIXL proposes the outline direction at 1 px weight; the owner must resolve the conflict."
+      }
+    },
+    {
+      "id": "f_medic",
+      "kind": "F",
+      "fields": {
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Medic member sprite",
+        "rq": [
+          {
+            "$ref": "q_size"
+          },
+          {
+            "$ref": "q_readability"
+          },
+          {
+            "$ref": "q_style_match"
+          },
+          {
+            "$ref": "q_role_distinction"
+          }
+        ],
+        "tk": {
+          "$ref": "t_medic"
+        }
+      }
+    },
+    {
+      "id": "f_scout_sample",
+      "kind": "F",
+      "fields": {
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Scout representative sample",
+        "rq": [
+          {
+            "$ref": "q_size"
+          },
+          {
+            "$ref": "q_readability"
+          },
+          {
+            "$ref": "q_style_match"
+          }
+        ],
+        "tk": {
+          "$ref": "t_sample"
+        }
+      }
+    },
+    {
+      "id": "handoff_1",
+      "kind": "N",
+      "fields": {
+        "bl": [
+          {
+            "$ref": "t_sample"
+          },
+          {
+            "$ref": "t_medic"
+          }
+        ],
+        "fo": [
+          {
+            "$ref": "canvas"
+          },
+          {
+            "$ref": "edge_treatment"
+          },
+          {
+            "$ref": "card"
+          },
+          {
+            "$ref": "x_sheet"
+          }
+        ],
+        "nx": [
+          {
+            "$ref": "t_sample"
+          }
+        ],
+        "rv": 1,
+        "wh": {
+          "$ref": "actor"
+        }
+      }
+    },
+    {
+      "id": "members",
+      "kind": "I",
+      "fields": {
+        "ky": "family_members",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": [
+          "scout",
+          "medic"
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner named exactly these two family members."
+      }
+    },
+    {
+      "id": "project",
+      "kind": "P",
+      "fields": {
+        "br": "Make a character family for a side-view game with a scout and a medic. References reference.png and reference-b.png disagree about outline treatment. The final canvas size has not been chosen. Local-only evaluation session: no generation provider assigned.",
+        "in": [
+          {
+            "$ref": "canvas"
+          },
+          {
+            "$ref": "edge_treatment"
+          },
+          {
+            "$ref": "view"
+          },
+          {
+            "$ref": "members"
+          },
+          {
+            "$ref": "colour_roles"
+          },
+          {
+            "$ref": "alpha"
+          },
+          {
+            "$ref": "reference_facing"
+          },
+          {
+            "$ref": "destination"
+          },
+          {
+            "$ref": "provider"
+          }
+        ],
+        "nm": "Side-view character family: scout and medic",
+        "ow": {
+          "$ref": "user"
+        },
+        "sc": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "card"
+          }
+        ]
+      }
+    },
+    {
+      "id": "provider",
+      "kind": "I",
+      "fields": {
+        "ky": "provider",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "none assigned in this evaluation session",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner instructed that no generation provider be invoked in this session; no PixelLab connection is configured."
+      }
+    },
+    {
+      "id": "q_readability",
+      "kind": "Q",
+      "fields": {
+        "ck": "At native size and integer zoom the character reads as a side-facing figure with head, body and limbs distinguishable and a visible ground contact, on both light and dark backgrounds.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "readability",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_role_distinction",
+      "kind": "Q",
+      "fields": {
+        "ck": "Viewed beside the accepted scout at native size, the medic shares canvas, edge treatment, colour roles, proportions and ground line, and is distinguishable by role without relying on colour alone.",
+        "dm": {
+          "$symbol": "continuity"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "role_distinction",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_size",
+      "kind": "Q",
+      "fields": {
+        "ck": "The actual PNG matches the confirmed canvas size choice and the alpha policy recorded in its contract.",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "size",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "q_style_match",
+      "kind": "Q",
+      "fields": {
+        "ck": "Blocky proportions and the teal fill and cream eye colour roles match the references, and the edge treatment matches the owner-resolved outline choice.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "style_match",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "card"
+          }
+        ],
+        "wh": {
+          "$ref": "user"
+        }
+      }
+    },
+    {
+      "id": "reference_facing",
+      "kind": "I",
+      "fields": {
+        "ky": "reference_facing",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "card"
+          }
+        ],
+        "st": {
+          "$symbol": "observed"
+        },
+        "vl": "frontal symmetrical face",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Neither reference shows a side view. The side-view limb placement, facing and ground contact must be established by the representative scout sample."
+      }
+    },
+    {
+      "id": "t_medic",
+      "kind": "T",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [
+          {
+            "$ref": "t_sample"
+          }
+        ],
+        "ip": [],
+        "kn": [],
+        "nm": "Medic member from the accepted scout baseline",
+        "op": [
+          {
+            "$ref": "f_medic"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "production"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "open"
+        },
+        "vr": []
+      }
+    },
+    {
+      "id": "t_research",
+      "kind": "T",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [],
+        "ip": [
+          {
+            "$ref": "x_ref_a"
+          },
+          {
+            "$ref": "x_ref_b"
+          },
+          {
+            "$ref": "x_sheet"
+          }
+        ],
+        "kn": [],
+        "nm": "Resolve outline treatment and canvas with the owner using the retained comparison evidence",
+        "op": [],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "research"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "open"
+        },
+        "vr": []
+      }
+    },
+    {
+      "id": "t_sample",
+      "kind": "T",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [],
+        "ip": [
+          {
+            "$ref": "x_ref_a"
+          },
+          {
+            "$ref": "x_ref_b"
+          }
+        ],
+        "kn": [],
+        "nm": "Scout representative sample: prove side-view construction, edge treatment and canvas before the family",
+        "op": [
+          {
+            "$ref": "f_scout_sample"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "sample"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "open"
+        },
+        "vr": []
+      }
+    },
+    {
+      "id": "user",
+      "kind": "A",
+      "fields": {
+        "nm": "Project owner",
+        "rl": {
+          "$symbol": "user"
+        }
+      }
+    },
+    {
+      "id": "view",
+      "kind": "I",
+      "fields": {
+        "ky": "vw",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "side",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "The owner states the game is side-view. Both references are frontal, so the sample must establish the side-facing construction."
+      }
+    },
+    {
+      "id": "x_ref_a",
+      "kind": "X",
+      "fields": {
+        "dg": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+        "kd": {
+          "$symbol": "reference"
+        },
+        "mt": {
+          "colours": 3,
+          "outline": "continuous 2 px dark",
+          "role": "style",
+          "size": [
+            32,
+            32
+          ]
+        },
+        "nm": "reference.png: outlined direction",
+        "ur": "reference.png"
+      }
+    },
+    {
+      "id": "x_ref_b",
+      "kind": "X",
+      "fields": {
+        "dg": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a",
+        "kd": {
+          "$symbol": "reference"
+        },
+        "mt": {
+          "colours": 2,
+          "outline": "none",
+          "role": "style",
+          "size": [
+            32,
+            32
+          ]
+        },
+        "nm": "reference-b.png: outline-free direction",
+        "ur": "reference-b.png"
+      }
+    },
+    {
+      "id": "x_sheet",
+      "kind": "X",
+      "fields": {
+        "dg": "21623641f2ab363efe12b5f5e896e0775b833b6ff570e8e1e50332e48e54ffaf",
+        "kd": {
+          "$symbol": "report"
+        },
+        "mt": {
+          "authored_art": false,
+          "layout": "rows: reference.png, reference-b.png; columns: light, dark, mid-teal, busy; 4x above 1x"
+        },
+        "nm": "Outline comparison sheet (reference pixels on four backgrounds)",
+        "ur": "research/outline-comparison-sheet.png"
+      }
+    }
+  ],
+  "format": 2
+}

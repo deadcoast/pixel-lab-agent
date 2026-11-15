@@ -14,6 +14,8 @@ Before deriving a style contract, acceptance criterion, checker rule or provider
 
 The user's instruction and adopted project choices establish requirements. Reference pixels establish observations; matching a reference does not adopt every measured dimension, color, gap, alpha level or component count as a mandatory rule. For an unspecified property, explain a project-specific proposal and the trial it would test. A proposed trial can proceed within existing authorization while the final production choice remains open.
 
+A supplied palette expressed as color roles or families preserves those choices without automatically making sampled reference hex values an exclusive allowed-color list. Use exact working colors as a scoped proposal when useful; attribute exact restrictions to the owner only when their instruction or adoption establishes them. Binary transparency constrains alpha, while opaque edge colors and anti-aliasing require their own authority. Keep these distinctions in the saved contract and criteria, and continue the authorized sample work without asking the caller to repeat settled choices.
+
 If your interpretation of an image differs from the brief's terminology, describe the observed pixels and the uncertainty while preserving the requested treatment. An alternative that contradicts that treatment is a change for the user to adopt, not a correction you can silently install in the contract. Neither a tool default nor a passing checker supplies that adoption.
 
 Keep diagnostic conclusions attached to their tested artifact, method, scale and background. Failure of one resized fixture does not establish a minimum canvas for other designs; a measured component count or contrast ratio does not establish a universal rejection threshold. Label verified tool limitations separately from artistic choices.
@@ -63,6 +65,36 @@ An unavailable V has `ev=[]` and a concrete reason. For example, a target projec
 
 This operation ends with either a representative sample accepted against its actual requirements, or a concrete retained boundary: missing choice, failed candidate, unavailable inspection, or next proof. Explain that useful outcome plainly; keep hashes, record IDs and mechanical details in evidence unless they clarify a conflict.
 
-If the next dependent step needs a consequential user choice, the final response must contain the useful progress saved, a direct concise question for the smallest set of necessary answers, and what those answers unlock. Carry a still-unanswered question into that final response even when it was asked earlier or saved in the handoff. Present genuine alternatives when helpful and keep suggested trials labeled as proposals. Reference dimensions remain observations until adopted for this project. Continue authorized work that is independent of the answer. When the necessary choices are already supplied, use them and report the next operation under the existing authorization.
+If the next dependent step needs a consequential user choice, the final response must contain the useful progress saved, a direct concise question for the smallest set of necessary answers, and what those answers unlock. Address that question to the caller: a list of decisions needed or next steps once answered does not itself ask for the choice. Carry a still-unanswered question into that final response even when it was asked earlier or saved in the handoff. Present genuine alternatives when helpful and keep suggested trials labeled as proposals. Reference dimensions remain observations until adopted for this project. Continue authorized work that is independent of the answer. When the necessary choices are already supplied, use them and report the next operation under the existing authorization.
+
+## Cold intake handoff
+
+1. Read the complete production profile and this procedure. Start with the saved
+   workflow and focused context, then inspect the sources behind claimed blockers.
+   Recover owner decisions and authorization separately from the predecessor's
+   proposals, visual judgments and measurements. A diagnostic finding remains
+   scoped to its tested artifact; it does not decide the owner's aesthetic or
+   establish a requirement for a newly authored asset. Preserve earlier reports
+   and identify overbroad inferences in the continuation.
+
+2. Save a short continuation note with a decision table: **choice, actual
+   authority/status, whether an answer is needed now, and the effect of that
+   answer**. Include observed and proposed policies so they cannot silently gain
+   confirmation. An answer adopts only the choices it explicitly supplies;
+   unasked rows keep their status. A diagnostic can support a recommendation
+   while the decision remains the owner's. Continue independent useful work.
+
+3. Check the next local operation against that table and the actual tools.
+   Preserve existing authorization. Keep later decision, provider-schema,
+   execution and engine prerequisites explicit. A local contract or output plan
+   can be useful while preparation of a real provider request is unavailable.
+   Do not describe every remaining dependency as solved by the next answer.
+
+4. Use the checked note to finish with saved progress, a direct concise question
+   addressed to the caller, and the exact local operation its answer unlocks.
+   A decision list or a statement that the owner should choose does not ask the
+   question. If the necessary choices are already supplied, use them and state
+   the next operation without asking again. Keep supporting diagnostics in the
+   note; carry their scope and authority into any claim repeated in the response.
 
 When the representative sample is accepted and the assignment continues across a family, enter the [family and delivery operation](family-delivery.md). It records the exact nominated sample as the baseline, saves member and destination plans, and declares collective continuity before batch results. Replaced/rejected samples and unknown provider attempts must be reconciled before dependent production; an old artifact's existence is not baseline eligibility.

@@ -1,0 +1,91 @@
+"""Retain partial qualification, without converting mechanics into behavioral success."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+SERIES = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def main():
+    names = ["semantic-review-04.json", "semantic-review-05.json",
+             "mechanical-04-corrected.json", "mechanical-05-corrected.json",
+             "local-03/RESULT.json", "prep-proof-01/RESULT.json",
+             "package-check-01/RESULT.json", "package-check-02/RESULT.json"]
+    receipts = {name: ref(SERIES / name) for name in names}
+    semantic = json.loads((SERIES / "semantic-review-04.json").read_bytes())
+    guided = json.loads((SERIES / "semantic-review-05.json").read_bytes())
+    attempts = []
+    models, hosts = set(), set()
+    for path in sorted(SERIES.glob("*/record.json")):
+        folder = path.parent
+        launch = json.loads((folder / "launch.json").read_bytes())
+        record = json.loads(path.read_bytes())
+        identity = json.loads((folder / "identity.json").read_bytes())
+        events = [json.loads(line) for line in (folder / "stdout.jsonl").read_text(encoding="utf-8").splitlines()]
+        finals = [event for event in events if event.get("type") == "result"
+                  and event.get("session_id") == launch["expected_session_id"]
+                  and not event.get("parent_tool_use_id")]
+        if len(finals) != 1 or finals[0].get("is_error") or record["returncode"] != 0:
+            raise ValueError("Native completion is not established: " + folder.name)
+        models.update(event["model"] for event in events if event.get("type") == "system" and event.get("subtype") == "init")
+        hosts.add(launch["host_version"])
+        attempts.append({"attempt": folder.name, "session_id": finals[0]["session_id"],
+                         "native_completion": "observed_not_a_behavioral_pass",
+                         "elapsed_seconds": record["elapsed_seconds"],
+                         "record": ref(path), "stream": ref(folder / "stdout.jsonl"),
+                         "input_archive": ref(folder / "input-project.zip"),
+                         "output_archive": ref(folder / "project.zip"),
+                         "preservation": ref(folder / "preservation.json"),
+                         "tested_harness": identity["runner"],
+                         "tested_package": identity["package"],
+                         "mode": "guided_file_only_restart" if folder.name == "cold-reviewed-01"
+                         else launch["continuation_mode"]})
+    if len(attempts) != 12 or len({item["session_id"] for item in attempts}) != 12:
+        raise ValueError("Expected twelve distinct completed native attempts")
+    source_paths = [".agents/PROFILE.md", "plugins/pixl/skills/pixl/SKILL.md",
+                    "plugins/pixl/skills/pixl/references/intake-sample.md",
+                    "plugins/pixl/bundle-manifest.json", "evaluations/skill_handoff_trials.py",
+                    "tests/test_skill_handoff_trials.py", "evaluations/native_trial_records.py",
+                    "evaluations/request_review_trials.py",
+                    "evidence/host-evaluation/fixture-inputs/reference.png",
+                    "evidence/host-evaluation/fixture-inputs/reference-b.png"]
+    result = {"version": 1, "task": "PX-SKILL-001", "observed_at": datetime.now(UTC).isoformat(),
+              "status": "partial", "qualification_complete": False,
+              "scope": "Recorded direct Claude fresh/settled handoffs and legacy cold continuations, plus explicitly guided artifact correction. Unaided legacy cold authority remains unqualified.",
+              "observed_hosts": sorted(hosts), "observed_models": sorted(models),
+              "outcomes": {"fresh": "bounded_pass", "settled": "bounded_pass",
+                           "unaided_legacy_cold": "fail_answer_scope_and_authority",
+                           "caller_reviewed_cold": "bounded_guided_pass"},
+              "unaided_review_outcome": semantic["outcome"], "guided_review_outcome": guided["outcome"],
+              "native_attempt_count": len(attempts), "attempts": attempts, "receipts": receipts,
+              "source_hashes": {name: sha(ROOT / name) for name in source_paths},
+              "bundle_manifest_sha256": sha(ROOT / "plugins/pixl/bundle-manifest.json"),
+              "script_sha256": sha(Path(__file__)),
+              "maintainer_change_after_trials": "Default fixture location changed from an ignored predecessor tree to tracked byte-identical images. local-03 and prep-proof-01 qualify this preparation-only correction; native attempts keep their original runner identities.",
+              "limits": ["Twelve native completions are not twelve behavioral passes.",
+                         "Guided correction does not rescore or complete any unaided cold case.",
+                         "Current settled output includes two locally authored drafts and model self-reviews; no PixelLab generation or human acceptance.",
+                         "Fresh bounding-box reporting and a prior fresh downstream-engine prerequisite defect remain retained.",
+                         "Direct main-session profile/skill operation is not named-child or same-native-session qualification.",
+                         "No full verifier rerun; the TM-02 full checkpoint retains its tested inputs.",
+                         "Human acceptance remains separate and unperformed; M1/M2 and broader M3/M4/M5 remain open."],
+              "next": "Qualify source-grounded cold correction through native caller/specialist review without maintainer-authored feedback, preserving the direct-profile failures."}
+    with (SERIES / "RESULT.json").open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "native_attempts": len(attempts),
+                      "outcomes": result["outcomes"]}))
+
+
+if __name__ == "__main__":
+    main()

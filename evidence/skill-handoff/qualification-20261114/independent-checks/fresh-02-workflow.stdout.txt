@@ -1,0 +1,360 @@
+{
+  "intake": [
+    {
+      "id": "alpha",
+      "project": "project",
+      "key": "al",
+      "status": "observed",
+      "value": {
+        "$symbol": "binary"
+      },
+      "sources": [
+        "brief_observations"
+      ],
+      "rationale": "Both references use binary alpha (no fractional alpha pixels). Observed only; the owner has not required binary alpha."
+    },
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief_user"
+      ],
+      "rationale": "The final canvas size has not been chosen (user instruction). Both references are 32x32 with a 19x26 visible body; that measurement is an observation, not an adopted canvas. Raster contracts and sample activation wait on this choice."
+    },
+    {
+      "id": "destination_path",
+      "project": "project",
+      "key": "destination_path",
+      "status": "proposed",
+      "value": {
+        "medic": "assets/characters/medic.png",
+        "scout": "assets/characters/scout.png"
+      },
+      "sources": [],
+      "rationale": "PIXL proposal: this consumer project has no game code, so delivery paths are proposed. Destination choices must be confirmed before the delivery task can activate."
+    },
+    {
+      "id": "display_scale",
+      "project": "project",
+      "key": "display_scale",
+      "status": "unresolved",
+      "value": null,
+      "sources": [],
+      "rationale": "The intended display scale, target engine and backgrounds are unknown. They inform the canvas choice and the readability review."
+    },
+    {
+      "id": "edge_treatment",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "continuous dark outline around the full silhouette (reference.png)",
+        "no outline; body color meets transparency directly (reference-b.png)"
+      ],
+      "sources": [
+        "brief_user",
+        "brief_observations"
+      ],
+      "rationale": "The user states the references disagree about outline treatment. reference.png carries a continuous 2px #25354A outline; reference-b.png carries none. The owner must choose one, or authorize a two-variant sample trial."
+    },
+    {
+      "id": "family_members",
+      "project": "project",
+      "key": "family_members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "brief_user"
+      ],
+      "rationale": "User instruction: the family will have a scout and a medic."
+    },
+    {
+      "id": "identity_landmarks",
+      "project": "project",
+      "key": "identity_landmarks",
+      "status": "proposed",
+      "value": [
+        "paired rectangular ears on top of the head",
+        "light cream eye marks",
+        "tall rounded body in the teal body color"
+      ],
+      "sources": [
+        "brief_observations"
+      ],
+      "rationale": "PIXL proposal: these shared landmarks carry family identity from the front-facing references into the side-view pose (ears stacked or overlapping in profile, one visible eye). Expert proposal, not an owner requirement."
+    },
+    {
+      "id": "palette_roles",
+      "project": "project",
+      "key": "palette_roles",
+      "status": "observed",
+      "value": {
+        "body": "#56B5BC",
+        "eyes": "#F4DDA2",
+        "outline": "#25354A"
+      },
+      "sources": [
+        "brief_observations"
+      ],
+      "rationale": "Colors measured in the references. They describe the reference color roles; no fixed production palette has been adopted."
+    },
+    {
+      "id": "representative_sample",
+      "project": "project",
+      "key": "representative_sample",
+      "status": "proposed",
+      "value": "scout",
+      "sources": [],
+      "rationale": "PIXL proposal: produce the scout first as the representative side-view sample; the medic extends the accepted scout as its baseline."
+    },
+    {
+      "id": "role_cues",
+      "project": "project",
+      "key": "role_cues",
+      "status": "proposed",
+      "value": {
+        "medic": "upright stance, satchel or armband with a readable cross emblem in a contrasting accent",
+        "scout": "lean forward-leaning stance, light pack or scarf, forward-looking posture"
+      },
+      "sources": [],
+      "rationale": "PIXL proposal for distinguishing the two roles at small sizes without a named game or lore. Open to owner correction."
+    },
+    {
+      "id": "view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "side"
+      },
+      "sources": [
+        "brief_user"
+      ],
+      "rationale": "User instruction: the family is for a side-view game. Both references are front-facing, so the production pose differs from the references."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "deliver_family",
+      "project": "project",
+      "phase": "delivery",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: make_scout_sample is open; it must be done",
+        "task_prerequisite: make_medic is open; it must be done",
+        "task_decision: deliver_family needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "family_package",
+          "name": "Scout and medic family delivery",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_continuity",
+              "name": "family continuity",
+              "check": "Displayed side by side at native size and at one integer enlargement, scout and medic share the same canvas, ground contact row, head and body proportions, color roles and edge treatment, so they read as one cast.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_delivery_files",
+              "name": "delivered files",
+              "check": "Each member file exists at its confirmed destination path with bytes identical to that member's accepted candidate.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "make_medic",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: make_scout_sample is open; it must be done",
+        "output_contract: medic_sprite needs a concrete raster contract",
+        "task_decision: make_medic needs an evidence-backed adoption decision"
+      ],
+      "outputs": [
+        {
+          "id": "medic_sprite",
+          "name": "Medic side-view sprite",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas",
+              "name": "canvas and alpha",
+              "check": "The file is a PNG whose dimensions equal the confirmed canvas choice and whose alpha matches the confirmed alpha policy for this project.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_side_view",
+              "name": "side-view pose",
+              "check": "At native size the character reads as a side-view (profile) figure suitable for a side-scrolling game, with a clear facing direction and a grounded foot/contact row.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_identity",
+              "name": "family identity",
+              "check": "At native size and at an integer enlargement the character is recognizably the same family as the supplied references: the paired ears, light eye mark and teal rounded body remain visible as landmarks.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_edge",
+              "name": "edge treatment",
+              "check": "The silhouette edge follows the resolved edge_treatment choice consistently around the whole figure, with no mixed outlined and outline-free segments unless that choice names them.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_medic",
+              "name": "medic role",
+              "check": "At native size the figure is readable as the medic, with its medical marking legible, and is distinguishable from the scout by silhouette or marking, not by color alone.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "make_scout_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: scout_sprite needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "scout_sprite",
+          "name": "Scout side-view sprite (representative sample)",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_canvas",
+              "name": "canvas and alpha",
+              "check": "The file is a PNG whose dimensions equal the confirmed canvas choice and whose alpha matches the confirmed alpha policy for this project.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_side_view",
+              "name": "side-view pose",
+              "check": "At native size the character reads as a side-view (profile) figure suitable for a side-scrolling game, with a clear facing direction and a grounded foot/contact row.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_identity",
+              "name": "family identity",
+              "check": "At native size and at an integer enlargement the character is recognizably the same family as the supplied references: the paired ears, light eye mark and teal rounded body remain visible as landmarks.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_edge",
+              "name": "edge treatment",
+              "check": "The silhouette edge follows the resolved edge_treatment choice consistently around the whole figure, with no mixed outlined and outline-free segments unless that choice names them.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_role_scout",
+              "name": "scout role",
+              "check": "At native size the figure is readable as the scout and is distinguishable from the medic by silhouette or marking, not by color alone.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 1,
+  "hash": "86686551276f96941402b7c1b9f74d51e9a1dd0895330254cb0b69f573cb6c84",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

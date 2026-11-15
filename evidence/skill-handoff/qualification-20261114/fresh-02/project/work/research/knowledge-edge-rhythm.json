@@ -1,0 +1,48 @@
+{
+  "id": "edge-rhythm",
+  "title": "Audit stair-step runs without imposing one contour style",
+  "applies_to": [
+    "clean linework",
+    "small curved forms",
+    "hard silhouettes"
+  ],
+  "requires": [
+    "A contour mask and declared intentional corners or irregular regions"
+  ],
+  "procedure": [
+    "Trace boundary runs and highlight sudden run-length changes.",
+    "Regularize only contours intended to read as smooth.",
+    "Preserve corners, damage and organic asymmetry identified in the brief."
+  ],
+  "checks": [
+    "A supplied straight diagonal retains its declared repeating step pattern.",
+    "No protected corner changes during cleanup."
+  ],
+  "pitfalls": [
+    "Not every uneven run is a jaggy; shape can require an abrupt change.",
+    "Mechanical contour smoothing can erase style and identity."
+  ],
+  "sources": [
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "start": 1402,
+      "end": 1431
+    },
+    {
+      "path": "training/original-docs/PIXEL-ART-DEEP-RESEARCH.md",
+      "start": 857,
+      "end": 867
+    }
+  ],
+  "poc": {
+    "kind": "raster-fixture",
+    "procedure": [
+      "Use an 8x8 45-degree one-pixel staircase and record its unit step sequence.",
+      "Add a one-cell horizontal detour at the midpoint; mark it first accidental, then intentional."
+    ],
+    "acceptance": [
+      "Detour is reported in both cases with its location.",
+      "Only the accidental case is eligible for correction."
+    ]
+  }
+}

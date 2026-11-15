@@ -1,0 +1,873 @@
+{
+  "intake": [
+    {
+      "id": "alpha",
+      "project": "project",
+      "key": "al",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "binary"
+      },
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner chose binary transparency (BRIEF.md item 4)."
+    },
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "confirmed",
+      "value": [
+        32,
+        32
+      ],
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner chose a 32 by 32 canvas per character (BRIEF.md item 2)."
+    },
+    {
+      "id": "destination_engine",
+      "project": "project",
+      "key": "destination_engine",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "No game project or engine is present in this consumer; nearest-neighbor display and import behavior cannot be exercised until one is named."
+    },
+    {
+      "id": "destination_medic",
+      "project": "project",
+      "key": "destination_medic",
+      "status": "proposed",
+      "value": "assets/characters/medic.png",
+      "sources": [],
+      "rationale": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+    },
+    {
+      "id": "destination_scout",
+      "project": "project",
+      "key": "destination_scout",
+      "status": "proposed",
+      "value": "assets/characters/scout.png",
+      "sources": [],
+      "rationale": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+    },
+    {
+      "id": "display_scale",
+      "project": "project",
+      "key": "display_scale",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The game's integer display scale is not known (BRIEF.md, left open). Readability is reviewed at native scale and 8x until the owner states it."
+    },
+    {
+      "id": "facing",
+      "project": "project",
+      "key": "facing",
+      "status": "proposed",
+      "value": "single static standing pose facing screen right; mirror in-engine for left",
+      "sources": [],
+      "rationale": "PIXL proposal: one static right-facing pose is the smallest useful sample for a side-view game; no animation was requested."
+    },
+    {
+      "id": "lighting",
+      "project": "project",
+      "key": "li",
+      "status": "proposed",
+      "value": "flat fill: no shading ramps, no anti-aliasing",
+      "sources": [
+        "reference"
+      ],
+      "rationale": "Observed in reference.png (three flat colors, hard edges). PIXL proposes keeping the family flat so the three-color palette stays intact; owner may instead adopt shading, which would need more colors."
+    },
+    {
+      "id": "medic_identity",
+      "project": "project",
+      "key": "medic_identity",
+      "status": "proposed",
+      "value": "same creature and volume as the scout with a cream cross marker on the body side and a satchel at the front instead of the backpack",
+      "sources": [],
+      "rationale": "PIXL proposal for family distinction; the owner named the role only."
+    },
+    {
+      "id": "outline",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "confirmed",
+      "value": "continuous dark outline as in reference.png",
+      "sources": [
+        "brief",
+        "reference"
+      ],
+      "rationale": "Owner chose the reference's dark outline (BRIEF.md item 1). Measured in reference.png the outline is #25354a and 2 px wide; the width is an observation carried as part of the proposed working treatment, not a separate owner rule."
+    },
+    {
+      "id": "palette_hex",
+      "project": "project",
+      "key": "pl",
+      "status": "proposed",
+      "value": [
+        "#56b5bc",
+        "#f4dda2",
+        "#25354a"
+      ],
+      "sources": [
+        "reference",
+        "reference_b"
+      ],
+      "rationale": "PIXL proposes fixing the owner's teal/cream/outline roles to the exact colors measured in both references (teal #56b5bc, cream #f4dda2, outline #25354a) as the family's working palette. Awaiting owner confirmation before production; sample work may use it."
+    },
+    {
+      "id": "palette_roles",
+      "project": "project",
+      "key": "palette_roles",
+      "status": "confirmed",
+      "value": [
+        "teal body",
+        "cream accent",
+        "dark outline"
+      ],
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner chose the agreed teal and cream palette (BRIEF.md item 3); the dark outline color is implied by the chosen outline treatment."
+    },
+    {
+      "id": "sampling",
+      "project": "project",
+      "key": "sa",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "nearest"
+      },
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner chose nearest-neighbor display (BRIEF.md item 6)."
+    },
+    {
+      "id": "scout_identity",
+      "project": "project",
+      "key": "scout_identity",
+      "status": "proposed",
+      "value": "same blocky creature as the reference seen from the side: block body with two ear posts set back, one cream eye and a muzzle at the front, short legs, a backpack on the back and a cream goggle strap running to the eye",
+      "sources": [
+        "reference"
+      ],
+      "rationale": "PIXL proposal for how the scout reads as a scout while matching the reference's forms; the owner named the role only."
+    },
+    {
+      "id": "view",
+      "project": "project",
+      "key": "vw",
+      "status": "confirmed",
+      "value": {
+        "$symbol": "side"
+      },
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Owner chose side view for a side-view game (BRIEF.md item 5)."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "family_plan_01.delivery.task",
+      "project": "project",
+      "phase": "delivery",
+      "state": "dropped",
+      "blockers": [
+        "task_prerequisite: family_plan_01.medic.task is dropped; it must be done",
+        "task_decision: family_plan_01.delivery.task needs an evidence-backed adoption decision",
+        "family_destination: destination_scout is proposed; confirm it before delivery",
+        "family_destination: destination_medic is proposed; confirm it before delivery",
+        "family_destination: destination_engine is unresolved; confirm it before delivery"
+      ],
+      "outputs": [
+        {
+          "id": "family_plan_01.delivery.output",
+          "name": "Character family delivery: scout and medic",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "family_plan_01.delivery.q.continuity",
+              "name": "continuity",
+              "check": "Viewed side by side at native scale and at 8x on a light and a dark background, the scout and medic share the same outline weight, ear-post placement, eye position, body height, muzzle and ground line (feet bottom on the same row), and differ only in their role equipment and cream markers.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.delivery.q.roles_distinct",
+              "name": "roles_distinct",
+              "check": "At native scale the two members are told apart at a glance by their equipment silhouettes and cream markers without reading their filenames.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.delivery.q.destination_display",
+              "name": "destination_display",
+              "check": "In the owner's named game project and engine, both delivered files load at their confirmed destination paths, display with nearest-neighbor sampling at the game's integer scale without blur or edge bleeding, and keep binary transparency.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "family_plan_01.medic.task",
+      "project": "project",
+      "phase": "production",
+      "state": "dropped",
+      "blockers": [
+        "task_decision: family_plan_01.medic.task needs an evidence-backed adoption decision",
+        "choice_unconfirmed: lighting (li) must be confirmed",
+        "choice_unconfirmed: palette_hex (pl) must be confirmed"
+      ],
+      "outputs": [
+        {
+          "id": "family_plan_01.medic.output",
+          "name": "Medic side-view sprite, 32x32, static pose",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "family_plan_01.medic.q.canvas_alpha",
+              "name": "canvas_alpha",
+              "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.medic.q.palette",
+              "name": "palette",
+              "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a (PIXL's proposed exact values for the owner's teal, cream and dark-outline roles).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.medic.q.outline",
+              "name": "outline",
+              "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.medic.q.side_view",
+              "name": "side_view",
+              "check": "The figure reads as seen from the side, facing the same screen direction as the scout baseline.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.medic.q.medic_read",
+              "name": "medic_read",
+              "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a medic distinct from the scout: a cream cross marker on the body side and a small satchel on the back stay separate and recognizable, while head, body, eye and feet keep the scout's placement.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_01.medic.q.style_match",
+              "name": "style_match",
+              "check": "Compared with reference.png and the scout baseline at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and the same blocky cluster scale and 2 px outline weight.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": [
+            {
+              "id": "medic_local_01",
+              "nominated": false,
+              "requirements": [
+                {
+                  "id": "family_plan_01.medic.q.canvas_alpha",
+                  "name": "canvas_alpha",
+                  "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                },
+                {
+                  "id": "family_plan_01.medic.q.palette",
+                  "name": "palette",
+                  "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a (PIXL's proposed exact values for the owner's teal, cream and dark-outline roles).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                },
+                {
+                  "id": "family_plan_01.medic.q.outline",
+                  "name": "outline",
+                  "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                },
+                {
+                  "id": "family_plan_01.medic.q.side_view",
+                  "name": "side_view",
+                  "check": "The figure reads as seen from the side, facing the same screen direction as the scout baseline.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                },
+                {
+                  "id": "family_plan_01.medic.q.medic_read",
+                  "name": "medic_read",
+                  "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a medic distinct from the scout: a cream cross marker on the body side and a small satchel on the back stay separate and recognizable, while head, body, eye and feet keep the scout's placement.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                },
+                {
+                  "id": "family_plan_01.medic.q.style_match",
+                  "name": "style_match",
+                  "check": "Compared with reference.png and the scout baseline at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and the same blocky cluster scale and 2 px outline weight.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "unperformed",
+                  "verdict": null,
+                  "reason": null,
+                  "reviewer": null,
+                  "evidence": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "family_plan_02.delivery.task",
+      "project": "project",
+      "phase": "delivery",
+      "state": "open",
+      "blockers": [
+        "task_prerequisite: family_plan_02.medic.task is open; it must be done",
+        "family_destination: destination_scout is proposed; confirm it before delivery",
+        "family_destination: destination_medic is proposed; confirm it before delivery",
+        "family_destination: destination_engine is unresolved; confirm it before delivery"
+      ],
+      "outputs": [
+        {
+          "id": "family_plan_02.delivery.output",
+          "name": "Character family delivery: scout and medic",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "family_plan_02.delivery.q.continuity",
+              "name": "continuity",
+              "check": "Viewed side by side at native scale and at 8x on a light and a dark background, the scout and medic share the same outline weight, ear-post placement, eye position, body height, muzzle and ground line (feet bottom on the same row), and differ only in their role equipment and cream markers.",
+              "domain": "continuity",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.delivery.q.roles_distinct",
+              "name": "roles_distinct",
+              "check": "At native scale the two members are told apart at a glance by their equipment silhouettes and cream markers without reading their filenames.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.delivery.q.destination_display",
+              "name": "destination_display",
+              "check": "In the owner's named game project and engine, both delivered files load at their confirmed destination paths, display with nearest-neighbor sampling at the game's integer scale without blur or edge bleeding, and keep binary transparency.",
+              "domain": "engine",
+              "mode": "live",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    },
+    {
+      "id": "family_plan_02.medic.task",
+      "project": "project",
+      "phase": "production",
+      "state": "open",
+      "blockers": [
+        "choice_unconfirmed: lighting (li) must be confirmed",
+        "choice_unconfirmed: palette_hex (pl) must be confirmed"
+      ],
+      "outputs": [
+        {
+          "id": "family_plan_02.medic.output",
+          "name": "Medic side-view sprite, 32x32, static pose",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "family_plan_02.medic.q.canvas_alpha",
+              "name": "canvas_alpha",
+              "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.medic.q.palette",
+              "name": "palette",
+              "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a (PIXL's proposed exact values for the owner's teal, cream and dark-outline roles).",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.medic.q.outline",
+              "name": "outline",
+              "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.medic.q.side_view",
+              "name": "side_view",
+              "check": "The figure reads as seen from the side, facing the same screen direction as the scout baseline.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.medic.q.medic_read",
+              "name": "medic_read",
+              "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a medic distinct from the scout: a cream cross marker on the body side and a small satchel on the back stay separate and recognizable, while head, body, eye and feet keep the scout's placement.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "family_plan_02.medic.q.style_match",
+              "name": "style_match",
+              "check": "Compared with reference.png and the scout baseline at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and the same blocky cluster scale and 2 px outline weight.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": [
+            {
+              "id": "medic_local_02",
+              "nominated": false,
+              "requirements": [
+                {
+                  "id": "family_plan_02.medic.q.canvas_alpha",
+                  "name": "canvas_alpha",
+                  "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.0",
+                  "reason": "Measured 32x32, 0 fractional-alpha pixels (packet measurement for medic_local_02).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.0"
+                  ]
+                },
+                {
+                  "id": "family_plan_02.medic.q.palette",
+                  "name": "palette",
+                  "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a (PIXL's proposed exact values for the owner's teal, cream and dark-outline roles).",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.1",
+                  "reason": "Measured 3 visible colors, 0 pixels outside #56b5bc/#f4dda2/#25354a.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.1"
+                  ]
+                },
+                {
+                  "id": "family_plan_02.medic.q.outline",
+                  "name": "outline",
+                  "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.2",
+                  "reason": "Views 0-4: 2 px dark outline encloses the whole silhouette including satchel, muzzle and legs; no teal or cream touches transparency; one opaque component.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.2"
+                  ]
+                },
+                {
+                  "id": "family_plan_02.medic.q.side_view",
+                  "name": "side_view",
+                  "check": "The figure reads as seen from the side, facing the same screen direction as the scout baseline.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.3",
+                  "reason": "Views 1-4 against 10-14: profile facing screen right with the same ear, eye and muzzle arrangement as the scout baseline.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.3"
+                  ]
+                },
+                {
+                  "id": "family_plan_02.medic.q.medic_read",
+                  "name": "medic_read",
+                  "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a medic distinct from the scout: a cream cross marker on the body side and a small satchel on the back stay separate and recognizable, while head, body, eye and feet keep the scout's placement.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.4",
+                  "reason": "Views 1-4: the cream cross is the dominant marker and reads as a medical cross at 1x and 8x on white and dark; the small back satchel is a separate bump; head, body, eye and feet sit exactly where the scout's do (views 11-12). At 1x the satchel reads only as a generic back bump; the cross carries the role.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.4"
+                  ]
+                },
+                {
+                  "id": "family_plan_02.medic.q.style_match",
+                  "name": "style_match",
+                  "check": "Compared with reference.png and the scout baseline at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and the same blocky cluster scale and 2 px outline weight.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "medic_review_01.verdict.5",
+                  "reason": "Views 2/4 against 7/9 and 12/14: same three flat colors, hard edges, 2 px outline, 4 px posts, 2x4 eye; no ramps or anti-aliasing.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "medic_review_01.evidence.5"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "selection_bindings": [
+        {
+          "input": "family_plan_02.medic.selection",
+          "snapshot": ".pixl/characters/production-plans/b38b97dbff371f286acc5ab24f5d1d0edf38b724dc992d5d5648eb9600b1936b.json",
+          "asset_id": "character.medic",
+          "binding": "pixl.plar.selection/1",
+          "plar_path": "plar.txt",
+          "requirements_hash": "5ca0f63e8d02ffd8c179d5f6fb083d438ec24f3593463b300ace5e847fe2cbaf",
+          "current_requirements_hash": "5ca0f63e8d02ffd8c179d5f6fb083d438ec24f3593463b300ace5e847fe2cbaf",
+          "selected_for_asset": true,
+          "linked_task": "family_plan_02.medic.task",
+          "linked_store": ".pixl/characters",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "id": "scout_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "done",
+      "blockers": [],
+      "outputs": [
+        {
+          "id": "scout_sprite",
+          "name": "Scout side-view sprite, 32x32, static pose",
+          "candidate": "scout_local_01",
+          "requirements": [
+            {
+              "id": "q_canvas_alpha",
+              "name": "canvas and binary alpha",
+              "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.0",
+              "reason": "Measured 32x32, 0 fractional-alpha pixels (packet measurement for scout_local_01).",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.0"
+              ]
+            },
+            {
+              "id": "q_palette",
+              "name": "working palette membership",
+              "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a. This fixes the owner's teal, cream and dark-outline roles to exact values for this sample; the exact values are PIXL's proposal.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.1",
+              "reason": "Measured 3 visible colors, 0 pixels outside #56b5bc/#f4dda2/#25354a.",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.1"
+              ]
+            },
+            {
+              "id": "q_outline",
+              "name": "continuous dark outline",
+              "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.2",
+              "reason": "Views 0-4: a 2 px dark outline encloses the whole silhouette including backpack, muzzle and both legs; no teal or cream pixel touches transparency; one opaque component.",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.2"
+              ]
+            },
+            {
+              "id": "q_side_view",
+              "name": "side view",
+              "check": "The figure reads as seen from the side, facing one screen direction, rather than the front-facing pose of the reference.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.3",
+              "reason": "Views 1-4 versus 6-9: ears set back, a single eye and a muzzle at the right edge give a profile facing screen right, clearly distinct from the reference's symmetric frontal pose.",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.3"
+              ]
+            },
+            {
+              "id": "q_scout_read",
+              "name": "scout readability",
+              "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a scout character: head, body, eye, feet on a common ground line, and the scout's backpack and goggle-strap marks stay separate and recognizable.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.4",
+              "reason": "Views 1-4: head/body block, eye, two feet on row 29, backpack on the back and the cream strap to the eye are each separate and recognizable at 1x and 8x on white and dark. The role cue is equipment-based (pack plus visor band) and is modest at 1x; it is recognizable, not strong.",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.4"
+              ]
+            },
+            {
+              "id": "q_style_match",
+              "name": "reference style match",
+              "check": "Compared with reference.png at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and a similar blocky cluster scale and outline weight.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "pass",
+              "verdict": "scout_review_01.verdict.5",
+              "reason": "Views 2/4 against 7/9: same three flat colors, hard edges, 2 px outline weight, 4 px solid posts and 2x4 cream eye; no anti-aliasing or ramps.",
+              "reviewer": "actor",
+              "evidence": [
+                "scout_review_01.evidence.5"
+              ]
+            }
+          ],
+          "candidates": [
+            {
+              "id": "scout_local_01",
+              "nominated": true,
+              "requirements": [
+                {
+                  "id": "q_canvas_alpha",
+                  "name": "canvas and binary alpha",
+                  "check": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.0",
+                  "reason": "Measured 32x32, 0 fractional-alpha pixels (packet measurement for scout_local_01).",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.0"
+                  ]
+                },
+                {
+                  "id": "q_palette",
+                  "name": "working palette membership",
+                  "check": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a. This fixes the owner's teal, cream and dark-outline roles to exact values for this sample; the exact values are PIXL's proposal.",
+                  "domain": "mechanical",
+                  "mode": "local",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.1",
+                  "reason": "Measured 3 visible colors, 0 pixels outside #56b5bc/#f4dda2/#25354a.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.1"
+                  ]
+                },
+                {
+                  "id": "q_outline",
+                  "name": "continuous dark outline",
+                  "check": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.2",
+                  "reason": "Views 0-4: a 2 px dark outline encloses the whole silhouette including backpack, muzzle and both legs; no teal or cream pixel touches transparency; one opaque component.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.2"
+                  ]
+                },
+                {
+                  "id": "q_side_view",
+                  "name": "side view",
+                  "check": "The figure reads as seen from the side, facing one screen direction, rather than the front-facing pose of the reference.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.3",
+                  "reason": "Views 1-4 versus 6-9: ears set back, a single eye and a muzzle at the right edge give a profile facing screen right, clearly distinct from the reference's symmetric frontal pose.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.3"
+                  ]
+                },
+                {
+                  "id": "q_scout_read",
+                  "name": "scout readability",
+                  "check": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a scout character: head, body, eye, feet on a common ground line, and the scout's backpack and goggle-strap marks stay separate and recognizable.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.4",
+                  "reason": "Views 1-4: head/body block, eye, two feet on row 29, backpack on the back and the cream strap to the eye are each separate and recognizable at 1x and 8x on white and dark. The role cue is equipment-based (pack plus visor band) and is modest at 1x; it is recognizable, not strong.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.4"
+                  ]
+                },
+                {
+                  "id": "q_style_match",
+                  "name": "reference style match",
+                  "check": "Compared with reference.png at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and a similar blocky cluster scale and outline weight.",
+                  "domain": "visual",
+                  "mode": "visual",
+                  "status": "pass",
+                  "verdict": "scout_review_01.verdict.5",
+                  "reason": "Views 2/4 against 7/9: same three flat colors, hard edges, 2 px outline weight, 4 px solid posts and 2x4 cream eye; no anti-aliasing or ramps.",
+                  "reviewer": "actor",
+                  "evidence": [
+                    "scout_review_01.evidence.5"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "selection_bindings": []
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 14,
+  "hash": "8362097a45b3a1a43c831db21f002bc7a94a51651c559ae5180d2adf1e153ab6",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

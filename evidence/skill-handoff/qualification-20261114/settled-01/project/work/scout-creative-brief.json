@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "kind": "creative_brief",
+  "status": "not_executable",
+  "why_not_executable": "No PixelLab provider is connected in this session, so no tool declaration or input schema was discovered. Translate this brief into the actual discovered tool's arguments before preparing a durable job; do not dispatch this file.",
+  "asset_id": "character.scout",
+  "store": ".pixl/characters",
+  "task": "scout_sample",
+  "output": "scout",
+  "contract": {
+    "size": [32, 32],
+    "view": "side",
+    "sampling": "nearest",
+    "alpha": "binary",
+    "palette": ["#25354a", "#56b5bc", "#f4dda2"],
+    "outline": "continuous dark outline #25354a around the whole figure, as in reference.png"
+  },
+  "subject": "A scout character for a side-view game, drawn in profile facing right, standing on a single ground line.",
+  "design_proposal": "Lighter build with a slight forward lean, a hood or cap and a small pack on the back. Teal body fill, cream face and strap accents, dark value only for the outer outline and interior separations. Flat fills, no shading ramps, no anti-aliasing.",
+  "reference_roles": [
+    {"path": "reference.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7", "role": "style", "preserve": "Continuous dark outline, flat teal body with cream features, binary edges. Not the silhouette: the block figure is not the scout."},
+    {"path": "reference-b.png", "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a", "role": "palette", "preserve": "Teal #56b5bc and cream #f4dda2 as the two fill colors. Its missing outline is the rejected alternative; do not copy that."}
+  ],
+  "prompt_draft": "32x32 pixel art, side view, right-facing scout character standing on the ground, hooded with a small backpack, flat teal (#56b5bc) body, cream (#f4dda2) face and strap highlights, continuous dark (#25354a) outline, exactly three colors, transparent background, no anti-aliasing, no shading gradients.",
+  "negative_draft": "no outline-free edges, no extra colors, no gradients, no anti-aliased or semi-transparent pixels, no front or three-quarter view",
+  "provider_mapping_todo": [
+    "Discover the connected PixelLab tool that accepts a 32x32 canvas, a side/profile view and style reference images.",
+    "Carry reference.png as a style reference through the tool's supported image input, not as a filename in text.",
+    "Confirm the tool can request a transparent background; binary alpha is checked locally afterwards.",
+    "If the tool cannot restrict output to three colors, keep palette membership as a local post-check and plan a palette snap before review."
+  ]
+}

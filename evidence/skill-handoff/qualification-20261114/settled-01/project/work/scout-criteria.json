@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "scope": "First scout candidate as the representative sample of the teal and cream side-view character family; the medic and family continuity are reviewed in a later connected plan.",
+  "outputs": [
+    {
+      "id": "scout",
+      "name": "Scout side-view sprite (representative sample)",
+      "kind": "sprite",
+      "contract": {
+        "size": [32, 32],
+        "palette": ["#25354a", "#56b5bc", "#f4dda2"],
+        "view": "side",
+        "sampling": "nearest",
+        "alpha": "binary",
+        "intent": "Right-facing side-view scout with a continuous #25354a outline, flat teal body and cream features; owner-confirmed canvas, palette, alpha, view and sampling, expert-proposed facing and scout landmarks."
+      },
+      "criteria": [
+        {
+          "id": "canvas",
+          "check": "The candidate file is a single-frame 32 by 32 pixel PNG.",
+          "domain": "mechanical",
+          "mode": "local",
+          "basis": "Owner chose a 32 by 32 canvas.",
+          "scope": "This candidate file",
+          "authority": "requirement",
+          "sources": [{"path": "BRIEF.md", "locator": "Canvas", "lines": [11, 11]}]
+        },
+        {
+          "id": "binary-alpha",
+          "check": "Every pixel has alpha 0 or 255; no fractional alpha pixels.",
+          "domain": "mechanical",
+          "mode": "local",
+          "basis": "Owner chose binary transparency.",
+          "scope": "This candidate file",
+          "authority": "requirement",
+          "sources": [{"path": "BRIEF.md", "locator": "Transparency", "lines": [13, 13]}]
+        },
+        {
+          "id": "palette",
+          "check": "Every opaque pixel is exactly one of #25354a, #56b5bc or #f4dda2.",
+          "domain": "mechanical",
+          "mode": "local",
+          "basis": "Owner confirmed the teal and cream palette and the reference's dark outline; exact values are measured from the references.",
+          "scope": "This candidate file",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Palette and outline", "lines": [10, 12]},
+            {"path": "BRIEF.md", "locator": "Measured reference colors", "lines": [18, 21]}
+          ]
+        },
+        {
+          "id": "outline",
+          "check": "Viewed at native scale and at integer enlargement, the figure's outer silhouette is bounded by a continuous #25354a outline with the same edge treatment as reference.png; no teal or cream pixel touches transparency.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner chose the reference's dark outline; reference.png shows the treatment.",
+          "scope": "This candidate at native and enlarged views",
+          "authority": "requirement",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Outline", "lines": [10, 10]},
+            {"path": "reference.png", "locator": "Outlined block figure"}
+          ]
+        },
+        {
+          "id": "side-view",
+          "check": "The character is drawn in profile for a side-view game, standing on a single ground line inside the canvas with its feet and head fully within the 32x32 bounds.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Owner chose side view for a side-view game.",
+          "scope": "This candidate at native and enlarged views",
+          "authority": "requirement",
+          "sources": [{"path": "BRIEF.md", "locator": "View", "lines": [14, 14]}]
+        },
+        {
+          "id": "scout-readability",
+          "check": "At native 32x32 on a light and a dark background the sprite reads as a scout character: at least one scout landmark (hood or cap, or pack) is distinguishable in silhouette or cream accent.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Expert proposal for a readable scout role; the owner named the role, PIXL proposed the landmarks.",
+          "scope": "This sample candidate; the landmark list is a scoped proposal, not an owner rule",
+          "authority": "proposal",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Family members", "lines": [5, 5]},
+            {"path": "BRIEF.md", "locator": "Scout identity proposal", "lines": [24, 24]}
+          ]
+        },
+        {
+          "id": "color-roles",
+          "check": "Teal and cream play the same roles as in the references: teal is the main body fill and cream marks the face or accents, with the dark value used only for the outline and interior separations.",
+          "domain": "visual",
+          "mode": "visual",
+          "basis": "Expert continuity choice derived from the observed color roles in both references.",
+          "scope": "This sample candidate; carried into family continuity later",
+          "authority": "proposal",
+          "sources": [
+            {"path": "BRIEF.md", "locator": "Reference observations", "lines": [18, 20]},
+            {"path": "reference.png", "locator": "Teal body, cream eyes, dark outline"},
+            {"path": "reference-b.png", "locator": "Teal body, cream eyes"}
+          ]
+        }
+      ]
+    }
+  ]
+}

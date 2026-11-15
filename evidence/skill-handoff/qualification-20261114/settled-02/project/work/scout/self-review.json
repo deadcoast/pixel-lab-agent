@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "reviewer_role": "specialist self-review (PIXL); no independent caller agent was available in this session",
+  "independent_comparison": "unperformed",
+  "reviewed_packet": {"path": "work/scout/request-review.json"},
+  "reviewed_criteria": {"path": "work/scout/candidate-plan.json", "sha256": "89eab25ff741d427f4a79f1610d66d97250f206099664c010764589324d38525"},
+  "runtime_evidence_report": "pixl_request_review was not run: the runtime resolves source evidence only for packets whose request is exact provider_arguments, and this packet carries a creative brief because no operation was discovered. Source locators were checked by reading BRIEF.md lines directly (see line_checks).",
+  "line_checks": [
+    {"criterion": "size", "lines": [12, 12], "text_starts": "2. Canvas: 32 by 32 pixels per character."},
+    {"criterion": "alpha", "lines": [14, 14], "text_starts": "4. Transparency: binary"},
+    {"criterion": "palette", "lines": [13, 13], "text_starts": "3. Palette: the agreed teal and cream palette."},
+    {"criterion": "palette", "lines": [32, 36], "text_starts": "- `reference.png` uses three opaque colors ... The exact hex values above are the measured reference colors."},
+    {"criterion": "outline", "lines": [11, 11], "text_starts": "1. Outline: the dark outline of `reference.png`"},
+    {"criterion": "style", "lines": [11, 15], "text_starts": "1. Outline ... 5. View: side view."},
+    {"criterion": "style", "lines": [20, 20], "text_starts": "- `reference.png`: style reference"},
+    {"criterion": "identity", "lines": [7, 7], "text_starts": "Make a character family for a side-view game using PIXL. The family has two members: a scout and a medic."}
+  ],
+  "criterion_comparisons": [
+    {"criterion": "size", "source_obligation": "BRIEF.md line 12: 32 by 32 canvas.", "authority_basis": "owner requirement", "scope": "candidate file", "literal_delta": "Adds 'single frame'; a single still sprite is the assignment's deliverable, so no valid alternative is excluded.", "discriminating_alternative": "A 32 by 64 two-frame strip would fail; the brief asks for one character sprite, so that is correct.", "disposition": "keep"},
+    {"criterion": "alpha", "source_obligation": "BRIEF.md line 14: binary transparency.", "authority_basis": "owner requirement", "scope": "candidate file", "literal_delta": "None.", "discriminating_alternative": "A soft-edged sprite with alpha 128 pixels fails; the owner excluded it.", "disposition": "keep"},
+    {"criterion": "palette", "source_obligation": "BRIEF.md line 13 names the palette by role; lines 32 to 36 record the measured hex values as observations.", "authority_basis": "specialist proposal, labelled as such", "scope": "this sample only", "literal_delta": "Narrows the role palette to three exact hex values and excludes any shade.", "discriminating_alternative": "A sprite with a second, darker teal for a shadow keeps the owner's teal-and-cream roles but fails this check. That is why the check is a proposal owned by the specialist, not an owner rule.", "disposition": "keep as proposal; owner may widen the set after seeing the sample"},
+    {"criterion": "outline", "source_obligation": "BRIEF.md line 11: the dark outline of reference.png.", "authority_basis": "owner requirement", "scope": "candidate compared with both references", "literal_delta": "Adds 'continuous' and 'no un-outlined edge runs'. reference.png has a closed outline around the whole figure and reference-b.png is the explicitly not-chosen un-outlined version, so continuity is the observed meaning of the chosen treatment.", "discriminating_alternative": "A selectively outlined sprite (outline only on the lower edges) keeps a dark outline colour but fails; the brief's wording 'the reference's dark outline' points at the continuous treatment, so this is kept, with the clause attributed to the reference observation.", "disposition": "keep; the continuity clause rests on the reference, which the owner chose"},
+    {"criterion": "style", "source_obligation": "BRIEF.md lines 11 to 15 and 20: outline, palette roles, side view and reference.png as style reference.", "authority_basis": "owner requirement with an expert reading of 'blocky cluster scale'", "scope": "candidate compared with reference.png", "literal_delta": "Adds 'blocky cluster scale'.", "discriminating_alternative": "A finely detailed scout with one-pixel texture everywhere keeps the colours and outline but would not sit beside the reference as one family; style matching is what the reference is for.", "disposition": "keep; 'blocky cluster scale' is the visual reviewer's reading of matching the reference, not a numeric rule"},
+    {"criterion": "identity", "source_obligation": "BRIEF.md line 7: a scout.", "authority_basis": "specialist proposal for the landmarks", "scope": "this candidate", "literal_delta": "Adds 'light, mobile' and 'chosen scouting landmarks'; the specific landmarks live in the creative brief as proposals.", "discriminating_alternative": "A heavily armoured scout would pass the owner's wording but fail the specialist reading; therefore the criterion is marked proposal and may be revised.", "disposition": "keep as proposal"}
+  ],
+  "findings": [
+    "Every owner choice (outline, canvas, palette roles, binary alpha, side view, nearest display) is present in the contract, the prompt draft and at least one criterion, except nearest-neighbor display, which is a destination setting and is retained on the family.characters delivery checks.",
+    "No criterion requires a dependent asset (medic, family sheet, engine) to exist before the sample can pass.",
+    "No executable request exists; the creative brief must be translated against the live tool schema before dispatch, with reference.png bound through a supported image input."
+  ],
+  "status": "needs_input",
+  "next_action": "Discover the official PixelLab operation in a provider-connected session, write provider_arguments and connection.json, re-point this packet to them, run pixl_request_review, then pixl_plar_prepare for character.scout."
+}

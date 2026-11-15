@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Side-view character family: scout and medic",
+    "brief": "Two side-view game characters (scout, medic) in the style of reference.png / reference-b.png. The references disagree about outline treatment and the final canvas size is not chosen. Isolated PIXL evaluation: no generation provider assigned."
+  },
+  "coverage": {
+    "included": [
+      "BRIEF.md owner instructions and reference observations",
+      "reference.png and reference-b.png inspected at native scale and 12x"
+    ],
+    "excluded": [],
+    "unresolved": [
+      "No game code, renderer, scene or destination directory was supplied; consumers and import behavior are unknown.",
+      "No generation provider is configured in this session; provider schema discovery and generation are unavailable."
+    ]
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "BRIEF.md",
+      "sha256": "6c41188fac651673728792049e18197c4549e4b9d7eeb5903029d89c38cbec65"
+    },
+    {
+      "id": "ref_a",
+      "path": "reference.png",
+      "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7"
+    },
+    {
+      "id": "ref_b",
+      "path": "reference-b.png",
+      "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a"
+    }
+  ],
+  "assets": [
+    {
+      "id": "character.scout",
+      "kind": "character-sprite",
+      "purpose": "Scout member of the side-view character family; serves as the family's representative style sample",
+      "status": "in_progress",
+      "consumers": [],
+      "existing": [],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Preserve the flat teal body fill, cream eye accent and simple rounded forms. This file shows the continuous dark outline alternative; apply its outline only if the owner chooses that treatment."
+        },
+        {
+          "source": "ref_b",
+          "role": "style",
+          "instructions": "Same construction as reference.png without any outline. Apply the outline-free edge only if the owner chooses that treatment."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "projection",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The game is side-view (owner instruction 1)."
+        },
+        {
+          "property": "role",
+          "value": "scout",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Named family member (owner instruction 2)."
+        },
+        {
+          "property": "canvas",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The owner has not chosen the final canvas size (owner instruction 5)."
+        },
+        {
+          "property": "edge_treatment",
+          "value": {
+            "alternatives": [
+              "continuous dark outline (reference.png)",
+              "no outline (reference-b.png)"
+            ]
+          },
+          "authority": "unknown",
+          "sources": [
+            "brief",
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "The references disagree and the owner has not chosen (owner instruction 4)."
+        },
+        {
+          "property": "style_kinship",
+          "value": "flat fill color roles (teal body family, cream eye accent), simple rounded forms",
+          "authority": "requirement",
+          "sources": [
+            "brief",
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "The references were supplied as style references; kinship is required, exact hex values and the mascot silhouette are not."
+        },
+        {
+          "property": "reference_canvas",
+          "value": [
+            32,
+            32
+          ],
+          "authority": "observation",
+          "sources": [
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Measured reference size; visible silhouette 19x26. Not an adopted canvas."
+        },
+        {
+          "property": "alpha",
+          "value": "binary",
+          "authority": "observation",
+          "sources": [
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Measured: no fractional alpha in either reference. Working assumption for the sample, not an owner requirement."
+        },
+        {
+          "property": "palette_roles",
+          "value": {
+            "body": "#56B5BC",
+            "outline": "#25354A",
+            "eyes": "#F4DDA2"
+          },
+          "authority": "observation",
+          "sources": [
+            "ref_a",
+            "ref_b"
+          ],
+          "reason": "Measured color roles for kinship review; not an exclusive palette."
+        },
+        {
+          "property": "animation_set",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "No poses or cycles specified; first sample is one static side-view pose."
+        },
+        {
+          "property": "destination",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Engine, paths, display scale and pivots not supplied."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/scout.png",
+        "checks": [
+          "Measure canvas and alpha against the confirmed choices.",
+          "Inspect native scale and integer zoom for side-view and scout readability.",
+          "Confirm the resolved edge treatment is applied consistently around the silhouette.",
+          "Compare beside both references for color-role and form kinship.",
+          "Engine import: unavailable until a destination is supplied."
+        ]
+      },
+      "depends_on": [],
+      "questions": [
+        "Which outline treatment: continuous dark outline (reference.png), no outline (reference-b.png), or another treatment?",
+        "What is the final per-frame canvas size?"
+      ],
+      "next": "Obtain the owner's outline and canvas choices, then record a concrete C contract on f_scout_sample and prepare the first scout request once a PixelLab connection exists.",
+      "production": {
+        "store": ".pixl/characters",
+        "task": "t_scout_sample",
+        "output": "f_scout_sample"
+      },
+      "evidence": [
+        {
+          "path": "work/inspect/reference-x12.png",
+          "note": "reference.png enlarged 12x (nearest) for visual inspection"
+        },
+        {
+          "path": "work/inspect/reference-b-x12.png",
+          "note": "reference-b.png enlarged 12x (nearest) for visual inspection"
+        }
+      ]
+    },
+    {
+      "id": "character.medic",
+      "kind": "character-sprite",
+      "purpose": "Medic member of the side-view character family, produced against the accepted scout sample baseline",
+      "status": "todo",
+      "consumers": [],
+      "existing": [],
+      "references": [
+        {
+          "source": "ref_a",
+          "role": "style",
+          "instructions": "Same style basis as character.scout; the accepted scout sample becomes the primary baseline."
+        },
+        {
+          "source": "ref_b",
+          "role": "style",
+          "instructions": "Same style basis as character.scout; the accepted scout sample becomes the primary baseline."
+        }
+      ],
+      "requirements": [
+        {
+          "property": "projection",
+          "value": "side",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "The game is side-view (owner instruction 1)."
+        },
+        {
+          "property": "role",
+          "value": "medic",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Named family member (owner instruction 2)."
+        },
+        {
+          "property": "family_baseline",
+          "value": "accepted character.scout sample candidate",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Family members must share the scout's canvas, edge treatment and color-role construction."
+        },
+        {
+          "property": "role_distinction",
+          "value": "distinguishable from the scout at native scale by medic landmarks",
+          "authority": "proposal",
+          "sources": [],
+          "reason": "PIXL proposal: a role marker (for example a cross or pack) is the usual way to separate two same-body family members; the exact marker is open."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/medic.png",
+        "checks": [
+          "Measure canvas and alpha against the scout baseline.",
+          "Inspect native scale and integer zoom for medic readability and distinction from the scout.",
+          "Compare beside the scout sample for edge treatment, volume and color-role continuity.",
+          "Engine import: unavailable until a destination is supplied."
+        ]
+      },
+      "depends_on": [
+        "character.scout"
+      ],
+      "questions": [
+        "Which medic landmark should distinguish the role?"
+      ],
+      "next": "After the scout sample is accepted, author the connected production plan (pixl_production_plan) with the medic stage and the family delivery, binding the scout candidate as baseline.",
+      "evidence": []
+    },
+    {
+      "id": "character.family",
+      "kind": "delivery-package",
+      "purpose": "Collective delivery of the scout and medic with continuity review",
+      "status": "todo",
+      "consumers": [],
+      "existing": [],
+      "requirements": [
+        {
+          "property": "continuity",
+          "value": "shared canvas, ground line, body volume, edge treatment and color-role usage across scout and medic",
+          "authority": "requirement",
+          "sources": [
+            "brief"
+          ],
+          "reason": "A family must read as one set in the side-view game."
+        },
+        {
+          "property": "destination",
+          "value": null,
+          "authority": "unknown",
+          "sources": [
+            "brief"
+          ],
+          "reason": "Destination choices must be confirmed before delivery activation."
+        }
+      ],
+      "delivery": {
+        "path": "assets/characters/",
+        "checks": [
+          "View scout and medic side by side at native scale and integer zoom.",
+          "Engine import of both sprites: unavailable until a destination is supplied."
+        ]
+      },
+      "depends_on": [
+        "character.scout",
+        "character.medic"
+      ],
+      "questions": [
+        "Target engine, destination paths, display scale and pivots?"
+      ],
+      "next": "Authored with the medic stage through pixl_production_plan once the scout baseline is accepted.",
+      "evidence": []
+    }
+  ]
+}

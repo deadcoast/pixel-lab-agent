@@ -1,0 +1,1040 @@
+{
+  "view": "authoring",
+  "path": ".pixl/characters/state.px",
+  "focus": "family_plan_01.delivery.task",
+  "hash": "8362097a45b3a1a43c831db21f002bc7a94a51651c559ae5180d2adf1e153ab6",
+  "revision": 14,
+  "scope": "Connected plans and enclosing families; direct prerequisites and current nominees. Criteria cover the focused plan/tasks and enclosing delivery, not reused members' historic acceptance. No historical verdicts, proof receipts, embedded artifact metadata or provider payloads. Not a complete context packet or acceptance judgment. Source class does not establish requirement authority.",
+  "complete_context": {
+    "tool": "pixl_context",
+    "arguments": {
+      "path": ".pixl/characters/state.px",
+      "focus": "family_plan_01.delivery.task"
+    }
+  },
+  "projects": [
+    {
+      "id": "project",
+      "kind": "P",
+      "record_sha256": "96ecfad02c8cf9ea2ce0a1fcf7dad65e75419019f034a035c87fa82752f10271",
+      "fields": {
+        "br": "Two-member side-view character family (scout, medic) on 32x32 canvases with the reference's dark outline, the agreed teal and cream palette, binary transparency and nearest-neighbor display. Owner instruction retained in BRIEF.md.",
+        "nm": "Side-view character family: scout and medic",
+        "ow": {
+          "$ref": "user"
+        }
+      },
+      "omitted_fields": [
+        "sc",
+        "in"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "family_plan_01.delivery.task",
+      "kind": "T",
+      "record_sha256": "b0e47d45454ed9e5057417501e102034858188de42405d2a32391812302bedf2",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [
+          {
+            "$ref": "scout_sample"
+          },
+          {
+            "$ref": "family_plan_01.medic.task"
+          }
+        ],
+        "ip": [
+          {
+            "$ref": "family_plan_01.plan"
+          },
+          {
+            "$ref": "scout_local_01"
+          }
+        ],
+        "kn": [],
+        "nm": "Character family delivery: scout and medic",
+        "op": [
+          {
+            "$ref": "family_plan_01.delivery.output"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "delivery"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "dropped"
+        }
+      },
+      "omitted_fields": [
+        "vr"
+      ]
+    },
+    {
+      "id": "family_plan_01.medic.task",
+      "kind": "T",
+      "record_sha256": "069fbb5c15ac246b94e24f67c8b4044afc631ca5c481a2f25b10bceac4e590a7",
+      "fields": {
+        "ca": [],
+        "dc": [],
+        "dp": [
+          {
+            "$ref": "scout_sample"
+          }
+        ],
+        "ip": [
+          {
+            "$ref": "family_plan_01.plan"
+          },
+          {
+            "$ref": "scout_local_01"
+          }
+        ],
+        "kn": [],
+        "nm": "Medic side-view sprite, 32x32, static pose",
+        "op": [
+          {
+            "$ref": "family_plan_01.medic.output"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "production"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "dropped"
+        }
+      },
+      "omitted_fields": [
+        "vr"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "id": "scout_sample",
+      "kind": "T",
+      "record_sha256": "9f159fb033de221386bba0d52f24773d7317d2bd8291fbf359868c2641312cd7",
+      "fields": {
+        "ca": [
+          {
+            "$ref": "scout_local_01"
+          }
+        ],
+        "dc": [],
+        "dp": [],
+        "ip": [],
+        "kn": [],
+        "nm": "Representative sample: scout side-view sprite",
+        "op": [
+          {
+            "$ref": "scout_sprite"
+          }
+        ],
+        "ow": {
+          "$ref": "actor"
+        },
+        "ph": {
+          "$symbol": "sample"
+        },
+        "pr": {
+          "$ref": "project"
+        },
+        "st": {
+          "$symbol": "done"
+        }
+      },
+      "omitted_fields": [
+        "vr"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "id": "family_plan_01.delivery.output",
+      "kind": "F",
+      "record_sha256": "fd497a8ad72d198089dab5e929acb5348449fbe13ab4603a5b84f6cca4921659",
+      "fields": {
+        "bs": {
+          "$ref": "scout_local_01"
+        },
+        "ds": [
+          {
+            "$ref": "destination_scout"
+          },
+          {
+            "$ref": "destination_medic"
+          },
+          {
+            "$ref": "destination_engine"
+          }
+        ],
+        "kd": {
+          "$symbol": "report"
+        },
+        "mb": [
+          {
+            "$ref": "scout_sprite"
+          },
+          {
+            "$ref": "family_plan_01.medic.output"
+          }
+        ],
+        "nm": "Character family delivery: scout and medic",
+        "rq": [
+          {
+            "$ref": "family_plan_01.delivery.q.continuity"
+          },
+          {
+            "$ref": "family_plan_01.delivery.q.roles_distinct"
+          },
+          {
+            "$ref": "family_plan_01.delivery.q.destination_display"
+          }
+        ],
+        "tk": {
+          "$ref": "family_plan_01.delivery.task"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.output",
+      "kind": "F",
+      "record_sha256": "a45afaefe881364a4db11fc5b3fc82f0bde92768810fb06998e6a24bd0d8473e",
+      "fields": {
+        "bs": {
+          "$ref": "scout_local_01"
+        },
+        "ct": {
+          "$ref": "family_contract"
+        },
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Medic side-view sprite, 32x32, static pose",
+        "rq": [
+          {
+            "$ref": "family_plan_01.medic.q.canvas_alpha"
+          },
+          {
+            "$ref": "family_plan_01.medic.q.palette"
+          },
+          {
+            "$ref": "family_plan_01.medic.q.outline"
+          },
+          {
+            "$ref": "family_plan_01.medic.q.side_view"
+          },
+          {
+            "$ref": "family_plan_01.medic.q.medic_read"
+          },
+          {
+            "$ref": "family_plan_01.medic.q.style_match"
+          }
+        ],
+        "tk": {
+          "$ref": "family_plan_01.medic.task"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "scout_sprite",
+      "kind": "F",
+      "record_sha256": "b0ab5e8b292a4ea1567cefb831d92bff13c8069ec6c6ac234f076948757b6285",
+      "fields": {
+        "ct": {
+          "$ref": "family_contract"
+        },
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Scout side-view sprite, 32x32, static pose",
+        "rq": [
+          {
+            "$ref": "q_canvas_alpha"
+          },
+          {
+            "$ref": "q_palette"
+          },
+          {
+            "$ref": "q_outline"
+          },
+          {
+            "$ref": "q_side_view"
+          },
+          {
+            "$ref": "q_scout_read"
+          },
+          {
+            "$ref": "q_style_match"
+          }
+        ],
+        "tk": {
+          "$ref": "scout_sample"
+        }
+      },
+      "omitted_fields": []
+    }
+  ],
+  "contracts": [
+    {
+      "id": "family_contract",
+      "kind": "C",
+      "record_sha256": "3f8ea5633c49451834b6b72676bb9d936f5fb3a3581ec924989b64b1d0e2b46d",
+      "fields": {
+        "al": {
+          "$symbol": "binary"
+        },
+        "ch": [
+          {
+            "$ref": "canvas"
+          },
+          {
+            "$ref": "outline"
+          },
+          {
+            "$ref": "palette_roles"
+          },
+          {
+            "$ref": "palette_hex"
+          },
+          {
+            "$ref": "alpha"
+          },
+          {
+            "$ref": "view"
+          },
+          {
+            "$ref": "sampling"
+          },
+          {
+            "$ref": "lighting"
+          }
+        ],
+        "li": "flat fill: no shading ramps, no anti-aliasing",
+        "nm": "Family side-view sprite contract (sample interpretation)",
+        "pl": [
+          "#56b5bc",
+          "#f4dda2",
+          "#25354a"
+        ],
+        "px": [
+          32,
+          32
+        ],
+        "sa": {
+          "$symbol": "nearest"
+        },
+        "vw": {
+          "$symbol": "side"
+        }
+      },
+      "omitted_fields": []
+    }
+  ],
+  "choices": [
+    {
+      "id": "alpha",
+      "kind": "I",
+      "record_sha256": "0e5a32e0425cbc59caddc578767f5c7021e1b2409d50f3896793de51e3d1ff2a",
+      "fields": {
+        "ky": "al",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": {
+          "$symbol": "binary"
+        },
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose binary transparency (BRIEF.md item 4)."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "canvas",
+      "kind": "I",
+      "record_sha256": "b37e1d07a3aba6d83a7aa5924b83f0da9d21bf7659acaebb62de3cb86fa83c6a",
+      "fields": {
+        "ky": "px",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": [
+          32,
+          32
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose a 32 by 32 canvas per character (BRIEF.md item 2)."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "destination_engine",
+      "kind": "I",
+      "record_sha256": "21745e97ae0834669128caa28d443be8f6c7fcfd6c9c75af3e57c31eea09e338",
+      "fields": {
+        "ky": "destination_engine",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "unresolved"
+        },
+        "vl": null,
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "No game project or engine is present in this consumer; nearest-neighbor display and import behavior cannot be exercised until one is named."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "destination_medic",
+      "kind": "I",
+      "record_sha256": "f50513887101c26d5c7f178801e569837034f95079f23cd9cf95983a0cbda0e4",
+      "fields": {
+        "ky": "destination_medic",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "assets/characters/medic.png",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "destination_scout",
+      "kind": "I",
+      "record_sha256": "0cb5aa70d74839fcf41e8200564a18dfa64107282805a7f9a9db2505f61162e2",
+      "fields": {
+        "ky": "destination_scout",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "assets/characters/scout.png",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "PIXL proposal; the owner has not named the game project's asset paths (BRIEF.md, left open)."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "lighting",
+      "kind": "I",
+      "record_sha256": "75967d497f1ff14cf93ae785b5d6d672bd8209a4d4fbd88fde1d5c01e246e310",
+      "fields": {
+        "ky": "li",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "reference"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": "flat fill: no shading ramps, no anti-aliasing",
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "Observed in reference.png (three flat colors, hard edges). PIXL proposes keeping the family flat so the three-color palette stays intact; owner may instead adopt shading, which would need more colors."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "outline",
+      "kind": "I",
+      "record_sha256": "a47e5787ea5c6c46c6701fc01785a9b8fa3d7968672ac50320a3b211585efb1e",
+      "fields": {
+        "ky": "edge_treatment",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "reference"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": "continuous dark outline as in reference.png",
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose the reference's dark outline (BRIEF.md item 1). Measured in reference.png the outline is #25354a and 2 px wide; the width is an observation carried as part of the proposed working treatment, not a separate owner rule."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "palette_hex",
+      "kind": "I",
+      "record_sha256": "8b2844d1dfb2c8549dc6e20a3122aa0f3c3b642d17e1e8ac28f88fd64c63df68",
+      "fields": {
+        "ky": "pl",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "reference"
+          },
+          {
+            "$ref": "reference_b"
+          }
+        ],
+        "st": {
+          "$symbol": "proposed"
+        },
+        "vl": [
+          "#56b5bc",
+          "#f4dda2",
+          "#25354a"
+        ],
+        "wh": {
+          "$ref": "actor"
+        },
+        "wy": "PIXL proposes fixing the owner's teal/cream/outline roles to the exact colors measured in both references (teal #56b5bc, cream #f4dda2, outline #25354a) as the family's working palette. Awaiting owner confirmation before production; sample work may use it."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "palette_roles",
+      "kind": "I",
+      "record_sha256": "59936396dacd5cb9431dd20e89b613f69494c40720cf4fb6fc1bdcd4218adb7d",
+      "fields": {
+        "ky": "palette_roles",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": [
+          "teal body",
+          "cream accent",
+          "dark outline"
+        ],
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose the agreed teal and cream palette (BRIEF.md item 3); the dark outline color is implied by the chosen outline treatment."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "sampling",
+      "kind": "I",
+      "record_sha256": "de9d3e00340f3fb2cd6f554790589b3a60d74eedce51cc3394104b1aedbb7b6b",
+      "fields": {
+        "ky": "sa",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": {
+          "$symbol": "nearest"
+        },
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose nearest-neighbor display (BRIEF.md item 6)."
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "view",
+      "kind": "I",
+      "record_sha256": "50daea98db6e9515f65e5608bf0fa53ee150009b96f3966960e288d19210a2ce",
+      "fields": {
+        "ky": "vw",
+        "pr": {
+          "$ref": "project"
+        },
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "st": {
+          "$symbol": "confirmed"
+        },
+        "vl": {
+          "$symbol": "side"
+        },
+        "wh": {
+          "$ref": "user"
+        },
+        "wy": "Owner chose side view for a side-view game (BRIEF.md item 5)."
+      },
+      "omitted_fields": []
+    }
+  ],
+  "choice_scope": {
+    "basis": "Explicit semantic links from selected outputs, contracts, decisions, knowledge and current inputs/nominees, including family destinations. No text/key matching or inferred authority.",
+    "other_intake": [
+      {
+        "id": "display_scale",
+        "key": "display_scale",
+        "status": "unresolved",
+        "retrieve": {
+          "tool": "pixl_context",
+          "arguments": {
+            "path": ".pixl/characters/state.px",
+            "focus": "display_scale"
+          }
+        }
+      },
+      {
+        "id": "facing",
+        "key": "facing",
+        "status": "proposed",
+        "retrieve": {
+          "tool": "pixl_context",
+          "arguments": {
+            "path": ".pixl/characters/state.px",
+            "focus": "facing"
+          }
+        }
+      },
+      {
+        "id": "medic_identity",
+        "key": "medic_identity",
+        "status": "proposed",
+        "retrieve": {
+          "tool": "pixl_context",
+          "arguments": {
+            "path": ".pixl/characters/state.px",
+            "focus": "medic_identity"
+          }
+        }
+      },
+      {
+        "id": "scout_identity",
+        "key": "scout_identity",
+        "status": "proposed",
+        "retrieve": {
+          "tool": "pixl_context",
+          "arguments": {
+            "path": ".pixl/characters/state.px",
+            "focus": "scout_identity"
+          }
+        }
+      }
+    ],
+    "limit": "Unlinked does not mean irrelevant. Inspect an indexed choice when its applicability is uncertain; preserve global caller instructions. This index changes no saved choice or acceptance rule."
+  },
+  "decisions": [],
+  "knowledge": [],
+  "criteria": [
+    {
+      "id": "family_plan_01.delivery.q.continuity",
+      "kind": "Q",
+      "record_sha256": "ea47be93aa9a73a3ef9b72b7af03d396f3605b7210af6d4ae1d0b6169003955a",
+      "fields": {
+        "ck": "Viewed side by side at native scale and at 8x on a light and a dark background, the scout and medic share the same outline weight, ear-post placement, eye position, body height, muzzle and ground line (feet bottom on the same row), and differ only in their role equipment and cream markers.",
+        "dm": {
+          "$symbol": "continuity"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "continuity",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "reference"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.delivery.q.destination_display",
+      "kind": "Q",
+      "record_sha256": "7d328b1cc2dbfd4e64b4f3fd37378aed0220e13dd026e240d59633e32eed42c2",
+      "fields": {
+        "ck": "In the owner's named game project and engine, both delivered files load at their confirmed destination paths, display with nearest-neighbor sampling at the game's integer scale without blur or edge bleeding, and keep binary transparency.",
+        "dm": {
+          "$symbol": "engine"
+        },
+        "md": {
+          "$symbol": "live"
+        },
+        "nm": "destination_display",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.delivery.q.roles_distinct",
+      "kind": "Q",
+      "record_sha256": "4442c5849bb94b19cd4c2d2327e702340d8d941a904d62c8f2fa34c6a91a77b0",
+      "fields": {
+        "ck": "At native scale the two members are told apart at a glance by their equipment silhouettes and cream markers without reading their filenames.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "roles_distinct",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.canvas_alpha",
+      "kind": "Q",
+      "record_sha256": "dbb988f19524f4a6f64b907cc9eee72ad200469fa1744ab8b5ca9f6b49a754be",
+      "fields": {
+        "ck": "The candidate file is a 32 by 32 pixel PNG and every pixel is either fully opaque or fully transparent.",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "canvas_alpha",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.medic_read",
+      "kind": "Q",
+      "record_sha256": "80eb086931af3b79526d812d5cb16378de5c4cd48405a78b9d99acd29fff696a",
+      "fields": {
+        "ck": "At native scale and at an integer enlargement, on a light and a dark background, the figure reads as a medic distinct from the scout: a cream cross marker on the body side and a small satchel on the back stay separate and recognizable, while head, body, eye and feet keep the scout's placement.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "medic_read",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.outline",
+      "kind": "Q",
+      "record_sha256": "7933af0767866c437b1d575fb0ea7cdb5d38b568243bd277608b20910752608d",
+      "fields": {
+        "ck": "Viewed at native scale and at an integer enlargement, a continuous dark outline encloses the whole figure silhouette in the manner of reference.png, with no gaps where teal or cream touches transparency.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "outline",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "reference"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.palette",
+      "kind": "Q",
+      "record_sha256": "13e2c694e544eb3bd37cbe1e57fa45ff22842e899fcf9a0e7c3fbd81cc45ee4a",
+      "fields": {
+        "ck": "Every opaque pixel is one of the three working palette colors teal #56b5bc, cream #f4dda2 or outline #25354a (PIXL's proposed exact values for the owner's teal, cream and dark-outline roles).",
+        "dm": {
+          "$symbol": "mechanical"
+        },
+        "md": {
+          "$symbol": "local"
+        },
+        "nm": "palette",
+        "so": [
+          {
+            "$ref": "brief"
+          },
+          {
+            "$ref": "reference"
+          },
+          {
+            "$ref": "reference_b"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.side_view",
+      "kind": "Q",
+      "record_sha256": "d46eaa509a8c4888fbd5f543f3292bd10460de8e4bd42bf5271fde40748333ab",
+      "fields": {
+        "ck": "The figure reads as seen from the side, facing the same screen direction as the scout baseline.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "side_view",
+        "so": [
+          {
+            "$ref": "brief"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    },
+    {
+      "id": "family_plan_01.medic.q.style_match",
+      "kind": "Q",
+      "record_sha256": "6bc8ac52099dc3f703d7360f63eb55c932b2246b84b0725bbcc4cf6f63d33f68",
+      "fields": {
+        "ck": "Compared with reference.png and the scout baseline at the same enlargement, the candidate uses flat teal fill with cream accents, hard edges without anti-aliasing or shading ramps, and the same blocky cluster scale and 2 px outline weight.",
+        "dm": {
+          "$symbol": "visual"
+        },
+        "md": {
+          "$symbol": "visual"
+        },
+        "nm": "style_match",
+        "so": [
+          {
+            "$ref": "reference"
+          }
+        ],
+        "wh": {
+          "$ref": "actor"
+        }
+      },
+      "omitted_fields": []
+    }
+  ],
+  "sources": [
+    {
+      "id": "brief",
+      "record_sha256": "656e56e23f4178dffce0cbe87a393e7de06943925583ee32cb18d604355eabac",
+      "source_class": "local",
+      "observed_at": "2026-11-15",
+      "observed_sha256": "388d33dd51e0595917583860687b76ccbdb8e9e40b618e203fc50d073e21bc3e",
+      "file_status": "current",
+      "retrieve": {
+        "tool": "pixl_source",
+        "arguments": {
+          "path": "BRIEF.md",
+          "expect": "388d33dd51e0595917583860687b76ccbdb8e9e40b618e203fc50d073e21bc3e",
+          "start": 1,
+          "end": 33,
+          "scope": "project"
+        }
+      }
+    },
+    {
+      "id": "reference",
+      "record_sha256": "cae768001f674669f9f5563f7eda62a7448d5fc0ef5df10333a5fb8442c1d1c7",
+      "source_class": "local",
+      "observed_at": "2026-11-15",
+      "observed_sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+      "file_status": "current",
+      "binding": {
+        "at": "2026-11-15",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7",
+        "ln": [],
+        "ur": "reference.png"
+      }
+    },
+    {
+      "id": "reference_b",
+      "record_sha256": "dfc455334aa0f0760d5ce2532a5e402f4ed3eedd310f6faf7619fb837bb09f83",
+      "source_class": "local",
+      "observed_at": "2026-11-15",
+      "observed_sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a",
+      "file_status": "current",
+      "binding": {
+        "at": "2026-11-15",
+        "au": {
+          "$symbol": "local"
+        },
+        "dg": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a",
+        "ln": [],
+        "ur": "reference-b.png"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "scout_local_01",
+      "kind": "X",
+      "record_sha256": "3d17c7b0ec22ee9239dc7aa60803ecc20c3535fa79d0c4083c2812d7189d3096",
+      "fields": {
+        "ct": {
+          "$ref": "family_contract"
+        },
+        "dg": "24b9dd206c638157b9e44365f18a4f3763e9a60bae93feec9c432f86051a03b6",
+        "kd": {
+          "$symbol": "sprite"
+        },
+        "nm": "Scout local construction 01 (deterministic, not provider-generated)",
+        "of": {
+          "$ref": "scout_sprite"
+        },
+        "ur": "candidates/scout-local-01.png"
+      },
+      "omitted_fields": [
+        "mt"
+      ],
+      "observed_sha256": "24b9dd206c638157b9e44365f18a4f3763e9a60bae93feec9c432f86051a03b6",
+      "file_status": "current"
+    }
+  ],
+  "plans": [
+    {
+      "id": "family_plan_01.plan",
+      "kind": "X",
+      "record_sha256": "e6b3f87b419b2071d2ea763034784118e3bb1da017be2c486fe13ce1d2147291",
+      "fields": {
+        "dg": "e5e3f05e2a7009885ae772bf528ac63b9601a464f1b0b69e63da23392110ce35",
+        "kd": {
+          "$symbol": "report"
+        },
+        "nm": "Production stages and family plan",
+        "ur": ".pixl/characters/production-plans/e5e3f05e2a7009885ae772bf528ac63b9601a464f1b0b69e63da23392110ce35.json"
+      },
+      "omitted_fields": [
+        "mt"
+      ],
+      "observed_sha256": "e5e3f05e2a7009885ae772bf528ac63b9601a464f1b0b69e63da23392110ce35",
+      "file_status": "current",
+      "request_review": {
+        "packet": ".pixl/characters/state.px",
+        "plan": "family_plan_01.plan"
+      },
+      "jobs": []
+    }
+  ],
+  "jobs": [],
+  "selection": null,
+  "diagnostics": [],
+  "consistent": null,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}

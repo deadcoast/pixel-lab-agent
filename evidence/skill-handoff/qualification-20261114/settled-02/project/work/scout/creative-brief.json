@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "kind": "creative_brief",
+  "executable": false,
+  "why_not_executable": "No official PixelLab operation or input schema was discovered in this session; only the local PIXL runtime is configured. This brief is the reviewed intent to translate into provider arguments once the official connection is available.",
+  "asset": "character.scout",
+  "subject": "Scout character, side view, representative sample for a two-member family (scout, medic)",
+  "owner_requirements": {
+    "canvas": [32, 32],
+    "view": "side",
+    "alpha": "binary",
+    "display_sampling": "nearest",
+    "outline": "continuous dark outline as in reference.png",
+    "palette_roles": ["dark outline", "teal", "cream"]
+  },
+  "specialist_proposals": {
+    "exact_palette": {
+      "value": ["#25354A", "#56B5BC", "#F4DDA2"],
+      "status": "proposal for this sample",
+      "reason": "The three opaque colours measured in reference.png. Keeping the sample to these colours matches the flat, unshaded reference and avoids intermediate edge colours; the owner named the palette by role, so exclusivity is open until the sample is reviewed."
+    },
+    "facing": {
+      "value": "east (facing right)",
+      "status": "proposal",
+      "reason": "A shared facing direction is needed for family continuity in a side-view game; right-facing is the common default for side-scrollers. The medic should match."
+    },
+    "ground_line": {
+      "value": "feet on the same bottom row as the reference figure (zero-based row 28, three transparent rows below)",
+      "status": "proposal",
+      "reason": "Keeps the scout and medic standing on one shared ground line so they align when placed side by side."
+    },
+    "identity_landmarks": {
+      "value": "peaked cap or hood brim; a shoulder-strap satchel across the torso; one cream eye block in the reference's manner",
+      "status": "proposal",
+      "reason": "Distinguishes a scout from the medic using silhouette rather than colour, because the family palette is small."
+    },
+    "shading": {
+      "value": "flat fill, no shading, no anti-aliasing",
+      "status": "proposal, follows from the exact-palette proposal",
+      "reason": "reference.png is flat with three colours; intermediate colours would break the proposed palette."
+    }
+  },
+  "reference_roles": [
+    {"path": "reference.png", "sha256": "d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7", "role": "style", "preserve": "continuous dark outline, flat teal fill, cream accents, blocky cluster scale; the figure itself is not the scout's silhouette"},
+    {"path": "reference-b.png", "sha256": "e76b40ce38aeb436d0f5f0e433c4ac1eb4519bf93a7b29cd7a81a4609914a12a", "role": "palette", "preserve": "the teal and cream colour pair only; its missing outline is not the chosen treatment"}
+  ],
+  "prompt_draft": "A small scout character in side view facing right, flat pixel art on a 32 by 32 transparent canvas. Body filled with teal (#56B5BC), cream (#F4DDA2) accents for the eye, cap badge and satchel buckle, every edge bounded by a continuous dark outline (#25354A). Peaked cap with a short brim, a satchel on a strap across the torso, light slim build, feet planted on a shared ground line. Blocky simple shapes with no shading, no gradients and no anti-aliasing, matching the supplied style reference. Only the three listed colours plus full transparency.",
+  "negative_notes": "No background, no drop shadow, no additional colours or shades, no three-quarter or front view, no outline gaps.",
+  "candidate_operations_advisory": {
+    "basis": "Cached capability inventory in pixl-kit/resources/knowledge/pixellab-capabilities.json retrieved 2026-09-11; not live discovery. Verify the actual connected tool and its schema before preparing a request.",
+    "options": [
+      {"tool": "create_image_pixflux", "why": "Single freeform sprite with width, height, no_background, view=side, direction=east, outline and shading controls; accepts a style/init image per its live schema. Fits a 32 by 32 single-frame sample."},
+      {"tool": "create_image_pro", "why": "Supports a labelled style image and style_copy (palette, outline, detail, shading) for stronger reference conditioning; check its minimum canvas and output size against 32 by 32."},
+      {"tool": "create_character", "why": "Only if the game later needs directional turnarounds or animation; it returns 4 or 8 directions, which is more than this single side-view sample needs."}
+    ],
+    "image_transport": "Bind reference.png through the tool's supported image input (upload handle, URL or base64 as declared by the live schema); a filename in the prompt does not transmit the image."
+  },
+  "deferred_to_later_stages": [
+    "Family continuity between scout and medic (family.characters row)",
+    "Destination display with nearest-neighbor sampling and binary alpha (engine check; no destination named)"
+  ]
+}

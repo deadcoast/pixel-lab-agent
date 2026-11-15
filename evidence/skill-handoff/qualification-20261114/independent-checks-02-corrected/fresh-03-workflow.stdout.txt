@@ -1,0 +1,201 @@
+{
+  "intake": [
+    {
+      "id": "alpha_policy",
+      "project": "project",
+      "key": "alpha_policy",
+      "status": "observed",
+      "value": "binary",
+      "sources": [
+        "ref_a",
+        "ref_b",
+        "brief"
+      ],
+      "rationale": "Measured: both references have zero fractional-alpha pixels on a transparent background. Binary transparency is a reasonable working assumption for the sample; it is not an owner requirement until adopted."
+    },
+    {
+      "id": "animation_set",
+      "project": "project",
+      "key": "animation_set",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "No poses or animations were specified for the scout or medic. The first sample is planned as a single static side-view pose; the required animation set affects canvas and sheet layout."
+    },
+    {
+      "id": "canvas",
+      "project": "project",
+      "key": "px",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner has not chosen the final per-frame canvas size (BRIEF.md owner instruction 5). Both references measure 32x32, which is an observation recorded separately and not an adoption."
+    },
+    {
+      "id": "destination",
+      "project": "project",
+      "key": "destination",
+      "status": "unresolved",
+      "value": null,
+      "sources": [
+        "brief"
+      ],
+      "rationale": "Target engine or renderer, destination paths, display scale and pivot conventions were not supplied (BRIEF.md 'Unknown until supplied')."
+    },
+    {
+      "id": "members",
+      "project": "project",
+      "key": "members",
+      "status": "confirmed",
+      "value": [
+        "scout",
+        "medic"
+      ],
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner named the two family members (BRIEF.md owner instruction 2)."
+    },
+    {
+      "id": "outline",
+      "project": "project",
+      "key": "edge_treatment",
+      "status": "conflict",
+      "value": [
+        "continuous 2px dark outline around the whole silhouette (reference.png)",
+        "no outline; fill edge directly against transparency (reference-b.png)"
+      ],
+      "sources": [
+        "brief",
+        "ref_a",
+        "ref_b"
+      ],
+      "rationale": "The two supplied style references disagree about outline treatment and the owner has not chosen (BRIEF.md owner instruction 4). A third option such as selective/partial outlines is possible but not supplied by either reference."
+    },
+    {
+      "id": "palette_roles",
+      "project": "project",
+      "key": "palette_roles",
+      "status": "observed",
+      "value": {
+        "body": "#56B5BC",
+        "eyes": "#F4DDA2",
+        "outline": "#25354A"
+      },
+      "sources": [
+        "ref_a",
+        "ref_b",
+        "brief"
+      ],
+      "rationale": "Measured color roles shared by the references: teal body fill, cream eye accent, and (reference.png only) a dark navy outline. These are role observations for style kinship, not an exclusive allowed-color list."
+    },
+    {
+      "id": "projection",
+      "project": "project",
+      "key": "projection",
+      "status": "confirmed",
+      "value": "side",
+      "sources": [
+        "brief"
+      ],
+      "rationale": "The owner stated the family is for a side-view game (BRIEF.md owner instruction 1)."
+    },
+    {
+      "id": "reference_canvas",
+      "project": "project",
+      "key": "reference_canvas",
+      "status": "observed",
+      "value": [
+        32,
+        32
+      ],
+      "sources": [
+        "ref_a",
+        "ref_b"
+      ],
+      "rationale": "Measured: both references are 32x32 with the visible silhouette in x 7..25, y 3..28 (19x26 visible). Recorded so the canvas decision can weigh it; it does not resolve the px choice."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t_scout_sample",
+      "project": "project",
+      "phase": "sample",
+      "state": "open",
+      "blockers": [
+        "output_contract: f_scout_sample needs a concrete raster contract"
+      ],
+      "outputs": [
+        {
+          "id": "f_scout_sample",
+          "name": "Scout representative sample (single side-view pose)",
+          "candidate": null,
+          "requirements": [
+            {
+              "id": "q_size",
+              "name": "canvas and alpha",
+              "check": "The actual file matches the confirmed canvas size and the alpha policy recorded for this project at the time of review.",
+              "domain": "mechanical",
+              "mode": "local",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_scout_identity",
+              "name": "side-view scout readability",
+              "check": "At native scale and at an integer zoom the sample reads as a side-view character and its scout identity landmarks are distinguishable from the body silhouette.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_edge_treatment",
+              "name": "resolved edge treatment",
+              "check": "The sample applies the owner's resolved edge_treatment choice consistently around the whole silhouette, with no unplanned mixture of outlined and outline-free edges.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            },
+            {
+              "id": "q_style_kinship",
+              "name": "reference style kinship",
+              "check": "Viewed beside both references at the same zoom, the sample shares their flat-fill color-role construction (body fill family plus light eye accent) and simple rounded forms; exact hex values, the 32x32 canvas and the mascot silhouette are not required.",
+              "domain": "visual",
+              "mode": "visual",
+              "status": "unperformed",
+              "verdict": null,
+              "reason": null,
+              "reviewer": null,
+              "evidence": []
+            }
+          ],
+          "candidates": []
+        }
+      ],
+      "selection_bindings": []
+    }
+  ],
+  "ready": [],
+  "format": 2,
+  "revision": 1,
+  "hash": "097aa5c6e2e6a35407be3d73e8fab4d3af90cc42711e8b76f10124780812b5e0",
+  "files_verified": true,
+  "hash_domains": {
+    "hash": "canonical_state_sha256"
+  }
+}
