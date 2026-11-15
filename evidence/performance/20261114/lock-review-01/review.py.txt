@@ -1,0 +1,156 @@
+"""Independent Windows lock metadata handle ownership and regression review."""
+import ast
+import ctypes
+import hashlib
+import json
+import msvcrt
+import os
+import sys
+import tempfile
+from ctypes import wintypes
+from pathlib import Path
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[4]
+HERE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+sys.dont_write_bytecode = True
+from pixl import store
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def functions(data):
+    return {node.name: node for node in ast.parse(data).body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+
+
+def main():
+    source = (ROOT / "pixl/store.py").read_bytes()
+    tests = (ROOT / "tests/test_store_lock.py").read_bytes()
+    old = (ROOT / "evidence/performance/20261114/lock-race-01/store.py.txt").read_bytes()
+    (HERE / "tests-reviewed.py.txt").write_bytes(tests)
+    checks, observed = [], {}
+
+    def check(name, passed, detail):
+        checks.append({"name": name, "pass": bool(passed), "detail": detail})
+
+    check("store_matches_reviewed_snapshot", source == (HERE / "store-reviewed.py.txt").read_bytes(), "The production helper stayed frozen during review.")
+    before, after = functions(old), functions(source)
+    check("writer_acquisition_release_unchanged", ast.dump(before["lock"]) == ast.dump(after["lock"]), "Exact AST equality preserves exclusive acquisition, contention behavior and single normal finally-unlink; no retry or implicit unlock was added.")
+
+    class NormalizeOldObservation(ast.NodeTransformer):
+        def visit_Assign(self, node):
+            if any(isinstance(target, ast.Name) and target.id == "flags" for target in node.targets):
+                return None
+            return self.generic_visit(node)
+
+        def visit_Call(self, node):
+            if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) and node.func.value.id == "os" and node.func.attr == "open":
+                return ast.Call(func=ast.Name(id="_open_lock_metadata", ctx=ast.Load()), args=[node.args[0]], keywords=[])
+            return self.generic_visit(node)
+
+    normalized = NormalizeOldObservation().visit(before["_lock_observation"])
+    check("bounded_identity_and_symlink_guards_preserved", ast.dump(normalized) == ast.dump(after["_lock_observation"]), "The existing 4096-byte bound, regular-file checks, path/descriptor identity and changed/disappeared handling are unchanged apart from the descriptor opener.")
+    helper = after["_open_lock_metadata"]
+    create_call = next(node for node in ast.walk(helper) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "create")
+    check("open_existing_reparse_point_without_delete_on_close", ast.literal_eval(create_call.args[1]) == 0x80000000 and ast.literal_eval(create_call.args[4]) == 3 and ast.literal_eval(create_call.args[5]) == 0x00200000, "GENERIC_READ plus OPEN_EXISTING plus OPEN_REPARSE_POINT; no creation/truncation/DELETE_ON_CLOSE flag.")
+
+    library = ctypes.WinDLL("kernel32", use_last_error=True)
+    create = library.CreateFileW
+    create.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    create.restype = wintypes.HANDLE
+    close = library.CloseHandle
+    close.argtypes = [wintypes.HANDLE]
+    close.restype = wintypes.BOOL
+    information = library.GetHandleInformation
+    information.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    information.restype = wintypes.BOOL
+    invalid = ctypes.c_void_p(-1).value
+
+    def handle_status(handle):
+        flags = wintypes.DWORD()
+        ctypes.set_last_error(0)
+        valid = bool(information(handle, ctypes.byref(flags)))
+        return {"valid": valid, "winerror": ctypes.get_last_error(), "flags": flags.value}
+
+    with tempfile.TemporaryDirectory(prefix="pixl-lock-review-") as temporary:
+        path = Path(temporary) / ".lock"
+        original = b'{"pid":123}'
+        path.write_bytes(original)
+        fd = store._open_lock_metadata(path)
+        handle = msvcrt.get_osfhandle(fd)
+        try:
+            observed["valid_before_close"] = handle_status(handle)
+            check("successful_conversion_owns_valid_noninheritable_handle", observed["valid_before_close"]["valid"] and not os.get_inheritable(fd), "Actual converted Windows descriptor is valid and cannot be inherited.")
+            try:
+                os.write(fd, b"modified")
+            except OSError:
+                refused_write = True
+            else:
+                refused_write = False
+            check("diagnostic_descriptor_read_only", refused_write and os.read(fd, 4096) == original, "An actual write attempt is refused and exact original metadata remains readable.")
+            with path.open("wb") as writer:
+                writer.write(original)
+            observed["ordinary_crt_writer_works_with_reader_open"] = path.read_bytes() == original
+            exclusive = create(str(path), 0x80000000, 0, None, 3, 0, None)
+            error = ctypes.get_last_error()
+            if exclusive != invalid:
+                close(exclusive)
+            check("exclusive_probe_detects_open_reader", exclusive == invalid and error == 32, {"winerror": error, "scope": "Control proves a share-mode-zero probe detects a live diagnostic handle; ordinary CRT writing does not establish closure."})
+        finally:
+            os.close(fd)
+        observed["handle_after_descriptor_close"] = handle_status(handle)
+        check("descriptor_close_releases_windows_handle", not observed["handle_after_descriptor_close"]["valid"] and observed["handle_after_descriptor_close"]["winerror"] == 6, "GetHandleInformation independently observes ERROR_INVALID_HANDLE after the descriptor closes.")
+        check("reader_close_does_not_delete_or_modify_lock", path.read_bytes() == original, "Closing the observer leaves the exact lock bytes present.")
+
+        converted = []
+
+        def conversion_failure(handle, flags):
+            converted.append(handle)
+            raise OSError("controlled descriptor conversion failure")
+
+        with patch.object(msvcrt, "open_osfhandle", side_effect=conversion_failure):
+            try:
+                store._open_lock_metadata(path)
+            except OSError:
+                failure_propagated = True
+            else:
+                failure_propagated = False
+        observed["handle_after_conversion_failure"] = handle_status(converted[0])
+        check("conversion_failure_closes_raw_handle", failure_propagated and len(converted) == 1 and not observed["handle_after_conversion_failure"]["valid"] and observed["handle_after_conversion_failure"]["winerror"] == 6, "The raw HANDLE closes on conversion failure, before any descriptor ownership exists.")
+        exclusive = create(str(path), 0x80000000, 0, None, 3, 0, None)
+        check("exclusive_open_after_conversion_failure", exclusive != invalid, "A real share-mode-zero opener succeeds after the failed conversion; unlike ordinary CRT writing, this would reject a leaked read handle.")
+        if exclusive != invalid:
+            close(exclusive)
+        check("conversion_failure_preserves_lock_bytes", path.read_bytes() == original, "Failed metadata observation never deletes or rewrites the lock.")
+
+        fd = store._open_lock_metadata(path)
+        try:
+            path.unlink()
+            check("owner_unlink_permitted_while_reader_open", not path.exists() and os.read(fd, 4096) == original, "Actual Windows unlink succeeds while the observer retains its descriptor; exact old bytes remain readable through that descriptor.")
+        finally:
+            os.close(fd)
+        try:
+            store._open_lock_metadata(path)
+        except FileNotFoundError:
+            absent_refused = True
+        else:
+            absent_refused = False
+        check("missing_metadata_never_recreated", absent_refused and not path.exists(), "OPEN_EXISTING does not create a missing lock.")
+        expected_flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        with patch.object(store.os, "name", "posix"), patch.object(store.os, "open", return_value=234) as opener:
+            returned = store._open_lock_metadata(path)
+        check("portable_branch_preserves_existing_flags", returned == 234 and opener.call_args.args == (path, expected_flags), "Controlled dispatch checks the unchanged non-Windows flag expression; this is not a POSIX host execution result.")
+
+    test_text = tests.decode("utf-8")
+    check("conversion_regression_uses_real_exclusive_share_mode", 'create(str(self.path), 0x80000000, 0, None, 3, 0, None)' in test_text, "The previously weak ordinary-writer assertion was replaced with an actual exclusive Windows opener.")
+    check("reviewed_sources_unchanged", (ROOT / "pixl/store.py").read_bytes() == source and (ROOT / "tests/test_store_lock.py").read_bytes() == tests, "Production and regression sources remain byte-identical throughout these independent probes.")
+    report = {"status": "pass" if all(row["pass"] for row in checks) else "fail", "platform": sys.platform, "source_hashes": {"pixl/store.py": sha(source), "tests/test_store_lock.py": sha(tests)}, "passed": sum(row["pass"] for row in checks), "total": len(checks), "checks": checks, "observations": observed, "review_findings": [{"status": "resolved_before_final_review", "problem": "The first conversion-failure regression used ordinary Path.open('wb'), which does not prove a leaked read handle was closed.", "resolution": "Root replaced it with CreateFileW share mode zero. Independent control detects the live reader with WinError32; GetHandleInformation then observes ERROR_INVALID_HANDLE after conversion failure."}], "references": [{"url": "https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew", "applied": "Read/write/delete sharing permits owner release; OPEN_EXISTING cannot create; OPEN_REPARSE_POINT does not follow the final symlink; DELETE_ON_CLOSE is a distinct unused flag; NULL security attributes disable inheritance."}, {"url": "https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/open-osfhandle?view=msvc-170", "applied": "Successful conversion transfers HANDLE ownership to the descriptor; closing the descriptor releases it. Failure needs explicit raw-handle closure."}, {"url": "https://docs.python.org/3/library/msvcrt.html#msvcrt.open_osfhandle", "applied": "O_NOINHERIT keeps the converted descriptor noninheritable."}], "limits": ["Independent probes use one Windows host and disposable local files; no SMB, FAT, remote filesystem or POSIX host qualification is implied.", "Actual symlink creation/racing is not newly exercised here; preserved lstat/fstat identity checks and final-component OPEN_REPARSE_POINT are source-reviewed, and existing symlink tests retain their Windows privilege limits.", "The public cross-process owner-release regression was reviewed in source; root executes it separately. These probes independently exercise descriptor access, deletion sharing and HANDLE lifetime.", "This is a correctness repair for diagnostic observation, not evidence of a performance optimization or broader host reliability."]}
+    (HERE / "RESULT.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": report["status"], "passed": report["passed"], "total": report["total"]}))
+
+
+if __name__ == "__main__":
+    main()

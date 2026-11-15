@@ -1,0 +1,144 @@
+"""Independent semantic replay of retained authoring reports after TM-02 repair."""
+import hashlib
+import json
+import sys
+import tempfile
+import traceback
+import zipfile
+from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
+
+ROOT = Path(__file__).resolve().parents[4]
+HERE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+sys.dont_write_bytecode = True
+from pixl import codec, service
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def encoded(value):
+    return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+
+def identity(path):
+    stat = path.stat()
+    return {"bytes": stat.st_size, "sha256": sha(path.read_bytes()), "mtime_ns": stat.st_mtime_ns, "mode": stat.st_mode}
+
+
+def inventory(root):
+    files, directories = {}, {}
+    for path in [root, *sorted(root.rglob("*"))]:
+        if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+            raise ValueError("linked replay input")
+        name = path.relative_to(root).as_posix()
+        if path.is_file():
+            files[name] = identity(path)
+        elif path.is_dir():
+            stat = path.stat()
+            directories[name] = {"mtime_ns": stat.st_mtime_ns, "mode": stat.st_mode}
+        else:
+            raise ValueError("nonregular replay input")
+    return {"files": files, "directories": directories}
+
+
+def main():
+    measurement_path = ROOT / "evidence/performance/20261114/measurement-01/report.json"
+    measure_before = identity(measurement_path)
+    measured = json.loads(measurement_path.read_bytes())
+    measured_cases = {case["id"]: case for case in measured["cases"]}
+    watched = {name: identity(ROOT / name) for name in measured["sources"]}
+    cases, checks = [], []
+
+    def check(name, passed, detail):
+        checks.append({"name": name, "pass": bool(passed), "detail": detail})
+
+    check("runtime_matches_final_measurement", all(value["sha256"] == measured["sources"][name]["sha256"] for name, value in watched.items()), "The replay uses the exact runtime/configuration/measurement-script content recorded by final measurement-01.")
+    for manifest_path in sorted((ROOT / "evidence/performance/20261114/inputs").glob("*.json")):
+        spec = json.loads(manifest_path.read_bytes())
+        label = spec["id"]
+        archive_path = ROOT / spec["archive"]
+        original = {str(path.relative_to(ROOT).as_posix()): identity(path) for path in (manifest_path, archive_path)}
+        row = {"id": label, "archive": spec["archive"], "original_inputs": original, "source_checks": []}
+        check(label + ":archive_identity", original[spec["archive"]]["sha256"] == spec["archive_identity"]["sha256"], "Prepared ZIP remains exactly identified by its retained manifest.")
+        try:
+            with tempfile.TemporaryDirectory(prefix="pixl-tm02-review03-") as temporary:
+                root = Path(temporary)
+                with zipfile.ZipFile(archive_path) as archive:
+                    names = archive.namelist()
+                    if len(names) != len(set(names)) or set(names) != set(spec["files"]):
+                        raise ValueError("archive membership mismatch")
+                    for name in names:
+                        relative = PurePosixPath(name)
+                        if relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
+                            raise ValueError("unsafe archive path")
+                        data = archive.read(name)
+                        expected = spec["files"][name]
+                        if sha(data) != expected["sha256"] or len(data) != expected["bytes"]:
+                            raise ValueError("archive member identity mismatch: " + name)
+                        destination = root / name
+                        destination.parent.mkdir(parents=True, exist_ok=True)
+                        destination.write_bytes(data)
+                before = inventory(root)
+                document = codec.parse((root / spec["state"]).read_bytes())
+                result = service.call("pixl_context", {"path": spec["state"], "focus": spec["focus"], "view": "authoring"}, root)
+                payload = encoded(result)
+                output = HERE / (label + "-authoring.json")
+                output.write_bytes(payload)
+                row["report"] = {"path": output.relative_to(ROOT).as_posix(), "sha256": sha(payload), "bytes": len(payload)}
+                expected_report = measured_cases[label]["operations"]["authoring_context"]["samples"][0]["outcome"]
+                check(label + ":report_matches_measured_bytes", row["report"]["sha256"] == expected_report["sha256"] and len(payload) == expected_report["bytes"], "Fresh actual service report matches the measured public JSON bytes exactly.")
+                check(label + ":state_identity", result["hash"] == codec.digest(document) and result["revision"] == document.revision, "Report identifies this exact retained canonical state.")
+                for source in result["sources"]:
+                    record = document.records[source["id"]]
+                    fields = record.fields
+                    whole = not fields["ln"]
+                    remote = urlsplit(fields["ur"]).scheme in ("http", "https")
+                    details = {"id": source["id"], "whole_file": whole, "remote": remote, "record_identity": source["record_sha256"] == codec.record_hash(record), "source_class": source["source_class"] == fields["au"].value, "observed_at": source["observed_at"] == fields["at"]}
+                    if remote or whole:
+                        details["exact_binding"] = source.get("binding") == codec.to_data(fields)
+                        details["no_invalid_text_retrieval"] = "retrieve" not in source
+                    else:
+                        details["exact_ranged_retrieval"] = source.get("retrieve") == {"tool": "pixl_source", "arguments": {"path": fields["ur"], "expect": fields["dg"], "start": fields["ln"][0], "end": fields["ln"][1], "scope": "project"}}
+                        details["no_added_binding"] = "binding" not in source
+                    if remote:
+                        details["status_matches_actual_scope"] = source["file_status"] == "remote_unverified" and "observed_sha256" not in source
+                    else:
+                        local = (root / fields["ur"]).resolve()
+                        if not local.is_relative_to(root.resolve()):
+                            raise ValueError("source locator escapes replay root")
+                        actual = sha(local.read_bytes()) if local.is_file() else None
+                        expected_status = "current" if actual == fields["dg"] else "missing" if actual is None else "changed"
+                        details["observed_hash_matches_actual_bytes"] = source.get("observed_sha256") == actual
+                        details["status_matches_actual_scope"] = source["file_status"] == expected_status
+                    booleans = {key: value for key, value in details.items() if key not in ("id", "whole_file", "remote")}
+                    details["pass"] = all(booleans.values())
+                    row["source_checks"].append(details)
+                whole_sources = [source for source in row["source_checks"] if source["whole_file"] and not source["remote"]]
+                ranged_sources = [source for source in row["source_checks"] if not source["whole_file"] and not source["remote"]]
+                row["local_whole_file_sources"] = len(whole_sources)
+                row["local_ranged_sources"] = len(ranged_sources)
+                check(label + ":whole_file_binding_semantics", all(source["pass"] for source in whole_sources), {"count": len(whole_sources), "scope": "Whole-file bindings preserve every saved field and provide no invalid text-range retrieval."})
+                check(label + ":ranged_retrieval_semantics", all(source["pass"] for source in ranged_sources), {"count": len(ranged_sources), "scope": "Ranged source locators, digests, start/end and source status retain their exact original meaning."})
+                check(label + ":all_sources_match_saved_state_and_actual_bytes", all(source["pass"] for source in row["source_checks"]), {"count": len(row["source_checks"]), "scope": "Source record digests/classes/timestamps, bindings/retrievals and observed statuses checked individually against state and independently hashed local bytes."})
+                after = inventory(root)
+                row["input_file_count"] = len(before["files"])
+                row["input_inventory_sha256"] = sha(encoded(before))
+                check(label + ":input_files_directories_unchanged", before == after, {"file_count": len(before["files"]), "directory_count": len(before["directories"]), "scope": "Bytes, mtimes, modes and inventory are unchanged across actual service call."})
+        except Exception as error:
+            row["failure"] = {"type": type(error).__name__, "error": str(error), "traceback": traceback.format_exc()}
+            check(label + ":replay_success", False, row["failure"])
+        check(label + ":frozen_archive_and_manifest_unchanged", all(identity(ROOT / name) == value for name, value in original.items()), "Replay does not modify prepared ZIP or provenance manifest.")
+        cases.append(row)
+    check("sources_unchanged_after_replays", all(identity(ROOT / name) == value for name, value in watched.items()), "Runtime/configuration/measurement source bytes, mtimes and modes remain unchanged.")
+    check("measurement_receipt_unchanged", identity(measurement_path) == measure_before, "The final performance receipt is read-only input to this review.")
+    check("whole_file_and_ranged_cases_actually_exercised", sum(case.get("local_whole_file_sources", 0) for case in cases) > 0 and all(case.get("local_ranged_sources", 0) > 0 for case in cases), "Checks are backed by actual retained whole-file and ranged source rows, not only empty collections.")
+    report = {"status": "pass" if all(item["pass"] for item in checks) else "fail", "scope": "Independent actual authoring-service replay and semantic binding review. Same prepared data ZIPs; new temporary roots. This reviewer prepared those ZIPs, so their original historical provenance is not independently certified here. No timing, provider, model, artistic or human-acceptance claims.", "source_identities": watched, "measurement_identity": measure_before, "checks": checks, "passed": sum(item["pass"] for item in checks), "total": len(checks), "cases": cases, "limits": ["All prepared local source bindings inspected here resolve directly in their replay root; this does not exercise missing/changed source states or retained-library fallback.", "Existing focused runtime tests separately cover changed/missing complete-file bindings. These four fresh reports verify current retained production outcomes only.", "The replay checks exact fields in the returned selected source rows; it does not independently rederive the full authoring selection algorithm."]}
+    (HERE / "RESULT.json").write_bytes(encoded(report))
+    print(json.dumps({"status": report["status"], "passed": report["passed"], "total": report["total"], "cases": [{"id": case["id"], "whole": case.get("local_whole_file_sources"), "ranged": case.get("local_ranged_sources"), "files": case.get("input_file_count")} for case in cases]}))
+
+
+if __name__ == "__main__":
+    main()

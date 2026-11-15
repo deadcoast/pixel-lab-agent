@@ -20,6 +20,13 @@ or provider payloads, and reports source drift rather than granting validation o
 acceptance. The default complete wire context and its byte-budget behavior are
 unchanged. Authoring view rejects a byte budget rather than silently dropping rows.
 
+Local sources with a declared line range retain exact `pixl_source` retrieval
+arguments. A source with `ln=[]`, including a local image, instead exposes its
+complete `binding` (URI, digest, empty range, authority and observation time)
+without inventing text-line bounds. Local file status and observed digest still
+report current, changed or missing bytes; remote sources remain unverified. This
+does not change saved source records or the text-only source retrieval contract.
+
 The authoring view expands choices through declared semantic links from the
 selected outputs/contracts, family destinations, inputs/nominees, decisions and
 knowledge. It follows transitive authority links without traversing project

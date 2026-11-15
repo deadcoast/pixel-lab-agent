@@ -1,0 +1,94 @@
+"""Compare retained TM-02 attempts without changing either result."""
+import hashlib
+import json
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[2]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    before_path = HERE / "baseline-01/report.json"
+    after_path = HERE / "measurement-02/report.json"
+    before, after = (json.loads(path.read_bytes()) for path in (before_path, after_path))
+    baseline_run = json.loads((HERE / "baseline-01/RESULT.json").read_bytes())
+    final_run = json.loads((HERE / "measurement-02/RESULT.json").read_bytes())
+    checks = []
+
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    check("failed_baseline_retained", before["status"] == "fail" and baseline_run["exit_code"] == 1)
+    check("final_measurement_pass", after["status"] == "pass" and final_run["exit_code"] == 0)
+    check("same_input_archives", baseline_run["input_hashes"] == final_run["input_hashes"])
+    check("sampling_configuration", after["configuration"] == {
+        "warmups": 2, "iterations": 15, "fresh_processes": 3,
+        "timeout_seconds": 120, "p95_method": "nearest rank"})
+    check("manifest_and_source_preservation", after["manifest_unchanged"] and not after["source_changes"])
+    check("wrapper_preservation", baseline_run["inputs_and_sources_unchanged"] and final_run["inputs_and_sources_unchanged"])
+    expected = {"queue-native": 93, "robot-directions": 354, "robot-idle": 370, "queue-revision": 679}
+    check("retained_cases", {c["id"]: c["dimensions"]["records"] for c in after["cases"]} == expected)
+    operations = comparable = 0
+    inputs = 0
+    for case in after["cases"]:
+        old = next(c for c in before["cases"] if c["id"] == case["id"])
+        check(case["id"] + ":unchanged_during_reads", not case["input_changes"])
+        old_files = {k: (v["bytes"], v["sha256"]) for k, v in old["inputs"].items() if v["kind"] == "file"}
+        new_files = {k: (v["bytes"], v["sha256"]) for k, v in case["inputs"].items() if v["kind"] == "file"}
+        inputs += len(new_files)
+        check(case["id"] + ":same_frozen_input_bytes", old_files == new_files)
+        check(case["id"] + ":same_state_identities", old["dimensions"] == case["dimensions"])
+        for name, result in case["operations"].items():
+            operations += 1
+            check(case["id"] + ":" + name + ":successful_stable_samples",
+                  result["status"] == "measured" and result["stable"]
+                  and len(result["warmups"]) == 2 and len(result["samples"]) == 15
+                  and all(r["outcome"]["status"] == "ok" for r in result["samples"]))
+            prior = old["operations"][name]
+            if prior["status"] == "measured":
+                comparable += 1
+                check(case["id"] + ":" + name + ":same_successful_result",
+                      prior["samples"][0]["outcome"] == result["samples"][0]["outcome"])
+            else:
+                check(case["id"] + ":" + name + ":documented_crash_repaired",
+                      name == "authoring_context"
+                      and prior["samples"][0]["outcome"]["type"] == "IndexError")
+        probe = case["fresh_process_authoring"]
+        check(case["id"] + ":three_fresh_process_probes", probe["status"] == "measured"
+              and len(probe["samples"]) == 3 and probe["stable"])
+    check("39_successful_operations", operations == 39)
+    check("36_prior_successful_results_preserved", comparable == 36)
+    old_runtime = {k: v for k, v in baseline_run["source_hashes"].items() if k.startswith("pixl/")}
+    changed_runtime = [k for k, value in old_runtime.items() if final_run["source_hashes"].get(k) != value]
+    check("only_narrow_runtime_repairs", changed_runtime == ["pixl/authoring_context.py", "pixl/store.py"], changed_runtime)
+    profiles = json.loads((HERE / "measurement-02/profiles.json").read_bytes())
+    check("profile_reads_preserve_inputs", profiles["inputs_unchanged"])
+    for name, value in final_run["source_hashes"].items():
+        check("tested_source_still_current:" + name, sha((ROOT / name).read_bytes()) == value)
+    previous = json.loads((HERE / "measurement-01/report.json").read_bytes())
+    for case in after["cases"]:
+        prior = next(c for c in previous["cases"] if c["id"] == case["id"])
+        for name, operation in case["operations"].items():
+            check(case["id"] + ":" + name + ":same_result_after_lock_repair",
+                  operation["samples"][0]["outcome"] == prior["operations"][name]["samples"][0]["outcome"])
+    result = {"status": "pass" if all(c["passed"] for c in checks) else "fail",
+              "passed": sum(c["passed"] for c in checks), "total": len(checks),
+              "operations": operations, "prior_successful_results_preserved": comparable,
+              "frozen_input_files": inputs, "checks": checks,
+              "script_sha256": sha(Path(__file__).read_bytes()),
+              "baseline_sha256": sha(before_path.read_bytes()), "measurement_sha256": sha(after_path.read_bytes()),
+              "scope": "Retained local timing/correctness/preservation comparison only; no performance speedup, native behavior, provider, art or human acceptance claim."}
+    output = HERE / "qualification-02.json"
+    with output.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({k: result[k] for k in ("status", "passed", "total", "operations", "prior_successful_results_preserved", "frozen_input_files")}))
+    return 0 if result["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

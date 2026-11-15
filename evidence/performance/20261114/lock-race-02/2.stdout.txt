@@ -1,0 +1,14 @@
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> tests\test_store_lock.py:213:17
+    |
+211 |           with ThreadPoolExecutor(max_workers=1) as pool:
+212 |               try:
+213 | /                 with store.lock(self.folder):
+214 | |                     with patch.object(store, "_open_lock_metadata", side_effect=paused):
+    | |________________________________________________________________________________________^
+215 |                           pending = pool.submit(self.blocked)
+216 |                           self.assertTrue(opened.wait(10))
+    |
+help: Combine `with` statements
+
+Found 1 error.

@@ -1,0 +1,12 @@
+B023 Function definition does not bind loop variable `raw`
+   --> tests\test_measure_performance.py:183:77
+    |
+181 |                 def malformed_child(_command, **kwargs):
+182 |                     return real_run([sys.executable, "-B", "-c",
+183 |                                      f"import sys; sys.stdout.buffer.write({raw!r})"], **kwargs)
+    |                                                                             ^^^
+184 |
+185 |                 with patch.object(benchmark.subprocess, "run", side_effect=malformed_child):
+    |
+
+Found 1 error.

@@ -74,6 +74,38 @@ def _lock_constant(_value):
     raise ValueError("non-JSON lock metadata")
 
 
+def _open_lock_metadata(path: Path) -> int:
+    """Read owner hints without preventing the actual owner's normal release."""
+    if os.name != "nt":
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        return os.open(path, flags)
+
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    # A normal Windows CRT read handle denies deletion. A diagnostic observer
+    # must share delete access, not delay the owner's unlink or delete on close.
+    # OPEN_REPARSE_POINT preserves the no-follow intent of the POSIX branch.
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create = kernel32.CreateFileW
+    create.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                       wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    create.restype = wintypes.HANDLE
+    close = kernel32.CloseHandle
+    close.argtypes = [wintypes.HANDLE]
+    close.restype = wintypes.BOOL
+    handle = create(str(path), 0x80000000, 0x1 | 0x2 | 0x4, None, 3, 0x00200000, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        # Ownership transfers to the descriptor only when conversion succeeds.
+        return msvcrt.open_osfhandle(handle, os.O_RDONLY | os.O_BINARY | os.O_NOINHERIT)
+    except BaseException:
+        close(handle)
+        raise
+
+
 def _lock_observation(path):
     """Bounded best-effort metadata read; a failed observation never breaks a lock."""
     result = {"path": str(path), "metadata_status": "unreadable", "owner_state": "unverified"}
@@ -83,8 +115,7 @@ def _lock_observation(path):
             return {**result, "metadata_status": "non_regular"}
         if before.st_size > LOCK_METADATA_LIMIT:
             return {**result, "metadata_status": "oversized"}
-        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-        with os.fdopen(os.open(path, flags), "rb") as stream:
+        with os.fdopen(_open_lock_metadata(path), "rb") as stream:
             opened = os.fstat(stream.fileno())
             if not stat.S_ISREG(opened.st_mode) or _lock_signature(before) != _lock_signature(opened):
                 return {**result, "metadata_status": "changed"}

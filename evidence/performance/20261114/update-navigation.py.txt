@@ -1,0 +1,79 @@
+"""Update current maintenance routes after the TM-02 verifier completes."""
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+RUN = "20261115T023402.446790Z"
+
+
+def update(name, transform):
+    path = ROOT / name
+    raw = path.read_bytes()
+    newline = "\r\n" if b"\r\n" in raw else "\n"
+    text = raw.decode("utf-8").replace("\r\n", "\n")
+    path.write_bytes(transform(text).replace("\n", newline).encode("utf-8"))
+
+
+def paragraph(text, prefix, replacement):
+    parts = text.split("\n\n")
+    matches = [index for index, value in enumerate(parts) if value.startswith(prefix)]
+    assert len(matches) == 1, prefix
+    parts[matches[0]] = replacement
+    return "\n\n".join(parts)
+
+
+def main():
+    report = json.loads((ROOT / f"evidence/verification-runs/{RUN}/result.json").read_bytes())
+    assert report["status"] == "pass"
+    tests = report["tests"]
+    count = f"{tests['passed']:,} passing tests, {len(tests['skipped'])} Windows privilege skips ({tests['run']:,} run)"
+
+    def index(text):
+        text = text.replace("SC-09 and TM-01\nupdate", "SC-09, TM-01 and TM-02\nupdate")
+        text, changes = re.subn(r"(?ms)^- \*\*Latest full local checkpoint:\*\*.*?(?=^- \*\*)",
+            f"- **Latest full local checkpoint:** [TM-02 verification](verification-runs/{RUN}/result.json)\n"
+            f"  records {count}, 39 reference checks\n"
+            "  and distribution checks. This includes four new authoring and four new lock-reader regressions, plus\n"
+            "  thirteen new maintainer measurement tests. The [TM-01 checkpoint](verification-runs/20261115T003322.792746Z/result.json)\n"
+            "  remains retained with its original inputs. These are local/package checks,\n"
+            "  not new native, artistic or human acceptance.\n"
+            "- **Measured operation costs:** [TM-02](performance/README.md) measures four\n"
+            "  retained histories and 39 operations, with stable outputs and unchanged\n"
+            "  5,207 inputs. Authoring medians are 84–290 ms on the measured Windows host.\n"
+            "  A valid whole-file source crash is repaired; no performance optimization\n"
+            "  was introduced. The [guide](../docs/PERFORMANCE.md) distinguishes timing,\n"
+            "  report-size, fresh-process and preservation scopes.\n", text, count=1)
+        assert changes == 1
+        text = text.replace("- **Typed core boundaries:**", "- **Retained typed core boundaries:**")
+        text = text.replace("`TM-01-FULL-VERIFICATION` for the latest", "`TM-02-FULL-VERIFICATION` for the latest")
+        start = text.index("- **Check current inputs:**")
+        end = text.index("\n\n**Blocked by", start)
+        text = text[:start] + (
+            "- **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).\n"
+            "  The [TM-02 inspection](performance/20261114/integrity-01/report.json) covers\n"
+            "  23 claims and 68 receipts: two current TM-02 claims, eleven historical and\n"
+            "  ten stale applicability claims. Both TM-01 bindings now join the earlier\n"
+            "  eight stale claims after the authoring repair and new maintainer tests.\n"
+            "  Original outcomes remain intact; `needs_review` is not a runtime failure.\n"
+            "  [TM-01](boundary-typing/20261114/integrity-01/report.json) and\n"
+            "  [SC-09](lock-diagnostics/20261114/integrity-02/report.json) keep their\n"
+            "  earlier inspection results."
+        ) + text[end:]
+        return text
+
+    update("evidence/README.md", index)
+
+    def matrix(text):
+        text = paragraph(text, "Use [the task-based index]", "Use [the task-based index](../evidence/README.md) to find a result, then [the TM-10 integrity check](EVIDENCE-INTEGRITY.md) before relying on it for current work. The reviewed [registry](../evaluations/evidence-claims.json) now covers 23 claims and 68 pinned receipts, preserving all earlier 21 claims/64 receipts, retained release declarations and all ten core-task anchors. It binds exact anchor lines, receipt fields and tested source/package identities. Unrelated prose changes do not replace that review.")
+        text = paragraph(text, "The [TM-01 inspection]", "The [TM-02 inspection](../evidence/performance/20261114/integrity-01/report.json) records two current TM-02 claims, eleven historical claims and ten stale applicability claims. Both TM-01 bindings join the prior eight after the authoring repair and new measurement source/test inventory. [TM-01](../evidence/boundary-typing/20261114/integrity-01/report.json) and [SC-09](../evidence/lock-diagnostics/20261114/integrity-02/report.json) retain their earlier inspection results. The overall report needs review even with an intact current bundle. Original outcomes and archive identities remain intact; matching hashes do not repeat a proof or accept art. `CURRENT-FULL-VERIFICATION` still names the older SC-06 receipt; the NF-07, SC-09 and TM-01 IDs remain their own checkpoints, and `TM-02-FULL-VERIFICATION` identifies the newest registered full result.")
+        text = text.replace("its static refusal checks, runtime regressions and newest full local checkpoint", "its static refusal checks, runtime regressions and retained full local checkpoint")
+        text = paragraph(text, "**Active group: TM-02", "**Active group: PX-SKILL-001 consequential-choice and cold-handoff qualification [M1, linked CF-02 / PX-EVAL-005].** [TM-02 measurements](../evidence/performance/README.md) are bounded complete: four histories, 39 measured operations, exact output/input preservation and narrow whole-file source-binding and Windows diagnostic-reader repairs. No performance optimization was introduced; the [guide](PERFORMANCE.md) records repeatable measurement and its limits. Focused regressions, independent report review and full local/reference/package verification remain separate from native behavior, art and human acceptance. Earlier TM-01 typing, SC-09 recovery, QOL-09 command guidance and QOL-07 reader qualifications retain their original identities/failures. Continue the existing PLAN and its earliest unfinished intake behavior, preserving completed literal-criteria comparisons and the separate CF-08 conformance failure. Conditional proposals, broader reliability, human acceptance and M1/M2/broader M3/M4/M5 remain open.")
+        return text
+
+    update("docs/CAPABILITY-OUTCOMES.md", matrix)
+    print("Updated evidence navigation and capability maintenance context.")
+
+
+if __name__ == "__main__":
+    main()

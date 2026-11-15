@@ -1,0 +1,73 @@
+"""Read-only current-runtime smoke against isolated retained archive extractions."""
+import collections
+import hashlib
+import json
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT))
+from pixl import authoring_context, codec, graph
+
+CASES = [
+    ("queue-native", "evidence/native-production/20261112/codex-01/consumer-delta.zip", ".pixl/assets/queue.ready/state.px", "task"),
+    ("robot-directions", "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip", ".pixl/assets/robot.directions/state.px", "robot-directions-family.delivery.task"),
+    ("robot-idle", "evidence/domain-art-revision/20261112/production-01/consumer-final.zip", ".pixl/assets/robot.idle/state.px", "cf09-idle-family.delivery.task"),
+    ("queue-revision", "evidence/artistic-revision/20261109/native/codex-01/consumer-delta.zip", ".pixl/assets/queue.ready/state.px", "artistic-02.delivery.task"),
+]
+
+
+def identity(path):
+    st = path.stat()
+    return {"bytes": st.st_size, "mtime_ns": st.st_mtime_ns, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): identity(p) for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def probe(fn):
+    try:
+        return {"status": "pass", "result": fn()}
+    except Exception as error:
+        return {"status": "error", "type": type(error).__name__, "error": str(error)}
+
+
+def authoring(path, focus, root):
+    result = authoring_context.report(path, focus, root)
+    return {"bytes": len(json.dumps(result, ensure_ascii=False, separators=(",", ":")).encode()), "file_statuses": dict(collections.Counter(row.get("file_status") for group in ("sources", "artifacts", "plans") for row in result[group])), "diagnostics": result["diagnostics"], "noncurrent_files": [{"group": group, "id": row["id"], "status": row.get("file_status"), "retrieve": row.get("retrieve")} for group in ("sources", "artifacts", "plans") for row in result[group] if row.get("file_status") not in ("current", "remote_unverified")]}
+
+
+def main():
+    results = []
+    for name, relative, state, focus in CASES:
+        archive = ROOT / relative
+        before = identity(archive)
+        with tempfile.TemporaryDirectory(prefix="pixl-tm02-discovery-") as temp:
+            root = Path(temp)
+            with zipfile.ZipFile(archive) as zipped:
+                for member in zipped.infolist():
+                    destination = (root / member.filename).resolve()
+                    if not destination.is_relative_to(root.resolve()):
+                        raise ValueError("archive path escapes temporary root")
+                    if member.is_dir():
+                        destination.mkdir(parents=True, exist_ok=True)
+                    else:
+                        destination.parent.mkdir(parents=True, exist_ok=True)
+                        destination.write_bytes(zipped.read(member))
+            frozen = inventory(root)
+            path = root / state
+            doc = codec.parse(path.read_bytes())
+            store = path.parent
+            result = {"name": name, "archive": relative, "archive_identity": before, "state": state, "state_identity": identity(path), "focus": focus, "revision": doc.revision, "records": len(doc.records), "history_entries": len(list((store / "history").glob("*"))), "store_bytes": sum(p.stat().st_size for p in store.rglob("*") if p.is_file()), "structure_validation": probe(lambda: bool(graph.validate(doc))), "root_validation": probe(lambda: bool(graph.validate(doc, root))), "context": probe(lambda: {"bytes": len(codec.encode(graph.context(doc, focus))), "records": len(graph.context(doc, focus).records)}), "authoring": probe(lambda: authoring(path, focus, root))}
+            result["extracted_files_unchanged"] = frozen == inventory(root)
+            result["extracted_file_count"] = len(frozen)
+        result["archive_unchanged"] = before == identity(archive)
+        results.append(result)
+    print(json.dumps({"scope": "Discovery only; no performance timing. Exact archive-only extraction, no source repair or baseline overlay. Missing bindings are retained outcomes, not edited away.", "cases": results}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

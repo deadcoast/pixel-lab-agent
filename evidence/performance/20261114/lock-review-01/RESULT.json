@@ -1,0 +1,145 @@
+{
+  "status": "pass",
+  "platform": "win32",
+  "source_hashes": {
+    "pixl/store.py": "5a87b62291011092359c0d2551518acf2ff9ad31c23f26dbd76e6c842a20c1ad",
+    "tests/test_store_lock.py": "6c1004cb9fcfebb61ad176cc46feeb9d8285263e748b37f6ae35e114fd649715"
+  },
+  "passed": 17,
+  "total": 17,
+  "checks": [
+    {
+      "name": "store_matches_reviewed_snapshot",
+      "pass": true,
+      "detail": "The production helper stayed frozen during review."
+    },
+    {
+      "name": "writer_acquisition_release_unchanged",
+      "pass": true,
+      "detail": "Exact AST equality preserves exclusive acquisition, contention behavior and single normal finally-unlink; no retry or implicit unlock was added."
+    },
+    {
+      "name": "bounded_identity_and_symlink_guards_preserved",
+      "pass": true,
+      "detail": "The existing 4096-byte bound, regular-file checks, path/descriptor identity and changed/disappeared handling are unchanged apart from the descriptor opener."
+    },
+    {
+      "name": "open_existing_reparse_point_without_delete_on_close",
+      "pass": true,
+      "detail": "GENERIC_READ plus OPEN_EXISTING plus OPEN_REPARSE_POINT; no creation/truncation/DELETE_ON_CLOSE flag."
+    },
+    {
+      "name": "successful_conversion_owns_valid_noninheritable_handle",
+      "pass": true,
+      "detail": "Actual converted Windows descriptor is valid and cannot be inherited."
+    },
+    {
+      "name": "diagnostic_descriptor_read_only",
+      "pass": true,
+      "detail": "An actual write attempt is refused and exact original metadata remains readable."
+    },
+    {
+      "name": "exclusive_probe_detects_open_reader",
+      "pass": true,
+      "detail": {
+        "winerror": 32,
+        "scope": "Control proves a share-mode-zero probe detects a live diagnostic handle; ordinary CRT writing does not establish closure."
+      }
+    },
+    {
+      "name": "descriptor_close_releases_windows_handle",
+      "pass": true,
+      "detail": "GetHandleInformation independently observes ERROR_INVALID_HANDLE after the descriptor closes."
+    },
+    {
+      "name": "reader_close_does_not_delete_or_modify_lock",
+      "pass": true,
+      "detail": "Closing the observer leaves the exact lock bytes present."
+    },
+    {
+      "name": "conversion_failure_closes_raw_handle",
+      "pass": true,
+      "detail": "The raw HANDLE closes on conversion failure, before any descriptor ownership exists."
+    },
+    {
+      "name": "exclusive_open_after_conversion_failure",
+      "pass": true,
+      "detail": "A real share-mode-zero opener succeeds after the failed conversion; unlike ordinary CRT writing, this would reject a leaked read handle."
+    },
+    {
+      "name": "conversion_failure_preserves_lock_bytes",
+      "pass": true,
+      "detail": "Failed metadata observation never deletes or rewrites the lock."
+    },
+    {
+      "name": "owner_unlink_permitted_while_reader_open",
+      "pass": true,
+      "detail": "Actual Windows unlink succeeds while the observer retains its descriptor; exact old bytes remain readable through that descriptor."
+    },
+    {
+      "name": "missing_metadata_never_recreated",
+      "pass": true,
+      "detail": "OPEN_EXISTING does not create a missing lock."
+    },
+    {
+      "name": "portable_branch_preserves_existing_flags",
+      "pass": true,
+      "detail": "Controlled dispatch checks the unchanged non-Windows flag expression; this is not a POSIX host execution result."
+    },
+    {
+      "name": "conversion_regression_uses_real_exclusive_share_mode",
+      "pass": true,
+      "detail": "The previously weak ordinary-writer assertion was replaced with an actual exclusive Windows opener."
+    },
+    {
+      "name": "reviewed_sources_unchanged",
+      "pass": true,
+      "detail": "Production and regression sources remain byte-identical throughout these independent probes."
+    }
+  ],
+  "observations": {
+    "valid_before_close": {
+      "valid": true,
+      "winerror": 0,
+      "flags": 0
+    },
+    "ordinary_crt_writer_works_with_reader_open": true,
+    "handle_after_descriptor_close": {
+      "valid": false,
+      "winerror": 6,
+      "flags": 0
+    },
+    "handle_after_conversion_failure": {
+      "valid": false,
+      "winerror": 6,
+      "flags": 0
+    }
+  },
+  "review_findings": [
+    {
+      "status": "resolved_before_final_review",
+      "problem": "The first conversion-failure regression used ordinary Path.open('wb'), which does not prove a leaked read handle was closed.",
+      "resolution": "Root replaced it with CreateFileW share mode zero. Independent control detects the live reader with WinError32; GetHandleInformation then observes ERROR_INVALID_HANDLE after conversion failure."
+    }
+  ],
+  "references": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew",
+      "applied": "Read/write/delete sharing permits owner release; OPEN_EXISTING cannot create; OPEN_REPARSE_POINT does not follow the final symlink; DELETE_ON_CLOSE is a distinct unused flag; NULL security attributes disable inheritance."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/open-osfhandle?view=msvc-170",
+      "applied": "Successful conversion transfers HANDLE ownership to the descriptor; closing the descriptor releases it. Failure needs explicit raw-handle closure."
+    },
+    {
+      "url": "https://docs.python.org/3/library/msvcrt.html#msvcrt.open_osfhandle",
+      "applied": "O_NOINHERIT keeps the converted descriptor noninheritable."
+    }
+  ],
+  "limits": [
+    "Independent probes use one Windows host and disposable local files; no SMB, FAT, remote filesystem or POSIX host qualification is implied.",
+    "Actual symlink creation/racing is not newly exercised here; preserved lstat/fstat identity checks and final-component OPEN_REPARSE_POINT are source-reviewed, and existing symlink tests retain their Windows privilege limits.",
+    "The public cross-process owner-release regression was reviewed in source; root executes it separately. These probes independently exercise descriptor access, deletion sharing and HANDLE lifetime.",
+    "This is a correctness repair for diagnostic observation, not evidence of a performance optimization or broader host reliability."
+  ]
+}

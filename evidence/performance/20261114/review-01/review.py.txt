@@ -1,0 +1,82 @@
+"""Independent bounded review of the measurement harness; no production writes."""
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT))
+sys.dont_write_bytecode = True
+from pixl import codec
+from scripts import measure_performance as benchmark
+
+HERE = Path(__file__).parent
+PATHS = ["scripts/measure_performance.py", "tests/test_measure_performance.py", "evidence/performance/20261114/run-measurements.py.txt"]
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    sources = {name: (ROOT / name).read_bytes() for name in PATHS}
+    with zipfile.ZipFile(HERE / "reviewed-sources.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for name, data in sources.items():
+            archive.writestr(name, data)
+    checks, probes = [], {}
+
+    def check(name, passed, detail):
+        checks.append({"name": name, "pass": bool(passed), "detail": detail})
+
+    def child_probe(name, completed=None, failure=None):
+        with patch.object(benchmark.subprocess, "run", return_value=completed, side_effect=failure):
+            result = benchmark.fresh_processes(Path("unused-review-manifest"), {"id": "review"}, 1, 1)
+        probes[name] = result
+        return result
+
+    invalid = child_probe("malformed_json", subprocess.CompletedProcess([], 0, b"not-json retained diagnostic", b""))
+    check("malformed_child_json_fails", invalid["status"] == "fail", "The malformed child result cannot become a passing measurement.")
+    check("malformed_child_stdout_retained", "not-json retained diagnostic" in json.dumps(invalid), "FAILED: the original child stdout is discarded when JSON decoding fails.")
+    timeout = child_probe("timeout", failure=subprocess.TimeoutExpired(["probe"], 1, output=b"partial diagnostic", stderr=b"partial error"))
+    check("timeout_fails", timeout["status"] == "fail", "Timeout cannot become a passing measurement.")
+    check("timeout_partial_output_retained", all(text in json.dumps(timeout) for text in ("partial diagnostic", "partial error")), "FAILED: TimeoutExpired output and stderr are discarded.")
+    failed = child_probe("nonzero_exit", subprocess.CompletedProcess([], 3, b"retained stdout", b"retained stderr"))
+    check("nonzero_exit_fails_and_retains_output", failed["status"] == "fail" and all(text in json.dumps(failed) for text in ("retained stdout", "retained stderr")), "Existing ordinary child-exit failure retention works.")
+
+    def broken():
+        raise RuntimeError("retained operation failure")
+
+    operation = benchmark.measure(broken, codec, 0, 1)
+    probes["unexpected_operation"] = operation
+    check("unexpected_operation_failure_cannot_be_expected", operation["status"] == "fail" and "retained operation failure" in json.dumps(operation), "Unexpected exceptions remain failed measurements.")
+    success = benchmark.measure(dict, codec, 0, 1, ["file_hash"])
+    probes["unexpected_success"] = success
+    check("expected_refusal_does_not_allow_success", success["status"] == "fail", "A declared refusal cannot turn an unexpected success into a passing result.")
+    encoding = benchmark.measure(lambda: {"bad": {1, 2}}, codec, 0, 1)
+    probes["encoding_failure"] = encoding
+    check("encoding_failure_retains_operation_timing", encoding["status"] == "fail" and encoding["samples"][0]["elapsed_ns"] >= 0 and "result encoding" in json.dumps(encoding), "Failed report encoding preserves the operation observation and fails.")
+
+    with tempfile.TemporaryDirectory(prefix="pixl-tm02-review-") as temporary:
+        root = Path(temporary)
+        path = root / "input.bin"
+        path.write_bytes(b"first")
+        before = benchmark.tree_identity(root)
+        stat = path.stat()
+        path.write_bytes(b"other")
+        os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+        check("content_identity_beats_size_mtime", "input.bin" in benchmark.changed(before, benchmark.tree_identity(root)), "The review mutates only its disposable synthetic input, restoring its mtime; SHA identity detects the drift.")
+
+    unchanged = all((ROOT / name).read_bytes() == data for name, data in sources.items())
+    check("reviewed_sources_unchanged", unchanged, "Review wrote only this fresh review directory and disposable temporary probe files.")
+    report = {"status": "changes_requested", "scope": "Independent harness/driver/test review by an agent other than their authors. This reviewer prepared the retained input ZIPs, so their content provenance is not independently certified here. Probe subprocess results are controlled mocks, not extra performance measurements.", "source_hashes": {name: digest(data) for name, data in sources.items()}, "checks": checks, "passed": sum(row["pass"] for row in checks), "total": len(checks), "probes": probes, "findings": [{"priority": "P2", "file": "scripts/measure_performance.py", "function": "fresh_processes", "problem": "Captured child output is discarded on malformed JSON and TimeoutExpired.", "consequence": "The measurement correctly fails, but useful original failure diagnostics disappear, contrary to the evidence-preservation goal.", "requested_change": "Retain captured stdout/stderr on timeout and JSON/schema decoding failures. Add focused regression cases. Preserve this failed review and baseline before changing sources."}], "source_review": ["Operation clocks stop before result serialization and output hashing; serialization clocks are reported separately for public reports. Component operations overlap and must not be summed.", "Warm samples occur after setup and input hashing; fresh-process wall timing includes Python startup, imports, manifest parsing, authoring work, serialization and exit. The existing scope text explicitly disclaims cold filesystem caches and full CLI transport.", "Unexpected errors, wrong refusal codes, unstable output hashes and preservation drift all prevent a pass. Expected refusal status remains distinct from successful operation status.", "Runtime source identity includes pixl Python/JSON sources, benchmark script and configuration. Input inventories include all declared roots without ignored subtrees; manifests are rechecked after measurement.", "The wrapper checks exact frozen ZIP membership, per-member size/hash and source/archive identities, writes only new output/temporary roots, and rejects existing output directories. Its source snapshot includes the benchmark and the wrapper itself.", "The wrapper selects each task's first output for pixl_family, including the queue single output; claims should describe an output report rather than four distinct multi-member family cases.", "The new unittest file covers success/child parity, real source drift, newly created files, same-size/same-mtime changes, removed manifests, invalid manifest choices and nonzero CLI configuration exits. It does not cover the two failure-output losses found here."]}
+    (HERE / "RESULT.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"passed": report["passed"], "total": report["total"], "status": report["status"]}))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,64 @@
+TRY004 Prefer `TypeError` exception for invalid type
+  --> scripts\measure_performance.py:79:13
+   |
+77 |     for case in cases:
+78 |         if not isinstance(case, dict):
+79 |             raise ValueError("each case must be an object")
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+80 |         ident = case.get("id")
+81 |         if not isinstance(ident, str) or not ident or ident in seen:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> scripts\measure_performance.py:179:12
+    |
+177 |         return {"elapsed_ns": elapsed, "outcome": {"status": "refused", "code": error.code,
+178 |                                                    "detail": error.detail}}
+179 |     except Exception as error:
+    |            ^^^^^^^^^
+180 |         elapsed = time.perf_counter_ns() - started
+181 |         return {"elapsed_ns": elapsed, "outcome": {"status": "unexpected_error",
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> scripts\measure_performance.py:202:12
+    |
+200 |                 outcome["wire_sha256"] = sha(wire)
+201 |         return row
+202 |     except Exception as error:
+    |            ^^^^^^^^^
+203 |         return {"elapsed_ns": elapsed, "outcome": {"status": "unexpected_error",
+204 |                     "type": type(error).__name__, "detail": "result encoding: " + str(error)}}
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> scripts\measure_performance.py:317:16
+    |
+315 |                     case.get("expected_errors", {}).get(name, []), public)
+316 |             row["fresh_process_authoring"] = fresh_processes(manifest, case, fresh, timeout)
+317 |         except Exception as error:
+    |                ^^^^^^^^^
+318 |             row["setup_error"] = {"type": type(error).__name__, "detail": str(error)}
+319 |         results.append(row)
+    |
+
+PIE807 [*] Prefer `dict` over useless lambda
+  --> tests\test_measure_performance.py:61:44
+   |
+59 |         self.assertIsNone(report["serialization_timing"])
+60 |         self.assertEqual(benchmark.measure(refused, codec, 0, 1)["status"], "fail")
+61 |         self.assertEqual(benchmark.measure(lambda: {}, codec, 0, 1, ["file_hash"])["status"], "fail")
+   |                                            ^^^^^^^^^^
+62 |
+63 |     def test_changed_results_and_unexpected_errors_fail(self):
+   |
+help: Replace with `lambda` with `dict`
+   |
+60 |         self.assertEqual(benchmark.measure(refused, codec, 0, 1)["status"], "fail")
+   -         self.assertEqual(benchmark.measure(lambda: {}, codec, 0, 1, ["file_hash"])["status"], "fail")
+61 +         self.assertEqual(benchmark.measure(dict, codec, 0, 1, ["file_hash"])["status"], "fail")
+62 |
+   |
+
+Found 5 errors.
+[*] 1 fixable with the `--fix` option.

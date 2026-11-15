@@ -15,6 +15,7 @@ from the repository root using its selected environment, currently
 | Does this local operation behave correctly? | [Focused core test](#run-a-focused-core-check) | The selected assertions against the selected implementation | This example uses temporary fixture/state/export files; other tests can rebuild tracked outputs |
 | Does the specialist follow its workflow? | [Native scenario](#record-native-behavior-and-actual-outcomes) | Actual host behavior within that recorded assignment | Trial files, consumer state and host sessions; model service access; provider work depends on the assignment |
 | Are the exact assets useful in the destination? | [Actual outcome review](#record-native-behavior-and-actual-outcomes) | Measurements, observed rendering and explicit scoped judgments | Scenario-specific art/import/capture/review outputs; provider and browser activity only when actually exercised |
+| What do retained context and validation operations cost? | [Performance measurements](PERFORMANCE.md) | Source-bound local timings, report sizes and preservation | Input reads and fresh child probes; caller capture/replay creates fresh outputs and temporary fixtures; no provider/model calls |
 | Does the whole local implementation and distribution pass? | [Full verifier](#rebuild-local-evidence-deliberately) | Unit/reference/package checks and exact tested input identities | Rebuilds tracked evidence, examples and bundle; temporary installs, caches and possible dependency/tokenizer downloads |
 
 These are different kinds of evidence. Format/discovery checks do not establish
@@ -74,6 +75,10 @@ uses a temporary mypy cache and parses the examples without executing them.
 It complements the runtime checks above; it does not validate production JSON,
 run a host or establish artistic acceptance. This TM-01 addition is separate from
 the earlier QOL-09 reader qualification of its retained guide version.
+
+## Measure local operation costs
+
+Use the [performance guide](PERFORMANCE.md) and [TM-02 retained replay](../evidence/performance/README.md) for context assembly, parsing, hashing, validation and report size. The stdout-only harness records warmed samples separately from fresh-process probes, retains refusals and compares input/source identities. It does not set a latency target or establish native behavior. TM-02 also repaired a whole-file source-binding crash and a Windows diagnostic-reader lock conflict; its focused and full verification are separate from the timings. Earlier QOL-09 reader qualification remains tied to its retained guide version.
 
 ## Record native behavior and actual outcomes
 

@@ -1,0 +1,125 @@
+"""Freeze exact retained consumer data without installed tooling or host configuration."""
+import hashlib
+import json
+import sys
+import traceback
+import zipfile
+from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
+
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT))
+from pixl import codec
+
+OUT = ROOT / "evidence/performance/20261114/inputs"
+CASES = [
+    {"id": "queue-native", "archive": "evidence/native-production/20261112/codex-01/consumer-delta.zip", "identity": "evidence/native-production/20261112/codex-01/identity.json", "state": ".pixl/assets/queue.ready/state.px", "focus": "task", "plar": "production-plar.txt", "asset_id": "queue.ready"},
+    {"id": "robot-directions", "archive": "evidence/native-production/20261112/claude-01-resume-02/consumer-delta.zip", "identity": "evidence/native-production/20261112/claude-01/identity.json", "state": ".pixl/assets/robot.directions/state.px", "focus": "robot-directions-family.delivery.task", "plar": "production-plar.txt", "asset_id": "robot.directions"},
+    {"id": "robot-idle", "archive": "evidence/domain-art-revision/20261112/production-01/consumer-final.zip", "state": ".pixl/assets/robot.idle/state.px", "focus": "cf09-idle-family.delivery.task", "plar": "plar.txt", "asset_id": "robot.idle"},
+    {"id": "queue-revision", "archive": "evidence/artistic-revision/20261109/native/codex-01/consumer-delta.zip", "base": "evidence/focused-authoring/20261109/archives/claude-01.zip", "prefix": "project/", "identity": "evidence/artistic-revision/20261109/native/codex-01/identity.json", "launch": "evidence/artistic-revision/20261109/native/codex-01/launch.json", "state": ".pixl/assets/queue.ready/state.px", "focus": "artistic-02.delivery.task", "plar": "authoring-plar.txt", "asset_id": "queue.ready"},
+]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def identity(path):
+    stat = path.stat()
+    return {"bytes": stat.st_size, "sha256": sha(path.read_bytes()), "mtime_ns": stat.st_mtime_ns}
+
+
+def excluded(name):
+    parts = PurePosixPath(name).parts
+    return bool(set(parts) & {".agents", ".claude", ".codex", ".git", "node_modules", "__pycache__", "installed pixl", "runtime-recovery-kit", ".venv"}) or name.endswith((".pyc", ".pyo"))
+
+
+def safe_name(name):
+    path = PurePosixPath(name)
+    if path.is_absolute() or ".." in path.parts or "\\" in name or ":" in name:
+        raise ValueError("unsafe source member path")
+
+
+def main():
+    OUT.mkdir(exist_ok=False)
+    result = {"scope": "Current-runtime performance inputs assembled from retained exact bytes. No store/source rebinding. Original source and archive bytes/mtimes checked unchanged. Installed tools and host configuration excluded.", "cases": []}
+    for case in CASES:
+        data, origins, watched, exclusions, supplements = {}, {}, {}, [], []
+
+        def watch(path):
+            watched[str(path)] = identity(path)
+
+        def add_archive(relative, prefix=""):
+            archive = ROOT / relative
+            watch(archive)
+            with zipfile.ZipFile(archive) as zipped:
+                for info in zipped.infolist():
+                    if info.is_dir() or not info.filename.startswith(prefix):
+                        continue
+                    name = info.filename[len(prefix):]
+                    safe_name(name)
+                    if excluded(name):
+                        exclusions.append({"archive": relative, "member": info.filename})
+                        continue
+                    data[name] = zipped.read(info)
+                    origins[name] = {"archive": relative, "member": info.filename, "archive_sha256": watched[str(archive)]["sha256"]}
+
+        if "base" in case:
+            add_archive(case["base"], case["prefix"])
+        add_archive(case["archive"])
+        source_root = None
+        expected_inputs = {}
+        if "identity" in case:
+            ipath = ROOT / case["identity"]
+            watch(ipath)
+            original = json.loads(ipath.read_text())
+            source_root = Path(original["consumer"]) if "consumer" in original else None
+            expected_inputs = original.get("inputs", {})
+        if "launch" in case:
+            launch = ROOT / case["launch"]
+            watch(launch)
+            source_root = Path(json.loads(launch.read_text())["cwd"])
+
+        doc = codec.parse(data[case["state"]])
+        references = {r.fields["ur"]: r.fields["dg"] for r in doc.records.values() if r.kind in {"S", "X"} and "ur" in r.fields and "dg" in r.fields and not urlsplit(r.fields["ur"]).scheme}
+        for name, expected in {**expected_inputs, **references}.items():
+            if name in data or excluded(name):
+                continue
+            safe_name(name)
+            if source_root is None:
+                supplements.append({"path": name, "status": "not_available", "expected_sha256": expected})
+                continue
+            source = source_root / name
+            if not source.is_file():
+                supplements.append({"path": name, "status": "not_available", "expected_sha256": expected})
+                continue
+            watch(source)
+            raw = source.read_bytes()
+            if sha(raw) != expected:
+                supplements.append({"path": name, "status": "hash_mismatch_preserved", "expected_sha256": expected, "actual_sha256": sha(raw)})
+                continue
+            data[name] = raw
+            origins[name] = {"original_path": str(source), "expected_sha256": expected, "identity_record": case.get("identity"), "basis": "historical identity input or retained state source/artifact digest"}
+            supplements.append({"path": name, "status": "exact_hash_supplement"})
+
+        output = OUT / (case["id"] + ".zip")
+        with zipfile.ZipFile(output, "x", compression=zipfile.ZIP_DEFLATED) as zipped:
+            for name in sorted(data):
+                info = zipfile.ZipInfo(name, (2026, 11, 14, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                zipped.writestr(info, data[name])
+        files = {name: {"bytes": len(raw), "sha256": sha(raw), "origin": origins[name]} for name, raw in sorted(data.items())}
+        manifest = {"id": case["id"], "archive": output.relative_to(ROOT).as_posix(), "archive_identity": identity(output), "state": case["state"], "focus": case["focus"], "plar": case["plar"], "asset_id": case["asset_id"], "revision": doc.revision, "record_count": len(doc.records), "state_sha256": sha(data[case["state"]]), "files": files, "excluded": exclusions, "supplements": supplements, "original_inputs": watched, "original_inputs_unchanged": all(identity(Path(path)) == before for path, before in watched.items())}
+        (OUT / (case["id"] + ".json")).write_text(json.dumps(manifest, indent=2) + "\n")
+        result["cases"].append({key: manifest[key] for key in ("id", "archive", "archive_identity", "state", "focus", "plar", "asset_id", "revision", "record_count", "state_sha256", "original_inputs_unchanged")})
+        result["cases"][-1].update(file_count=len(files), total_bytes=sum(row["bytes"] for row in files.values()), excluded_count=len(exclusions), supplement_statuses={status: sum(row["status"] == status for row in supplements) for status in sorted(set(row["status"] for row in supplements))})
+        print(case["id"], "ready", len(files), flush=True)
+    (Path(__file__).parent / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        traceback.print_exc()
+        raise

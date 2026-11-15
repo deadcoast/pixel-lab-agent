@@ -1,0 +1,144 @@
+"""Replay frozen TM-02 inputs into temporary roots and retain a fresh run."""
+import argparse
+import cProfile
+import hashlib
+import io
+import json
+import os
+import pstats
+import subprocess
+import sys
+import tempfile
+import zipfile
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
+
+ROOT = Path(__file__).resolve().parents[3]
+HERE = Path(__file__).resolve().parent
+sys.dont_write_bytecode = True
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def write(path, value):
+    path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--warmups", type=int, default=2)
+    parser.add_argument("--iterations", type=int, default=15)
+    parser.add_argument("--fresh-processes", type=int, default=3)
+    parser.add_argument("--profile", action="store_true", help="separate largest-case diagnostic after timing")
+    args = parser.parse_args()
+    out = args.out.resolve()
+    out.mkdir(parents=True, exist_ok=False)
+    specs = json.loads((HERE / "input-preparation-01/RESULT.json").read_bytes())["cases"]
+    sources = sorted(p for p in (ROOT / "pixl").rglob("*") if p.is_file()
+                     and p.suffix in {".py", ".json"} and "__pycache__" not in p.parts)
+    sources += [ROOT / "scripts/measure_performance.py", ROOT / "pyproject.toml",
+                ROOT / "uv.lock", Path(__file__).resolve()]
+    source_hashes = {}
+    with zipfile.ZipFile(out / "sources.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for path in sources:
+            name = path.relative_to(ROOT).as_posix()
+            data = path.read_bytes()
+            source_hashes[name] = digest(data)
+            archive.writestr(name, data)
+    write(out / "source-hashes.json", source_hashes)
+    archive_hashes = {}
+    with tempfile.TemporaryDirectory(prefix="pixl-tm02-") as temporary:
+        cases = []
+        sys.path.insert(0, str(ROOT))
+        from pixl import codec
+
+        for spec in specs:
+            source = ROOT / spec["archive"]
+            data = source.read_bytes()
+            actual = digest(data)
+            if actual != spec["archive_identity"]["sha256"]:
+                raise ValueError(f"input archive changed: {spec['id']}")
+            archive_hashes[spec["archive"]] = actual
+            manifest_path = HERE / "inputs" / (spec["id"] + ".json")
+            members = json.loads(manifest_path.read_bytes())["files"]
+            archive_hashes[manifest_path.relative_to(ROOT).as_posix()] = digest(manifest_path.read_bytes())
+            root = Path(temporary) / spec["id"]
+            root.mkdir()
+            with zipfile.ZipFile(source) as archive:
+                names = archive.namelist()
+                if len(names) != len(set(names)) or set(names) != set(members):
+                    raise ValueError(f"archive membership mismatch: {spec['id']}")
+                for name in names:
+                    relative = PurePosixPath(name)
+                    if relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
+                        raise ValueError("unsafe archive member")
+                    value = archive.read(name)
+                    if digest(value) != members[name]["sha256"] or len(value) != members[name]["bytes"]:
+                        raise ValueError(f"member identity mismatch: {name}")
+                    path = root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(value)
+            doc = codec.parse((root / spec["state"]).read_bytes())
+            outputs = doc.records[spec["focus"]].fields.get("op", [])
+            case = {"id": spec["id"], "root": str(root), "path": spec["state"],
+                    "focus": spec["focus"]}
+            family_outputs = [ref.id for ref in outputs
+                              if {"bs", "mb", "ds"} <= doc.records[ref.id].fields.keys()]
+            if family_outputs:
+                case["output_id"] = family_outputs[0]
+            cases.append(case)
+        manifest = out / "manifest.json"
+        write(manifest, {"version": 1, "cases": cases})
+        command = [sys.executable, "-B", str(ROOT / "scripts/measure_performance.py"),
+                   "--manifest", str(manifest), "--warmups", str(args.warmups),
+                   "--iterations", str(args.iterations), "--fresh-processes", str(args.fresh_processes)]
+        write(out / "command.json", {"argv": command, "cwd": str(ROOT),
+              "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+              "started_at": datetime.now(UTC).isoformat(), "input_hashes": archive_hashes,
+              "sources_zip_sha256": digest((out / "sources.zip").read_bytes())})
+        environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+        with (out / "report.json").open("wb") as stdout, (out / "stderr.txt").open("wb") as stderr:
+            completed = subprocess.run(command, cwd=ROOT, env=environment, stdout=stdout, stderr=stderr, check=False)
+        if args.profile:
+            from pixl import service
+            from scripts.measure_performance import json_bytes, tree_identity
+
+            case = next(case for case in cases if case["id"] == "queue-revision")
+            root = Path(case["root"])
+            before = tree_identity(root)
+            profiles = []
+            for name, operation, arguments in (
+                ("authoring", "pixl_context", {"path": case["path"], "focus": case["focus"], "view": "authoring"}),
+                ("validation", "pixl_validate", {"path": case["path"]}),
+            ):
+                profile = cProfile.Profile()
+                value = profile.runcall(service.call, operation, arguments, root)
+                profile.dump_stats(str(out / (name + ".prof")))
+                stream = io.StringIO()
+                pstats.Stats(profile, stream=stream).strip_dirs().sort_stats("cumulative").print_stats(35)
+                (out / (name + "-profile.txt")).write_text(stream.getvalue(), encoding="utf-8")
+                profiles.append({"operation": operation, "arguments": arguments,
+                                 "result_sha256": digest(json_bytes(value)),
+                                 "profile": name + ".prof"})
+            write(out / "profiles.json", {"case": case["id"], "profiles": profiles,
+                  "inputs_unchanged": before == tree_identity(root),
+                  "scope": "Separate instrumented single calls after timed samples; profiler costs are not baseline latency."})
+        unchanged = {name: digest((ROOT / name).read_bytes()) == expected
+                     for name, expected in {**source_hashes, **archive_hashes}.items()}
+        result = {"exit_code": completed.returncode, "finished_at": datetime.now(UTC).isoformat(),
+                  "inputs_and_sources_unchanged": all(unchanged.values()),
+                  "changed": [name for name, same in unchanged.items() if not same],
+                  "report_sha256": digest((out / "report.json").read_bytes()),
+                  "input_hashes": archive_hashes, "source_hashes": source_hashes,
+                  "effects": "New retained output directory and temporary extracted inputs; no old receipt, runtime or original consumer writes. Temporary inputs are removed after measurement."}
+        write(out / "RESULT.json", result)
+        print(json.dumps({"output": str(out), "exit_code": completed.returncode,
+                          "inputs_and_sources_unchanged": result["inputs_and_sources_unchanged"]}))
+        return completed.returncode if all(unchanged.values()) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

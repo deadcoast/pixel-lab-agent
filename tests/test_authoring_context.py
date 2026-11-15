@@ -26,6 +26,27 @@ class AuthoringContextTests(unittest.TestCase):
     def report(self, **extra):
         return service.call("pixl_context", self.args | extra, self.root)
 
+    def add_unranged_source(self, *, remote=False):
+        doc = store.load(self.folder)
+        expected = codec.digest(doc)
+        source_path = self.root / "reference.png"
+        source_path.write_bytes((self.root / doc.records["member"].fields["ur"]).read_bytes())
+        fields = doc.records["source"].fields | {
+            "ur": "https://example.invalid/reference.png" if remote else source_path.name,
+            "dg": graph.file_hash(source_path), "ln": [],
+        }
+        doc.records["unranged.source"] = Record("unranged.source", "S", fields)
+        doc.records["next.motion.q.shape"].fields["so"].append(Ref("unranged.source"))
+        doc.revision += 1
+        store.commit(self.folder, doc, expected, self.root)
+        return fields
+
+    def inventory(self):
+        return {
+            path.relative_to(self.root).as_posix(): (path.read_bytes(), path.stat().st_mtime_ns)
+            for path in self.root.rglob("*") if path.is_file()
+        }
+
     def test_exact_current_records_and_shared_sources_without_history(self):
         before = (self.folder / "state.px").read_bytes()
         report = self.report()
@@ -42,6 +63,71 @@ class AuthoringContextTests(unittest.TestCase):
         self.assertTrue(all("vr" not in t["fields"] for t in report["tasks"]))
         self.assertIsNone(report["consistent"])
         self.assertEqual(before, (self.folder / "state.px").read_bytes())
+
+    def test_binary_source_keeps_exact_binding_and_ranged_retrieval_still_works(self):
+        ranged = self.report()["sources"][0]
+        fields = self.add_unranged_source()
+        before = self.inventory()
+        report = self.report()
+        source = next(row for row in report["sources"] if row["id"] == "unranged.source")
+        self.assertEqual(source["file_status"], "current")
+        self.assertEqual(source["observed_sha256"], fields["dg"])
+        self.assertEqual(source["binding"], codec.to_data(fields))
+        self.assertNotIn("retrieve", source)
+        self.assertEqual(next(row for row in report["sources"] if row["id"] == "source"), ranged)
+        excerpt = service.call(ranged["retrieve"]["tool"], ranged["retrieve"]["arguments"], self.root)
+        self.assertIn("Developer fixture brief", excerpt["text"])
+        complete = self.report(view="complete", focus="next.motion.output")
+        self.assertIn("unranged.source", complete["wire"])
+        self.assertEqual(before, self.inventory())
+
+    def test_changed_and_missing_binary_sources_remain_visible_but_fail_complete_context(self):
+        fields = self.add_unranged_source()
+        source_path = self.root / fields["ur"]
+        for status, error_code in (("changed", "file_hash"), ("missing", "file_missing")):
+            with self.subTest(status=status):
+                if status == "changed":
+                    source_path.write_bytes(source_path.read_bytes() + b"changed fixture bytes")
+                else:
+                    source_path.unlink()
+                before = self.inventory()
+                source = next(row for row in self.report()["sources"] if row["id"] == "unranged.source")
+                self.assertEqual(source["file_status"], status)
+                self.assertEqual(source["binding"], codec.to_data(fields))
+                self.assertNotIn("retrieve", source)
+                self.assertEqual(source["observed_sha256"], graph.file_hash(source_path) if source_path.exists() else None)
+                with self.assertRaises(PixlError) as raised:
+                    self.report(view="complete")
+                self.assertEqual(raised.exception.code, error_code)
+                self.assertEqual(before, self.inventory())
+
+    def test_remote_unranged_source_remains_unverified_without_local_retrieval(self):
+        fields = self.add_unranged_source(remote=True)
+        before = self.inventory()
+        source = next(row for row in self.report()["sources"] if row["id"] == "unranged.source")
+        self.assertEqual(source["file_status"], "remote_unverified")
+        self.assertEqual(source["binding"], codec.to_data(fields))
+        self.assertNotIn("retrieve", source)
+        self.assertNotIn("observed_sha256", source)
+        self.assertEqual(before, self.inventory())
+
+    def test_binary_source_authoring_cli_and_mcp_match_without_writes(self):
+        self.add_unranged_source()
+        before = self.inventory()
+        expected = self.report()
+        result = subprocess.run(
+            [sys.executable, "-B", "-m", "pixl", "context", str(self.folder / "state.px"),
+             "next.plan", "--view", "authoring", "--root", str(self.root)],
+            capture_output=True, encoding="utf-8", check=True,
+        )
+        self.assertEqual(json.loads(result.stdout), expected)
+        response = mcp.dispatch({
+            "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+            "params": {"name": "pixl_context", "arguments": self.args},
+        }, self.root)
+        self.assertFalse(response["result"]["isError"], response)
+        self.assertEqual(response["result"]["structuredContent"], expected)
+        self.assertEqual(before, self.inventory())
 
     def test_pending_intent_is_visible_without_provider_payload_or_event_expansion(self):
         doc = store.load(self.folder)

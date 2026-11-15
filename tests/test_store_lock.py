@@ -5,10 +5,12 @@ import os
 import subprocess
 import sys
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from threading import Event
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -100,14 +102,7 @@ class StoreLockTests(unittest.TestCase):
 
     def test_metadata_read_denial_preserves_original_contention_error(self):
         self.path.write_text('{"pid":123}', encoding="utf-8")
-        real_open = os.open
-
-        def denied(path, flags, *args, **kwargs):
-            if not flags & os.O_CREAT:
-                raise PermissionError("permission detail must not escape")
-            return real_open(path, flags, *args, **kwargs)
-
-        with patch.object(store.os, "open", side_effect=denied):
+        with patch.object(store, "_open_lock_metadata", side_effect=PermissionError("permission detail must not escape")):
             error = self.preserved_block("unreadable")
         self.assertNotIn("permission detail", error.detail)
 
@@ -136,14 +131,13 @@ class StoreLockTests(unittest.TestCase):
         replacement = self.root / "replacement.lock"
         replacement.write_text('{"pid":456}', encoding="utf-8")
         replacement_bytes = replacement.read_bytes()
-        real_open = os.open
+        real_open = store._open_lock_metadata
 
-        def replaced(path, flags, *args, **kwargs):
-            if not flags & os.O_CREAT:
-                os.replace(replacement, self.path)
-            return real_open(path, flags, *args, **kwargs)
+        def replaced(path):
+            os.replace(replacement, self.path)
+            return real_open(path)
 
-        with patch.object(store.os, "open", side_effect=replaced):
+        with patch.object(store, "_open_lock_metadata", side_effect=replaced):
             error = self.blocked()
         self.assertEqual(error.context["lock"]["metadata_status"], "changed")
         self.assertNotIn("owner", error.context["lock"])
@@ -191,17 +185,113 @@ class StoreLockTests(unittest.TestCase):
 
     def test_owner_release_during_observation_does_not_retry_or_recreate(self):
         self.path.write_text('{"pid":123}', encoding="utf-8")
-        real_open = os.open
+        real_open = store._open_lock_metadata
 
-        def vanished(path, flags, *args, **kwargs):
-            if not flags & os.O_CREAT:
-                self.path.unlink()
-            return real_open(path, flags, *args, **kwargs)
+        def vanished(path):
+            self.path.unlink()
+            return real_open(path)
 
-        with patch.object(store.os, "open", side_effect=vanished):
+        with patch.object(store, "_open_lock_metadata", side_effect=vanished):
             error = self.blocked()
         self.assertEqual(error.context["lock"]["metadata_status"], "changed")
         self.assertFalse(self.path.exists())
+
+    def test_owner_can_release_while_diagnostic_reader_is_open(self):
+        opened, finish_read = Event(), Event()
+        real_open = store._open_lock_metadata
+
+        def paused(path):
+            fd = real_open(path)
+            opened.set()
+            if not finish_read.wait(10):
+                os.close(fd)
+                raise TimeoutError("diagnostic read was not resumed")
+            return fd
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            try:
+                with store.lock(self.folder), patch.object(store, "_open_lock_metadata", side_effect=paused):
+                    pending = pool.submit(self.blocked)
+                    self.assertTrue(opened.wait(10))
+                # The actual owner released while the observer still held its fd.
+                self.assertFalse(self.path.exists())
+            finally:
+                finish_read.set()
+            error = pending.result(timeout=10)
+        self.assertEqual(error.context["lock"]["metadata_status"], "changed")
+        self.assertNotIn("owner", error.context["lock"])
+        self.assertFalse(self.path.exists())
+        with store.lock(self.folder):
+            self.assertTrue(self.path.exists())
+
+    def test_metadata_descriptor_is_read_only_noninheritable_and_not_delete_on_close(self):
+        original = b'{"pid":123}'
+        self.path.write_bytes(original)
+        fd = store._open_lock_metadata(self.path)
+        try:
+            self.assertFalse(os.get_inheritable(fd))
+            with self.assertRaises(OSError):
+                os.write(fd, b"modified")
+            self.assertEqual(os.read(fd, 4096), original)
+        finally:
+            os.close(fd)
+        self.assertEqual(self.path.read_bytes(), original)
+
+    def test_owner_release_with_reader_in_another_process(self):
+        code = (
+            "import os, sys; from pathlib import Path; from pixl import store; "
+            "fd = store._open_lock_metadata(Path(sys.argv[1])); "
+            "print('opened', flush=True); sys.stdin.readline(); os.close(fd)"
+        )
+        reader = None
+        pool = ThreadPoolExecutor(max_workers=1)
+        try:
+            with store.lock(self.folder):
+                reader = subprocess.Popen(
+                    [sys.executable, "-B", "-c", code, str(self.path)],
+                    cwd=Path(__file__).resolve().parents[1],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    text=True, encoding="utf-8",
+                )
+                opened = pool.submit(reader.stdout.readline)
+                self.assertEqual(opened.result(timeout=10).strip(), "opened")
+            self.assertFalse(self.path.exists())
+            stdout, stderr = reader.communicate("close\n", timeout=10)
+            self.assertEqual(reader.returncode, 0, stdout + stderr)
+        finally:
+            if reader is not None:
+                if reader.poll() is None:
+                    reader.kill()
+                reader.communicate(timeout=10)
+            pool.shutdown(wait=True)
+        self.assertFalse(self.path.exists())
+        with store.lock(self.folder):
+            self.assertTrue(self.path.exists())
+
+    @unittest.skipUnless(os.name == "nt", "Windows handle conversion")
+    def test_failed_descriptor_conversion_closes_windows_handle(self):
+        import ctypes
+        import msvcrt
+        from ctypes import wintypes
+
+        original = b'{"pid":123}'
+        self.path.write_bytes(original)
+        with patch.object(msvcrt, "open_osfhandle", side_effect=OSError("conversion failed")):
+            error = self.preserved_block("unreadable")
+        self.assertNotIn("conversion failed", error.detail)
+        # Share mode zero really is exclusive; ordinary CRT open is not.
+        library = ctypes.WinDLL("kernel32", use_last_error=True)
+        create = library.CreateFileW
+        create.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                           wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        create.restype = wintypes.HANDLE
+        close = library.CloseHandle
+        close.argtypes = [wintypes.HANDLE]
+        close.restype = wintypes.BOOL
+        handle = create(str(self.path), 0x80000000, 0, None, 3, 0, None)
+        self.assertNotEqual(handle, ctypes.c_void_p(-1).value, ctypes.get_last_error())
+        self.assertTrue(close(handle))
+        self.assertEqual(self.path.read_bytes(), original)
 
     def test_optional_fields_are_bounded_and_control_timestamp_is_ignored(self):
         self.path.write_text(json.dumps({"pid": 123, "host": "host\nFORGED_LINE",

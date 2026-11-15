@@ -1,0 +1,242 @@
+{
+  "status": "changes_requested",
+  "scope": "Independent harness/driver/test review by an agent other than their authors. This reviewer prepared the retained input ZIPs, so their content provenance is not independently certified here. Probe subprocess results are controlled mocks, not extra performance measurements.",
+  "source_hashes": {
+    "scripts/measure_performance.py": "0e4fcfaee2bf222784edde7102566061b60fe147dc43692e166b8def1a01051f",
+    "tests/test_measure_performance.py": "3de861ad870ea2adf1dc5586c0ba820cc09ac0bdd7dbb9b455859e38f3b955f9",
+    "evidence/performance/20261114/run-measurements.py.txt": "59e8ab8d9847e3f6ab2511a57af50d36dfded19c0954d1135e9145ee9e6dde83"
+  },
+  "checks": [
+    {
+      "name": "malformed_child_json_fails",
+      "pass": true,
+      "detail": "The malformed child result cannot become a passing measurement."
+    },
+    {
+      "name": "malformed_child_stdout_retained",
+      "pass": false,
+      "detail": "FAILED: the original child stdout is discarded when JSON decoding fails."
+    },
+    {
+      "name": "timeout_fails",
+      "pass": true,
+      "detail": "Timeout cannot become a passing measurement."
+    },
+    {
+      "name": "timeout_partial_output_retained",
+      "pass": false,
+      "detail": "FAILED: TimeoutExpired output and stderr are discarded."
+    },
+    {
+      "name": "nonzero_exit_fails_and_retains_output",
+      "pass": true,
+      "detail": "Existing ordinary child-exit failure retention works."
+    },
+    {
+      "name": "unexpected_operation_failure_cannot_be_expected",
+      "pass": true,
+      "detail": "Unexpected exceptions remain failed measurements."
+    },
+    {
+      "name": "expected_refusal_does_not_allow_success",
+      "pass": true,
+      "detail": "A declared refusal cannot turn an unexpected success into a passing result."
+    },
+    {
+      "name": "encoding_failure_retains_operation_timing",
+      "pass": true,
+      "detail": "Failed report encoding preserves the operation observation and fails."
+    },
+    {
+      "name": "content_identity_beats_size_mtime",
+      "pass": true,
+      "detail": "The review mutates only its disposable synthetic input, restoring its mtime; SHA identity detects the drift."
+    },
+    {
+      "name": "reviewed_sources_unchanged",
+      "pass": true,
+      "detail": "Review wrote only this fresh review directory and disposable temporary probe files."
+    }
+  ],
+  "passed": 8,
+  "total": 10,
+  "probes": {
+    "malformed_json": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 64000,
+          "outcome": {
+            "status": "unexpected_error",
+            "type": "JSONDecodeError",
+            "detail": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 64000,
+        "max_ns": 64000,
+        "median_ns": 64000,
+        "p95_ns": 64000
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [],
+      "expectation_matched": false,
+      "status": "fail",
+      "scope": "Parent wall time includes probe startup, standard/runtime imports, manifest read, authoring operation, full result serialization for size/hash, compact probe JSON output and exit. This is not the full CLI transport. OS filesystem caches are not flushed."
+    },
+    "timeout": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 30200,
+          "outcome": {
+            "status": "unexpected_error",
+            "type": "TimeoutExpired",
+            "detail": "Command '['probe']' timed out after 1 seconds"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 30200,
+        "max_ns": 30200,
+        "median_ns": 30200,
+        "p95_ns": 30200
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [],
+      "expectation_matched": false,
+      "status": "fail",
+      "scope": "Parent wall time includes probe startup, standard/runtime imports, manifest read, authoring operation, full result serialization for size/hash, compact probe JSON output and exit. This is not the full CLI transport. OS filesystem caches are not flushed."
+    },
+    "nonzero_exit": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 21900,
+          "outcome": {
+            "status": "unexpected_error",
+            "type": "child_process",
+            "exit_code": 3,
+            "stdout": "retained stdout",
+            "stderr": "retained stderr"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 21900,
+        "max_ns": 21900,
+        "median_ns": 21900,
+        "p95_ns": 21900
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [],
+      "expectation_matched": false,
+      "status": "fail",
+      "scope": "Parent wall time includes probe startup, standard/runtime imports, manifest read, authoring operation, full result serialization for size/hash, compact probe JSON output and exit. This is not the full CLI transport. OS filesystem caches are not flushed."
+    },
+    "unexpected_operation": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 2300,
+          "outcome": {
+            "status": "unexpected_error",
+            "type": "RuntimeError",
+            "detail": "retained operation failure"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 2300,
+        "max_ns": 2300,
+        "median_ns": 2300,
+        "p95_ns": 2300
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [],
+      "expectation_matched": false,
+      "status": "fail"
+    },
+    "unexpected_success": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 400,
+          "outcome": {
+            "status": "ok",
+            "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+            "bytes": 3,
+            "encoding": "pretty_json_utf8_newline"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 400,
+        "max_ns": 400,
+        "median_ns": 400,
+        "p95_ns": 400
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [
+        "file_hash"
+      ],
+      "expectation_matched": false,
+      "status": "fail"
+    },
+    "encoding_failure": {
+      "warmups": [],
+      "samples": [
+        {
+          "elapsed_ns": 900,
+          "outcome": {
+            "status": "unexpected_error",
+            "type": "TypeError",
+            "detail": "result encoding: Object of type set is not JSON serializable"
+          }
+        }
+      ],
+      "timing": {
+        "count": 1,
+        "min_ns": 900,
+        "max_ns": 900,
+        "median_ns": 900,
+        "p95_ns": 900
+      },
+      "serialization_timing": null,
+      "stable": true,
+      "expected_error_codes": [],
+      "expectation_matched": false,
+      "status": "fail"
+    }
+  },
+  "findings": [
+    {
+      "priority": "P2",
+      "file": "scripts/measure_performance.py",
+      "function": "fresh_processes",
+      "problem": "Captured child output is discarded on malformed JSON and TimeoutExpired.",
+      "consequence": "The measurement correctly fails, but useful original failure diagnostics disappear, contrary to the evidence-preservation goal.",
+      "requested_change": "Retain captured stdout/stderr on timeout and JSON/schema decoding failures. Add focused regression cases. Preserve this failed review and baseline before changing sources."
+    }
+  ],
+  "source_review": [
+    "Operation clocks stop before result serialization and output hashing; serialization clocks are reported separately for public reports. Component operations overlap and must not be summed.",
+    "Warm samples occur after setup and input hashing; fresh-process wall timing includes Python startup, imports, manifest parsing, authoring work, serialization and exit. The existing scope text explicitly disclaims cold filesystem caches and full CLI transport.",
+    "Unexpected errors, wrong refusal codes, unstable output hashes and preservation drift all prevent a pass. Expected refusal status remains distinct from successful operation status.",
+    "Runtime source identity includes pixl Python/JSON sources, benchmark script and configuration. Input inventories include all declared roots without ignored subtrees; manifests are rechecked after measurement.",
+    "The wrapper checks exact frozen ZIP membership, per-member size/hash and source/archive identities, writes only new output/temporary roots, and rejects existing output directories. Its source snapshot includes the benchmark and the wrapper itself.",
+    "The wrapper selects each task's first output for pixl_family, including the queue single output; claims should describe an output report rather than four distinct multi-member family cases.",
+    "The new unittest file covers success/child parity, real source drift, newly created files, same-size/same-mtime changes, removed manifests, invalid manifest choices and nonzero CLI configuration exits. It does not cover the two failure-output losses found here."
+  ]
+}

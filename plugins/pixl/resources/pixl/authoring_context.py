@@ -123,10 +123,13 @@ def report(path, focus, root, plar_path=None, asset_id=None):
             entry.update(observed_sha256=actual, file_status=(
                 "current" if actual == fields["dg"] else "missing" if actual is None else "changed"
             ))
-            entry["retrieve"] = {"tool": "pixl_source", "arguments": {
-                "path": fields["ur"], "expect": fields["dg"],
-                "start": fields["ln"][0], "end": fields["ln"][1], "scope": "project",
-            }}
+            if fields["ln"]:
+                entry["retrieve"] = {"tool": "pixl_source", "arguments": {
+                    "path": fields["ur"], "expect": fields["dg"],
+                    "start": fields["ln"][0], "end": fields["ln"][1], "scope": "project",
+                }}
+            else:
+                entry["binding"] = codec.to_data(fields)
         sources.append(entry)
     job_rows = []
     for record in sorted(records.values(), key=lambda r: r.id):

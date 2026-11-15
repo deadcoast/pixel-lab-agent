@@ -1,0 +1,63 @@
+"""TM-02 discovered correctness repair: fresh focused local checks only."""
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[4]
+OUT = Path(__file__).resolve().parent
+if (OUT / "RESULT.json").exists():
+    raise SystemExit("Refusing to overwrite the retained repair result")
+
+paths = [
+    "pixl/authoring_context.py", "tests/test_authoring_context.py",
+    "spec/production-plan.md",
+]
+
+
+def identities():
+    return {
+        name: {
+            "sha256": hashlib.sha256((ROOT / name).read_bytes()).hexdigest(),
+            "mtime_ns": (ROOT / name).stat().st_mtime_ns,
+        }
+        for name in paths
+    }
+
+
+before = identities()
+environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+commands = [
+    ("focused", [sys.executable, "-B", "-m", "unittest", "tests.test_authoring_context",
+                 "tests.test_sources", "tests.test_retention", "-v"]),
+    ("ruff", [sys.executable, "-B", "-m", "ruff", "check", "--no-cache",
+              "pixl/authoring_context.py", "tests/test_authoring_context.py"]),
+]
+results = []
+for label, command in commands:
+    started = time.perf_counter()
+    result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, timeout=180)
+    (OUT / f"{label}.stdout.txt").write_bytes(result.stdout)
+    (OUT / f"{label}.stderr.txt").write_bytes(result.stderr)
+    results.append({
+        "name": label, "command": command, "exit_code": result.returncode,
+        "elapsed_seconds": time.perf_counter() - started,
+        "stdout": f"{label}.stdout.txt", "stderr": f"{label}.stderr.txt",
+    })
+after = identities()
+passed = all(item["exit_code"] == 0 for item in results) and before == after
+report = {
+    "status": "pass" if passed else "fail",
+    "scope": "Focused local repair regressions and changed-code Ruff; no native, provider, artistic or human acceptance",
+    "working_directory": str(ROOT),
+    "source_identities": before,
+    "source_inputs_unchanged": before == after,
+    "commands": results,
+}
+(OUT / "RESULT.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+print(json.dumps(report, indent=2))
+raise SystemExit(0 if passed else 1)

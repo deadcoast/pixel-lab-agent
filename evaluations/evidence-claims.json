@@ -912,6 +912,50 @@
           "equals": "pass"
         }
       ]
+    },
+    {
+      "id": "tm02-measurements",
+      "path": "evidence/performance/20261114/measurement-02/report.json",
+      "sha256": "ac9ba2e35c31f54a51f9af03384218ae611a9c7f3cfbc6e94bf60518106ac336",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "tm02-measurement-run",
+      "path": "evidence/performance/20261114/measurement-02/RESULT.json",
+      "sha256": "0182881ff3f6d6af3ab93982c3208a2adce2aa8091ead4184bcf27c878b68d2f",
+      "assertions": [
+        {
+          "pointer": "/inputs_and_sources_unchanged",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "tm02-measurement-comparison",
+      "path": "evidence/performance/20261114/qualification-02.json",
+      "sha256": "3f2ae53c02bd2df9f65d76434dd3d17a8fb9783626767203e303b01c682e2367",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "tm02-full-verification",
+      "path": "evidence/verification-runs/20261115T023402.446790Z/result.json",
+      "sha256": "e87e2188db996d8c7caab1334d640ab2c0a635660d96698a35e2ae4b4270b2bb",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -2077,6 +2121,125 @@
           "domain": "package",
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "tm01-full-verification",
+          "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "TM-02-MEASUREMENTS",
+      "task": "Measure retained context, hashing, validation and report costs",
+      "document": {
+        "path": "evidence/performance/README.md",
+        "anchor": "tm02-measurements",
+        "line_sha256": "35b0eb1d6d3203efcd864e1aea3f8dbf7793958aeae2612156b4575cd8885861"
+      },
+      "tier": "local retained-history timing, deterministic output identity and input preservation",
+      "scope": "Four frozen histories pass 39 operations, 15 samples each plus two warmups and three fresh-process authoring probes each. A whole-file source-binding crash is repaired; 36 prior successful outputs retain exact hashes. No performance optimization is claimed.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded; broader milestones remain open.",
+        "Identity inspection does not replay measurements, tests, native behavior or art outcomes.",
+        "One Windows/Python environment with warmed caches and no controlled CPU load; no SLO or generalized latency guarantee.",
+        "Authoring and complete context have different semantics. Fresh probes transport compact measurement JSON, not full CLI reports.",
+        "Baseline crashes, invalid family probe, diagnostic-loss review and lint/test failures remain retained."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "tm02-measurements",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "tm02-measurements",
+        "tm02-measurement-run",
+        "tm02-measurement-comparison"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "tm02-measurement-run",
+          "pointer": "/source_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl"
+            ],
+            "suffixes": [
+              ".py",
+              ".json"
+            ]
+          }
+        },
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "tm02-measurement-run",
+          "pointer": "/input_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "receipt": "tm02-measurement-comparison",
+          "path": "evidence/performance/20261114/baseline-01/report.json",
+          "pointer": "/baseline_sha256"
+        },
+        {
+          "kind": "file",
+          "domain": "source",
+          "receipt": "tm02-measurement-comparison",
+          "path": "evidence/performance/20261114/qualify-final-measurements.py.txt",
+          "pointer": "/script_sha256"
+        }
+      ]
+    },
+    {
+      "id": "TM-02-FULL-VERIFICATION",
+      "task": "Check the TM-02 authoring repair and distributable payloads",
+      "document": {
+        "path": "evidence/performance/README.md",
+        "anchor": "tm02-full-verification",
+        "line_sha256": "3d4e9d328bc0480f289f7468e306dcab441eff9b71fbe7ae35bed77d5cade6e7"
+      },
+      "tier": "local full-suite and installed/copied package checks",
+      "scope": "The retained TM-02 full verifier records its exact unit/reference/distribution results and tested source/package identities. It includes four new authoring regressions, four lock-reader regressions and 13 maintainer measurement tests.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded; broader milestones remain open.",
+        "Identity inspection does not replay measurements, tests, native behavior or art outcomes.",
+        "Local and package checks do not establish native profile conformance, provider performance or artistic quality.",
+        "Windows privilege skips remain unavailable checks; earlier failures are retained separately."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "tm02-full-verification",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "tm02-full-verification"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "tm02-full-verification",
+          "pointer": "/checked_input_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl",
+              "scripts",
+              "tests",
+              "evaluations"
+            ],
+            "suffixes": [
+              ".py"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "tm02-full-verification",
           "pointer": "/bundle_manifest_sha256"
         }
       ]

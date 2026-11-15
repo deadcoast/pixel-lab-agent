@@ -1,0 +1,91 @@
+"""Append reviewed TM-02 bindings after all referenced results are complete."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+REGISTRY = ROOT / "evaluations/evidence-claims.json"
+LEDGER = "evidence/performance/README.md"
+MEASURE = "evidence/performance/20261114/measurement-02/report.json"
+WRAPPER = "evidence/performance/20261114/measurement-02/RESULT.json"
+QUALIFY = "evidence/performance/20261114/qualification-02.json"
+FULL = "evidence/verification-runs/20261115T023402.446790Z/result.json"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def document(anchor):
+    lines = [line for line in (ROOT / LEDGER).read_text(encoding="utf-8").splitlines()
+             if f'id="{anchor}"' in line]
+    assert len(lines) == 1
+    return {"path": LEDGER, "anchor": anchor, "line_sha256": sha(lines[0].encode())}
+
+
+def receipt(ident, path, pointer, expected):
+    return {"id": ident, "path": path, "sha256": sha((ROOT / path).read_bytes()),
+            "assertions": [{"pointer": pointer, "equals": expected}]}
+
+
+def main():
+    data = json.loads(REGISTRY.read_bytes())
+    assert len(data["claims"]) == 21 and len(data["receipts"]) == 64
+    assert json.loads((ROOT / MEASURE).read_bytes())["status"] == "pass"
+    assert json.loads((ROOT / WRAPPER).read_bytes())["exit_code"] == 0
+    assert json.loads((ROOT / QUALIFY).read_bytes())["status"] == "pass"
+    full = json.loads((ROOT / FULL).read_bytes())
+    assert full["status"] == "pass"
+    data["receipts"] += [
+        receipt("tm02-measurements", MEASURE, "/status", "pass"),
+        receipt("tm02-measurement-run", WRAPPER, "/inputs_and_sources_unchanged", True),
+        receipt("tm02-measurement-comparison", QUALIFY, "/status", "pass"),
+        receipt("tm02-full-verification", FULL, "/status", "pass"),
+    ]
+    limits = ["Human acceptance remains separate and unrecorded; broader milestones remain open.",
+              "Identity inspection does not replay measurements, tests, native behavior or art outcomes."]
+    data["claims"].append({
+        "id": "TM-02-MEASUREMENTS", "task": "Measure retained context, hashing, validation and report costs",
+        "document": document("tm02-measurements"),
+        "tier": "local retained-history timing, deterministic output identity and input preservation",
+        "scope": "Four frozen histories pass 39 operations, 15 samples each plus two warmups and three fresh-process authoring probes each. A whole-file source-binding crash is repaired; 36 prior successful outputs retain exact hashes. No performance optimization is claimed.",
+        "limits": limits + ["One Windows/Python environment with warmed caches and no controlled CPU load; no SLO or generalized latency guarantee.",
+                            "Authoring and complete context have different semantics. Fresh probes transport compact measurement JSON, not full CLI reports.",
+                            "Baseline crashes, invalid family probe, diagnostic-loss review and lint/test failures remain retained."],
+        "policy": "current", "outcome": {"receipt": "tm02-measurements", "pointer": "/status"},
+        "receipts": ["tm02-measurements", "tm02-measurement-run", "tm02-measurement-comparison"],
+        "bindings": [
+            {"kind": "map", "domain": "source", "receipt": "tm02-measurement-run",
+             "pointer": "/source_hashes", "prefix": "",
+             "inventory": {"roots": ["pixl"], "suffixes": [".py", ".json"]}},
+            {"kind": "map", "domain": "source", "receipt": "tm02-measurement-run",
+             "pointer": "/input_hashes", "prefix": ""},
+            {"kind": "file", "domain": "source", "receipt": "tm02-measurement-comparison",
+             "path": "evidence/performance/20261114/baseline-01/report.json", "pointer": "/baseline_sha256"},
+            {"kind": "file", "domain": "source", "receipt": "tm02-measurement-comparison",
+             "path": "evidence/performance/20261114/qualify-final-measurements.py.txt", "pointer": "/script_sha256"},
+        ],
+    })
+    data["claims"].append({
+        "id": "TM-02-FULL-VERIFICATION", "task": "Check the TM-02 authoring repair and distributable payloads",
+        "document": document("tm02-full-verification"),
+        "tier": "local full-suite and installed/copied package checks",
+        "scope": "The retained TM-02 full verifier records its exact unit/reference/distribution results and tested source/package identities. It includes four new authoring regressions, four lock-reader regressions and 13 maintainer measurement tests.",
+        "limits": limits + ["Local and package checks do not establish native profile conformance, provider performance or artistic quality.",
+                            "Windows privilege skips remain unavailable checks; earlier failures are retained separately."],
+        "policy": "current", "outcome": {"receipt": "tm02-full-verification", "pointer": "/status"},
+        "receipts": ["tm02-full-verification"],
+        "bindings": [
+            {"kind": "map", "domain": "source", "receipt": "tm02-full-verification",
+             "pointer": "/checked_input_hashes", "prefix": "",
+             "inventory": {"roots": ["pixl", "scripts", "tests", "evaluations"], "suffixes": [".py"]}},
+            {"kind": "file", "domain": "package", "path": "plugins/pixl/bundle-manifest.json",
+             "receipt": "tm02-full-verification", "pointer": "/bundle_manifest_sha256"},
+        ],
+    })
+    REGISTRY.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"claims": len(data["claims"]), "receipts": len(data["receipts"])}))
+
+
+if __name__ == "__main__":
+    main()
