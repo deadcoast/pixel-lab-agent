@@ -33,6 +33,21 @@ parallel = true
 [tool.coverage.report]
 show_missing = true
 
+# TM-01 checks the exercised operation boundaries, including their untyped
+# helpers. Other runtime modules retain their existing incremental typing scope.
+[[tool.mypy.overrides]]
+module = [
+    "pixl.operation_types",
+    "pixl.store",
+    "pixl.jobs",
+    "pixl.candidate_review",
+    "pixl.handoff",
+    "pixl.caller_result",
+]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+warn_return_any = true
+
 [dependency-groups]
 dev = [
     "coverage>=7.16.1",

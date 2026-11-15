@@ -14,6 +14,7 @@ import json
 import re
 import urllib.error
 import urllib.request
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Protocol
 
@@ -140,13 +141,13 @@ def validate_arguments(arguments: dict) -> None:
         raise PixlError("pixellab_arguments", "Pixflux requires 1024 to 160000 pixels")
 
 
-def _job(folder: Path, expected: str, job_id: str, root: Path) -> dict:
+def _job(folder: Path, expected: str, job_id: str, root: Path) -> jobs.DurableJobSummary:
     doc = store.load(folder)
     if codec.digest(doc) != expected:
         raise PixlError("stale_write", "Reload the current project before acting")
     rows = jobs.report(doc, root)["jobs"]
     row = next((row for row in rows if row["id"] == job_id), None)
-    if row is None or not row.get("durable"):
+    if row is None or not row["durable"]:
         raise PixlError("pixellab_job", "Select a durable prepared PixelLab HTTP job")
     request = row["request"]
     if request["provider"] != PROVIDER or request["tool"] != OPERATION:
@@ -166,7 +167,7 @@ class Workflow:
     def _folder(self, folder: str) -> Path:
         return graph.confined(self.root, folder)
 
-    def _load_job(self, folder: Path, expected: str, job_id: str) -> dict:
+    def _load_job(self, folder: Path, expected: str, job_id: str) -> jobs.DurableJobSummary:
         row = _job(folder, expected, job_id, self.root)
         simulated = row["request"]["discovery"]["evidence"].get("simulated_transport")
         if simulated is not self.transport.simulated:
@@ -179,7 +180,7 @@ class Workflow:
     def _evidence(self, **values) -> dict:
         return {"adapter": PROVIDER, "simulated": self.transport.simulated, **values}
 
-    def _result(self, result: dict) -> dict:
+    def _result(self, result: Mapping[str, object]) -> dict[str, object]:
         return dict(result, provider_simulated=self.transport.simulated)
 
     def prepare(

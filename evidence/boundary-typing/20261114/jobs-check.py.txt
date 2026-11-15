@@ -1,0 +1,42 @@
+"""Retain scoped publication/job typing and lint checks without rebuilding artifacts."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=Path, required=True)
+    out = parser.parse_args().out.resolve()
+    out.mkdir(parents=True, exist_ok=False)
+    sources = {}
+    for name in ("pixl/store.py", "pixl/jobs.py", "pixl/job_history.py", "pixl/operation_types.py", "pyproject.toml"):
+        data = (ROOT / name).read_bytes()
+        destination = out / "source-snapshot" / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(data)
+        sources[name] = hashlib.sha256(data).hexdigest()
+    results = []
+    for label, command in (
+        ("mypy", [sys.executable, "-B", "-m", "mypy", "--follow-imports=silent", "pixl/store.py", "pixl/jobs.py"]),
+        ("ruff", [sys.executable, "-B", "-m", "ruff", "check", "pixl/store.py", "pixl/jobs.py"]),
+    ):
+        run = subprocess.run(command, cwd=ROOT, capture_output=True)
+        (out / f"{label}-stdout.txt").write_bytes(run.stdout)
+        (out / f"{label}-stderr.txt").write_bytes(run.stderr)
+        results.append({"label": label, "command": command, "exit_code": run.returncode})
+    result = {"observed_at": datetime.now(UTC).isoformat(), "sources": sources,
+              "scope": "Scoped mypy checks store/jobs with current per-module configuration; imported module diagnostics are silent while imported types remain available. Ruff covers these two files. No behavior tests/builders/provider calls.",
+              "results": results, "status": "pass" if all(r["exit_code"] == 0 for r in results) else "fail"}
+    (out / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": result["status"], "results": results}))
+
+
+if __name__ == "__main__":
+    main()

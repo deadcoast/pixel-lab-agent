@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-15T00:42:03.644997+00:00",
+  "status": "pass",
+  "passed": 14,
+  "total": 14,
+  "source_hashes": {
+    "scripts/check_boundary_types.py": "e719b763037d87250aaff73daf9fb924a054c61fc37e285dbf9d2d91164d8a40",
+    "tests/typing/valid_boundaries.py": "489836c195dabf37468aeba52ad307285d126c3024b73774a70733510581c562",
+    "tests/typing/invalid_boundaries.py": "6b89afc6dfdf9b6b24674c7556ff7a055853eb482bf75cf627be0a2d958432e5",
+    "docs/BOUNDARY-TYPES.md": "4a48066c7891f56a85c4abaaa7d32fb289ea96e6c187ee523e370f1a79a47550",
+    "pyproject.toml": "53c4f29e844baa2ef619e83cc0d80b353975a8455ad828eaa25e165850f4fd9e",
+    "uv.lock": "8b9f3eeb7ff67f32baff7d17bc0935c76e24ef7169d06531a05531dbb57daccc"
+  },
+  "checks": [
+    {
+      "name": "positive_examples_consume_real_producers",
+      "passed": true,
+      "detail": [
+        "caller_result._locator",
+        "caller_result.prepare",
+        "candidate_review.context",
+        "candidate_review.submit",
+        "handoff.save",
+        "jobs.dispatch",
+        "jobs.import_artifact",
+        "jobs.observe",
+        "jobs.prepare",
+        "jobs.report",
+        "store.commit",
+        "store.initialize",
+        "store.load"
+      ]
+    },
+    {
+      "name": "positive_results_are_asserted",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "fixtures_do_not_erase_types",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "fixtures_outside_unittest_test_pattern",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "fixtures_have_no_top_level_operation_calls",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "thirteen_unique_current_refusal_markers",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "retained_gate_has_exact_expected_errors",
+      "passed": true,
+      "detail": {
+        "receipt": "evidence/boundary-typing/20261114/type-gate-02/RESULT.json",
+        "sha256": "a29609cf84a46717c276ec30f8b60e377aa553b9a85a1049f2d9fbf51ee084cd",
+        "expected": 13,
+        "observed": 13
+      }
+    },
+    {
+      "name": "retained_gate_inputs_match_current",
+      "passed": true,
+      "detail": 50
+    },
+    {
+      "name": "documented_six_module_scope_matches_configuration",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "refusal_gate_not_any_failure",
+      "passed": true,
+      "detail": "Manual source review: positive exit must be0; negative exit exactly1; expected and observed Counters match path/physical line/error code including multiplicity; unparsed error lines and either stderr fail; missing/duplicate labels fail setup. Timeout exitNone cannot pass."
+    },
+    {
+      "name": "fixtures_are_analyzed_not_executed",
+      "passed": true,
+      "detail": "Manual source review: fixture paths are arguments to python -m mypy only; no exec/import/runpy of either fixture. Temporary mypy cache and subprocess bytecode suppression are explicit."
+    },
+    {
+      "name": "source_identity_checks_cover_current_static_inputs",
+      "passed": true,
+      "detail": "Manual source review: before/after maps cover all current flat pixl Python modules, config, lockfile, both fixtures and gate source. Before/after inventory/bytes mismatch fails; tool versions and full checker diagnostics are returned."
+    },
+    {
+      "name": "documentation_limits_accurate",
+      "passed": true,
+      "detail": "Guide distinguishes six-module untyped-body checking from other modules default scope, temporary cache writes, static-only examples and runtime validation; bool/int semantics, opaque payloads and separate native/artistic/human acceptance are explicit."
+    },
+    {
+      "name": "review_inputs_unchanged",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "findings": [],
+  "scope": "Independent read-only source/config/fixture/guide review plus comparison to the retained gate receipt; no checker, tests, fixtures, builders or provider calls rerun.",
+  "limits": [
+    "Thirteen refusal examples demonstrate chosen boundaries, not exhaustive type soundness or runtime validation.",
+    "Optional fields and dynamic provider/UDL/continuation payloads retain the documented narrower guarantees.",
+    "Stored receipt identity comparison does not replay its execution or establish native behavior, art quality or human acceptance.",
+    "M1/M2 and broader M3/M4/M5 remain open."
+  ]
+}

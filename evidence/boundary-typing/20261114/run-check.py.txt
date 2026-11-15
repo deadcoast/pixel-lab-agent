@@ -1,0 +1,53 @@
+"""Retain a fresh local check, its exact command and maintained runtime inputs."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("command", nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+    command = args.command[1:] if args.command[:1] == ["--"] else args.command
+    if not command:
+        parser.error("Supply the local check command after --")
+    out = args.out.resolve()
+    if not out.is_relative_to(ROOT / "evidence/boundary-typing"):
+        raise ValueError("Check outputs must stay in this increment's evidence")
+    out.mkdir(parents=True, exist_ok=False)
+    paths = sorted([*ROOT.joinpath("pixl").glob("*.py"),
+                    *ROOT.joinpath("tests").glob("*.py"), ROOT / "pyproject.toml"])
+    sources = {}
+    for path in paths:
+        name = path.relative_to(ROOT).as_posix()
+        data = path.read_bytes()
+        target = out / "source-snapshot" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        sources[name] = hashlib.sha256(data).hexdigest()
+    started = datetime.now(UTC).isoformat()
+    before = time.monotonic()
+    with (out / "stdout.txt").open("xb") as stdout, (out / "stderr.txt").open("xb") as stderr:
+        result = subprocess.run(command, cwd=ROOT, stdout=stdout, stderr=stderr, check=False)
+    changed = [name for name, sha in sources.items()
+               if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != sha]
+    receipt = {"command": command, "exit_code": result.returncode,
+               "started_at": started, "elapsed_seconds": time.monotonic() - before,
+               "source_hashes": sources, "changed_inputs": changed,
+               "scope": "Exact selected local command only; runtime and top-level test source identities are retained. Tool caches and selected fixture writes are possible; no model/provider acceptance follows.",
+               "status": "pass" if result.returncode == 0 and not changed else "fail"}
+    (out / "RESULT.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({key: receipt[key] for key in ("status", "exit_code", "elapsed_seconds", "changed_inputs")}))
+    return 0 if receipt["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

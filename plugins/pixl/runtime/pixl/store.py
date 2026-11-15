@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .codec import Document, PixlError, Record, Ref, Symbol, digest, encode, parse
 from .graph import closure, edges, proof_scope, validate
+from .operation_types import PathInput, PublicationResult
 
 TRANSITIONS = {
     "open": {"active", "blocked", "dropped"},
@@ -45,7 +46,8 @@ def _lock_owner(value):
     if isinstance(acquired, str) and len(acquired) <= 40 and acquired.isprintable() and _LOCK_TIME.fullmatch(acquired):
         try:
             observed = datetime.fromisoformat(acquired)
-            if observed.utcoffset() is not None and observed.utcoffset().total_seconds() == 0:
+            offset = observed.utcoffset()
+            if offset is not None and offset.total_seconds() == 0:
                 owner["acquired_at"] = acquired
         except ValueError:
             pass
@@ -167,7 +169,7 @@ def _atomic(path, data):
         Path(temp).unlink(missing_ok=True)
 
 
-def _publish(folder, doc):
+def _publish(folder: Path, doc: Document) -> PublicationResult:
     data, hash_ = encode(doc), digest(doc)
     history = folder / "history"
     if history.is_symlink() or not history.resolve().is_relative_to(folder):
@@ -185,7 +187,7 @@ def _publish(folder, doc):
     return {"revision": doc.revision, "hash": hash_, "state": str(folder / "state.px")}
 
 
-def empty_project(name="PIXL project"):
+def empty_project(name: str = "PIXL project") -> Document:
     actor = Record("actor", "A", {"nm": "PIXL", "rl": Symbol("agent")})
     contract = Record(
         "contract",
@@ -208,7 +210,7 @@ def empty_project(name="PIXL project"):
     return Document(0, {r.id: r for r in (actor, contract, project)})
 
 
-def intake_project(name="PIXL project", brief=""):
+def intake_project(name: str = "PIXL project", brief: str = "") -> Document:
     actor = Record("actor", "A", {"nm": "PIXL", "rl": Symbol("agent")})
     user = Record("user", "A", {"nm": "Project owner", "rl": Symbol("user")})
     project = Record(
@@ -217,7 +219,10 @@ def intake_project(name="PIXL project", brief=""):
     return Document(0, {r.id: r for r in (actor, user, project)}, format=2)
 
 
-def initialize(folder, doc=None, root=None, name="PIXL project"):
+def initialize(
+    folder: PathInput, doc: Document | None = None, root: PathInput | None = None,
+    name: str = "PIXL project",
+) -> PublicationResult:
     folder = Path(folder).resolve()
     doc = empty_project(name) if doc is None else doc
     with lock(folder):
@@ -237,7 +242,7 @@ def initialize(folder, doc=None, root=None, name="PIXL project"):
         return _publish(folder, doc)
 
 
-def load(folder):
+def load(folder: PathInput) -> Document:
     path = Path(folder) / "state.px"
     try:
         return parse(path.read_bytes())
@@ -379,7 +384,9 @@ def _check_commit(current, candidate, expected, root, folder):
     delivery.transitions(current, candidate, root, folder)
 
 
-def commit(folder, candidate, expected, root=None):
+def commit(
+    folder: PathInput, candidate: Document, expected: str, root: PathInput | None = None,
+) -> PublicationResult:
     folder = Path(folder).resolve()
     with lock(folder):
         current = load(folder)

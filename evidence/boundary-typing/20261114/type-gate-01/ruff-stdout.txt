@@ -1,0 +1,61 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts\check_boundary_types.py:3:1
+   |
+ 1 |   """Check real operation types and expected static refusals without executing fixtures."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import argparse
+ 6 | | from collections import Counter
+ 7 | | from datetime import UTC, datetime
+ 8 | | import hashlib
+ 9 | | from importlib.metadata import PackageNotFoundError, version
+10 | | import json
+11 | | import os
+12 | | from pathlib import Path
+13 | | import re
+14 | | import subprocess
+15 | | import sys
+16 | | from tempfile import TemporaryDirectory
+17 | | import time
+   | |___________^
+18 |
+19 |   ROOT = Path(__file__).resolve().parents[1]
+   |
+help: Organize imports
+   |
+5  | import argparse
+   - from collections import Counter
+   - from datetime import UTC, datetime
+6  | import hashlib
+   - from importlib.metadata import PackageNotFoundError, version
+7  | import json
+8  | import os
+   - from pathlib import Path
+9  | import re
+10 | import subprocess
+11 | import sys
+12 + import time
+13 + from collections import Counter
+14 + from datetime import UTC, datetime
+15 + from importlib.metadata import PackageNotFoundError, version
+16 + from pathlib import Path
+17 | from tempfile import TemporaryDirectory
+   - import time
+18 |
+   |
+
+PLW1510 `subprocess.run` without explicit `check` argument
+  --> scripts\check_boundary_types.py:31:18
+   |
+29 |     started = time.monotonic()
+30 |     try:
+31 |         result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True,
+   |                  ^^^^^^^^^^^^^^
+32 |                                 text=True, encoding="utf-8", errors="replace", timeout=180)
+33 |         return {"command": command, "exit_code": result.returncode,
+   |
+help: Add explicit `check=False`
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.

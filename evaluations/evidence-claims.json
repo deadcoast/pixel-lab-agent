@@ -850,6 +850,68 @@
           "equals": "pass"
         }
       ]
+    },
+    {
+      "id": "tm01-boundary-types",
+      "path": "evidence/boundary-typing/20261114/qualification-01/report.json",
+      "sha256": "1e7fc20903675c6e3d3cb682b4ff50038983f3c73ba66a36c8fe8a98d746d1ff",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/passed",
+          "equals": 5
+        },
+        {
+          "pointer": "/total",
+          "equals": 5
+        },
+        {
+          "pointer": "/positive/exit_code",
+          "equals": 0
+        },
+        {
+          "pointer": "/negative/exit_code",
+          "equals": 1
+        },
+        {
+          "pointer": "/checks/every_expected_refusal_and_no_extra_errors",
+          "equals": true
+        },
+        {
+          "pointer": "/checks/source_and_fixture_inputs_unchanged",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "tm01-full-verification",
+      "path": "evidence/verification-runs/20261115T003322.792746Z/result.json",
+      "sha256": "e5ccfd8dc8cf125e95da039c68428d867be96c9bc86698e38e79c28f03e57ee9",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/tests/status",
+          "equals": "pass"
+        },
+        {
+          "pointer": "/tests/run",
+          "equals": 1417
+        },
+        {
+          "pointer": "/tests/passed",
+          "equals": 1413
+        },
+        {
+          "pointer": "/distribution/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -1920,6 +1982,101 @@
           "domain": "package",
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "sc09-full-verification",
+          "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "TM-01-BOUNDARY-TYPES",
+      "task": "Keep publication, job, review and handoff result shapes distinct",
+      "document": {
+        "path": "evidence/boundary-typing/README.md",
+        "anchor": "tm01-boundary-types",
+        "line_sha256": "a8a488ddb5b054f51caaff27d887d9a67f5feb5983955b28ac9afab2ff59b60e"
+      },
+      "tier": "local static boundary checking and static-only consumer fixtures",
+      "scope": "The configured gate passes 5/5 checks, valid consumers of actual producers and exactly 13 expected static refusals, with all 50 recorded source/configuration/fixture inputs unchanged. Six boundary modules include untyped bodies; other runtime modules retain default checking scope.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "Fixtures are parsed, never executed. Static typing is not runtime validation or production behavior qualification.",
+        "Opaque provider/journal/PLAR/lineage payloads and UDL fields remain governed by separate runtime contracts; optional-field correlations and exact integer rules are not fully captured by these types.",
+        "The earlier broad untyped-body baseline and intermediate integration/lint failures remain retained; this is not whole-runtime strict typing or broad lint qualification."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "tm01-boundary-types",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "tm01-boundary-types"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "tm01-boundary-types",
+          "pointer": "/source_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl"
+            ],
+            "suffixes": [
+              ".py"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "TM-01-FULL-VERIFICATION",
+      "task": "Check TM-01 maintained source and distributable payloads",
+      "document": {
+        "path": "evidence/boundary-typing/README.md",
+        "anchor": "tm01-full-verification",
+        "line_sha256": "81da0137171d09998ea11d6b05c407f0efe72d14d49dad77fc9ae14322cab1cb"
+      },
+      "tier": "local full-suite and installed/copied package checks",
+      "scope": "The exact retained TM-01 full verifier passes 1,413 tests with 4 Windows privilege skips, 39 reference checks and distribution checks; its source inventory and bundle identity govern current applicability.",
+      "limits": [
+        "Human acceptance remains separate and unrecorded.",
+        "Identity checks do not replay, regrade or expand the recorded task scope.",
+        "Reference fixtures and local checks do not establish native profile behavior, new provider work or art quality.",
+        "Static boundary qualification and retained broader lint/untyped-body failures are recorded separately; passing local packaging does not establish broader milestone acceptance."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "tm01-full-verification",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "tm01-full-verification"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "tm01-full-verification",
+          "pointer": "/checked_input_hashes",
+          "prefix": "",
+          "inventory": {
+            "roots": [
+              "pixl",
+              "scripts",
+              "tests",
+              "evaluations"
+            ],
+            "suffixes": [
+              ".py"
+            ]
+          }
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "tm01-full-verification",
           "pointer": "/bundle_manifest_sha256"
         }
       ]

@@ -165,7 +165,7 @@ def validate(journal: dict) -> dict:
     return copy.deepcopy(journal)
 
 
-def new(job_id: str, request: dict, context: dict) -> dict:
+def new(job_id: str, request: dict, context: object) -> dict:
     """Bind an exact prepared request to a job and immutable project context."""
     intent = {"job": job_id, "request": request, "context": context}
     return validate(
@@ -183,7 +183,7 @@ def new(job_id: str, request: dict, context: dict) -> dict:
 def append(
     journal: dict,
     event: str,
-    evidence: dict,
+    evidence: object,
     remote_id: str | None = None,
     artifact: dict | None = None,
 ) -> dict:

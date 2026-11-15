@@ -66,6 +66,15 @@ other tools' caches or every child process. Ruff, mypy and coverage have separat
 scope and may write caches/data; their success is not a behavioral test result.
 Do not add `--fix`, delete caches or run a full rebuild merely to inspect evidence.
 
+For the typed publication, job, review and handoff boundaries, run
+`.venv/Scripts/python.exe -B scripts/check_boundary_types.py`.
+The [boundary typing guide](BOUNDARY-TYPES.md) explains the selected checking
+scope, valid consumers and deliberately rejected static examples. This command
+uses a temporary mypy cache and parses the examples without executing them.
+It complements the runtime checks above; it does not validate production JSON,
+run a host or establish artistic acceptance. This TM-01 addition is separate from
+the earlier QOL-09 reader qualification of its retained guide version.
+
 ## Record native behavior and actual outcomes
 
 Use the scenario matching the changed operation, its real host registration and

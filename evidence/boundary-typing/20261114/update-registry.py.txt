@@ -1,0 +1,101 @@
+"""Append the reviewed TM-01 claims only after final receipts and anchors exist."""
+import argparse
+import copy
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "0bf54b41e724703e9502a7175936bc1aab930459"
+REGISTRY = "evaluations/evidence-claims.json"
+LEDGER = "evidence/boundary-typing/README.md"
+STATIC = "evidence/boundary-typing/20261114/qualification-01/report.json"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def document(anchor):
+    matches = [line for line in (ROOT / LEDGER).read_text(encoding="utf-8").splitlines()
+               if f'id="{anchor}"' in line]
+    assert len(matches) == 1 and "running" not in matches[0], "Final unique claim line required"
+    return {"path": LEDGER, "anchor": anchor, "line_sha256": sha(matches[0].encode())}
+
+
+def receipt(identifier, path, assertions):
+    return {"id": identifier, "path": path, "sha256": sha((ROOT / path).read_bytes()),
+            "assertions": [{"pointer": key, "equals": value} for key, value in assertions.items()]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--full", required=True)
+    args = parser.parse_args()
+    baseline = json.loads(subprocess.check_output(["git", "show", BASE + ":" + REGISTRY], cwd=ROOT))
+    registry = json.loads((ROOT / REGISTRY).read_bytes())
+    assert registry == baseline and len(registry["claims"]) == 19 and len(registry["receipts"]) == 62
+    static = json.loads((ROOT / STATIC).read_bytes())
+    full = json.loads((ROOT / args.full).read_bytes())
+    assert static["status"] == full["status"] == "pass"
+    assert static["passed"] == static["total"] == 5
+    assert len(static["expected_refusals"]) == len(static["observed_refusals"]) == 13
+    assert static["positive"]["exit_code"] == 0 and static["negative"]["exit_code"] == 1
+    assert all(static["checks"].values()) and len(static["source_hashes"]) == 50
+    assert full["tests"]["status"] == full["art_pocs"]["status"] == full["distribution"]["status"] == "pass"
+    static_doc = document("tm01-boundary-types")
+    full_doc = document("tm01-full-verification")
+    registry["receipts"].extend([
+        receipt("tm01-boundary-types", STATIC, {
+            "/status": "pass", "/passed": 5, "/total": 5,
+            "/positive/exit_code": 0, "/negative/exit_code": 1,
+            "/checks/every_expected_refusal_and_no_extra_errors": True,
+            "/checks/source_and_fixture_inputs_unchanged": True}),
+        receipt("tm01-full-verification", args.full, {
+            "/status": "pass", "/tests/status": "pass", "/tests/run": full["tests"]["run"],
+            "/tests/passed": full["tests"]["passed"], "/distribution/status": "pass"}),
+    ])
+    limits = ["Human acceptance remains separate and unrecorded.",
+              "Identity checks do not replay, regrade or expand the recorded task scope."]
+    registry["claims"].append({
+        "id": "TM-01-BOUNDARY-TYPES",
+        "task": "Keep publication, job, review and handoff result shapes distinct",
+        "document": static_doc,
+        "tier": "local static boundary checking and static-only consumer fixtures",
+        "scope": "The configured gate passes 5/5 checks, valid consumers of actual producers and exactly 13 expected static refusals, with all 50 recorded source/configuration/fixture inputs unchanged. Six boundary modules include untyped bodies; other runtime modules retain default checking scope.",
+        "limits": limits + [
+            "Fixtures are parsed, never executed. Static typing is not runtime validation or production behavior qualification.",
+            "Opaque provider/journal/PLAR/lineage payloads and UDL fields remain governed by separate runtime contracts; optional-field correlations and exact integer rules are not fully captured by these types.",
+            "The earlier broad untyped-body baseline and intermediate integration/lint failures remain retained; this is not whole-runtime strict typing or broad lint qualification."],
+        "policy": "current",
+        "outcome": {"receipt": "tm01-boundary-types", "pointer": "/status"},
+        "receipts": ["tm01-boundary-types"],
+        "bindings": [{"kind": "map", "domain": "source", "receipt": "tm01-boundary-types",
+                      "pointer": "/source_hashes", "prefix": "",
+                      "inventory": {"roots": ["pixl"], "suffixes": [".py"]}}],
+    })
+    full_claim = copy.deepcopy(next(row for row in baseline["claims"] if row["id"] == "SC-09-FULL-VERIFICATION"))
+    full_claim.update({
+        "id": "TM-01-FULL-VERIFICATION",
+        "task": "Check TM-01 maintained source and distributable payloads",
+        "document": full_doc,
+        "scope": f"The exact retained TM-01 full verifier passes {full['tests']['passed']:,} tests with {len(full['tests']['skipped'])} Windows privilege skips, {full['art_pocs']['total']} reference checks and distribution checks; its source inventory and bundle identity govern current applicability.",
+        "limits": limits + [
+            "Reference fixtures and local checks do not establish native profile behavior, new provider work or art quality.",
+            "Static boundary qualification and retained broader lint/untyped-body failures are recorded separately; passing local packaging does not establish broader milestone acceptance."],
+        "outcome": {"receipt": "tm01-full-verification", "pointer": "/status"},
+        "receipts": ["tm01-full-verification"],
+    })
+    for binding in full_claim["bindings"]:
+        binding["receipt"] = "tm01-full-verification"
+    registry["claims"].append(full_claim)
+    assert registry["claims"][:19] == baseline["claims"] and registry["receipts"][:62] == baseline["receipts"]
+    assert registry["release"] == baseline["release"]
+    (ROOT / REGISTRY).write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"claims": len(registry["claims"]), "receipts": len(registry["receipts"]),
+                      "preserved_claims": 19, "preserved_receipts": 62}))
+
+
+if __name__ == "__main__":
+    main()

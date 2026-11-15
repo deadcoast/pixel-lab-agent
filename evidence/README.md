@@ -1,9 +1,9 @@
 # Find evidence for a PIXL task
 
 Start with the task below, then open its exact result and failure ledger. This is
-a navigation index, first reviewed **2026-11-14 against `611a513`**. SC-09 updates
-the current checkpoint and local-lock route below; the earlier QOL-07 reader
-qualification applies to its retained version, not these updated bytes. The
+a navigation index, first reviewed **2026-11-14 against `611a513`**. SC-09 and TM-01
+update the current checkpoints and local maintenance routes below; the earlier
+QOL-07 reader qualification applies to its retained version, not these updated bytes. The
 [capability matrix](../docs/CAPABILITY-OUTCOMES.md) defines supported scope;
 individual ledgers preserve attempts, interventions and tested identities. A newer
 date or passing local test does not make a native or artistic result apply to a
@@ -12,29 +12,35 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
-- **Latest full local checkpoint:** [SC-09 verification](verification-runs/20261114T235749.451894Z/result.json)
+- **Latest full local checkpoint:** [TM-01 verification](verification-runs/20261115T003322.792746Z/result.json)
   records 1,413 passing tests, four Windows privilege skips (1,417 run), 39
   reference checks and distribution checks. Its source hashes define applicability.
-  The [NF-07 predecessor](verification-runs/20261114T152255.619054Z/result.json)
+  The [SC-09 predecessor](verification-runs/20261114T235749.451894Z/result.json)
   remains unchanged. These are local implementation/package checks, **not new
-  native behavior, artistic acceptance or QOL-07 reader qualification**.
+  native behavior, artistic acceptance or reader qualification**.
+- **Typed core boundaries:** [the TM-01 gate](boundary-typing/20261114/qualification-01/report.json)
+  passes 5/5 checks, valid consumers of actual producers and exactly 13 expected
+  static refusals. Six modules include untyped bodies; the other runtime modules
+  retain default scope. The [maintainer guide](../docs/BOUNDARY-TYPES.md) gives the
+  repeatable command and its temporary-cache effects. Static fixtures are parsed,
+  never executed; runtime JSON validation and artistic judgment stay separate.
 - **Maintenance is not all green:** retained [broad Ruff](deliverable-index/20261114/maintenance-01/RESULT.json)
-  failed nine findings in five unchanged files. [Scoped Ruff](deliverable-index/20261114/maintenance-02/RESULT.json)
-  passed for seven changed files; default mypy passed 44 runtime modules with its
-  unchecked-untyped-body limit. Preserve the broad failure.
+  failed nine findings in five then-unchanged files. [TM-01 scoped Ruff](boundary-typing/20261114/lint-01/RESULT.json)
+  passes eight changed/new runtime files. The [TM-01 ledger](boundary-typing/README.md)
+  preserves the wider untyped-body baseline and intermediate integration/lint
+  failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [SC-09 inspection](lock-diagnostics/20261114/integrity-02/report.json) covers
-  19 claims and 62 receipts: two SC-09 claims current, eleven historical, six
-  stale applicability claims. The changed runtime makes the two NF-07 bindings
-  stale alongside earlier setup/install and maintenance claims. All original
-  outcomes remain intact; `needs_review` is not a runtime failure. The
-  [earlier NF-07 inspection](deliverable-index/20261114/integrity-02/report.json)
-  keeps its then-current result.
+  The [TM-01 inspection](boundary-typing/20261114/integrity-01/report.json) covers
+  21 claims and 64 receipts: two TM-01 claims current, eleven historical, eight
+  stale applicability claims. Both SC-09 bindings now join the earlier six stale
+  claims after source/configuration changes. All original outcomes remain intact;
+  `needs_review` is not a runtime failure. The [SC-09 inspection](lock-diagnostics/20261114/integrity-02/report.json)
+  keeps its then-current two-current/six-stale result.
 
 **Blocked by `store_locked`?** Follow the [local writer-lock recovery guide](../plugins/pixl/skills/pixl/references/store-locking.md)
-and [SC-09 evidence ledger](lock-diagnostics/README.md). Source-runtime and
-copied-kit process proofs each pass 50/50 checks, with the original 40/50 failure
-retained. Recorded owner metadata remains unverified; preserve the lock until
+and [SC-09 evidence ledger](lock-diagnostics/README.md). Its retained source-runtime
+and copied-kit process proofs each pass 50/50 checks, with the original 40/50
+failure retained; their tested identities remain historical. Recorded owner metadata remains unverified; preserve the lock until
 writers are quiescent, then reconcile the actual publication. This local recovery
 does not authorize another provider request.
 
@@ -45,9 +51,9 @@ does not authorize another provider request.
 Run from the checkout when a current-source decision is needed. The command reads
 identities without rebuilding or replaying evidence. It does not rerun a host,
 provider or renderer. The registry ID `CURRENT-FULL-VERIFICATION` deliberately
-tracks the **older SC-06** receipt; `NF-07-FULL-VERIFICATION` retains its later,
-now-stale checkpoint. Use `SC-09-FULL-VERIFICATION` for the latest registered
-full checkpoint. Claim filtering still checks retained releases, so
+tracks the **older SC-06** receipt; `NF-07-FULL-VERIFICATION` and
+`SC-09-FULL-VERIFICATION` retain their later, now-stale checkpoints. Use
+`TM-01-FULL-VERIFICATION` for the latest registered full checkpoint. Claim filtering still checks retained releases, so
 an overall exit 1 can coexist with an intact current selected claim.
 
 ## Choose the core task

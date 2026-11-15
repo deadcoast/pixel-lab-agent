@@ -8,25 +8,112 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, Literal, TypeAlias, TypedDict, cast, overload
 
 from . import codec, graph, job_history, lifecycle, platform, store
-from .codec import PixlError, Record, Ref, Symbol
+from .codec import Document, PixlError, Record, Ref, Symbol
+from .operation_types import PathInput, PublicationResult
 
 PENDING = {"prepared", "unknown", "submitted", "running"}
 
+# Provider schemas, journals and PLAR extensions retain their own validators.
+# These opaque payloads are distinct from the checked operation envelopes below.
+JsonObject: TypeAlias = dict[str, Any]
 
-def _require(condition, code, detail):
+
+class JobContext(TypedDict):
+    task: str
+    outputs: list[str]
+    task_sha256: str
+    bindings: dict[str, str]
+
+
+class ImportedArtifact(TypedDict):
+    id: str
+    output: str
+    record_sha256: str
+
+
+class ImportedCandidate(TypedDict):
+    candidate_id: str
+    output_id: str
+    path: str
+    sha256: str
+    record_sha256: str
+
+
+class JobRecovery(TypedDict):
+    action: str
+    provider: str
+    tool: str
+    remote_id: str | None
+    missing_outputs: list[str]
+    imported: list[ImportedCandidate]
+    guidance: list[str]
+
+
+class LegacyJobSummary(TypedDict):
+    id: str
+    durable: Literal[False]
+    state: str
+    next_action: Literal["inspect_legacy_history"]
+    remote_id: str | None
+
+
+class DurableJobSummary(TypedDict):
+    selection_bindings: list[JsonObject]
+    id: str
+    durable: Literal[True]
+    state: str
+    remote_id: str | None
+    intent_sha256: str
+    stale: list[str]
+    blockers: list[str]
+    next_action: str
+    recovery: JobRecovery
+    request: JsonObject
+    context: JobContext
+    events: list[JsonObject]
+    candidates: list[ImportedArtifact]
+
+
+JobSummary: TypeAlias = LegacyJobSummary | DurableJobSummary
+
+
+class JobMutationResult(PublicationResult):
+    job: DurableJobSummary
+    remote_executed: Literal[False]
+
+
+class JobDispatchResult(JobMutationResult):
+    dispatch_request: JsonObject
+
+
+class JobImportResult(JobMutationResult):
+    reused_import: bool
+
+
+class JobReport(TypedDict):
+    jobs: list[JobSummary]
+    hash: str
+    revision: int
+    files_verified: Literal[True]
+    remote_executed: Literal[False]
+
+
+def _require(condition: bool, code: str, detail: str) -> None:
     if not condition:
         raise PixlError(code, detail)
 
 
-def _task(doc, task_id):
+def _task(doc: Document, task_id: str) -> Record:
     record = doc.records.get(task_id)
-    _require(record is not None and record.kind == "T", "job_task", str(task_id))
+    if record is None or record.kind != "T":
+        raise PixlError("job_task", str(task_id))
     return record
 
 
-def _context(doc, task_id, outputs):
+def _context(doc: Document, task_id: str, outputs: object) -> JobContext:
     task = _task(doc, task_id)
     _require(
         isinstance(outputs, list)
@@ -36,6 +123,8 @@ def _context(doc, task_id, outputs):
         "job_outputs",
         "distinct output IDs required",
     )
+    # The existing runtime guard above establishes the precise list element type.
+    outputs = cast(list[str], outputs)
     planned = {r.id for r in task.fields["op"]}
     _require(set(outputs) <= planned, "job_outputs", "outputs must belong to the task")
     fields = {k: v for k, v in task.fields.items() if k not in {"st", "ca", "vr"}}
@@ -112,7 +201,7 @@ def _journal_bytes(doc, reference, root):
         raise PixlError("job_history", f"{snapshot.id}: unreadable journal") from error
 
 
-def _snapshots(doc, record, root):
+def _snapshots(doc: Document, record: Record, root: PathInput | None) -> list[JsonObject]:
     """Check every retained prefix and its exact local receipt projection."""
     fields = record.fields
     _require(
@@ -124,7 +213,7 @@ def _snapshots(doc, record, root):
     _require(
         bool(fields["ev"]), "job_projection", f"{record.id}: journal receipts required"
     )
-    histories: list[dict] = []
+    histories: list[JsonObject] = []
     references = []
     for ref in fields["ev"]:
         receipt = doc.records[ref.id]
@@ -396,7 +485,7 @@ def _retained_storage(doc, job, folder, root):
         )
 
 
-def _locations(folder, root):
+def _locations(folder: PathInput, root: PathInput | None) -> tuple[Path, Path]:
     folder = Path(folder).resolve()
     root = Path(root).resolve() if root is not None else folder.parent
     _require(
@@ -407,7 +496,7 @@ def _locations(folder, root):
     return folder, root
 
 
-def _load(folder, expected, root):
+def _load(folder: PathInput, expected: str, root: PathInput | None) -> tuple[Path, Path, Document]:
     folder, root = _locations(folder, root)
     doc = store.load(folder)
     _require(
@@ -502,7 +591,24 @@ def _project(doc, folder, root, journal):
     )
 
 
-def _summary(doc, record, journal, root=None, folder=None):
+@overload
+def _summary(
+    doc: Document, record: Record, journal: None,
+    root: PathInput | None = None, folder: PathInput | None = None,
+) -> LegacyJobSummary: ...
+
+
+@overload
+def _summary(
+    doc: Document, record: Record, journal: JsonObject,
+    root: PathInput | None = None, folder: PathInput | None = None,
+) -> DurableJobSummary: ...
+
+
+def _summary(
+    doc: Document, record: Record, journal: JsonObject | None,
+    root: PathInput | None = None, folder: PathInput | None = None,
+) -> JobSummary:
     if journal is None:
         return {
             "id": record.id,
@@ -518,7 +624,7 @@ def _summary(doc, record, journal, root=None, folder=None):
         if state == "prepared"
         else []
     )
-    imported = []
+    imported: list[ImportedCandidate] = []
     for event in journal["events"]:
         if event["event"] == "imported":
             item = event["artifact"]
@@ -584,7 +690,9 @@ def _summary(doc, record, journal, root=None, folder=None):
     }
 
 
-def _save(folder, root, doc, journal, expected):
+def _save(
+    folder: Path, root: Path, doc: Document, journal: JsonObject, expected: str,
+) -> JobMutationResult:
     _project(doc, folder, root, journal)
     doc.revision += 1
     published = store.commit(folder, doc, expected, root)
@@ -595,30 +703,31 @@ def _save(folder, root, doc, journal, expected):
     }
 
 
-def _get(doc, job_id, root):
+def _get(doc: Document, job_id: str, root: PathInput) -> JsonObject:
     record = doc.records.get(job_id)
     _require(
         record is not None and record.kind == "J" and "jr" in record.fields,
         "job_history",
         "select an existing durable job",
     )
+    assert record is not None  # Established by the existing durable-job guard.
     return _snapshots(doc, record, root)[-1]
 
 
 def prepare(
-    folder,
-    expected,
-    job_id,
-    task_id,
-    outputs,
-    provider,
-    tool,
-    arguments,
-    schema,
-    discovery,
-    authorization,
-    root=None,
-):
+    folder: PathInput,
+    expected: str,
+    job_id: str,
+    task_id: str,
+    outputs: object,
+    provider: str,
+    tool: str,
+    arguments: JsonObject,
+    schema: JsonObject,
+    discovery: JsonObject,
+    authorization: JsonObject,
+    root: PathInput | None = None,
+) -> JobMutationResult:
     folder, root, doc = _load(folder, expected, root)
     _require(
         job_id not in doc.records, "job_exists", "use a new job ID for a new attempt"
@@ -634,7 +743,9 @@ def prepare(
     return _save(folder, root, doc, journal, expected)
 
 
-def dispatch(folder, expected, job_id, root=None):
+def dispatch(
+    folder: PathInput, expected: str, job_id: str, root: PathInput | None = None,
+) -> JobDispatchResult:
     folder, root, doc = _load(folder, expected, root)
     previous = _get(doc, job_id, root)
     _require(not _stale(doc, previous), "job_stale", "saved request context changed")
@@ -658,11 +769,13 @@ def dispatch(folder, expected, job_id, root=None):
             }) from error
         raise
     result = _save(folder, root, doc, journal, expected)
-    result["dispatch_request"] = copy.deepcopy(journal["intent"]["request"])
-    return result
+    return {**result, "dispatch_request": copy.deepcopy(journal["intent"]["request"])}
 
 
-def observe(folder, expected, job_id, event, evidence, remote_id=None, root=None):
+def observe(
+    folder: PathInput, expected: str, job_id: str, event: str, evidence: object,
+    remote_id: str | None = None, root: PathInput | None = None,
+) -> JobMutationResult:
     folder, root, doc = _load(folder, expected, root)
     _require(
         event in {"submitted", "running", "succeeded", "failed", "unknown"},
@@ -676,8 +789,9 @@ def observe(folder, expected, job_id, event, evidence, remote_id=None, root=None
 
 
 def import_artifact(
-    folder, expected, job_id, output_id, candidate_id, path, evidence, root=None
-):
+    folder: PathInput, expected: str, job_id: str, output_id: str, candidate_id: str,
+    path: PathInput, evidence: object, root: PathInput | None = None,
+) -> JobImportResult:
     folder, root, doc = _load(folder, expected, root)
     previous = _get(doc, job_id, root)
     context = previous["intent"]["context"]
@@ -755,14 +869,15 @@ def import_artifact(
     return {**_save(folder, root, doc, journal, expected), "reused_import": False}
 
 
-def report(doc, root, folder=None):
+def report(doc: Document, root: PathInput | None, folder: PathInput | None = None) -> JobReport:
     _require(
         root is not None,
         "job_root",
         "job recovery requires the project root and journal files",
     )
+    assert root is not None  # Established by the existing project-root guard.
     graph.validate(doc, root)
-    rows = []
+    rows: list[JobSummary] = []
     for record in sorted(doc.records.values(), key=lambda r: r.id):
         if record.kind == "J":
             journal = _get(doc, record.id, root) if "jr" in record.fields else None

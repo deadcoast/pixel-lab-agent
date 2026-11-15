@@ -1,14 +1,42 @@
 """Preserve a selected production continuation alongside the agent's own judgments."""
 
+from __future__ import annotations
+
 import json
 from hashlib import sha256
 from pathlib import Path
+from typing import TYPE_CHECKING, Literal, overload
 
 from . import graph, plar, store
 from .codec import PixlError
+from .operation_types import HandoffReceipt, PathInput
+
+if TYPE_CHECKING:
+    from .caller_result import CallerResult, HandoffSnapshot
 
 
-def save(root, asset_id, requirements_hash, expect, details, path="plar.txt", view="receipt"):
+@overload
+def save(root: PathInput, asset_id: str, requirements_hash: str, expect: str,
+         details: object, path: PathInput = "plar.txt", view: Literal["receipt"] = "receipt") -> HandoffReceipt: ...
+
+
+@overload
+def save(root: PathInput, asset_id: str, requirements_hash: str, expect: str,
+         details: object, *, path: PathInput = "plar.txt", view: Literal["caller"]) -> CallerResult: ...
+
+
+@overload
+def save(root: PathInput, asset_id: str, requirements_hash: str, expect: str,
+         details: object, path: PathInput, view: Literal["caller"]) -> CallerResult: ...
+
+
+@overload
+def save(root: PathInput, asset_id: str, requirements_hash: str, expect: str,
+         details: object, path: PathInput = "plar.txt", view: str = "receipt") -> HandoffReceipt | CallerResult: ...
+
+
+def save(root: PathInput, asset_id: str, requirements_hash: str, expect: str,
+         details: object, path: PathInput = "plar.txt", view: str = "receipt") -> HandoffReceipt | CallerResult:
     root = Path(root).resolve()
     if view not in ("receipt", "caller"):
         raise PixlError("caller_result_input", "handoff view must be receipt or caller")
@@ -31,7 +59,7 @@ def save(root, asset_id, requirements_hash, expect, details, path="plar.txt", vi
         raise PixlError("handoff_state", "No production continuation is available; retain the allocation diagnostic in the ordinary result")
     if continuation["state_hash"] != expect:
         raise PixlError("handoff_stale", "Production state changed or wrong identity supplied; expect must match the canonical production state hash at production.continuation.state_hash; reread selected PLAR, not its top-level file hash")
-    document = {
+    document: HandoffSnapshot = {
         "version": 1,
         "asset_id": asset_id,
         "requirements_hash": requirements_hash,
@@ -48,7 +76,7 @@ def save(root, asset_id, requirements_hash, expect, details, path="plar.txt", vi
     data = (json.dumps(document, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n").encode("utf-8")
     digest = sha256(data).hexdigest()
     target = graph.confined(root, f".pixl/handoffs/{digest}.json")
-    receipt = {
+    receipt: HandoffReceipt = {
         "path": target.relative_to(root).as_posix(),
         "sha256": digest,
         "asset_id": asset_id,

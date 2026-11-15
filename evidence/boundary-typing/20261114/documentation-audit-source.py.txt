@@ -1,0 +1,130 @@
+"""TM-01 final links, workflow continuity and preservation of replaced evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+from urllib.parse import unquote
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "0bf54b41e724703e9502a7175936bc1aab930459"
+DOCS = ["TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md",
+        "docs/CAPABILITY-OUTCOMES.md", "docs/VERIFICATION.md", "docs/BOUNDARY-TYPES.md",
+        "evidence/README.md", "evidence/boundary-typing/README.md"]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def original(name):
+    return subprocess.check_output(["git", "show", BASE + ":" + name], cwd=ROOT)
+
+
+def anchors(path):
+    text = path.read_text(encoding="utf-8-sig")
+    found = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', text))
+    seen = {}
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*#*$", text, re.M):
+        slug = re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        found.add(slug + (f"-{count}" if count else ""))
+    return found
+
+
+def audit(out, run):
+    checks = []
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    for name in DOCS:
+        path = ROOT / name
+        body = re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)", "", path.read_text(encoding="utf-8-sig"))
+        for target in re.findall(r"\]\(([^)]+)\)", body):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                continue
+            local, _, fragment = unquote(target).partition("#")
+            destination = (path.parent / local).resolve() if local else path
+            exists = destination.exists() or (destination == out and not fragment)
+            valid = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check(f"link:{name}:{target}", exists and valid)
+    pattern = r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s"
+    findings = re.findall(pattern, (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    prior = re.findall(pattern, original("docs/IDENTIFIED.md").decode("utf-8"), re.M)
+    backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]", (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    check("fifty_original_ids", len(findings) == len(set(findings)) == len(backlog) == len(set(backlog)) == 50 and set(findings) == set(backlog) == set(prior))
+    for name in DOCS[:4]:
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("active_cycle:" + name, "IDENTIFY-2026-11-09-01" in body and "TM-01" in body and "TM-02" in body)
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    sections = dict(re.findall(r"(?ms)^## (M[1-5]) [^\n]+\n(.*?)(?=^## |\Z)", plan))
+    for milestone in ("M1", "M2", "M3", "M4", "M5"):
+        status = re.search(r"^\*\*Status:\*\* ([^\n]+)", sections.get(milestone, ""), re.M)
+        body = status.group(1).split("**Existing work:")[0] if status else ""
+        check("milestone_open:" + milestone, bool(re.search(r"\b(open|active)\b", body, re.I)) and not re.search(r"\b(closed|complete)\b", body, re.I), body)
+    for name in ("TODO.md", "docs/CAPABILITY-OUTCOMES.md", "evidence/boundary-typing/README.md"):
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("human_acceptance_separate:" + name, bool(re.search(r"human acceptance.{0,120}(separate|unrecorded|not recorded)", body, re.I | re.S)))
+
+    registry_name = "evaluations/evidence-claims.json"
+    before = json.loads(original(registry_name))
+    after = json.loads((ROOT / registry_name).read_bytes())
+    for kind in ("claims", "receipts"):
+        current = {row["id"]: row for row in after[kind]}
+        check("old_registry_objects_unchanged:" + kind, all(current.get(row["id"]) == row for row in before[kind]), len(before[kind]))
+    check("release_declarations_unchanged", before["release"] == after["release"])
+    for claim in before["claims"]:
+        doc = claim["document"]
+        lines = (ROOT / doc["path"]).read_text(encoding="utf-8").splitlines()
+        pinned = [line for line in lines if f'id="{doc["anchor"]}"' in line]
+        check("pinned_claim_line:" + claim["id"], len(pinned) == 1 and sha(pinned[0].encode()) == doc["line_sha256"])
+
+    changed = subprocess.check_output(["git", "diff", "--name-only", "--diff-filter=MDTR", BASE], cwd=ROOT, text=True).splitlines()
+    generated = {"evidence/art-methods/poc-report.json", "evidence/representation-benchmark.json", "evidence/test-log.txt", "evidence/test-results.json", "evidence/wheel-check.json"}
+    historical = [p for p in changed if p.startswith("evidence/") and p not in generated and p != "evidence/README.md"]
+    check("historical_receipts_unchanged", not historical, {"changed": historical, "scope": "Evidence tracked at BASE only; new attempt history is separately retained, not inferred by git diff."})
+    manifest = json.loads((run / "previous-manifest.json").read_bytes())
+    with zipfile.ZipFile(run / "previous.zip") as archive:
+        for name in sorted(set(changed) & set(manifest)):
+            retained = archive.read(name)
+            check("prior_generated_bytes:" + name, retained == original(name) and sha(retained) == manifest[name])
+    old_kit = ROOT / "evidence/boundary-typing/20261114/baseline-01/previous-kit.zip"
+    kit_manifest = json.loads(old_kit.with_name("previous-kit-manifest.json").read_bytes())
+    with zipfile.ZipFile(old_kit) as archive:
+        names = set(archive.namelist())
+        check("complete_prior_kit_inventory", names == set(kit_manifest) and len(names) == 255)
+        for member, expected in kit_manifest.items():
+            check("complete_prior_kit_member:" + member, member in names and sha(archive.read(member)) == expected)
+        for name in changed:
+            if name.startswith("plugins/pixl/"):
+                # The complete-kit archive uses paths relative to the kit root.
+                member = name if name in names else name.removeprefix("plugins/pixl/")
+                check("prior_complete_kit_bytes:" + name, member in names and archive.read(member) == original(name))
+    result = json.loads((run / "result.json").read_bytes())
+    check("full_verification_passed", result["status"] == "pass", result["tests"])
+    for name, expected in result["checked_input_hashes"].items():
+        check("verified_source_unchanged:" + name, sha((ROOT / name).read_bytes()) == expected)
+    check("verified_bundle_unchanged", sha((ROOT / "plugins/pixl/bundle-manifest.json").read_bytes()) == result["bundle_manifest_sha256"])
+    return {"version": 1, "observed_at": datetime.now(UTC).isoformat(), "baseline": BASE,
+            "scope": "Documentation links, workflow IDs, open acceptance, immutable prior claims/receipts, archived prior generated bytes and final verified input identities. No native model or artistic acceptance inference.",
+            "script_sha256": sha(Path(__file__).read_bytes()), "documents": {p: sha((ROOT / p).read_bytes()) for p in DOCS},
+            "status": "pass" if all(c["passed"] for c in checks) else "fail", "passed": sum(c["passed"] for c in checks), "total": len(checks), "checks": checks}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--verification-run", type=Path, required=True)
+    args = parser.parse_args()
+    if args.out.exists():
+        raise ValueError("Select a fresh output; preserve earlier audits")
+    result = audit(args.out.resolve(), args.verification_run.resolve())
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({k: result[k] for k in ("status", "passed", "total")}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)

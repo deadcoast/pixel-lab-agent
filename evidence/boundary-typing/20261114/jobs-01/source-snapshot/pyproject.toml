@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixl-agent"
+version = "1.0.0"
+description = "PIXL agent project language, pixel-art evidence tools and harness kit"
+requires-python = ">=3.11"
+dependencies = [
+    "pillow>=10",
+    "jsonschema>=4.18",
+]
+
+[project.optional-dependencies]
+benchmark = ["tiktoken>=0.7"]
+
+[project.scripts]
+pixl = "pixl.entrypoint:main"
+
+[tool.setuptools]
+packages = ["pixl"]
+
+[tool.setuptools.package-data]
+pixl = ["registry.json", "registry-v2.json", "plar.schema.json", "asset-plan.schema.json"]
+
+[tool.coverage.run]
+branch = true
+source = ["pixl"]
+patch = ["subprocess"]
+parallel = true
+
+[tool.coverage.report]
+show_missing = true
+
+# TM-01 checks the exercised operation boundaries, including their untyped
+# helpers. Other runtime modules retain their existing incremental typing scope.
+[[tool.mypy.overrides]]
+module = [
+    "pixl.operation_types",
+    "pixl.store",
+    "pixl.jobs",
+    "pixl.candidate_review",
+    "pixl.handoff",
+    "pixl.caller_result",
+]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+warn_return_any = true
+
+[dependency-groups]
+dev = [
+    "coverage>=7.16.1",
+    "mypy>=2.3.1",
+    "ruff>=0.16.7",
+    "setuptools>=84.0.0",
+    "sourcery>=1.45.0",
+    "tiktoken>=0.14.0",
+    "types-jsonschema>=4.25.0",
+    "types-setuptools>=84.0.0.20260812",
+]

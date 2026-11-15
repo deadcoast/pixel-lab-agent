@@ -2,11 +2,132 @@
 
 import json
 from collections import Counter
+from collections.abc import Mapping
+from typing import Any, Literal, NotRequired, TypeAlias, TypedDict, cast
 
 from jsonschema import Draft202012Validator, ValidationError
 
 from . import graph
 from .codec import PixlError
+from .operation_types import FileIdentity, HandoffReceipt, PathInput, SectionLocator
+
+# Continuation/delivery bodies retain their existing extensible JSON contracts.
+# The surrounding caller envelope and its validated authored block are closed.
+JsonObject: TypeAlias = dict[str, Any]
+AssignmentStatus: TypeAlias = Literal["delivered", "partial", "needs_input", "blocked"]
+
+
+class CallerFile(FileIdentity):
+    role: str
+
+
+class CallerIssue(TypedDict):
+    category: Literal["invalid_authoring", "stale_local_state", "missing_capability",
+                      "uncertain_remote_result", "unavailable_observation", "unfinished_work"]
+    summary: str
+    recovery: NotRequired[str]
+
+
+class IntegrationObservation(TypedDict):
+    status: Literal["pass", "fail", "unavailable", "not_performed", "not_in_scope"]
+    summary: str
+    evidence: NotRequired[list[CallerFile]]
+
+
+class CallerBlock(TypedDict, total=False):
+    summary: str
+    artifacts: list[CallerFile]
+    reports: list[CallerFile]
+    issues: list[CallerIssue]
+    integration: IntegrationObservation
+
+
+class AbsentCaller(TypedDict):
+    present: Literal[False]
+    basis: Literal["agent_authored"]
+    reason: str
+
+
+class PresentCaller(CallerBlock):
+    present: Literal[True]
+    basis: Literal["agent_authored"]
+    file_verification: str
+
+
+PreparedCaller: TypeAlias = AbsentCaller | PresentCaller
+
+
+class HandoffSelection(TypedDict):
+    path: str
+    hash: str
+    current: bool
+
+
+class HandoffSnapshot(TypedDict):
+    version: Literal[1]
+    asset_id: str
+    requirements_hash: str
+    resume: JsonObject
+    next: str
+    selection: HandoffSelection
+    details: JsonObject
+    scope: str
+
+
+class Assignment(TypedDict):
+    status: AssignmentStatus
+    basis: Literal["agent_authored"]
+
+
+class CriteriaCounts(TypedDict):
+    total: int
+    by_status: dict[str, int]
+    unresolved: int
+    scope: str
+
+
+class JobCounts(TypedDict):
+    total: int
+    pending: int
+    by_state: dict[str, int]
+
+
+class ProductionFacts(TypedDict):
+    task: str
+    task_state: str
+    selection_current: bool
+    criteria: CriteriaCounts
+    jobs: JobCounts
+    delivery_observed: bool
+    delivery_complete: bool | None
+    delivery_inline: bool
+    scope: str
+    delivery: NotRequired[JsonObject | None]
+    delivery_ref: NotRequired[SectionLocator]
+
+
+class RefreshArguments(TypedDict):
+    path: str
+    asset_id: str
+
+
+class RefreshRequest(TypedDict):
+    operation: Literal["pixl_plar_read"]
+    arguments: RefreshArguments
+
+
+class CallerResult(HandoffReceipt):
+    view: Literal["caller"]
+    store: str
+    assignment: Assignment
+    caller: PreparedCaller
+    production: ProductionFacts
+    details_ref: SectionLocator
+    resume_ref: SectionLocator
+    resume_inline: bool
+    resume_bytes: int
+    refresh: RefreshRequest
+    resume: NotRequired[JsonObject]
 
 MAX_CALLER_BYTES = 8192
 MAX_INLINE_RESUME_BYTES = 4096
@@ -56,11 +177,11 @@ CALLER_SCHEMA = {
 }
 
 
-def _encoded(value):
+def _encoded(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
 
 
-def prepare(root, details):
+def prepare(root: PathInput, details: Mapping[str, object]) -> PreparedCaller:
     """Validate only the opt-in caller block; never reinterpret legacy details."""
     if "caller" not in details:
         return {"present": False, "basis": "agent_authored", "reason": "No details.caller block was supplied; read details_ref for the retained observations."}
@@ -76,8 +197,11 @@ def prepare(root, details):
     except ValidationError as error:
         raise PixlError("caller_result_input", "details.caller violates the bounded caller-result schema; inspect spec/caller-result.md") from error
     # Freeze caller-owned input and check only declared local files, never URLs.
-    caller = json.loads(data)
-    files = [*caller.get("artifacts", []), *caller.get("reports", []), *caller.get("integration", {}).get("evidence", [])]
+    # The closed schema above validates the same finite JSON bytes frozen here.
+    validated = cast(CallerBlock, json.loads(data))
+    integration = validated.get("integration")
+    files = [*validated.get("artifacts", []), *validated.get("reports", []),
+             *(integration.get("evidence", []) if integration is not None else [])]
     for reference in files:
         path = graph.confined(root, reference["path"])
         try:
@@ -91,11 +215,11 @@ def prepare(root, details):
     return {
         "present": True, "basis": "agent_authored",
         "file_verification": "Declared file bytes matched their SHA-256 at this observation; roles and judgments are agent-authored.",
-        **caller,
+        **validated,
     }
 
 
-def _locator(receipt, data, field, pointer=None):
+def _locator(receipt: FileIdentity, data: bytes, field: str, pointer: str | None = None) -> SectionLocator:
     """Exact physical lines for a root field in the existing pretty JSON format."""
     lines = data.decode("utf-8").splitlines(keepends=True)
     prefix = "  " + json.dumps(field) + ":"
@@ -109,7 +233,8 @@ def _locator(receipt, data, field, pointer=None):
     }
 
 
-def project(receipt, document, selected, data, caller):
+def project(receipt: HandoffReceipt, document: HandoffSnapshot, selected: JsonObject,
+            data: bytes, caller: PreparedCaller) -> CallerResult:
     """Present captured facts; do not reload state or decide assignment acceptance."""
     production = selected["production"]
     criteria = [q for output in production.get("outputs", []) for q in output.get("requirements", [])]
@@ -118,7 +243,7 @@ def project(receipt, document, selected, data, caller):
     delivery = resume.get("delivery")
     delivery_inline = len(_encoded(delivery)) <= MAX_INLINE_DELIVERY_BYTES
     resume_bytes = len(_encoded(resume))
-    facts = {
+    facts: ProductionFacts = {
         "task": production["task"], "task_state": production["task_state"],
         "selection_current": production["selection_current"],
         "criteria": {
@@ -140,7 +265,7 @@ def project(receipt, document, selected, data, caller):
         facts["delivery"] = delivery
     else:
         facts["delivery_ref"] = _locator(receipt, data, "resume", "/resume/delivery")
-    result = {
+    result: CallerResult = {
         **receipt, "view": "caller", "store": resume["store"],
         "assignment": {"status": document["details"]["status"], "basis": "agent_authored"},
         "caller": caller, "production": facts,

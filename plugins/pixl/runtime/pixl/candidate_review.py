@@ -7,14 +7,114 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, NotRequired, TypedDict, cast
 
 from jsonschema import Draft202012Validator, ValidationError
 
 from . import codec, completion, graph, store
 from .codec import Document, PixlError, Record, Ref, Symbol
+from .operation_types import PathInput, PublicationResult
 
 Json = dict[str, Any]
+
+
+class ObservationFile(TypedDict):
+    path: str
+    sha256: str
+    mode: Literal["local", "visual", "live"]
+    note: str
+
+
+class CriterionVerdict(TypedDict):
+    criterion: str
+    status: Literal["pass", "fail", "unavailable"]
+    reason: str
+    supersedes: str | None
+    observations: list[int]
+
+
+class ReviewObservation(TypedDict):
+    version: Literal[1]
+    binding_hash: str
+    reviewer: str
+    observed_at: str
+    observations: list[ObservationFile]
+    verdicts: list[CriterionVerdict]
+    action: Literal["record", "nominate", "complete"]
+    next_action: str
+    limitations: list[str]
+
+
+class ReviewFile(TypedDict):
+    path: str
+    sha256: str
+
+
+class CapturedFile(ReviewFile):
+    bytes: int
+
+
+class CriterionContext(TypedDict):
+    id: str
+    check: str
+    domain: str
+    mode: Literal["local", "visual", "live"]
+    sources: list[str]
+    status: Literal["pass", "fail", "unavailable", "unperformed"]
+    verdict: str | None
+
+
+class CurrentAcceptance(TypedDict):
+    all_required_pass: bool
+    task_complete: bool
+
+
+class SnapshotAcceptance(TypedDict):
+    accepted: bool
+    source_state_hash: str
+    created_at: str
+
+
+class ReviewContext(TypedDict):
+    state_hash: str
+    revision: int
+    binding_hash: str
+    candidate: str
+    candidate_file: ReviewFile
+    # Lineage and family-member extensions keep their separately governed shape.
+    lineage: Json
+    output: str
+    task: str
+    task_status: str
+    nominated: bool
+    criteria: list[CriterionContext]
+    current_acceptance: CurrentAcceptance
+    files_verified: Literal[True]
+    automatic_artistic_judgment: Literal[False]
+    snapshot_acceptance: NotRequired[SnapshotAcceptance]
+    members: NotRequired[list[Json]]
+
+
+class CandidateReviewResult(ReviewContext):
+    review: str
+    review_sha256: str
+    review_path: str
+    reused_review: bool
+    publications: list[PublicationResult]
+    remote_executed: Literal[False]
+
+
+class RetainedReview(TypedDict):
+    version: Literal[1]
+    review: str
+    candidate: str
+    source_state_hash: str
+    recorded_at: str
+    bindings: dict[str, str]
+    observation: ReviewObservation
+    files: list[CapturedFile]
+
+
 TEXT = {"type": "string", "minLength": 1, "pattern": r"\S"}
 SHA = {"type": "string", "pattern": "^[a-f0-9]{64}$"}
 
@@ -47,7 +147,7 @@ def _require(condition: bool, detail: str, code: str = "candidate_review") -> No
         raise PixlError(code, detail)
 
 
-def _json(value: Any) -> bytes:
+def _json(value: object) -> bytes:
     data = (json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n").encode()
     _require(len(data) <= codec.MAX_BYTES, "review exceeds 16 MiB")
     return data
@@ -76,7 +176,7 @@ def _current(doc: Document, candidate_id: str) -> dict[str, Record]:
             if r.kind == "V" and r.fields["xr"].id == candidate_id and not r.fields.get("ob", False)}
 
 
-def context(doc: Document, root: Path, candidate_id: str) -> Json:
+def context(doc: Document, root: PathInput, candidate_id: str) -> ReviewContext:
     """Resolve exact review inputs and current acceptance without changing state."""
     from . import asset_lineage
 
@@ -84,7 +184,7 @@ def context(doc: Document, root: Path, candidate_id: str) -> Json:
     graph.validate(doc, root)
     candidate, output, task = _target(doc, candidate_id)
     current = _current(doc, candidate_id)
-    criteria = []
+    criteria: list[CriterionContext] = []
     for ref in output.fields["rq"]:
         q = doc.records[ref.id].fields
         verdict = current.get(ref.id)
@@ -92,7 +192,7 @@ def context(doc: Document, root: Path, candidate_id: str) -> Json:
                          "mode": q["md"].value, "sources": [r.id for r in q["so"]],
                          "status": verdict.fields["st"].value if verdict else "unperformed",
                          "verdict": verdict.id if verdict else None})
-    result = {
+    result: ReviewContext = {
         "state_hash": codec.digest(doc), "revision": doc.revision,
         "binding_hash": _sha(_json(_bindings(doc, candidate_id))),
         "candidate": candidate_id, "candidate_file": {"path": candidate.fields["ur"], "sha256": candidate.fields["dg"]},
@@ -117,11 +217,14 @@ def context(doc: Document, root: Path, candidate_id: str) -> Json:
     return result
 
 
-def _validate_request(doc: Document, candidate_id: str, observation: Json) -> None:
+def _validate_request(doc: Document, candidate_id: str, observation: object) -> ReviewObservation:
     try:
         Draft202012Validator(OBSERVATION_SCHEMA).validate(observation)
     except ValidationError as error:
         raise PixlError("candidate_review", "invalid observation at " + ".".join(map(str, error.absolute_path))) from error
+    # The schema establishes the object shape. Exact integers and semantic
+    # bindings are still checked below before returning the typed request.
+    observation = cast(Json, observation)
     _require(type(observation["version"]) is int, "version must be integer 1")
     try:
         at = datetime.fromisoformat(observation["observed_at"])
@@ -147,10 +250,11 @@ def _validate_request(doc: Document, candidate_id: str, observation: Json) -> No
             _require(bool(indices), "performed verdict needs actual observations")
             mode = doc.records[qid].fields["md"].value
             _require(all(observation["observations"][i]["mode"] == mode for i in indices), "observation modes must match the criterion")
+    return cast(ReviewObservation, observation)
 
 
-def _capture(root: Path, observations: list[Json]) -> list[tuple[Json, bytes]]:
-    captured = []
+def _capture(root: Path, observations: list[ObservationFile]) -> list[tuple[CapturedFile, bytes]]:
+    captured: list[tuple[CapturedFile, bytes]] = []
     total = 0
     for index, item in enumerate(observations):
         path = graph.confined(root, item["path"])
@@ -167,7 +271,7 @@ def _capture(root: Path, observations: list[Json]) -> list[tuple[Json, bytes]]:
     return captured
 
 
-def _retain(folder: Path, report: Json, captured: list[tuple[Json, bytes]]) -> tuple[Path, str]:
+def _retain(folder: Path, report: RetainedReview, captured: list[tuple[CapturedFile, bytes]]) -> tuple[Path, str]:
     data = _json(report)
     digest = _sha(data)
     relative = f"reviews/{digest}"
@@ -183,7 +287,7 @@ def _retain(folder: Path, report: Json, captured: list[tuple[Json, bytes]]) -> t
 
 
 def _record_review(current: Document, folder: Path, root: Path, candidate_id: str,
-                   review_id: str, observation: Json) -> Document:
+                   review_id: str, observation: ReviewObservation) -> Document:
     candidate, _, task = _target(current, candidate_id)
     _require(task.fields["st"].value != "done", "reopen the completed task before a new review", "reopen_required")
     existing = _current(current, candidate_id)
@@ -194,7 +298,7 @@ def _record_review(current: Document, folder: Path, root: Path, candidate_id: st
            *[f"{review_id}.{kind}.{i}" for kind in ("evidence", "verdict") for i in range(len(observation["verdicts"]))]]
     _require(all(codec.IDENT.fullmatch(key.encode()) and key not in current.records for key in ids), "review IDs must be valid, fresh and leave room for generated suffixes")
     captured = _capture(root, observation["observations"])
-    report = {"version": 1, "review": review_id, "candidate": candidate_id,
+    report: RetainedReview = {"version": 1, "review": review_id, "candidate": candidate_id,
               "source_state_hash": codec.digest(current), "recorded_at": datetime.now(UTC).isoformat(),
               "bindings": _bindings(current, candidate_id), "observation": observation,
               "files": [row for row, _ in captured]}
@@ -238,7 +342,7 @@ def _record_review(current: Document, folder: Path, root: Path, candidate_id: st
     return updated
 
 
-def _replay(doc: Document, root: Path, candidate_id: str, review_id: str, observation: Json) -> None:
+def _replay(doc: Document, root: Path, candidate_id: str, review_id: str, observation: ReviewObservation) -> None:
     record = doc.records[review_id]
     _require(record.kind == "X" and record.fields.get("mt", {}).get("candidate_review") == 1, "review ID already belongs to another record")
     path = graph.confined(root, record.fields["ur"])
@@ -254,8 +358,8 @@ def _replay(doc: Document, root: Path, candidate_id: str, review_id: str, observ
                  "review has been superseded; cannot replay as acceptance", "review_superseded")
 
 
-def submit(folder: Path, expected: str, candidate_id: str, review_id: str,
-           observation: Json, root: Path | None = None) -> Json:
+def submit(folder: PathInput, expected: str, candidate_id: str, review_id: str,
+           observation: object, root: PathInput | None = None) -> CandidateReviewResult:
     """Preflight and publish an explicit review and its requested lifecycle action."""
     folder = Path(folder).resolve()
     root = Path(root).resolve() if root is not None else folder.parent
@@ -265,7 +369,7 @@ def submit(folder: Path, expected: str, candidate_id: str, review_id: str,
         _require(codec.digest(current) == expected, "reload canonical state_hash before review publication", "stale_write")
         graph.validate(current, root)
         _target(current, candidate_id)
-        _validate_request(current, candidate_id, observation)
+        observation = _validate_request(current, candidate_id, observation)
         reused = review_id in current.records
         steps = []
         if reused:
