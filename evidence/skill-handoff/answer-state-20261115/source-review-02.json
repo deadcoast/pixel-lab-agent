@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-15T16:35:39.060121+00:00",
+  "status": "pass",
+  "scope": "Source-review-01 finding closure only; no broad semantic/native or human acceptance claim. No new tests beyond focused03 and no source/build edits in this review.",
+  "prior_review": {
+    "path": "evidence/skill-handoff/answer-state-20261115/source-review-01.json",
+    "sha256": "6efd93149c742b4fa55362284e397bc75024bd122709582e0342d109665315d8",
+    "original_status": "needs_review",
+    "unchanged": true
+  },
+  "reviewed_source_hashes": {
+    "pixl/store.py": "6c988d3e2a5e47e787634bc2b178f5cecba9721b6486c31107a67509089e9410",
+    "pixl/diagnostics.py": "5d136e3b6e809441b3249552ca9d3f3494daf4f75ce6900d5b7d5e53d9e78ba3",
+    "pixl/cli.py": "5ff445527698624fc1a498433ceb1ce342927d218427314654fcc1b7ba9e02ca",
+    "pixl/mcp.py": "9eb22b054f9dd879efb09bdf06c91c6dfd5a8c6a4d11c47612db80bb2cf627f2",
+    "tests/test_store_locator.py": "c87a0c4a85c67ed088d48e39410d7e4105d23984838340c1e260cef305ab8174"
+  },
+  "finding_resolution": "Shared guard now reports directory_required with the actual rejected directory path. Recovery correct_directory_path conditionally explains store versus state-file arguments and explicitly excludes state.px from auxiliary lock/output directory requirements. It does not invent an absent store argument, substitute a parent, mutate a conflicting file, or retry.",
+  "executed_proof": {
+    "path": "evidence/skill-handoff/answer-state-20261115/store-locator-03/RESULT.json",
+    "sha256": "af5342a9b415a2dd0fb1ce18358b2b96c1c5edb0665780cce5ef874ae02d5caf",
+    "test": "test_auxiliary_plar_lock_file_gets_directory_recovery_without_inventing_a_store",
+    "operation": "Actual plar.save on a copied existing consumer with .pixl/plar-lock occupied by a retained file",
+    "outcome": "Expected neutral directory error; no invented store identity or automatic recovery operation; all prior bytes and mtimes unchanged.",
+    "focused_tests_passed": 73,
+    "focused_tests_skipped": 2,
+    "focused_tests_run": 75
+  },
+  "unchanged_reasoning_limits": [
+    "Symlink-directory/file and dangling-link behavior remains source-reviewed, not newly exercised live; existing privilege skips are retained.",
+    "Stat-specific permission failure remains control-flow reasoning; unreadable head and actual contention/error-category regressions were executed.",
+    "The filesystem type check is an observation, not a new atomic path-identity or confinement guarantee."
+  ],
+  "sources_frozen": true,
+  "human_acceptance": "unperformed; separate"
+}

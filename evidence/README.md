@@ -12,21 +12,24 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
-- **Consequential-choice and cold handoffs:** [native caller review](skill-handoff/caller-review-20261115/README.md)
-  records partial progress across two completed Claude workflows. A source-cited
-  finding and correction by the same registered child are observed without
-  maintainer feedback, but the caller still accepts unsupported authority claims.
-  [Semantic review](skill-handoff/caller-review-20261115/semantic-review-02.json)
-  stays separate from 42/42 mechanics, 40 local tests and four packaging tests.
-  The [earlier twelve-attempt qualification](skill-handoff/qualification-20261114/README.md)
-  retains fresh/settled passes, unaided cold failures and separately guided correction.
-- **Latest full local checkpoint:** [TM-02 verification](verification-runs/20261115T023402.446790Z/result.json)
-  records 1,434 passing tests, 4 Windows privilege skips (1,438 run), 39 reference checks
-  and distribution checks. This includes four new authoring and four new lock-reader regressions, plus
-  thirteen new maintainer measurement tests. The [TM-01 checkpoint](verification-runs/20261115T003322.792746Z/result.json)
-  remains retained with its original inputs. TM-02 full applicability is now stale
-  after the new maintainer harness/tests and shared guidance; no new full verifier
-  ran. These are local/package checks, not artistic or human acceptance.
+- **Consequential-choice and cold handoffs:** [controlled answer-to-state continuation](skill-handoff/answer-state-20261115/README.md)
+  records two actual local sample operations. The clarified input qualifies
+  sample-only authority, contract/criteria publication and current-artifact review;
+  a future production-gate promise remains failed. All 50 applicable mechanics
+  pass in the clarified case (52 total, two N/A); acknowledgement is not correction.
+  The first branch-confounded case preserves loading and scratch-scope failures.
+  [Prior native caller review](skill-handoff/caller-review-20261115/README.md) and
+  [earlier qualification](skill-handoff/qualification-20261114/README.md) retain
+  their own failures, scoped successes, guidance changes and guided correction.
+- **Latest full local checkpoint:** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
+  records 1,461 passing tests, four existing Windows privilege skips (1,465 run),
+  39 reference checks and distribution probes. Ten new regressions cover the
+  directory guard and CLI/MCP recovery/help; earlier harness additions are also
+  in this inventory, not newly completed work in this increment. The
+  [first full run](verification-runs/20261115T162528.482654Z/result.json) precedes
+  the auxiliary-directory refinement and retains its own 1,460 passes/four skips.
+  The [TM-02 checkpoint](verification-runs/20261115T023402.446790Z/result.json)
+  remains historical. These are local/package checks, not artistic or human acceptance.
 - **Measured operation costs:** [TM-02](performance/README.md) measures four
   retained histories and 39 operations, with stable outputs and unchanged
   5,207 inputs. Authoring medians are 84–290 ms on the measured Windows host.
@@ -45,18 +48,20 @@ M3/M4/M5 remain open.**
   preserves the wider untyped-body baseline and intermediate integration/lint
   failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [current inspection](skill-handoff/caller-review-20261115/integrity-01/report.json)
-  covers 25 claims and 88 receipts: two current (TM-02 measurements and the
-  explicitly **partial** native caller review), eleven historical and twelve stale.
-  The earlier PX-SKILL-001 qualification is now stale against the revised kit;
-  its original partial outcome remains unchanged. The retained full-checkpoint
-  binding also stays stale. [Before/after preservation](skill-handoff/caller-review-20261115/integrity-01/RESULT.json)
-  checks exact bytes/mtimes; exit 1 retains applicability/release gaps, not a new
-  runtime-failure claim. The [prior inspection](skill-handoff/qualification-20261114/integrity-01/report.json)
-  remains unchanged.
+  The [current inspection](skill-handoff/answer-state-20261115/integrity-01/report.json)
+  covers 26 claims and 102 receipts: one current (the explicitly **partial**
+  controlled continuation), eleven historical and fourteen stale. All receipt
+  identities and pinned claim text remain intact. The older native caller-review
+  and TM-02 measurement bindings are now stale against the changed runtime/kit;
+  their original outcomes and timings are unchanged. No new performance comparison
+  is claimed. [Before/after preservation](skill-handoff/answer-state-20261115/integrity-01/RESULT.json)
+  checks exact bytes/mtimes, allowed input-drift findings and the retained wheel/sdist
+  source-applicability gaps. Exit 1 is expected for those gaps, not a new runtime
+  failure. The [prior inspection](skill-handoff/caller-review-20261115/integrity-01/report.json),
+  [qualification inspection](skill-handoff/qualification-20261114/integrity-01/report.json),
   [TM-02](performance/20261114/integrity-01/report.json),
   [TM-01](boundary-typing/20261114/integrity-01/report.json) and
-  [SC-09](lock-diagnostics/20261114/integrity-02/report.json) keep their earlier results.
+  [SC-09](lock-diagnostics/20261114/integrity-02/report.json) retain their earlier results.
 
 **Blocked by `store_locked`?** Follow the [local writer-lock recovery guide](../plugins/pixl/skills/pixl/references/store-locking.md)
 and [SC-09 evidence ledger](lock-diagnostics/README.md). Its retained source-runtime

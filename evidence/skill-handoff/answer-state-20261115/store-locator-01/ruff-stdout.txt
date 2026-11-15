@@ -1,0 +1,63 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\test_store_locator.py:3:1
+   |
+ 1 |   """Store directories and readable state files have distinct public locators."""
+ 2 |
+ 3 | / import argparse
+ 4 | | import json
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | import unittest
+ 8 | | from copy import deepcopy
+ 9 | | from pathlib import Path
+10 | | from tempfile import TemporaryDirectory
+11 | | from unittest.mock import patch
+12 | |
+13 | | from pixl import cli, codec, completion, delivery, diagnostics, jobs, mcp, service, store
+   | |_________________________________________________________________________________________^
+help: Organize imports
+   |
+12 |
+   - from pixl import cli, codec, completion, delivery, diagnostics, jobs, mcp, service, store
+13 + from pixl import (
+14 +     cli,
+15 +     codec,
+16 +     completion,
+17 +     delivery,
+18 +     diagnostics,
+19 +     jobs,
+20 +     mcp,
+21 +     service,
+22 +     store,
+23 + )
+24 |
+   |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests\test_store_locator.py:95:9
+   |
+93 |           self.assertIsInstance(absent.exception.__cause__, FileNotFoundError)
+94 |           self.assertFalse(missing.exists())
+95 | /         with patch.object(Path, "read_bytes", side_effect=PermissionError("retained read denial")):
+96 | |             with self.assertRaises(codec.PixlError) as denied:
+   | |______________________________________________________________^
+97 |                   store.load(self.folder)
+98 |           self.assertEqual(denied.exception.code, "store_read")
+   |
+help: Combine `with` statements
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> tests\test_store_locator.py:114:9
+    |
+112 |               self.assertEqual(self.snapshot(), before)
+113 |           before = self.snapshot()
+114 | /         with patch.object(store, "_atomic", side_effect=FileExistsError("unrelated publication collision")):
+115 | |             with self.assertRaises(FileExistsError) as collision:
+    | |_________________________________________________________________^
+116 |                   store.commit(self.folder, self.candidate, codec.digest(self.doc), self.root)
+117 |           result = diagnostics.error_result("commit", collision.exception)
+    |
+help: Combine `with` statements
+
+Found 3 errors.
+[*] 1 fixable with the `--fix` option.

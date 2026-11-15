@@ -1,0 +1,89 @@
+{
+  "status": "pass",
+  "commands": [
+    {
+      "name": "tests",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_store_locator",
+        "tests.test_store",
+        "tests.test_store_lock",
+        "tests.test_lifecycle_store",
+        "tests.test_diagnostics",
+        "tests.test_mcp",
+        "tests.test_intake_operations",
+        "-v"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "ruff",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "ruff",
+        "check",
+        "pixl/store.py",
+        "pixl/diagnostics.py",
+        "pixl/cli.py",
+        "pixl/mcp.py",
+        "tests/test_store_locator.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "mypy-store",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "mypy",
+        "pixl/store.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "whitespace",
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff",
+        "--check",
+        "--",
+        "pixl/store.py",
+        "pixl/diagnostics.py",
+        "pixl/cli.py",
+        "pixl/mcp.py",
+        "tests/test_store_locator.py"
+      ],
+      "returncode": 0
+    }
+  ],
+  "tests_run": 75,
+  "tests_passed": 73,
+  "tests_skipped": 2,
+  "new_locator_tests": 10,
+  "source_hashes": {
+    "pixl/store.py": "6c988d3e2a5e47e787634bc2b178f5cecba9721b6486c31107a67509089e9410",
+    "pixl/diagnostics.py": "5d136e3b6e809441b3249552ca9d3f3494daf4f75ce6900d5b7d5e53d9e78ba3",
+    "pixl/cli.py": "5ff445527698624fc1a498433ceb1ce342927d218427314654fcc1b7ba9e02ca",
+    "pixl/mcp.py": "9eb22b054f9dd879efb09bdf06c91c6dfd5a8c6a4d11c47612db80bb2cf627f2",
+    "tests/test_store_locator.py": "c87a0c4a85c67ed088d48e39410d7e4105d23984838340c1e260cef305ab8174"
+  },
+  "package_manifest_before": "527dce61829b2f88540f2b32659b9d958ce40fe57323e786249dbbf284c27b18",
+  "package_manifest_after": "527dce61829b2f88540f2b32659b9d958ce40fe57323e786249dbbf284c27b18",
+  "package_unchanged": true,
+  "prior_attempt": "store-locator-02/RESULT.json",
+  "addressed_review": {
+    "path": "evidence/skill-handoff/answer-state-20261115/source-review-01.json",
+    "sha256": "6efd93149c742b4fa55362284e397bc75024bd122709582e0342d109665315d8"
+  },
+  "change": "Neutral directory_required / correct_directory_path now describes auxiliary directories accurately while preserving explicit conditional store/head-file guidance. New actual plar.save regression retains the conflicting auxiliary file and verifies no invented store identity or retry.",
+  "preserved_evidence": "Original Ruff failure, earlier source review finding, focused02 and first full verifier retain their original tested identities.",
+  "scope": "Focused shared directory guard, public input recovery, saved-format/read/lock preservation and actual CLI/MCP discovery/error regressions. Existing Windows privilege skips remain. No package rebuild, native inference, provider execution or full verifier by this worker."
+}

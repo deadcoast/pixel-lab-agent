@@ -297,9 +297,15 @@ def parser():
         sub.choices[command].add_argument("--result-path", help="Save exact result under a fresh project-relative path; requires --root.")
     for command, command_parser in sub.choices.items():
         for action in command_parser._actions:
+            if action.dest == "store":
+                action.help = store.STORE_ARGUMENT_HELP
             if action.dest == "expect" and not action.help:
                 action.help = ("Expected source-file byte SHA-256." if command == "source" else
                                "Current canonical production state hash; not a PLAR/file/binding hash.")
+    for action_parser in actions.choices.values():
+        for action in action_parser._actions:
+            if action.dest == "store":
+                action.help = store.STORE_ARGUMENT_HELP
     for action in actions.choices["save"]._actions:
         if action.dest == "expect":
             action.help = "Current PLAR file byte SHA-256 from plar read.hash, or new for first save."

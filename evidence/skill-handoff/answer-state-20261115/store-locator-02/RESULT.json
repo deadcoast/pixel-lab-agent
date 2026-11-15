@@ -1,0 +1,85 @@
+{
+  "status": "pass",
+  "commands": [
+    {
+      "name": "tests",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_store_locator",
+        "tests.test_store",
+        "tests.test_store_lock",
+        "tests.test_lifecycle_store",
+        "tests.test_diagnostics",
+        "tests.test_mcp",
+        "tests.test_intake_operations",
+        "-v"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "ruff",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "ruff",
+        "check",
+        "pixl/store.py",
+        "pixl/diagnostics.py",
+        "pixl/cli.py",
+        "pixl/mcp.py",
+        "tests/test_store_locator.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "mypy-store",
+      "command": [
+        "C:\\github\\pixel-lab-agent\\.venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "mypy",
+        "pixl/store.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "whitespace",
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff",
+        "--check",
+        "--",
+        "pixl/store.py",
+        "pixl/diagnostics.py",
+        "pixl/cli.py",
+        "pixl/mcp.py",
+        "tests/test_store_locator.py"
+      ],
+      "returncode": 0
+    }
+  ],
+  "tests_run": 74,
+  "tests_passed": 72,
+  "tests_skipped": 2,
+  "new_locator_tests": 9,
+  "source_hashes": {
+    "pixl/store.py": "61ca98381620a8a97882384d730271b8246680f9757d262e7c0f516359cac4b0",
+    "pixl/diagnostics.py": "801e09d4db10af20cd9f53f97ace2c9cbc146ddc5bec5805ecdb0bd9252b5772",
+    "pixl/cli.py": "5ff445527698624fc1a498433ceb1ce342927d218427314654fcc1b7ba9e02ca",
+    "pixl/mcp.py": "9eb22b054f9dd879efb09bdf06c91c6dfd5a8c6a4d11c47612db80bb2cf627f2",
+    "tests/test_store_locator.py": "382a3c40d84b19f0a18e9415e4f6d4cb3d3a1397a8d79a7ab0da89866756db82"
+  },
+  "package_manifest_before": "903e6c2991e228daec6ba4e98b6111bddfde13d31e0a1940a50ebdf6351d0e0c",
+  "package_manifest_after": "903e6c2991e228daec6ba4e98b6111bddfde13d31e0a1940a50ebdf6351d0e0c",
+  "package_unchanged": true,
+  "prior_attempt": "store-locator-01/RESULT.json",
+  "retained_failure": "First Ruff run found import formatting and two nested-context style issues in the new test file; fixed without changing product behavior. Original logs and source snapshots remain.",
+  "whitespace_convention": "Use the repository CRLF-aware check. A preliminary unconfigured git diff --check treated preserved CRLF endings as trailing whitespace; no content whitespace repair was needed.",
+  "scope": "Focused store-directory input, shared load/lock publication/read compatibility, lock/category separation and actual CLI/MCP error/help regressions. Existing Windows privilege skips remain. Local temporary fixtures only. No package build, native inference, provider execution or full verifier."
+}

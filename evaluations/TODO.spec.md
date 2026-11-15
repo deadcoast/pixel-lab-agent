@@ -111,10 +111,11 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** caller procedure refined, 2026-11-15; qualification remains open.
-  Native caller/specialist review now observes an independent same-child correction,
-  but still accepts unsupported answer effects and inherited criteria. Earlier
-  fresh/settled passes, direct cold failures and guided correction remain separate.
+- **Status:** controlled sample operation qualified narrowly, 2026-11-15; overall
+  qualification remains open. The clarified input retains sample-only confirmation,
+  concrete contract/criteria and independent current-artifact review. A future
+  production-gate answer effect remains overstated; earlier direct-question,
+  branch-confound, instruction-loading and scratch-scope failures are retained.
 - **WHO:** shared PIXL skill owns the handoff; user owns consequential style choices.
 - **WHAT:** make an unresolved choice actionable at the response boundary when it is
   the next necessary user input, while continuing independent inspection and planning.
@@ -146,17 +147,25 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   scoped passes, caller-reviewed correction and unaided cold failure are
   reported separately. The actual Claude seed has five project-owned sources
   and needs no library migration. No provider or human acceptance follows.
-- **Current native caller review:** [two frozen workflows](../evidence/skill-handoff/caller-review-20261115/README.md)
+- **Controlled answer-to-state continuation:** [two isolated native cases](../evidence/skill-handoff/answer-state-20261115/README.md)
+  preserve the first simulation-label interpretation and its real loading/scope
+  failures. The clarified second input changes no product guidance or rubric.
+  Sample authority, actual contract/criteria and current-artifact review pass;
+  50 applicable mechanical checks pass with two N/A. The caller still claims
+  that a limited later answer clears all production gates; that separate
+  handoff requirement stays failed. An acknowledgement is not a correction.
+  Supporting directory recovery has ten new regressions and final full verification.
+- **Prior native caller review:** [two frozen workflows](../evidence/skill-handoff/caller-review-20261115/README.md)
   retain an initial false acceptance and a revised-kit same-child correction with
   remaining authority failures. The caller's findings are native-authored; no
   maintainer defect feedback is supplied. The runner, 40 local tests, four
   packaging tests and 42/42 mechanics are separate from semantic acceptance.
-- **Remaining boundary:** qualify the actual answer-to-state continuation from
-  retained revision 8 using explicitly labeled controlled evaluation answers. Preserve
-  unasked authority, check current sample criteria and retain direct-question
-  failures. The store-locator diagnostic finding supports TM-04/TM-03.
-  Earlier PX-SKILL-002 and PX-OPS-002 outcomes keep their recorded scope;
-  human acceptance and M1/M2/broader M3/M4/M5 remain open.
+- **Remaining boundary:** continue from the clarified revision-9 handoff and
+  ground future production questions/answer effects in all linked-choice, adoption
+  and phase prerequisites. Retain qualified sample authority and useful work,
+  preserve unasked choices and the earlier unanswered direct-question failures.
+  No new provider/engine/artistic acceptance is implied; human acceptance and
+  M1/M2/broader M3/M4/M5 remain open.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 

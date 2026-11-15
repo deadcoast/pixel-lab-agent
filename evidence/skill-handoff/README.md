@@ -1,6 +1,20 @@
 # PX-SKILL-001: consequential choice at the handoff
 
-## Current native caller review, 2026-11-15
+## Current controlled answer-to-state continuation, 2026-11-15
+
+<a id="pxskill001-controlled-answer-state"></a> **PX-SKILL-001: partial controlled continuation, 2026-11-15.** The clarified case qualifies sample-only confirmation, actual contract/criteria publication and current-artifact review; its future production-gate answer effect remains overstated. [Exact result](answer-state-20261115/RESULT.json).
+
+The [current ledger](answer-state-20261115/README.md) retains both isolated native
+cases, the first input interpretation confound and genuine loading/scope failures,
+and the prospectively clarified input without feedback or corrected artifacts.
+The second case passes all 50 applicable mechanical checks (52 total, two N/A);
+its same-child acknowledgement is not a correction. Precise directory recovery,
+ten new regressions and final local/reference/distribution verification support
+the operation. Profile/skill guidance and saved formats are unchanged. Human
+acceptance is unperformed; M1/M2 and broader M3/M4/M5 remain open. Next:
+source-grounded production prerequisites in the native handoff.
+
+## Prior native caller review, 2026-11-15
 
 <a id="pxskill001-native-caller-review"></a> **PX-SKILL-001: partial native caller review, 2026-11-15.** A native caller finds one contract defect, the same registered PIXL child corrects it, and the caller verifies the result without maintainer-written feedback. Unsupported answer effects and inherited criteria remain accepted, so cold-authority qualification stays failed. [Exact result](caller-review-20261115/RESULT.json).
 

@@ -1,0 +1,32 @@
+{
+  "status": "addressed_pending_execution",
+  "scope": "Development-agent read-only review of maintainer helpers before aggregate/registry/document/integrity execution; no native input or feedback.",
+  "findings": [
+    {
+      "finding": "git diff HEAD ignores untracked authored files",
+      "resolution": "Final scan will run after staging and now explicitly fails if selected whitespace paths remain untracked."
+    },
+    {
+      "finding": "Full verification checked328 inputs but aggregate would bind only a selected subset",
+      "resolution": "Aggregate source map now unions the full checked_input_hashes, which excludes mutable documentation and registry."
+    },
+    {
+      "finding": "Preservation audit trusted previous-manifest metadata without inspecting archive bytes",
+      "resolution": "Audit now checks exact323 member set and every archive digest before comparing original HEAD bytes."
+    },
+    {
+      "finding": "Integrity counts/exit1 could conceal unexpected receipt or release failures",
+      "resolution": "Wrapper now asserts intact receipts and claim text, only input_added/input_changed claim findings, and exactly the retained wheel/sdist source_applicability release gaps."
+    }
+  ],
+  "helper_hashes": {
+    "summarize.py.txt": "2b18038ee2f86e8218001defd9d406172b22b874f2031200ed26eb015235286a",
+    "register-result.py.txt": "d84a3e9a40e8bfef3c0cc0d54fade7255cba5d1a6845dac6c87187c0d59c57f9",
+    "documentation-audit.py.txt": "e11ebb40f73bd4b41ac39f42e04a1929ce002ae49990dad497ea2a45fccc31e6",
+    "inspect-integrity.py.txt": "051de475a570e9c8722ecdb32a3f332f1fb46d4d78fef88ea358ea7b1df31f5b",
+    "final-worktree-check.py.txt": "2b578d65f7846905efd5e41621ed9cef1dcfadfb7ae87e9ec540624d8789b5a4"
+  },
+  "limits": [
+    "These are pre-execution review corrections, not executed check results. Later receipts retain actual outcomes."
+  ]
+}

@@ -12,6 +12,7 @@ from .consumer_execution import CONFIG_SCHEMA as CONSUMER_EXECUTION_SCHEMA
 from .diagnostics import error_result
 from .readiness import OBSERVATIONS_SCHEMA
 from .service import RESULT_EXPORT_TOOLS, call, parse_json
+from .store import STORE_ARGUMENT_HELP
 
 
 def schema(properties, required=()):
@@ -416,6 +417,7 @@ TOOLS = [
             if name == "pixl_plar_save" else
             value.get("description", "Current canonical production state hash from pixl_validate.hash or pixl_review_context.state_hash; not a PLAR/file/binding hash.")
         )} if key == "expect" else
+              {**value, "description": STORE_ARGUMENT_HELP} if key == "store" else
               {**value, "description": "Selected semantic requirements digest from pixl_plar_read.requirements_hash; not the PLAR file hash."}
               if key == "requirements_hash" else value)
         for key, value in declaration["properties"].items()

@@ -1,0 +1,62 @@
+"""Append controlled answer/state evidence without altering older claims."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+PREFIX = "evidence/skill-handoff/answer-state-20261115/"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    path = ROOT / "evaluations/evidence-claims.json"
+    registry = json.loads(path.read_bytes())
+    identifier = "PX-SKILL-001-CONTROLLED-ANSWER-STATE"
+    if any(row["id"] == identifier for row in registry["claims"]):
+        raise ValueError("Already registered")
+    result = json.loads((BASE / "RESULT.json").read_bytes())
+    entries = {
+        "pxskill001-answer-state-result": PREFIX + "RESULT.json",
+        "pxskill001-answer-state-semantic": result["latest_semantic_review"]["path"],
+        "pxskill001-answer-state-mechanical": result["latest_mechanical_review"]["path"],
+        "pxskill001-answer-state-store-locator": PREFIX + "store-locator-03/RESULT.json",
+        "pxskill001-answer-state-full": result["full_verification"]["receipt"]["path"],
+        "pxskill001-answer-state-typing": PREFIX + "boundary-types-02.json",
+        "pxskill001-answer-state-base": PREFIX + "seed-preflight/RESULT.json",
+        "pxskill001-answer-state-input": PREFIX + "controlled-seed/RESULT.json",
+        "pxskill001-answer-state-preparation": PREFIX + "preparation-01.json",
+        "pxskill001-answer-state-kit": PREFIX + "revision-02/RESULT.json",
+        "pxskill001-answer-state-first-semantic": result['attempts'][0]['semantic_review']['path'],
+        "pxskill001-answer-state-first-mechanical": result['attempts'][0]['mechanical_review']['path'],
+        "pxskill001-answer-state-clarified-input": PREFIX + "controlled-seed-02/RESULT.json",
+        "pxskill001-answer-state-clarified-preparation": PREFIX + "preparation-02.json",
+    }
+    for receipt_id, name in entries.items():
+        file = ROOT / name
+        value = json.loads(file.read_bytes())
+        registry["receipts"].append({"id": receipt_id, "path": name, "sha256": sha(file),
+            "assertions": [{"pointer": "/status", "equals": value["status"]}]})
+    document, anchor = "evidence/skill-handoff/README.md", "pxskill001-controlled-answer-state"
+    pinned = [line for line in (ROOT / document).read_text(encoding="utf-8").splitlines() if f'id="{anchor}"' in line]
+    if len(pinned) != 1:
+        raise ValueError("Expected one exact dated claim")
+    registry["claims"].append({
+        "id": identifier, "task": "Controlled answer-to-state continuation from retained revision8",
+        "document": {"path": document, "anchor": anchor, "line_sha256": hashlib.sha256(pinned[0].encode()).hexdigest()},
+        "tier": "native registered caller/specialist operation, independent state/semantic review and local runtime verification",
+        "scope": result["scope"], "limits": result["limits"] + ["Human acceptance is separate and unperformed; all stated broader milestones remain open."],
+        "policy": "current", "outcome": {"receipt": "pxskill001-answer-state-result", "pointer": "/status"},
+        "receipts": list(entries),
+        "bindings": [{"kind": "map", "domain": "source", "receipt": "pxskill001-answer-state-result", "pointer": "/" + name, "prefix": ""}
+            for name in ("source_hashes", "protocol_hashes", "evidence_hashes")] +
+            [{"kind": "file", "domain": "package", "path": "plugins/pixl/bundle-manifest.json", "receipt": "pxskill001-answer-state-result", "pointer": "/bundle_manifest_sha256"}]})
+    path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"claims": len(registry["claims"]), "receipts": len(registry["receipts"]), "outcome": result["status"]}))
+
+
+if __name__ == "__main__":
+    main()

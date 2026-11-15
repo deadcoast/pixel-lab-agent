@@ -182,6 +182,12 @@ def error_result(operation, error, args=None):
             "action": "inspect_lock_owner",
             "detail": "Keep the lock and inspect the recorded owner on its host. Confirm all writers are stopped before explicitly preserving and clearing an abandoned lock; PID, timestamp or age alone is not proof. Then reread the affected state, PLAR or handoff and reconcile any prior publication before a local retry. Do not resubmit provider work to repair a local lock.",
         }
+    elif code == "directory_required":
+        category = "invalid_authoring"
+        recovery = {
+            "action": "correct_directory_path",
+            "detail": "Preserve retained files and explicitly correct the input path or conflicting project layout. For a store argument, supply STORE; state-reading path arguments use STORE/state.px. Auxiliary lock/output directories do not require a state.px file. No parent directory was substituted and no operation was retried.",
+        }
     elif code in _STALE:
         category = "stale_local_state"
         recovery = {

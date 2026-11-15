@@ -1,0 +1,92 @@
+"""Add only the frozen controlled answer to the immutable 54-file base seed."""
+
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import zipfile
+
+
+HERE = Path(__file__).resolve().parent
+BASE = HERE.parent
+PREVIOUS = BASE / "seed-preflight"
+ANSWER = BASE / "controlled-answers.md"
+PROTOCOL = BASE / "protocol.json"
+ANSWER_SHA = "52f68a3242dd72ab0d2bd8315c605160f5e6b76b626164f28a949d1563f30f94"
+PROTOCOL_SHA = "4a3983a204172a15a86abec06aa98aed3be34880a25f42d12215cb14f1bee77b"
+STATE_SHA = "ac9150f4e8ee656761811370867538130faaa111759d61065153df358ef14225"
+ANSWER_DESTINATION = "sources/controlled-evaluation-answers.md"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def reference(path):
+    return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def inventory(root):
+    return {path.relative_to(root).as_posix(): sha(path) for path in sorted(root.rglob("*")) if path.is_file()}
+
+
+def snapshot(root):
+    return {name: {"sha256": digest, "mtime_ns": (root / name).stat().st_mtime_ns} for name, digest in inventory(root).items()}
+
+
+def save(path, value):
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def main():
+    seed = HERE / "seed"
+    if seed.exists() or (HERE / "RESULT.json").exists() or (HERE / "seed.zip").exists():
+        raise RuntimeError("Prepared evidence is immutable; use a new destination")
+    if sha(ANSWER) != ANSWER_SHA or sha(PROTOCOL) != PROTOCOL_SHA or ANSWER.stat().st_size != 255:
+        raise RuntimeError("Controlled answer or frozen protocol identity differs")
+    previous = json.loads((PREVIOUS / "seed-manifest.json").read_bytes())
+    before = snapshot(PREVIOUS / "seed")
+    bindings = {name: reference(path) for name, path in {"answer": ANSWER, "protocol": PROTOCOL,
+        "base_manifest": PREVIOUS / "seed-manifest.json", "base_preflight": PREVIOUS / "RESULT.json"}.items()}
+    if len(previous) != 54 or inventory(PREVIOUS / "seed") != previous or ANSWER_DESTINATION in previous:
+        raise RuntimeError("Base seed identity differs")
+    shutil.copytree(PREVIOUS / "seed", seed, copy_function=shutil.copy2)
+    shutil.copy2(ANSWER, seed / ANSWER_DESTINATION)
+    expected = {**previous, ANSWER_DESTINATION: ANSWER_SHA}
+    expected = dict(sorted(expected.items()))
+    save(HERE / "seed-manifest.json", expected)
+    with zipfile.ZipFile(HERE / "seed.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in expected:
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, (seed / name).read_bytes())
+    with zipfile.ZipFile(HERE / "seed.zip") as archive:
+        archived = {name: hashlib.sha256(archive.read(name)).hexdigest() for name in archive.namelist()}
+    checks = {
+        "exact_55_files": inventory(seed) == expected and len(expected) == 55,
+        "only_controlled_answer_added": set(expected) - set(previous) == {ANSWER_DESTINATION},
+        "original_54_bytes_retained": all(sha(seed / name) == digest for name, digest in previous.items()),
+        "original_54_mtimes_retained": all((seed / name).stat().st_mtime_ns == before[name]["mtime_ns"] for name in previous),
+        "base_seed_bytes_mtimes_unchanged": snapshot(PREVIOUS / "seed") == before,
+        "state_still_exact_revision8": sha(seed / "state.px/state.px") == STATE_SHA,
+        "derived_archive_exact": archived == expected,
+        "frozen_answer_and_protocol_unchanged": sha(ANSWER) == ANSWER_SHA and sha(PROTOCOL) == PROTOCOL_SHA,
+        "prior_native_review_files_still_exact": all(sha(seed / name) == previous[name] for name in
+            ("CALLER-RESULT.json", "review/caller-comparison-2026-11-15-v1.md", "review/caller-comparison-2026-11-15-v2.md")),
+    }
+    result = {"status": "pass" if all(checks.values()) else "fail", "passed": sum(checks.values()), "total": len(checks),
+        "checks": checks, "seed": str(seed), "manifest": reference(HERE / "seed-manifest.json"),
+        "archive": reference(HERE / "seed.zip"), "bindings": bindings, "script": reference(Path(__file__)),
+        "answer_destination": ANSWER_DESTINATION, "caller_result_path": "CALLER-RESULT-ANSWER-STATE.json",
+        "limits": ["Exact controlled evaluation input only; this is not an owner's real project decision.",
+            "The base seed and its native-authored reviews are retained unchanged.",
+            "The protocol and semantic grades are evaluator-only and are not copied into the consumer seed.",
+            "No state mutation, model, native host, provider, engine or human-acceptance claim."]}
+    save(HERE / "RESULT.json", result)
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"], "seed": str(seed)}))
+    if result["status"] != "pass":
+        raise RuntimeError("Controlled seed checks failed; exact results retained")
+
+
+if __name__ == "__main__":
+    main()

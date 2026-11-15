@@ -1,0 +1,119 @@
+"""Retain a read-only registry inspection, including its expected open gaps."""
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent / "integrity-01"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def write(name, value):
+    with (OUT / name).open("x", encoding="utf-8") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def main():
+    OUT.mkdir()
+    registry = json.loads((ROOT / "evaluations/evidence-claims.json").read_bytes())
+    receipts = {row["id"]: row for row in registry["receipts"]}
+    paths = {ROOT / name for name in ("TODO.md", "PLAN.md", "SHELVED.md", "README.md", "evidence/README.md")}
+    for name in ("pixl", "scripts", "tests", "evaluations", "plugins/pixl", "docs", "spec", ".agents",
+                 "evidence/skill-handoff/qualification-20261114", "evidence/skill-handoff/caller-review-20261115", "evidence/skill-handoff/answer-state-20261115"):
+        paths.update(p for p in (ROOT / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts and not p.is_relative_to(OUT))
+    paths.update(ROOT / row["path"] for row in registry["receipts"])
+    for claim in registry["claims"]:
+        paths.add(ROOT / claim["document"]["path"])
+        for binding in claim["bindings"]:
+            if binding["kind"] == "file":
+                paths.add(ROOT / binding["path"])
+            else:
+                value = json.loads((ROOT / receipts[binding["receipt"]]["path"]).read_bytes())
+                for token in binding["pointer"].split("/")[1:]:
+                    token = token.replace("~1", "/").replace("~0", "~")
+                    value = value[int(token)] if isinstance(value, list) else value[token]
+                paths.update(ROOT / binding.get("prefix", "") / name for name in value)
+    def release_paths(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("path"), str):
+                paths.add(ROOT / value["path"])
+            for item in value.values():
+                release_paths(item)
+        elif isinstance(value, list):
+            for item in value:
+                release_paths(item)
+    release_paths(registry["release"])
+    def snapshot():
+        result = {}
+        for path in sorted(paths):
+            if path.is_file():
+                stat = path.stat()
+                result[path.relative_to(ROOT).as_posix()] = {"sha256": sha(path.read_bytes()),
+                    "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+            else:
+                result[path.relative_to(ROOT).as_posix()] = {"missing": True}
+        return result
+    before = snapshot()
+    write("before.json", before)
+    command = [sys.executable, "-B", "scripts/check_integrity.py", "--json"]
+    run = subprocess.run(command, cwd=ROOT, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, capture_output=True)
+    (OUT / "stdout.txt").write_bytes(run.stdout)
+    (OUT / "stderr.txt").write_bytes(run.stderr)
+    report = json.loads(run.stdout)
+    write("report.json", report)
+    after = snapshot()
+    write("after.json", after)
+    classes = {}
+    for row in report.get("claims", []):
+        classes.setdefault(row["applicability"], []).append(row["id"])
+    current = sorted(classes.get("current", []))
+    changes = [name for name in before if before[name] != after.get(name)]
+    finding_codes = set()
+    def findings(value):
+        if isinstance(value, dict):
+            for item in value.get('findings', []):
+                finding_codes.add(item.get('code'))
+            for item in value.values():
+                findings(item)
+        elif isinstance(value, list):
+            for item in value:
+                findings(item)
+    findings(report.get('claims', []))
+    release_gaps = [row for row in report['release']['checks'] if row['status'] != 'current']
+    expected_release_gaps = {
+        'archive:evidence/install-support/20261114/distribution-02/artifacts/pixl_agent-1.0.0-py3-none-any.whl:source_applicability',
+        'archive:evidence/install-support/20261114/distribution-02/artifacts/pixl_agent-1.0.0.tar.gz:source_applicability',
+    }
+    checks = {"expected_exit_for_retained_gaps": run.returncode == 1,
+              "all_receipts_intact": all(row['status'] == 'intact' and not row['findings'] for row in report['receipts']),
+              "all_claim_text_and_receipt_bindings_intact": all(row['document_status'] == row['receipt_integrity'] == 'intact' for row in report['claims']),
+              "only_expected_input_drift_findings": finding_codes <= {'input_added', 'input_changed'},
+              "only_retained_release_source_gaps": len(release_gaps) == 2 and {row['code'] for row in release_gaps} == expected_release_gaps and all(row['status'] == 'needs_review' for row in release_gaps),
+              "registered_counts": len(registry["claims"]) == 26 and len(registry["receipts"]) == 102,
+              "current_controlled_answer_state": current == ["PX-SKILL-001-CONTROLLED-ANSWER-STATE"],
+              "eleven_historical": len(classes.get("historical", [])) == 11,
+              "fourteen_stale": len(classes.get("stale", [])) == 14,
+              "inputs_unchanged": not changes}
+    result = {"observed_at": datetime.now(UTC).isoformat(), "status": "pass" if all(checks.values()) else "fail",
+              "command": command, "returncode": run.returncode, "checks": checks,
+              "snapshot_entries": len(before), "changed": changes, "applicability": classes,
+              "claim_finding_codes": sorted(str(code) for code in finding_codes), "release_gap_codes": sorted(row['code'] for row in release_gaps),
+              "registry_sha256": sha((ROOT / "evaluations/evidence-claims.json").read_bytes()),
+              "script_sha256": sha(Path(__file__).read_bytes()),
+              "scope": "Read-only identity inspection and before/after bytes/mtime preservation. The controlled operation, local runtime checks and prior failures remain distinct; integrity/current applicability is not behavioral acceptance. Retained stale and release gaps remain open."}
+    write("RESULT.json", result)
+    print(json.dumps({"status": result["status"], "returncode": run.returncode,
+                      "counts": {key: len(value) for key, value in classes.items()},
+                      "snapshot_entries": len(before), "failed_checks": [key for key, value in checks.items() if not value]}))
+
+
+if __name__ == "__main__":
+    main()

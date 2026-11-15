@@ -1,0 +1,263 @@
+"""Record fresh and file-only cold PIXL handoffs without assigning behavioral passes."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+import tempfile
+import uuid
+import zipfile
+from pathlib import Path, PurePosixPath
+
+from evaluations.host_trials import CASES, inventory, sha, write_json
+from evaluations.native_trial_records import reference
+from evaluations.request_review_trials import ROOT
+from evaluations.request_review_trials import run as run_native
+from pixl.readiness import verify_manifest
+
+KIT = "pixl-kit"
+CASES_AVAILABLE = ("fresh", "cold", "settled")
+DEFAULT_PYTHON = ROOT / ".venv/Scripts/python.exe"
+FIXTURES = ROOT / "evidence/host-evaluation/fixture-inputs"
+PROMPTS = {
+    "fresh": CASES["incomplete-intake"]["prompt"],
+    "cold": "Use PIXL to continue this character-family project from its saved files. Report the current decisions, unresolved dependencies and next useful action.",
+    "settled": "Make a character family matching this project, using PIXL. I have chosen the reference's dark outline, a 32 by 32 canvas, the agreed teal and cream palette, binary transparency, side view and nearest-neighbor display. The family will have a scout and a medic for a side-view game. References are reference.png and reference-b.png. You are authorized to proceed with those choices. Begin the project and make the progress possible in this session.",
+}
+
+
+def _files(root: Path, *, exclude_kit: bool = False) -> dict[str, str]:
+    """Inventory only confined regular files; never follow external seed inputs."""
+    for path in root.rglob("*"):
+        if path.is_symlink() or getattr(path, "is_junction", lambda: False)() or not path.resolve().is_relative_to(root):
+            raise ValueError("Evaluation input or output resolves outside its declared tree")
+    return inventory(root, (KIT, "__pycache__") if exclude_kit else ("__pycache__",))
+
+
+def _manifest(value: Path | dict[str, str] | None) -> dict[str, str] | None:
+    if value is None:
+        return None
+    manifest = json.loads(value.read_bytes()) if isinstance(value, Path) else value
+    if not isinstance(manifest, dict):
+        # The decoded manifest has invalid content; retain the value-error contract.
+        raise ValueError("Seed manifest must map relative file paths to SHA256 hashes")  # noqa: TRY004
+    for name, digest in manifest.items():
+        if (not isinstance(name, str) or not name or "\\" in name or ":" in name
+                or PurePosixPath(name).is_absolute() or ".." in PurePosixPath(name).parts
+                or PurePosixPath(name).as_posix() != name
+                or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest)):
+            raise ValueError("Seed manifest contains an invalid path or SHA256 hash")
+    return dict(manifest)
+
+
+def _copy(root: Path, destination: Path, files: dict[str, str]) -> None:
+    for name, digest in files.items():
+        source, target = root / name, destination / name
+        if sha(source) != digest:
+            raise ValueError("Seed input changed during preparation: " + name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        if sha(target) != digest:
+            raise ValueError("Copied input differs from its recorded seed: " + name)
+
+
+def _static(name: str) -> bool:
+    return (Path(name).suffix.lower() in {".png", ".gif", ".jpg", ".jpeg", ".webp"}
+            or name.startswith(".pixl/library-sources/"))
+
+
+def _archive(root: Path, destination: Path, files: dict[str, str]) -> dict:
+    """Keep ignored hidden state in a portable, independently verified snapshot."""
+    with zipfile.ZipFile(destination, "x", zipfile.ZIP_DEFLATED) as archive:
+        for name in files:
+            archive.write(root / name, name)
+    with zipfile.ZipFile(destination) as archive:
+        actual = {name: hashlib.sha256(archive.read(name)).hexdigest() for name in archive.namelist()}
+    if actual != files:
+        raise ValueError("Archived project differs from its recorded snapshot")
+    return {**reference(destination), "files": actual}
+
+
+def prepare(destination: Path, case: str, python: Path = DEFAULT_PYTHON, *,
+            package: Path | None = None, consumer: Path | None = None,
+            seed: Path | None = None, seed_manifest: Path | dict[str, str] | None = None) -> Path:
+    """Prepare immutable inputs; only host version/runtime inventory probes execute."""
+    if case not in CASES_AVAILABLE:
+        raise ValueError("Choose fresh, cold or settled")
+    destination, python = destination.resolve(), python.resolve()
+    package = (package or ROOT / "plugins/pixl").resolve()
+    if destination.exists():
+        raise ValueError("Use a fresh attempt directory")
+    if not python.is_file():
+        raise ValueError("Selected runtime Python does not exist")
+    if verify_manifest(package)["status"] != "verified":
+        raise ValueError("Freeze a complete verified plugin before preparation")
+    package_files = _files(package)
+    if case == "cold" and seed is None:
+        raise ValueError("Cold handoff requires a retained project seed")
+    if seed_manifest is not None and seed is None:
+        raise ValueError("A seed manifest requires an explicit seed directory")
+    seed_root = seed.resolve() if seed else FIXTURES.resolve()
+    if not seed_root.is_dir():
+        raise ValueError("Seed directory does not exist")
+    all_seed_files = _files(seed_root)
+    seed_files = all_seed_files if seed else {name: all_seed_files[name] for name in ("reference.png", "reference-b.png")}
+    if not seed_files:
+        raise ValueError("Seed must contain retained project inputs")
+    expected = _manifest(seed_manifest)
+    if expected is not None and seed_files != expected:
+        raise ValueError("Seed files differ from the supplied manifest")
+    if any(KIT in {part.casefold() for part in PurePosixPath(name).parts} for name in seed_files):
+        raise ValueError("Seed must omit the installed kit; it is frozen separately")
+    if consumer is None:
+        consumer = Path(tempfile.gettempdir()) / ("pixl handoff " + uuid.uuid4().hex) / "consumer"
+    consumer = consumer.resolve()
+    if consumer.exists() or consumer.is_relative_to(ROOT) or ROOT.is_relative_to(consumer):
+        raise ValueError("Use a fresh consumer outside repository ancestry")
+    if (destination.is_relative_to(consumer) or consumer.is_relative_to(destination)
+            or consumer.is_relative_to(seed_root) or seed_root.is_relative_to(consumer)
+            or destination.is_relative_to(seed_root) or seed_root.is_relative_to(destination)
+            or consumer.is_relative_to(package) or package.is_relative_to(consumer)
+            or destination.is_relative_to(package) or package.is_relative_to(destination)):
+        raise ValueError("Keep evidence, consumer, package and seed trees separate")
+    destination.mkdir(parents=True, exist_ok=False)
+    consumer.mkdir(parents=True, exist_ok=False)
+    kit = consumer / KIT
+    shutil.copytree(package, kit, ignore=shutil.ignore_patterns("__pycache__"))
+    if _files(kit) != package_files:
+        raise ValueError("Frozen package changed during preparation")
+    _copy(seed_root, consumer, seed_files)
+    _copy(consumer, destination / "input-project", seed_files)
+    input_archive = _archive(destination / "input-project", destination / "input-project.zip", seed_files)
+    session = str(uuid.uuid4())
+    executable = shutil.which("claude") or "claude"
+    host_version = subprocess.check_output([executable, "--version"], text=True).strip()
+    runtime = subprocess.check_output([str(python), "-B", "-I", "-c",
+        "import json,sys;from importlib.metadata import distributions;print(json.dumps({'executable':sys.executable,'version':sys.version.split()[0],'packages':sorted(d.metadata['Name'].lower() for d in distributions())}))"],
+        text=True, cwd=consumer)
+    write_json(destination / "runtime-environment.json", json.loads(runtime))
+    guidance = (
+        "This is an explicit isolated PIXL evaluation project. Work only in this consumer project: "
+        + consumer.as_posix() + ". The current installed PIXL skill and runtime are at " + kit.as_posix()
+        + ". The selected Python interpreter is " + python.as_posix() + ". "
+        "Local PIXL tools are supplied by this invocation's MCP configuration. Input references and retained "
+        "project files are local. Any older host paths in retained files describe the predecessor; use the "
+        "current paths above. Preserve the installed kit, reference images and retained library sources. "
+        "Project state and handoff documents may be updated as needed. Do not install packages, inspect "
+        "credentials, change global settings or persistent memory, use the network, or invoke a generation "
+        "provider. Only local PIXL MCP is configured for this evaluation; no remote provider is assigned.\n"
+    )
+    (destination / "prompt.txt").write_text(PROMPTS[case] + "\n\n" + guidance, encoding="utf-8")
+    write_json(destination / "mcp.json", {"mcpServers": {"pixl-local": {"type": "stdio",
+        "command": str(python), "args": ["-B", "-I", str(kit / "scripts/pixl.py"), "mcp", "--root", str(consumer)]}}})
+    command = [executable, "--print", "--verbose", "--output-format", "stream-json", "--session-id", session,
+        "--setting-sources", "", "--strict-mcp-config", "--mcp-config", str(destination / "mcp.json"),
+        "--plugin-dir", str(kit), "--permission-mode", "acceptEdits", "--permission-prompts", "none",
+        "--tools", "Read,Write,Bash,Glob,Grep,Skill", "--allowedTools", "Read,Write,Bash,Glob,Grep,Skill,mcp__pixl-local__*"]
+    write_json(destination / "launch.json", {"host": "claude", "case": "skill-handoff-" + case,
+        "cwd": str(consumer), "command": command, "host_version": host_version,
+        "expected_session_id": session, "continuation_mode": "file_only_cold" if case == "cold" else "new_session",
+        "artifact_roots": [], "configuration_files": {"package": str(kit / "bundle-manifest.json")}})
+    write_json(destination / "identity.json", {"case": case, "consumer": str(consumer),
+        "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "package": reference(kit / "bundle-manifest.json"), "package_files": package_files,
+        "inputs": seed_files, "input_archive": input_archive,
+        "static_inputs": {name: digest for name, digest in seed_files.items() if _static(name)},
+        "input_metadata": {name: {"bytes": (consumer / name).stat().st_size,
+                                   "mtime_ns": (consumer / name).stat().st_mtime_ns} for name in seed_files},
+        "seed": {"path": str(seed_root), "files": seed_files, "supplied_manifest": expected is not None,
+                 "manifest": reference(seed_manifest) if isinstance(seed_manifest, Path) else None},
+        "launch": reference(destination / "launch.json"),
+        "prompt": reference(destination / "prompt.txt"), "mcp": reference(destination / "mcp.json"),
+        "runtime_environment": reference(destination / "runtime-environment.json"),
+        "runner": reference(Path(__file__)),
+        "scope": "Direct PIXL native handoff; cold uses only copied files in a new session. No provider or engine acceptance."})
+    shutil.copyfile(__file__, destination / "runner.py.txt")
+    return consumer
+
+
+def retain(destination: Path) -> dict:
+    """Retain full non-kit output bytes and deltas, including failed execution."""
+    destination = destination.resolve()
+    if (destination / "preservation.json").exists() or (destination / "project").exists():
+        raise ValueError("Outputs already retained; preserve the existing receipt")
+    launch, identity = (json.loads((destination / name).read_bytes()) for name in ("launch.json", "identity.json"))
+    consumer = Path(launch["cwd"])
+    if _files(destination / "input-project") != identity["inputs"]:
+        raise ValueError("Original input snapshot changed")
+    if reference(destination / "input-project.zip") != {key: identity["input_archive"][key] for key in ("path", "sha256", "bytes")}:
+        raise ValueError("Original input archive changed")
+    current = _files(consumer, exclude_kit=True)
+    _copy(consumer, destination / "project", current)
+    output_archive = _archive(destination / "project", destination / "project.zip", current)
+    package_now = _files(consumer / KIT)
+    result = {"case": identity["case"], "inputs": identity["inputs"], "outputs": current,
+        "input_archive": identity["input_archive"], "output_archive": output_archive,
+        "changed": [name for name, digest in identity["inputs"].items() if name in current and current[name] != digest],
+        "removed": [name for name in identity["inputs"] if name not in current],
+        "new": {name: digest for name, digest in current.items() if name not in identity["inputs"]},
+        "static_input_changes": [name for name, digest in identity["static_inputs"].items() if current.get(name) != digest],
+        "package_unchanged": package_now == identity["package_files"], "package_files_after": package_now,
+        "input_snapshot_unchanged": True,
+        "scope": "State and handoff amendments are recorded, not automatically rejected. Static inputs and frozen kit must remain unchanged. Behavioral grading is separate."}
+    if not result["package_unchanged"]:
+        shutil.copytree(consumer / KIT, destination / "mutated-package", ignore=shutil.ignore_patterns("__pycache__"))
+    write_json(destination / "preservation.json", result)
+    return result
+
+
+def run(destination: Path, *, timeout: float | None = None) -> None:
+    """Run a prepared attempt with durable interruption recording, then retain outputs."""
+    destination = destination.resolve()
+    launch, identity = (json.loads((destination / name).read_bytes()) for name in ("launch.json", "identity.json"))
+    consumer = Path(launch["cwd"])
+    if any((destination / name).exists() for name in ("stdout.jsonl", "stderr.txt", "continuation.json", "project", "preservation.json")):
+        raise ValueError("Use a fresh prepared attempt; previous outcomes are retained")
+    if (_files(consumer, exclude_kit=True) != identity["inputs"]
+            or _files(destination / "input-project") != identity["inputs"]
+            or _files(consumer / KIT) != identity["package_files"]
+            or reference(destination / "launch.json") != identity["launch"]
+            or reference(destination / "prompt.txt") != identity["prompt"]
+            or reference(destination / "mcp.json") != identity["mcp"]
+            or sha(Path(__file__)) != identity["runner"]["sha256"]
+            or sha(destination / "input-project.zip") != identity["input_archive"]["sha256"]):
+        raise ValueError("Prepared evaluation inputs changed before execution")
+    try:
+        run_native(destination, timeout=timeout)
+    finally:
+        retain(destination)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="action", required=True)
+    prep = sub.add_parser("prepare")
+    prep.add_argument("destination", type=Path)
+    prep.add_argument("--case", choices=CASES_AVAILABLE, required=True)
+    prep.add_argument("--python", type=Path, default=DEFAULT_PYTHON)
+    prep.add_argument("--package", type=Path)
+    prep.add_argument("--consumer", type=Path)
+    prep.add_argument("--seed", type=Path)
+    prep.add_argument("--seed-manifest", type=Path)
+    execute = sub.add_parser("run")
+    execute.add_argument("destination", type=Path)
+    execute.add_argument("--timeout", type=float)
+    saved = sub.add_parser("retain")
+    saved.add_argument("destination", type=Path)
+    args = parser.parse_args()
+    if args.action == "prepare":
+        consumer = prepare(args.destination, args.case, args.python, package=args.package,
+                           consumer=args.consumer, seed=args.seed, seed_manifest=args.seed_manifest)
+        print(json.dumps({"attempt": str(args.destination.resolve()), "consumer": str(consumer), "launched": False}))
+    elif args.action == "run":
+        run(args.destination, timeout=args.timeout)
+    else:
+        print(json.dumps(retain(args.destination)))
+
+
+if __name__ == "__main__":
+    main()

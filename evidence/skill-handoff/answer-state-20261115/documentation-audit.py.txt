@@ -1,0 +1,116 @@
+"""Audit the continuing living-document chain without rebuilding evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import zipfile
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "88ef04e6bf41f7007962e60d4e6fde374c7dcabc"
+PREFIX = "evidence/skill-handoff/answer-state-20261115/"
+DOCS = ["TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md",
+        "docs/CAPABILITY-OUTCOMES.md", "evaluations/TODO.spec.md", "evidence/README.md",
+        "evidence/skill-handoff/README.md", PREFIX + "README.md"]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def original(name):
+    return subprocess.check_output(["git", "show", BASE + ":" + name], cwd=ROOT)
+
+
+def anchors(path):
+    body = path.read_text(encoding="utf-8-sig")
+    found = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', body))
+    counts = {}
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*#*$", body, re.M):
+        slug = re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
+        count = counts.get(slug, 0)
+        counts[slug] = count + 1
+        found.add(slug + (f"-{count}" if count else ""))
+    return found
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", required=True, type=Path)
+    args = parser.parse_args()
+    checks = []
+
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    for name in DOCS:
+        path = ROOT / name
+        body = re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)", "", path.read_text(encoding="utf-8-sig"))
+        for target in re.findall(r"\]\(([^)]+)\)", body):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                continue
+            local, _, fragment = unquote(target).partition("#")
+            destination = (path.parent / local).resolve() if local else path
+            exists = destination.exists() or destination == args.out.resolve()
+            valid = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check(f"link:{name}:{target}", exists and valid)
+    pattern = r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s"
+    old_ids = re.findall(pattern, original("docs/IDENTIFIED.md").decode(), re.M)
+    new_ids = re.findall(pattern, (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]", (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    check("fifty_original_ids", len(new_ids) == len(set(new_ids)) == len(backlog) == len(set(backlog)) == 50
+          and set(old_ids) == set(new_ids) == set(backlog))
+    for name in DOCS[:4]:
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("active_cycle:" + name, "IDENTIFY-2026-11-09-01" in body and "PX-SKILL-001" in body and "PX-EVAL-005" in body)
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    sections = dict(re.findall(r"(?ms)^## (M[1-5]) [^\n]+\n(.*?)(?=^## |\Z)", plan))
+    for milestone in ("M1", "M2", "M3", "M4", "M5"):
+        status = re.search(r"^\*\*Status:\*\* ([^\n]+)", sections.get(milestone, ""), re.M)
+        body = status.group(1).split("**Existing work:")[0] if status else ""
+        check("milestone_open:" + milestone, bool(re.search(r"\b(open|active)\b", body, re.I))
+              and not re.search(r"\b(closed|complete)\b", body, re.I), body)
+    before = json.loads(original("evaluations/evidence-claims.json"))
+    after = json.loads((ROOT / "evaluations/evidence-claims.json").read_bytes())
+    for kind in ("claims", "receipts"):
+        current = {row["id"]: row for row in after[kind]}
+        check("old_registry_objects_unchanged:" + kind, all(current.get(row["id"]) == row for row in before[kind]))
+    check("release_declarations_unchanged", before["release"] == after["release"])
+    for claim in after["claims"]:
+        doc = claim["document"]
+        pinned = [line for line in (ROOT / doc["path"]).read_text(encoding="utf-8").splitlines()
+                  if f'id="{doc["anchor"]}"' in line]
+        check("pinned_claim_line:" + claim["id"], len(pinned) == 1 and sha(pinned[0].encode()) == doc["line_sha256"])
+    revision = json.loads((Path(__file__).parent / 'revision-02/RESULT.json').read_bytes())
+    check('frozen_runtime_and_package_current', revision['status'] == 'pass' and all(sha((ROOT / 'plugins/pixl' / name).read_bytes()) == digest for name, digest in revision['package_files'].items()))
+    protocol = json.loads((Path(__file__).parent / 'protocol.json').read_bytes())
+    check('profile_guidance_saved_formats_unchanged', all(sha((ROOT / name).read_bytes()) == digest for name, digest in protocol['instruction_identity']['expected_instruction_source_sha256'].items()))
+    changed = subprocess.check_output(['git', 'diff', '--name-only', '--diff-filter=MDTR', BASE], text=True, cwd=ROOT).splitlines()
+    allowed = {'evidence/README.md', 'evidence/skill-handoff/README.md'}
+    dated_changes = [name for name in changed if name.startswith('evidence/') and name.count('/') > 1 and not name.startswith(PREFIX) and name not in allowed and not name.startswith('evidence/art-methods/')]
+    check('dated_historical_evidence_unchanged', not dated_changes, dated_changes)
+    aggregate = json.loads((Path(__file__).parent / 'RESULT.json').read_bytes())
+    verification = json.loads((ROOT / aggregate['full_verification']['receipt']['path']).read_bytes())
+    check('final_full_verification_current', verification['status'] == 'pass' and verification['bundle_manifest_sha256'] == revision['bundle_manifest_sha256'] and all(sha((ROOT / name).read_bytes()) == digest for name, digest in verification['checked_input_hashes'].items()))
+    previous = json.loads((ROOT / 'evidence/verification-runs/20261115T162528.482654Z/previous-manifest.json').read_bytes())
+    with zipfile.ZipFile(ROOT / 'evidence/verification-runs/20261115T162528.482654Z/previous.zip') as archive:
+        check('prior_archive_members_match_manifest', len(archive.namelist()) == len(previous) and set(archive.namelist()) == set(previous) and all(sha(archive.read(name)) == digest for name, digest in previous.items()))
+    regenerated = [name for name in changed if name.startswith(('knowledge/', 'examples/', 'plugins/pixl/runtime/', 'plugins/pixl/resources/', 'evidence/art-methods/')) or name in ('plugins/pixl/bundle-manifest.json', 'plugins/pixl/requirements.txt') or (name.startswith('evidence/') and name.count('/') == 1 and name not in allowed)]
+    check('regenerated_prior_bytes_archived', all(name in previous and sha(original(name)) == previous[name] for name in regenerated), regenerated)
+    result = {"observed_at": datetime.now(UTC).isoformat(), "baseline": BASE,
+              "status": "pass" if all(row["passed"] for row in checks) else "fail",
+              "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks,
+              "document_hashes": {name: sha((ROOT / name).read_bytes()) for name in DOCS},
+              "scope": "Navigation, unchanged finding IDs/cycle, open milestones, prior receipts and source identities. No model replay or human acceptance."}
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    print(json.dumps([row for row in checks if not row["passed"]]))
+
+
+if __name__ == "__main__":
+    main()

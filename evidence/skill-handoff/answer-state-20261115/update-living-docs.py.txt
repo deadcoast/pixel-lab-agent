@@ -1,0 +1,97 @@
+"""Apply reviewed current-result prose while preserving the active document chain."""
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def main():
+    content = json.loads((BASE / 'documentation-content.json').read_bytes())
+    names = ['TODO.md', 'PLAN.md', 'SHELVED.md', 'docs/IDENTIFIED.md',
+        'docs/CAPABILITY-OUTCOMES.md', 'evaluations/TODO.spec.md',
+        'evidence/README.md', 'evidence/skill-handoff/README.md']
+    original = {name: (ROOT / name).read_bytes() for name in names}
+    bodies = {name: data.decode('utf-8').replace('\r\n', '\n') for name, data in original.items()}
+
+    def relative(text, name):
+        return text.replace('](evidence/', '](../evidence/') if name.startswith(('docs/', 'evaluations/')) else text
+
+    def line(name, prefix, replacement):
+        pattern = '^' + re.escape(prefix) + r'[^\n]*$'
+        if len(re.findall(pattern, bodies[name], re.M)) != 1:
+            raise ValueError('Expected one current line: ' + name + ':' + prefix)
+        bodies[name] = re.sub(pattern, lambda _: replacement, bodies[name], flags=re.M)
+
+    def before(name, marker, new):
+        if bodies[name].count(marker) != 1:
+            raise ValueError('Expected one insertion point: ' + name + ':' + marker)
+        bodies[name] = bodies[name].replace(marker, new + '\n\n' + marker, 1)
+
+    for name, prefix in {
+        'TODO.md': '**Active next increment:**',
+        'PLAN.md': '**Active next group:**',
+        'SHELVED.md': '**Current next group:**',
+        'docs/IDENTIFIED.md': '**Current handoff after native caller review:**',
+        'docs/CAPABILITY-OUTCOMES.md': '**Current active group:**',
+    }.items():
+        label = '**Current handoff after controlled answer-to-state review:**' if name == 'docs/IDENTIFIED.md' else prefix
+        line(name, prefix, label + ' ' + relative(content['next'], name))
+    for name in ['TODO.md', 'PLAN.md', 'docs/IDENTIFIED.md']:
+        before(name, '**Native caller review, 2026-11-15: partial.**', relative(content['summary'], name))
+    before('docs/CAPABILITY-OUTCOMES.md', '**Current active group:**', relative(content['summary'], 'docs/CAPABILITY-OUTCOMES.md'))
+    line('TODO.md', '- [ ] **PX-SKILL-001 active next', content['todo_item'])
+    bodies['TODO.md'] = bodies['TODO.md'].replace('Current answers: [SC-09', 'Current answers: [controlled answer-to-state and directory recovery](evidence/skill-handoff/answer-state-20261115/README.md#ae-review), [SC-09', 1)
+
+    # The original finding IDs and their earlier bounded dispositions remain.
+    shelf = bodies['SHELVED.md'].splitlines()
+    for index, value in enumerate(shelf):
+        if value.startswith('| [CF-02]'):
+            start = value.index(' **Active linked continuation:**')
+            shelf[index] = value[:start] + ' **Active linked continuation:** ' + content['cf02'] + ' |'
+        elif value.startswith('| [TM-04]'):
+            start = value.index(' **Identified supporting follow-up:**')
+            shelf[index] = value[:start] + ' **Supporting locator repair complete:** [precise directory recovery and CLI/MCP help](evidence/skill-handoff/answer-state-20261115/README.md), linked TM-03, with ten new regressions and final full verification. The [original finding](evidence/skill-handoff/caller-review-20261115/store-locator-finding-01.json), initial lint failure, auxiliary-path wording review and failed package expectation remain retained. |'
+        elif value.startswith('| [TM-03]'):
+            shelf[index] = value.removesuffix(' |') + ' Separate [directory-locator recovery](evidence/skill-handoff/answer-state-20261115/README.md) adds precise non-directory refusal without parent substitution or retries; original publication/concurrency scope is unchanged. |'
+    bodies['SHELVED.md'] = '\n'.join(shelf) + '\n'
+
+    spec = 'evaluations/TODO.spec.md'
+    start = bodies[spec].index('## PX-SKILL-001 — consequential choice at the handoff')
+    tail = bodies[spec][start:]
+    tail, count = re.subn(r'- \*\*Status:\*\* caller procedure refined, 2026-11-15; qualification remains open\.\n.*?(?=- \*\*WHO:)', content['spec_status'] + '\n', tail, count=1, flags=re.S)
+    if count != 1:
+        raise ValueError('Missing PX-SKILL status')
+    marker = '- **Current native caller review:**'
+    if tail.count(marker) != 1:
+        raise ValueError('Missing retained caller review')
+    tail = tail.replace(marker, relative(content['spec_result'], spec) + '\n- **Prior native caller review:**', 1)
+    tail, count = re.subn(r'- \*\*Remaining boundary:\*\* qualify the actual answer-to-state continuation from\n.*?human acceptance and M1/M2/broader M3/M4/M5 remain open\.', content['spec_next'], tail, count=1, flags=re.S)
+    if count != 1:
+        raise ValueError('Missing remaining boundary')
+    bodies[spec] = bodies[spec][:start] + tail
+
+    ledger = 'evidence/skill-handoff/README.md'
+    marker = '## Current native caller review, 2026-11-15'
+    if bodies[ledger].count(marker) != 1:
+        raise ValueError('Missing previous ledger entry')
+    bodies[ledger] = bodies[ledger].replace(marker, content['ledger_entry'] + '\n\n## Prior native caller review, 2026-11-15', 1)
+
+    index = 'evidence/README.md'
+    for title, following, replacement in [
+        ('- **Consequential-choice and cold handoffs:**', '- **Latest full local checkpoint:**', content['index_native']),
+        ('- **Latest full local checkpoint:**', '- **Measured operation costs:**', content['index_full']),
+        ('- **Check current inputs:**', '**Blocked by `store_locked`?**', content['index_integrity']),
+    ]:
+        left, right = bodies[index].index(title), bodies[index].index(following)
+        bodies[index] = bodies[index][:left] + replacement + '\n' + bodies[index][right:]
+
+    for name, body in bodies.items():
+        newline = '\r\n' if b'\r\n' in original[name] else '\n'
+        (ROOT / name).write_bytes(body.replace('\n', newline).encode('utf-8'))
+    print(json.dumps({'updated': names, 'cycle': 'IDENTIFY-2026-11-09-01', 'new_finding_ids': 0}))
+
+
+if __name__ == '__main__':
+    main()

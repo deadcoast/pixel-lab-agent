@@ -32,6 +32,21 @@ JOB_TRANSITIONS = {
 
 LOCK_METADATA_LIMIT = 4096
 _LOCK_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)\Z")
+STORE_ARGUMENT_HELP = "Store directory containing (or to contain) state.px, for example STORE. State-reading path arguments use STORE/state.px."
+
+
+def _require_directory(folder: Path) -> None:
+    """Reject an observed non-directory locator without guessing another store."""
+    try:
+        mode = folder.stat().st_mode
+    except FileNotFoundError:
+        # Initialization may create the directory; load keeps its missing-file error.
+        return
+    if not stat.S_ISDIR(mode):
+        raise PixlError(
+            "directory_required",
+            f"Local operation requires a directory at {folder.resolve()}; found an existing non-directory.",
+        )
 
 
 def _lock_owner(value):
@@ -146,6 +161,7 @@ def _lock_observation(path):
 @contextmanager
 def lock(folder):
     folder = Path(folder).resolve()
+    _require_directory(folder)
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / ".lock"
     try:
@@ -276,6 +292,8 @@ def initialize(
 def load(folder: PathInput) -> Document:
     path = Path(folder) / "state.px"
     try:
+        # Several write operations load before acquiring their publication lock.
+        _require_directory(Path(folder))
         return parse(path.read_bytes())
     except OSError as error:
         raise PixlError("store_read", str(path)) from error

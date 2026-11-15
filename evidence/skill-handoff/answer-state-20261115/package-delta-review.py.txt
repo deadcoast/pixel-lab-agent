@@ -1,0 +1,194 @@
+"""Read-only comparison of retained packages for the store-locator increment."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import sys
+import zipfile
+
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from pixl.codec import parse  # noqa: E402
+
+
+def sha(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def location(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target-archive", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--target-receipt", type=Path)
+    parser.add_argument(
+        "--baseline-archive", type=Path,
+        default=ROOT / "evidence/skill-handoff/caller-review-20261115/revision-01/frozen-kit.zip",
+    )
+    args = parser.parse_args()
+    if args.output.exists():
+        raise FileExistsError(f"Preserve the existing review: {args.output}")
+
+    focused = ROOT / "evidence/skill-handoff/answer-state-20261115/store-locator-03/RESULT.json"
+    focused_data = json.loads(focused.read_bytes())
+    source_paths = [f"pixl/{name}.py" for name in ("cli", "diagnostics", "mcp", "store")]
+    snapshots = {
+        name: focused.parent / "sources" / (name + ".txt") for name in source_paths
+    }
+    baseline_result = args.baseline_archive.parent / "RESULT.json"
+    target_result = args.target_receipt or args.target_archive.parent / "RESULT.json"
+    tracked = [
+        args.baseline_archive, args.target_archive, baseline_result, target_result,
+        focused, Path(__file__), ROOT / "pixl/codec.py", *snapshots.values(),
+    ]
+    before = {
+        location(path): {"sha256": sha(path.read_bytes()), "mtime_ns": path.stat().st_mtime_ns}
+        for path in tracked
+    }
+    checks: list[dict] = []
+
+    def check(name: str, passed: bool, details: object = None) -> None:
+        row = {"name": name, "passed": bool(passed)}
+        if details is not None:
+            row["details"] = details
+        checks.append(row)
+
+    archives = []
+    archive_details = []
+    for label, path, result_path in (
+        ("baseline", args.baseline_archive, baseline_result),
+        ("target", args.target_archive, target_result),
+    ):
+        result = json.loads(result_path.read_bytes())
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+            contents = {name: archive.read(name) for name in names}
+        archives.append(contents)
+        hashes = {name: sha(data) for name, data in contents.items()}
+        check(label + "_unique_archive_members", len(names) == len(contents))
+        check(label + "_archive_matches_retained_identity", sha(path.read_bytes()) == result["archive_sha256"])
+        check(label + "_every_member_matches_retained_identity", hashes == result["package_files"])
+        check(label + "_manifest_matches_retained_identity", hashes["bundle-manifest.json"] == result["bundle_manifest_sha256"])
+        manifest = json.loads(contents["bundle-manifest.json"])
+        entries = manifest["files"] + manifest["generated_files"]
+        entry_paths = [row["path"] for row in entries]
+        check(label + "_manifest_covers_exact_payload", len(entry_paths) == len(set(entry_paths)) and set(entry_paths) == set(contents) - {"bundle-manifest.json"})
+        check(label + "_manifest_payload_hashes_and_sizes", all(row["sha256"] == hashes[row["path"]] and ("bytes" not in row or row["bytes"] == len(contents[row["path"]])) for row in entries))
+        archive_details.append({
+            "role": label, "archive": location(path), "archive_sha256": sha(path.read_bytes()),
+            "retained_receipt": location(result_path), "retained_receipt_sha256": sha(result_path.read_bytes()),
+            "retained_receipt_status": result["status"], "manifest_sha256": hashes["bundle-manifest.json"],
+            "member_count": len(contents),
+        })
+
+    old, new = archives
+    check("identical_member_paths", set(old) == set(new))
+    changed = sorted(name for name in old.keys() | new.keys() if old.get(name) != new.get(name))
+    generated = {
+        "resources/evidence/art-methods/poc-report.json",
+        "resources/examples/atelier/measurement.json",
+        "resources/examples/atelier/project.px",
+        "resources/knowledge/library.px",
+    }
+    runtime_paths = {f"{prefix}/{source}" for prefix in ("runtime", "resources") for source in source_paths}
+    expected = generated | runtime_paths | {"bundle-manifest.json"}
+    check("changed_paths_exactly_scoped", set(changed) == expected, changed)
+    check("target_changed_path_receipt_is_exact", changed == sorted(json.loads(target_result.read_bytes())["changed_package_paths"]))
+
+    copy_details = []
+    for source, snapshot in snapshots.items():
+        data = snapshot.read_bytes()
+        wanted = focused_data["source_hashes"][source]
+        check(source + "_snapshot_identity", sha(data) == wanted)
+        check(source + "_two_exact_target_copies", new["runtime/" + source] == data == new["resources/" + source])
+        check(source + "_baseline_copies_agree", old["runtime/" + source] == old["resources/" + source])
+        copy_details.append({"source": source, "snapshot": location(snapshot), "sha256": wanted, "copies": ["runtime/" + source, "resources/" + source]})
+
+    dependency_details = []
+    pairs = (
+        ("resources/evidence/art-methods/poc-report.json", "resources/knowledge/library.px"),
+        ("resources/examples/atelier/measurement.json", "resources/examples/atelier/project.px"),
+    )
+    check("parser_source_matches_both_packages", old["runtime/pixl/codec.py"] == new["runtime/pixl/codec.py"] == (ROOT / "pixl/codec.py").read_bytes())
+    for report, document in pairs:
+        old_report, new_report = json.loads(old[report]), json.loads(new[report])
+        old_at, new_at = old_report["observed_at"], new_report["observed_at"]
+        old_dg, new_dg = sha(old[report]), sha(new[report])
+        report_fields = sorted(key for key in old_report.keys() | new_report.keys() if old_report.get(key) != new_report.get(key))
+        check(report + "_only_observation_time_changes", report_fields == ["observed_at"])
+        check(report + "_exact_timestamp_byte_substitution", old[report].replace(old_at.encode(), new_at.encode()) == new[report])
+        left, right = parse(old[document]), parse(new[document])
+        check(document + "_same_format_revision_and_records", left.format == right.format and left.revision == right.revision and left.records.keys() == right.records.keys())
+        changed_records = [rid for rid in left.records if left.records[rid] != right.records[rid]]
+        record_details = []
+        for rid in changed_records:
+            lrec, rrec = left.records[rid], right.records[rid]
+            fields = sorted(key for key in lrec.fields.keys() | rrec.fields.keys() if lrec.fields.get(key) != rrec.fields.get(key))
+            record_details.append({"id": rid, "kind": rrec.kind, "changed_fields": fields})
+        check(document + "_only_evidence_time_and_digest_fields", bool(changed_records) and all(left.records[rid].kind == right.records[rid].kind == "E" and row["changed_fields"] == ["at", "dg"] for rid, row in zip(changed_records, record_details)))
+        check(document + "_evidence_binds_exact_old_and_new_report", all(left.records[rid].fields["at"] == old_at and right.records[rid].fields["at"] == new_at and left.records[rid].fields["dg"] == old_dg and right.records[rid].fields["dg"] == new_dg and left.records[rid].fields["ur"] == right.records[rid].fields["ur"] == report.removeprefix("resources/") for rid in changed_records))
+        check(document + "_exact_time_and_digest_byte_substitution", old[document].replace(old_at.encode(), new_at.encode()).replace(old_dg.encode(), new_dg.encode()) == new[document])
+        dependency_details.append({
+            "report": report, "report_changed_fields": report_fields,
+            "old_observed_at": old_at, "new_observed_at": new_at,
+            "old_report_sha256": old_dg, "new_report_sha256": new_dg,
+            "dependent_document": document, "format": right.format, "revision": right.revision,
+            "record_count": len(right.records), "changed_record_count": len(changed_records),
+            "changed_records": record_details,
+            "preserved": "All other record fields and bytes, including bindings, source references, requirement values and results.",
+        })
+
+    lm, rm = json.loads(old["bundle-manifest.json"]), json.loads(new["bundle-manifest.json"])
+    check("manifest_non_file_metadata_unchanged", {k: v for k, v in lm.items() if k != "files"} == {k: v for k, v in rm.items() if k != "files"})
+    lrows, rrows = {r["path"]: r for r in lm["files"]}, {r["path"]: r for r in rm["files"]}
+    changed_rows = sorted(key for key in lrows.keys() | rrows.keys() if lrows.get(key) != rrows.get(key))
+    check("manifest_changed_rows_match_changed_payload", set(changed_rows) == set(changed) - {"bundle-manifest.json"})
+    check("manifest_only_payload_hash_and_size_fields_change", lrows.keys() == rrows.keys() and all({k: v for k, v in lrows[p].items() if k not in {"sha256", "bytes"}} == {k: v for k, v in rrows[p].items() if k not in {"sha256", "bytes"}} for p in lrows))
+    unchanged = sorted(name for name in old.keys() & new.keys() if old[name] == new[name])
+    check("every_other_package_member_byte_identical", set(unchanged) == set(old) - expected)
+    after = {
+        location(path): {"sha256": sha(path.read_bytes()), "mtime_ns": path.stat().st_mtime_ns}
+        for path in tracked
+    }
+    check("reviewed_inputs_bytes_and_mtimes_preserved", before == after)
+    passed = all(row["passed"] for row in checks)
+    receipt = {
+        "schema": "pixl.package-delta-review.v1", "status": "pass" if passed else "fail",
+        "archives": archive_details, "helper": location(Path(__file__)), "helper_sha256": sha(Path(__file__).read_bytes()),
+        "focused_source_receipt": location(focused), "focused_source_receipt_sha256": sha(focused.read_bytes()),
+        "checks_passed": sum(row["passed"] for row in checks), "checks_total": len(checks), "checks": checks,
+        "changed_member_count": len(changed), "unchanged_member_count": len(unchanged),
+        "changed_paths": changed, "runtime_copy_bindings": copy_details, "generated_dependencies": dependency_details,
+        "manifest_changed_rows": changed_rows, "unchanged_member_sha256": {name: sha(new[name]) for name in unchanged},
+        "reviewed_inputs": before,
+        "conclusion": "The exact retained target archive changes only the four intended runtime modules in their two copies, two report observation timestamps, two evidence documents carrying the corresponding timestamps and report digests, and their manifest hashes/sizes. All other package bytes are identical to the baseline; no fixture artistic requirements, original source authority, skill/profile guidance, registry or format semantics changed." if passed else "One or more retained-package scope or identity checks failed; inspect checks before consuming this comparison.",
+        "preserved_failures": [
+            "The original revision-01 freeze failure remains untouched; its expected path list omitted generated source copies and timestamp/hash dependencies.",
+            "An exploratory read-only inspection attempted Document.header and raised AttributeError; the existing codec uses format/revision. The corrected helper uses those actual attributes. This was an inspection-script failure, not a package-runtime result.",
+        ],
+        "limits": [
+            "This receipt reviews the two exact frozen archives and retained focused source snapshots. It performs no build, native inference, provider work, art acceptance or human acceptance.",
+            "It does not replace or relabel the target's original failed freeze receipt, earlier verification receipts, or any semantic evaluation failures.",
+            "A subsequent full verifier may regenerate timestamps and dependent hashes. Run this same helper against that frozen archive into a new receipt to establish its actual identity and change class.",
+        ],
+    }
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(receipt, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"status": receipt["status"], "checks_passed": receipt["checks_passed"], "checks_total": receipt["checks_total"], "changed": len(changed), "unchanged": len(unchanged), "receipt": location(args.output)}))
+    return 0 if passed else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,449 @@
+"""Local compare-and-swap snapshot store. No remote actions or implicit recovery."""
+
+import json
+import os
+import re
+import socket
+import stat
+import tempfile
+from contextlib import contextmanager
+from datetime import UTC, datetime
+from pathlib import Path
+
+from .codec import Document, PixlError, Record, Ref, Symbol, digest, encode, parse
+from .graph import closure, edges, proof_scope, validate
+from .operation_types import PathInput, PublicationResult
+
+TRANSITIONS = {
+    "open": {"active", "blocked", "dropped"},
+    "active": {"blocked", "done", "dropped"},
+    "blocked": {"open", "active", "dropped"},
+    "done": {"open"},
+    "dropped": {"open"},
+}
+JOB_TRANSITIONS = {
+    "prepared": {"submitted", "unknown", "failed"},
+    "submitted": {"running", "succeeded", "failed", "unknown"},
+    "running": {"succeeded", "failed", "unknown"},
+    "unknown": {"submitted", "running", "succeeded", "failed"},
+    "succeeded": set(),
+    "failed": set(),
+}
+
+LOCK_METADATA_LIMIT = 4096
+_LOCK_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)\Z")
+STORE_ARGUMENT_HELP = "Store directory containing (or to contain) state.px, for example STORE. State-reading path arguments use STORE/state.px."
+
+
+def _require_directory(folder: Path) -> None:
+    """Reject an observed non-directory locator without guessing another store."""
+    try:
+        mode = folder.stat().st_mode
+    except FileNotFoundError:
+        # Initialization may create the directory; load keeps its missing-file error.
+        return
+    if not stat.S_ISDIR(mode):
+        raise PixlError(
+            "directory_required",
+            f"Local operation requires a directory at {folder.resolve()}; found an existing non-directory.",
+        )
+
+
+def _lock_owner(value):
+    """Accept recorded identity hints, never a claim that a process is alive."""
+    if not isinstance(value, dict) or type(value.get("pid")) is not int or not 0 < value["pid"] <= 2**32 - 1:
+        return {}
+    owner = {"pid": value["pid"]}
+    host = value.get("host")
+    if isinstance(host, str) and 0 < len(host) <= 255 and host.isprintable():
+        owner["host"] = host
+    acquired = value.get("acquired_at")
+    if isinstance(acquired, str) and len(acquired) <= 40 and acquired.isprintable() and _LOCK_TIME.fullmatch(acquired):
+        try:
+            observed = datetime.fromisoformat(acquired)
+            offset = observed.utcoffset()
+            if offset is not None and offset.total_seconds() == 0:
+                owner["acquired_at"] = acquired
+        except ValueError:
+            pass
+    return owner
+
+
+def _lock_signature(value):
+    # Windows path and descriptor ctime can mean different things. Compare it
+    # only within the same API before/after the read, not across these views.
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
+            value.st_mtime_ns)
+
+
+def _lock_pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate lock metadata field")
+        value[key] = item
+    return value
+
+
+def _lock_constant(_value):
+    raise ValueError("non-JSON lock metadata")
+
+
+def _open_lock_metadata(path: Path) -> int:
+    """Read owner hints without preventing the actual owner's normal release."""
+    if os.name != "nt":
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        return os.open(path, flags)
+
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    # A normal Windows CRT read handle denies deletion. A diagnostic observer
+    # must share delete access, not delay the owner's unlink or delete on close.
+    # OPEN_REPARSE_POINT preserves the no-follow intent of the POSIX branch.
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create = kernel32.CreateFileW
+    create.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                       wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    create.restype = wintypes.HANDLE
+    close = kernel32.CloseHandle
+    close.argtypes = [wintypes.HANDLE]
+    close.restype = wintypes.BOOL
+    handle = create(str(path), 0x80000000, 0x1 | 0x2 | 0x4, None, 3, 0x00200000, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        # Ownership transfers to the descriptor only when conversion succeeds.
+        return msvcrt.open_osfhandle(handle, os.O_RDONLY | os.O_BINARY | os.O_NOINHERIT)
+    except BaseException:
+        close(handle)
+        raise
+
+
+def _lock_observation(path):
+    """Bounded best-effort metadata read; a failed observation never breaks a lock."""
+    result = {"path": str(path), "metadata_status": "unreadable", "owner_state": "unverified"}
+    try:
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode):
+            return {**result, "metadata_status": "non_regular"}
+        if before.st_size > LOCK_METADATA_LIMIT:
+            return {**result, "metadata_status": "oversized"}
+        with os.fdopen(_open_lock_metadata(path), "rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if not stat.S_ISREG(opened.st_mode) or _lock_signature(before) != _lock_signature(opened):
+                return {**result, "metadata_status": "changed"}
+            data = stream.read(LOCK_METADATA_LIMIT + 1)
+            read = os.fstat(stream.fileno())
+        after = path.lstat()
+        if (_lock_signature(before) != _lock_signature(read) or _lock_signature(read) != _lock_signature(after)
+                or before.st_ctime_ns != after.st_ctime_ns or opened.st_ctime_ns != read.st_ctime_ns):
+            return {**result, "metadata_status": "changed"}
+    except FileNotFoundError:
+        return {**result, "metadata_status": "changed"}
+    except OSError:
+        return result
+    if len(data) > LOCK_METADATA_LIMIT:
+        return {**result, "metadata_status": "oversized"}
+    if not data.strip():
+        return {**result, "metadata_status": "incomplete"}
+    try:
+        owner = _lock_owner(json.loads(data.decode("utf-8"), object_pairs_hook=_lock_pairs,
+                                      parse_constant=_lock_constant))
+    except (ValueError, RecursionError):
+        owner = {}
+    if not owner:
+        return {**result, "metadata_status": "malformed"}
+    return {**result, "metadata_status": "readable", "owner": owner}
+
+
+@contextmanager
+def lock(folder):
+    folder = Path(folder).resolve()
+    _require_directory(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / ".lock"
+    try:
+        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except (FileExistsError, PermissionError) as error:
+        if not isinstance(error, FileExistsError):
+            # Windows reports an existing directory at .lock as permission
+            # denied. Preserve ordinary access errors when no lock is observed.
+            try:
+                path.lstat()
+            except OSError:
+                raise error
+        observation = _lock_observation(path)
+        owner = observation.get("owner", {})
+        detail = f"{path}; owner metadata {observation['metadata_status']}"
+        if owner:
+            detail += f"; recorded PID {owner['pid']}"
+            if "host" in owner:
+                detail += f" on host {owner['host']!r}"
+            if "acquired_at" in owner:
+                detail += f"; acquired_at {owner['acquired_at']}"
+        raise PixlError(
+            "store_locked",
+            detail + "; owner liveness is unverified. Keep this lock until all writers are confirmed stopped; PID or age alone is not proof of an abandoned lock.",
+            context={"lock": observation},
+        ) from error
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            metadata = {"pid": os.getpid(), "acquired_at": datetime.now(UTC).isoformat()}
+            try:
+                metadata["host"] = socket.gethostname()
+            except OSError:
+                pass
+            json.dump(metadata, stream)
+            stream.flush()
+            os.fsync(stream.fileno())
+        yield
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def _atomic(path, data):
+    path = Path(path)
+    fd, temp = tempfile.mkstemp(prefix=".pixl-write-", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp, path)
+    finally:
+        Path(temp).unlink(missing_ok=True)
+
+
+def _publish(folder: Path, doc: Document) -> PublicationResult:
+    data, hash_ = encode(doc), digest(doc)
+    history = folder / "history"
+    if history.is_symlink() or not history.resolve().is_relative_to(folder):
+        raise PixlError("store_path", "history must remain inside the store")
+    history.mkdir(exist_ok=True)
+    snapshot = history / f"{hash_}.px"
+    if snapshot.is_symlink() or not snapshot.resolve().is_relative_to(folder):
+        raise PixlError("store_path", "snapshot must remain inside the store")
+    if snapshot.exists():
+        if snapshot.read_bytes() != data:
+            raise PixlError("history_corrupt", str(snapshot))
+    else:
+        _atomic(snapshot, data)
+    _atomic(folder / "state.px", data)
+    return {"revision": doc.revision, "hash": hash_, "state": str(folder / "state.px")}
+
+
+def empty_project(name: str = "PIXL project") -> Document:
+    actor = Record("actor", "A", {"nm": "PIXL", "rl": Symbol("agent")})
+    contract = Record(
+        "contract",
+        "C",
+        {
+            "nm": "unconfirmed-intake",
+            "px": [32, 32],
+            "pl": [],
+            "vw": Symbol("side"),
+            "sa": Symbol("nearest"),
+            "al": Symbol("binary"),
+            "li": "INTAKE DEFAULTS ONLY: replace with source-grounded project intent before generation",
+        },
+    )
+    project = Record(
+        "project",
+        "P",
+        {"nm": name, "ow": Ref("actor"), "ct": Ref("contract"), "sc": []},
+    )
+    return Document(0, {r.id: r for r in (actor, contract, project)})
+
+
+def intake_project(name: str = "PIXL project", brief: str = "") -> Document:
+    actor = Record("actor", "A", {"nm": "PIXL", "rl": Symbol("agent")})
+    user = Record("user", "A", {"nm": "Project owner", "rl": Symbol("user")})
+    project = Record(
+        "project", "P", {"nm": name, "ow": Ref("user"), "sc": [], "in": [], "br": brief}
+    )
+    return Document(0, {r.id: r for r in (actor, user, project)}, format=2)
+
+
+def initialize(
+    folder: PathInput, doc: Document | None = None, root: PathInput | None = None,
+    name: str = "PIXL project",
+) -> PublicationResult:
+    folder = Path(folder).resolve()
+    doc = empty_project(name) if doc is None else doc
+    with lock(folder):
+        if (folder / "state.px").exists():
+            raise PixlError("store_exists", str(folder))
+        if doc.revision != 0:
+            raise PixlError("revision", "initial state must be revision 0")
+        validate(doc, root if root is not None else folder.parent)
+        _acceptance_plan(None, doc)
+        from . import delivery, jobs
+
+        _selection_transitions(None, doc, root if root is not None else folder.parent, folder)
+        jobs.transitions(None, doc, root if root is not None else folder.parent, folder)
+        delivery.transitions(
+            None, doc, root if root is not None else folder.parent, folder
+        )
+        return _publish(folder, doc)
+
+
+def load(folder: PathInput) -> Document:
+    path = Path(folder) / "state.px"
+    try:
+        # Several write operations load before acquiring their publication lock.
+        _require_directory(Path(folder))
+        return parse(path.read_bytes())
+    except OSError as error:
+        raise PixlError("store_read", str(path)) from error
+
+
+def _acceptance_plan(current, candidate):
+    """Require a saved, unchanged acceptance plan before recording evaluation.
+
+    Called only after full candidate validation, so traversal cannot dereference
+    malformed candidate references. This checks recorded order, not human honesty.
+    """
+    if candidate.format != 2:
+        return
+    for id_, record in candidate.records.items():
+        if record.kind != "V":
+            continue
+        if current is not None and id_ in current.records:
+            continue
+        if record.fields.get("ob", False):
+            raise PixlError(
+                "verdict_history",
+                f"{id_}: a new verdict must be validated before later supersession",
+            )
+        if record.fields["st"].value == "unavailable":
+            continue
+        artifact = candidate.records[record.fields["xr"].id]
+        output = artifact.fields["of"].id
+        if current is None or output not in current.records:
+            raise PixlError(
+                "acceptance_plan",
+                f"{id_}: save the output and criteria before recording evaluation",
+            )
+        planned = proof_scope(candidate, [output])
+        if planned != proof_scope(current, [output]) or any(
+            candidate.records[target] != current.records.get(target)
+            for target in planned
+        ):
+            raise PixlError(
+                "acceptance_plan",
+                f"{id_}: acceptance plan changed; save it before new evaluation",
+            )
+
+
+def _transitions(current, candidate):
+    if current.format != candidate.format:
+        raise PixlError(
+            "format_change",
+            "store format cannot change implicitly; create an explicitly authored new project",
+        )
+    adjacency = edges(current)
+    if current.format == 2:
+        adjacency = {
+            id_: {target for target in targets if current.records[target].kind != "P"}
+            for id_, targets in adjacency.items()
+        }
+    for id_, old in current.records.items():
+        new = candidate.records.get(id_)
+        if (
+            old.kind == "T"
+            and old.fields["st"].value == "done"
+            and new is not None
+            and new.fields.get("st") == Symbol("done")
+        ):
+            for dependency in closure(adjacency, [id_]):
+                if current.records[dependency] != candidate.records.get(dependency):
+                    raise PixlError(
+                        "reopen_required", f"{id_}: dependency {dependency} changed"
+                    )
+    for id_, old in current.records.items():
+        if id_ not in candidate.records:
+            raise PixlError("record_removal", id_)
+        new = candidate.records[id_]
+        if old.kind != new.kind:
+            raise PixlError("record_kind_change", id_)
+        if old.kind == "E" or (current.format == 2 and old.kind == "V"):
+            old_fields = {k: v for k, v in old.fields.items() if k != "ob"}
+            new_fields = {k: v for k, v in new.fields.items() if k != "ob"}
+            if old_fields != new_fields or (
+                old.fields.get("ob", False) and not new.fields.get("ob", False)
+            ):
+                code = "evidence_immutable" if old.kind == "E" else "verdict_immutable"
+                raise PixlError(
+                    code, f"{id_}: supersede with ob=+ and add a new record ID"
+                )
+        if old.kind in ("T", "J"):
+            field, transitions = (
+                ("st", TRANSITIONS) if old.kind == "T" else ("si", JOB_TRANSITIONS)
+            )
+            before, after = old.fields[field], new.fields.get(field)
+            if not isinstance(after, Symbol):
+                raise PixlError("transition", f"{id_}: missing state")
+            if before != after and after.value not in transitions[before.value]:
+                raise PixlError("transition", f"{id_}: {before.value} -> {after.value}")
+            if (
+                old.kind == "T"
+                and before.value == "done"
+                and after.value == "done"
+                and old != new
+            ):
+                raise PixlError("reopen_required", id_)
+            if old.kind == "J":
+                for key in ("tk", "tl", "ah"):
+                    if old.fields[key] != new.fields.get(key):
+                        raise PixlError("job_intent_change", f"{id_}.{key}")
+                if old.fields["ri"] and old.fields["ri"] != new.fields.get("ri"):
+                    raise PixlError("job_identity_change", id_)
+
+
+def _selection_transitions(current, candidate, root, folder):
+    if candidate.format == 2 and root is not None:
+        from .plar_workflow import current_bindings
+
+        for record in candidate.records.values():
+            if record.kind == "T" and record.fields["st"].value in {"active", "done"}:
+                previous = current.records.get(record.id) if current is not None else None
+                if previous is None or previous.fields["st"] != record.fields["st"]:
+                    current_bindings(candidate, record.id, root, folder)
+
+
+def _check_commit(current, candidate, expected, root, folder):
+    """Validate a publication without writing; shared by single/compound operations."""
+    validate(current)  # A grounded candidate can repair file drift.
+    if digest(current) != expected:
+        raise PixlError(
+            "stale_write",
+            "reload state and recompute the candidate from the current revision",
+        )
+    if candidate.revision != current.revision + 1:
+        raise PixlError("revision", f"expected {current.revision + 1}")
+    _transitions(current, candidate)
+    validate(candidate, root)
+    _acceptance_plan(current, candidate)
+    _selection_transitions(current, candidate, root, folder)
+    from . import delivery, jobs
+
+    jobs.transitions(current, candidate, root, folder)
+    delivery.transitions(current, candidate, root, folder)
+
+
+def commit(
+    folder: PathInput, candidate: Document, expected: str, root: PathInput | None = None,
+) -> PublicationResult:
+    folder = Path(folder).resolve()
+    with lock(folder):
+        current = load(folder)
+        _check_commit(
+            current,
+            candidate,
+            expected,
+            root if root is not None else folder.parent,
+            folder,
+        )
+        return _publish(folder, candidate)

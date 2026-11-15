@@ -1,0 +1,56 @@
+"""Freeze the exact final verified kit; preserve the failed earlier package expectation."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+from pixl.readiness import verify_manifest
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    verification_path = ROOT / sys.argv[1]
+    verification = json.loads(verification_path.read_bytes())
+    local_path = BASE / 'store-locator-03/RESULT.json'
+    local = json.loads(local_path.read_bytes())
+    out = BASE / 'revision-02'
+    out.mkdir()
+    protocol = json.loads((BASE / "protocol.json").read_bytes())
+    old = json.loads((ROOT / "evidence/skill-handoff/caller-review-20261115/revision-01/RESULT.json").read_bytes())
+    kit = ROOT / "plugins/pixl"
+    files = {p.relative_to(kit).as_posix(): sha(p) for p in sorted(kit.rglob("*")) if p.is_file() and "__pycache__" not in p.parts}
+    changes = sorted(name for name in files.keys() | old["package_files"].keys() if files.get(name) != old["package_files"].get(name))
+    checks = {
+        "final_full_verification_passed": verification['status'] == 'pass',
+        "full_verified_sources_still_current": all(sha(ROOT / name) == digest for name, digest in verification['checked_input_hashes'].items()),
+        "full_verified_package_still_current": files['bundle-manifest.json'] == verification['bundle_manifest_sha256'],
+        "focused_checks_passed": local["status"] == "pass",
+        "focused_sources_still_current": all(sha(ROOT / name) == digest for name, digest in local["source_hashes"].items()),
+        "package_manifest_verified": verify_manifest(kit)["status"] == "verified",
+        "instruction_spec_and_registry_unchanged": all(sha(ROOT / name) == digest for name, digest in protocol["instruction_identity"]["expected_instruction_source_sha256"].items()),
+        "only_runtime_copies_and_regenerated_dependencies_changed": changes == ["bundle-manifest.json", "resources/evidence/art-methods/poc-report.json", "resources/examples/atelier/measurement.json", "resources/examples/atelier/project.px", "resources/knowledge/library.px", "resources/pixl/cli.py", "resources/pixl/diagnostics.py", "resources/pixl/mcp.py", "resources/pixl/store.py", "runtime/pixl/cli.py", "runtime/pixl/diagnostics.py", "runtime/pixl/mcp.py", "runtime/pixl/store.py"],
+    }
+    with zipfile.ZipFile(out / "frozen-kit.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for name in files:
+            archive.writestr(name, (kit / name).read_bytes())
+    result = {"status": "pass" if all(checks.values()) else "fail", "checks": checks,
+        "focused_verification": {"path": local_path.relative_to(ROOT).as_posix(), "sha256": sha(local_path)},
+        "verification": {"path": verification_path.relative_to(ROOT).as_posix(), "sha256": sha(verification_path)},
+        "prior_failed_expectation": "revision-01/RESULT.json",
+        "bundle_manifest_sha256": files["bundle-manifest.json"], "package_files": files,
+        "changed_package_paths": changes, "archive_sha256": sha(out / "frozen-kit.zip"),
+        "scope": "Exact final verified runtime with directory diagnostics, resource source copies and regenerated timestamp/hash dependencies. No profile, guidance, saved-format or controlled-input semantic changes. Native behavior not yet tested."}
+    (out / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({key: result[key] for key in ("status", "checks", "bundle_manifest_sha256", "archive_sha256")}))
+    raise SystemExit(0 if all(checks.values()) else 1)
+
+
+if __name__ == "__main__":
+    main()

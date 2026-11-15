@@ -1,0 +1,58 @@
+"""Check actual expanded native inputs against the frozen preregistration."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+from evaluations.cold_caller_review import _assignment
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    trial = BASE / "native-01"
+    identity = json.loads((trial / "identity.json").read_bytes())
+    launch = json.loads((trial / "launch.json").read_bytes())
+    protocol = json.loads((BASE / "protocol.json").read_bytes())
+    revision = json.loads((BASE / "revision-02/RESULT.json").read_bytes())
+    seed = json.loads((BASE / "controlled-seed/seed-manifest.json").read_bytes())
+    base = json.loads((BASE / "seed-preflight/seed-manifest.json").read_bytes())
+    consumer = Path(identity["consumer"])
+    python = Path(json.loads((trial / "runtime-environment.json").read_bytes())["executable"])
+    inputs = identity["inputs"]
+    with zipfile.ZipFile(BASE / "revision-02/frozen-kit.zip") as archive:
+        frozen = {name: sha(archive.read(name)) for name in archive.namelist()}
+    instruction = protocol["instruction_identity"]["expected_instruction_source_sha256"]
+    checks = {
+        "protocol_still_frozen": sha((BASE / "protocol.json").read_bytes()) == "4a3983a204172a15a86abec06aa98aed3be34880a25f42d12215cb14f1bee77b",
+        "exact_expanded_assignment_only": (trial / "prompt.txt").read_text(encoding="utf-8") == _assignment(BASE / "protocol.json", None, consumer, python),
+        "exact_55_derived_inputs": inputs == seed and len(inputs) == 55,
+        "all_54_predecessor_inputs_preserved": len(base) == 54 and all(inputs.get(name) == digest for name, digest in base.items()),
+        "only_controlled_answer_added": set(inputs) - set(base) == {protocol["controlled_input"]["consumer_path"]},
+        "answer_bytes_and_identity": inputs.get(protocol["controlled_input"]["consumer_path"]) == protocol["controlled_input"]["sha256"] and (consumer / protocol["controlled_input"]["consumer_path"]).read_text(encoding="utf-8") == protocol["controlled_input"]["exact_text"],
+        "exact_current_frozen_kit": identity["package_files"] == frozen == revision["package_files"] and revision["status"] == "pass",
+        "guidance_spec_registry_unchanged": all(sha((ROOT / name).read_bytes()) == digest for name, digest in instruction.items()),
+        "runner_unchanged_from_committed_predecessor": identity["runner"]["sha256"] == "c43306d11b1b1a7dddfe48e41b5854c22042e2a99a24f1708f42c59201e41e11",
+        "new_result_does_not_replace_retained_result": protocol["assignment"]["new_result_path"] not in inputs and "CALLER-RESULT.json" in inputs,
+        "no_inference_output_yet": not any((trial / name).exists() for name in ("stdout.jsonl", "project", "continuation.json")),
+    }
+    result = {"status": "pass" if all(checks.values()) else "fail", "checks": checks,
+        "session_id": launch["expected_session_id"], "prompt_sha256": sha((trial / "prompt.txt").read_bytes()),
+        "bundle_manifest_sha256": revision["bundle_manifest_sha256"],
+        "instruction_source_sha256": instruction,
+        "scope": "Before inference: artifact continuation in a fresh caller session, exact55-file input and frozen repaired runtime. No maintainer findings or state patch in prompt; no behavioral result yet."}
+    with (BASE / "preparation-01.json").open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps(result))
+    raise SystemExit(0 if all(checks.values()) else 1)
+
+
+if __name__ == "__main__":
+    main()

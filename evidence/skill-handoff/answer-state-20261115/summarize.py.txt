@@ -1,0 +1,126 @@
+"""Bind the controlled operation and retained failures to exact source identities."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def reference(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def load(name):
+    return json.loads((BASE / name).read_bytes())
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--status", choices=("bounded_pass", "partial", "failed"), required=True)
+    parser.add_argument("--outcome", required=True)
+    parser.add_argument("--scope", required=True)
+    parser.add_argument("--semantic", required=True)
+    parser.add_argument("--mechanical", required=True)
+    parser.add_argument("--verification", required=True)
+    parser.add_argument("--local", required=True)
+    parser.add_argument("--native", required=True)
+    parser.add_argument("--first-semantic", required=True)
+    parser.add_argument("--first-mechanical", required=True)
+    args = parser.parse_args()
+    semantic, mechanical = load(args.semantic), load(args.mechanical)
+    if args.status == "bounded_pass" and (not semantic["bounded_workflow_pass"] or mechanical["status"] != "pass"):
+        raise ValueError("Bounded pass requires semantic and mechanical passes")
+    identity, preservation = load(args.native + "/identity.json"), load(args.native + "/preservation.json")
+    baseline, revision, local = load("baseline.json"), load("revision-02/RESULT.json"), load(args.local)
+    verification_path = ROOT / args.verification
+    verification = json.loads(verification_path.read_bytes())
+    if verification['status'] != 'pass' or verification['bundle_manifest_sha256'] != revision['bundle_manifest_sha256']:
+        raise ValueError('Full verification must pass on the exact frozen native kit')
+    if any(sha(ROOT / name) != digest for name, digest in verification['checked_input_hashes'].items()):
+        raise ValueError('Verified sources changed after the full run')
+    source_names = set(verification['checked_input_hashes']) | set(baseline["committed_source_hashes"]) | {
+        "plugins/pixl/skills/pixl/SKILL.md", "plugins/pixl/skills/pixl/references/intake-sample.md",
+        "plugins/pixl/agents/pixl.md", "tests/test_store_locator.py", "tests/test_cold_caller_review.py",
+        "evaluations/skill_handoff_trials.py", "evaluations/host_trials.py", "evaluations/request_review_trials.py",
+        "evaluations/native_trial_records.py", "pixl/readiness.py", "scripts/build_plugin.py", "scripts/verify.py"}
+    # Freeze all existing qualification inputs/results before this aggregate and later docs/integrity checks.
+    excluded = {"README.md", "RESULT.json", "summarize.py.txt", "register-result.py.txt", "update-living-docs.py.txt", "documentation-audit.py.txt", "inspect-integrity.py.txt", "final-worktree-check.py.txt"}
+    paths = {p for p in BASE.rglob("*") if p.is_file() and "__pycache__" not in p.parts
+        and p.relative_to(BASE).parts[0] not in excluded and not p.name.startswith("documentation-")}
+    paths.update(p for p in verification_path.parent.rglob("*") if p.is_file())
+    first_full = ROOT / 'evidence/verification-runs/20261115T162528.482654Z/result.json'
+    paths.update(p for p in first_full.parent.rglob('*') if p.is_file())
+    paths.add(Path(__file__).resolve())
+    models = set()
+    attempts = []
+    seen_paths, seen_sessions = set(), set()
+    for native, semantic_name, mechanical_name in [('native-01', args.first_semantic, args.first_mechanical), (args.native, args.semantic, args.mechanical)]:
+        sem, mech = load(semantic_name), load(mechanical_name)
+        saved, entry = load(native + '/preservation.json'), load(native + '/identity.json')
+        attempt_path = (BASE / native).resolve()
+        launch = load(native + '/launch.json')
+        session = launch['expected_session_id']
+        if attempt_path in seen_paths or session in seen_sessions:
+            raise ValueError('Native attempts and parent sessions must be distinct')
+        if Path(mech['attempt']).resolve() != attempt_path or mech['session_id'] != session:
+            raise ValueError('Mechanical receipt does not describe its assigned attempt')
+        if sem['native_identity']['caller_session'] != session or sem['native_identity']['actual_child'] != mech['actual_child_id']:
+            raise ValueError('Semantic and mechanical caller/child identities disagree')
+        if entry['package']['sha256'] != revision['bundle_manifest_sha256']:
+            raise ValueError('Attempt did not use the frozen verified kit')
+        seen_paths.add(attempt_path)
+        seen_sessions.add(session)
+        attempts.append({'attempt': native, 'semantic_status': sem['status'], 'outcome': sem['outcome'], 'mechanical_status': mech['status'],
+            'local_sample_operation_pass': sem['local_sample_operation_pass'], 'confirmed_sample_authority_qualified': sem['confirmed_sample_authority_qualified'],
+            'native_identity': sem['native_identity'], 'input_files': len(entry['inputs']), 'output_files': len(saved['outputs']),
+            'semantic_review': reference(BASE / semantic_name), 'mechanical_review': reference(BASE / mechanical_name),
+            'identity': reference(BASE / native / 'identity.json'), 'stream': reference(BASE / native / 'stdout.jsonl'),
+            'input_archive': reference(BASE / native / 'input-project.zip'), 'output_archive': reference(BASE / native / 'project.zip'),
+            'preservation': reference(BASE / native / 'preservation.json')})
+        for line in (BASE / native / 'stdout.jsonl').read_text(encoding='utf-8').splitlines():
+            model = json.loads(line).get('message', {}).get('model', '')
+            if model.startswith('claude-'):
+                models.add(model)
+    result = {
+        "schema_version": 1, "task": "PX-SKILL-001 / PX-EVAL-005", "observed_at": datetime.now(UTC).isoformat(),
+        "status": args.status, "outcome": args.outcome, "scope": args.scope, "qualification_complete": False,
+        "original_cycle": "IDENTIFY-2026-11-09-01", "source_revision_before_work": baseline["head"],
+        "native_attempt_count": len(attempts), "attempts": attempts,
+        "aggregation_identity_checks": "Distinct attempt paths and parent sessions; semantic caller/child identities match mechanical receipts and their actual launch; each attempt uses the exact verified kit.",
+        "observed_host": load(args.native + "/launch.json")["host_version"],
+        "observed_models": sorted(models), "native_identity": semantic["native_identity"],
+        "semantic_status": semantic["status"], "mechanical_status": mechanical["status"],
+        "local_sample_operation_pass": semantic['local_sample_operation_pass'],
+        "confirmed_sample_authority_qualified": semantic['confirmed_sample_authority_qualified'],
+        "input_files": len(identity["inputs"]), "output_files": len(preservation["outputs"]),
+        "latest_semantic_review": reference(BASE / args.semantic), "latest_mechanical_review": reference(BASE / args.mechanical),
+        "implementation": {"runtime_changed": True, "profile_changed": False, "guidance_changed": False, "saved_formats_changed": False,
+            "operation": "Precise directory locator refusal and CLI/MCP store argument help; no automatic parent substitution or retry."},
+        "local_verification": {"status": local["status"], "receipt": reference(BASE / args.local)},
+        "full_verification": {"status": verification["status"], "tests": verification["tests"], "art_pocs": verification["art_pocs"],
+            "receipt": reference(verification_path)},
+        "earlier_full_verification": {"receipt": reference(first_full), "scope": "Passing earlier store-specific diagnostic revision; predates the auxiliary-directory wording correction and additional regression."},
+        "source_hashes": {name: sha(ROOT / name) for name in sorted(source_names)},
+        "protocol_hashes": {(BASE / name).relative_to(ROOT).as_posix(): sha(BASE / name) for name in ("protocol.json", "controlled-answers.md", "protocol-revision-02.json", "controlled-answers-02.md")},
+        "evidence_hashes": {p.relative_to(ROOT).as_posix(): sha(p) for p in sorted(paths)},
+        "bundle_manifest_sha256": revision["bundle_manifest_sha256"],
+        "limits": ["Two isolated artifact continuations from retained revision8 in fresh Claude caller/registered-child sessions; not original-parent resume or general host reliability. The second prospectively clarifies controlled-input authority; it receives no first-attempt outputs or grader feedback.",
+            "Controlled answers authorize sample treatment and canvas only; no real owner preference or family/production adoption is established.",
+            "No separately preregistered paired delegated-trial control was run. The first attempt selected that branch instead of establishing the intended confirmed-choice path. Earlier direct-question and authority failures retain their original outcomes.",
+            "No new provider execution, artwork, target-engine acceptance or human acceptance is implied by local state authoring or readiness."],
+        "human_acceptance": "unperformed; separate", "open_milestones": ["M1", "M2", "broader M3", "broader M4", "broader M5"]}
+    with (BASE / "RESULT.json").open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "evidence_bindings": len(paths), "inputs": result["input_files"], "outputs": result["output_files"]}))
+
+
+if __name__ == "__main__":
+    main()

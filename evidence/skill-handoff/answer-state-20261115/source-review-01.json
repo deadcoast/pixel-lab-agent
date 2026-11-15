@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-15T16:28:25.764854+00:00",
+  "status": "needs_review",
+  "reviewer": "Implementing worker source self-review; independent native/semantic qualification remains separate",
+  "scope": "Narrow frozen runtime change review; only this receipt is written. No code/build edits, native replay or additional tests. The running full verifier is owned by root.",
+  "sources": [
+    {
+      "path": "pixl/store.py",
+      "sha256": "61ca98381620a8a97882384d730271b8246680f9757d262e7c0f516359cac4b0",
+      "snapshot": "evidence/skill-handoff/answer-state-20261115/store-locator-02/sources/pixl/store.py.txt"
+    },
+    {
+      "path": "pixl/diagnostics.py",
+      "sha256": "801e09d4db10af20cd9f53f97ace2c9cbc146ddc5bec5805ecdb0bd9252b5772",
+      "snapshot": "evidence/skill-handoff/answer-state-20261115/store-locator-02/sources/pixl/diagnostics.py.txt"
+    },
+    {
+      "path": "pixl/cli.py",
+      "sha256": "5ff445527698624fc1a498433ceb1ce342927d218427314654fcc1b7ba9e02ca",
+      "snapshot": "evidence/skill-handoff/answer-state-20261115/store-locator-02/sources/pixl/cli.py.txt"
+    },
+    {
+      "path": "pixl/mcp.py",
+      "sha256": "9eb22b054f9dd879efb09bdf06c91c6dfd5a8c6a4d11c47612db80bb2cf627f2",
+      "snapshot": "evidence/skill-handoff/answer-state-20261115/store-locator-02/sources/pixl/mcp.py.txt"
+    },
+    {
+      "path": "tests/test_store_locator.py",
+      "sha256": "382a3c40d84b19f0a18e9415e4f6d4cb3d3a1397a8d79a7ab0da89866756db82",
+      "snapshot": "evidence/skill-handoff/answer-state-20261115/store-locator-02/sources/tests/test_store_locator.py.txt"
+    }
+  ],
+  "executed_verification": {
+    "path": "evidence/skill-handoff/answer-state-20261115/store-locator-02/RESULT.json",
+    "sha256": "562c7726ffc4784ff616143f77be144464cdfbf6384af3ba9db43da69b779163",
+    "passed": 72,
+    "skipped": 2,
+    "run": 74,
+    "new_locator_tests": 9,
+    "ruff": "pass",
+    "selected_store_mypy": "pass"
+  },
+  "checks": [
+    {
+      "case": "Missing directory",
+      "status": "reviewed_consistent",
+      "basis": "The guard catches only FileNotFoundError and returns. lock retains mkdir for initialization, while load retains its existing store_read wrapper for a missing head. It does not create directories during load.",
+      "execution": "Covered by test_missing_and_unreadable_heads_keep_store_read_error and existing initialization tests."
+    },
+    {
+      "case": "Observed head file or unrelated regular file",
+      "status": "executed_pass",
+      "basis": "stat mode rejects non-directories before mkdir/os.open. It neither uses the filename suffix nor substitutes the parent; file bytes/mtime and existing state/history are preserved.",
+      "execution": "New direct lock/load/initialize/commit subcases and real CLI/MCP commit regression."
+    },
+    {
+      "case": "Existing directory with .px suffix",
+      "status": "executed_pass",
+      "basis": "Type is determined by stat.S_ISDIR, so a directory called state.px remains valid. PX1/PX2 publication and direct state-file validation work.",
+      "execution": "test_valid_directory_publication_and_state_file_reads_keep_both_formats."
+    },
+    {
+      "case": "Symlink to directory or file",
+      "status": "reasoning_only",
+      "basis": "stat follows the target, and lock already resolved the path before this change. A symlink to a directory remains a directory; a symlink resolving to a file is rejected. load uses the supplied path as before. This adds no symlink confinement or atomic identity guarantee.",
+      "execution": "No new live symlink probe; existing lock/history symlink regressions were skipped for Windows privilege in the focused suite."
+    },
+    {
+      "case": "Permission failure during stat or head read",
+      "status": "reviewed_consistent",
+      "basis": "The guard does not swallow PermissionError. lock retains the OSError path; load catches OSError inside its existing try and retains store_read with the original cause. PixlError inherits ValueError, so a genuine store_directory diagnostic is not wrapped as store_read.",
+      "execution": "Head read denial was executed through a mock; permission denial specifically during stat was reasoned from control flow, not separately executed."
+    },
+    {
+      "case": "Non-directory ancestor, dangling link, or replacement after stat",
+      "status": "reasoning_only",
+      "basis": "Only a successfully observed non-directory final locator gets the new error. Other OS failures are not broadly converted. Existing resolution/mkdir/open/read behavior still decides races or unresolved paths; no automatic parent substitution, retry or stale-lock removal was introduced.",
+      "execution": "No additional race/ancestor/dangling-link experiment; existing concurrent publication and lock regressions remain the executed scope."
+    },
+    {
+      "case": "Load-first versus lock-first writers",
+      "status": "executed_pass",
+      "basis": "Shared load covers jobs/delivery reads preceding publication; shared lock covers commit/init/completion. Both report the same precise file-locator error.",
+      "execution": "Jobs dispatch, delivery snapshot and task completion negative cases, plus direct store operations."
+    },
+    {
+      "case": "Lock contention and unrelated FileExistsError",
+      "status": "executed_pass",
+      "basis": "The new diagnostic is keyed only by store_directory. Existing store_locked recovery and owner observation remain unchanged; an unrelated publication FileExistsError retains the prior generic OS category.",
+      "execution": "New category separation test and existing actual CLI/MCP locked-commit tests."
+    },
+    {
+      "case": "Auxiliary lock-directory wording",
+      "status": "finding",
+      "basis": "Shared lock is also used for derived .pixl/plar-lock and .pixl/handoffs directories. If one is an existing file, the new error says it must be a directory containing state.px and recovery tells the caller to correct a store argument. Those auxiliary locations need not contain state.px and these operations may have no supplied store argument.",
+      "sources": [
+        {
+          "path": "pixl/plar.py",
+          "line": 322,
+          "sha256": "c9b5cc6fad88d0cb7cdb2363c414160417e0d4489cc2fd57e94f4e567a9435b6"
+        },
+        {
+          "path": "pixl/handoff.py",
+          "line": 91,
+          "sha256": "8e92b1b0f1434c21eeb548cf186e68756d7722859bd79a13a034467a976ea828"
+        }
+      ],
+      "execution": "Source inspection only; not a newly executed failing test.",
+      "recommendation": "Use accurate shared-directory wording or explicit caller context while keeping the targeted store/head distinction and all actual lock/read categories. Do not silently choose a parent directory or broadly classify FileExistsError."
+    },
+    {
+      "case": "Help and version semantics",
+      "status": "reviewed_consistent",
+      "basis": "All store arguments in CLI/MCP discovery receive the same description, including nested PLAR prepare. Only descriptive schema metadata changes; parameter types, required fields, PX1/PX2 registry/encoding and publication transitions remain unchanged.",
+      "execution": "Immediate CLI help and all discovered store descriptions tested; both saved-format publication/validation cases passed."
+    }
+  ],
+  "material_findings": 1,
+  "finding_scope": "Precision of the newly introduced recovery for auxiliary lock directories; the targeted head-file rejection and preservation checks pass.",
+  "format_source_changes": [],
+  "human_acceptance": "unperformed; separate"
+}
