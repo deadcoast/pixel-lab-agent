@@ -1,0 +1,64 @@
+{
+  "status": "identified_not_implemented",
+  "cycle": "IDENTIFY-2026-11-09-01",
+  "linked_existing_findings": [
+    "TM-04",
+    "TM-03"
+  ],
+  "finding": "Write-store locator ambiguity and misleading recovery category",
+  "observation": "Native01 passed the head-file path to commit three times and recovered using the store directory. The evaluation setup mislabeled the head file as a store. Native02 setup separates them; this does not change runtime diagnostics.",
+  "source_review": "Read-only explorer inspection and CLI help; no new runtime fault reproduction. Existing path guidance specifies a directory, while immediate MCP schema and CLI positional help omit that explanation. The directory lock calls mkdir on the supplied path; the resulting uncategorized OSError is reported as unavailable_observation/restore_observation rather than a rejected write argument.",
+  "recommendation": "Describe the store directory in MCP and CLI help, then reject an existing non-directory store argument before locking with a precise invalid-input diagnostic. Do not silently substitute its parent or reclassify all FileExistsError values.",
+  "scope": "Narrow within-cycle follow-up; no code change, no new finding ID, no grading change and no interruption of frozen native02.",
+  "sources": [
+    {
+      "path": "plugins/pixl/skills/pixl/references/identities-and-paths.md",
+      "sha256": "7665f2b64943245120662b7ccd76f5e0aadac612c3b6d83643f33f9aa1159856",
+      "lines": [
+        74,
+        82
+      ]
+    },
+    {
+      "path": "pixl/mcp.py",
+      "sha256": "3d8abe286b50a410791e0c885e5ae8b74c9dd247aaa62df8ca05e9ded1449bc6",
+      "lines": [
+        317
+      ]
+    },
+    {
+      "path": "pixl/cli.py",
+      "sha256": "e6c4858aca2a61dcf4c4545b2ac822b31748c6ab8df7454708740af399f8e1db",
+      "lines": [
+        209
+      ]
+    },
+    {
+      "path": "plugins/pixl/skills/pixl/references/runtime.md",
+      "sha256": "82cc3683278fd57ad097141c8d6d8ea896e9de02869c66ca71ff043a19bb365c",
+      "lines": [
+        81
+      ]
+    },
+    {
+      "path": "pixl/store.py",
+      "sha256": "5a87b62291011092359c0d2551518acf2ff9ad31c23f26dbd76e6c842a20c1ad",
+      "lines": [
+        149,
+        277,
+        422
+      ]
+    },
+    {
+      "path": "pixl/diagnostics.py",
+      "sha256": "5297c95c62065bc78799f59ac40ec552968f5090a0e600b7d4e9c19da85a383c",
+      "lines": [
+        214
+      ]
+    }
+  ],
+  "native_evidence": {
+    "path": "evidence/skill-handoff/caller-review-20261115/mechanical-review-notes-01.json",
+    "sha256": "58b7802646fca6dfb9f31f185c2aa3af820889b912948b4ffa7114dd54c9c71d"
+  }
+}

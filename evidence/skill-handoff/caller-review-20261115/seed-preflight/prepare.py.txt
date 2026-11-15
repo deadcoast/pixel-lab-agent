@@ -1,0 +1,135 @@
+"""Extract the exact unaided cold04 output; perform read-only local preflight."""
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import zipfile
+
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[3]
+PRIOR = ROOT / "evidence/skill-handoff/qualification-20261114"
+SOURCE = PRIOR / "cold-04"
+STATE = "state.px/state.px"
+EXPECTED_STATE = "b9a66beff93bcc2197a442d1de8ed6d7d9178aacf0c10606512a38e64d78b5b7"
+EXPECTED_BUNDLE = "00adedec731d1da2075b51607ae438d25a42893321404589a58dc3c9281bdb6b"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def inventory(root):
+    return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob("*"))
+            if p.is_file() and "__pycache__" not in p.parts}
+
+
+def snapshot(root):
+    return {name: {"sha256": digest, "mtime_ns": (root / name).stat().st_mtime_ns}
+            for name, digest in inventory(root).items()}
+
+
+def extract(archive, target):
+    with zipfile.ZipFile(archive) as z:
+        if len(z.namelist()) != len(set(z.namelist())):
+            raise RuntimeError("Duplicate archive member")
+        for name in z.namelist():
+            if name.endswith("/"):
+                continue
+            path = (target / name).resolve()
+            if not path.is_relative_to(target.resolve()):
+                raise RuntimeError("Archive member escapes target")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(z.read(name))
+
+
+def main():
+    seed, runtime = HERE / "seed", HERE / "work/frozen-kit"
+    if seed.exists() or runtime.exists() or (HERE / "RESULT.json").exists():
+        raise RuntimeError("Use a fresh preflight; prior outputs cannot be overwritten")
+    preservation = json.loads((SOURCE / "preservation.json").read_bytes())
+    identity = json.loads((SOURCE / "identity.json").read_bytes())
+    source_files = preservation["outputs"]
+    if len(source_files) != 41 or preservation["output_archive"]["files"] != source_files:
+        raise RuntimeError("Unexpected predecessor project manifest")
+    if sha(SOURCE / "project.zip") != preservation["output_archive"]["sha256"]:
+        raise RuntimeError("Predecessor project archive changed")
+    protected_paths = [SOURCE / name for name in ("project.zip", "preservation.json", "identity.json")]
+    protected = {str(path): {"sha256": sha(path), "mtime_ns": path.stat().st_mtime_ns} for path in protected_paths}
+    prior_project = snapshot(SOURCE / "project")
+    current_package = snapshot(ROOT / "plugins/pixl")
+    extract(SOURCE / "project.zip", seed)
+    if inventory(seed) != source_files:
+        raise RuntimeError("Extracted seed differs from predecessor manifest")
+    shutil.copy2(SOURCE / "project.zip", HERE / "seed.zip")
+    save(HERE / "seed-manifest.json", source_files)
+    extract(PRIOR / "revision-05/frozen-kit.zip", runtime)
+    if inventory(runtime) != identity["package_files"] or sha(runtime / "bundle-manifest.json") != EXPECTED_BUNDLE:
+        raise RuntimeError("Frozen runtime package differs from predecessor kit")
+    if inventory(ROOT / "plugins/pixl") != identity["package_files"]:
+        raise RuntimeError("Current repository kit differs from the declared frozen baseline")
+    initial = snapshot(seed)
+    commands = []
+
+    def run(name, args):
+        command = [sys.executable, "-B", "-I", str(runtime / "scripts/pixl.py"), *args]
+        result = subprocess.run(command, cwd=seed, capture_output=True, timeout=60,
+                                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"})
+        out, err = HERE / "commands" / (name + ".stdout.txt"), HERE / "commands" / (name + ".stderr.txt")
+        out.parent.mkdir(exist_ok=True)
+        out.write_bytes(result.stdout)
+        err.write_bytes(result.stderr)
+        commands.append({"command": command, "cwd": str(seed), "returncode": result.returncode,
+                         "stdout": out.relative_to(HERE).as_posix(), "stderr": err.relative_to(HERE).as_posix(),
+                         "stdout_sha256": sha(out), "stderr_sha256": sha(err)})
+        save(HERE / "commands.json", commands)
+        if result.returncode:
+            raise RuntimeError(f"{name}: nonzero exit; exact failure retained")
+        return json.loads(result.stdout)
+
+    valid = run("01-validate", ["validate", str(seed / STATE), "--root", str(seed)])
+    run("02-workflow", ["workflow", str(seed / STATE), "--root", str(seed)])
+    run("03-authoring", ["context", str(seed / STATE), "t_sample", "--view", "authoring", "--root", str(seed)])
+    decoded = run("04-decode", ["decode", str(seed / STATE)])
+    sources = [row for row in decoded["records"] if row["kind"] == "S"]
+    checks = {"exact_41_file_predecessor_output": inventory(seed) == source_files and len(source_files) == 41,
+              "seed_archive_byte_identical": sha(HERE / "seed.zip") == preservation["output_archive"]["sha256"],
+              "current_revision6_identity": valid["revision"] == 6 and valid["hash"] == EXPECTED_STATE and sha(seed / STATE) == EXPECTED_STATE,
+              "no_maintainer_review_added": not any("caller-review" in name.lower() or "semantic-review" in name.lower() for name in source_files),
+              "no_kit_or_discovery_config_added": not any(name.startswith(("pixl-kit/", ".agents/", ".claude/")) for name in source_files),
+              "all_source_records_are_project_owned": all(row["fields"]["ur"] in source_files for row in sources),
+              "read_only_seed_bytes_and_mtimes": snapshot(seed) == initial,
+              "prior_expanded_project_unchanged": snapshot(SOURCE / "project") == prior_project,
+              "prior_archive_and_receipts_unchanged": protected == {str(path): {"sha256": sha(path), "mtime_ns": path.stat().st_mtime_ns} for path in protected_paths},
+              "current_repository_package_unchanged": snapshot(ROOT / "plugins/pixl") == current_package,
+              "frozen_kit_exact": inventory(runtime) == identity["package_files"]}
+    result = {"status": "pass" if all(checks.values()) else "fail", "checks": checks,
+              "source": protected, "source_project": str(SOURCE / "project"),
+              "seed": str(seed), "seed_manifest_sha256": sha(HERE / "seed-manifest.json"),
+              "seed_archive_sha256": sha(HERE / "seed.zip"), "state_path": STATE,
+              "state_sha256": EXPECTED_STATE, "revision": valid["revision"], "source_records": sources,
+              "bundle_manifest_sha256": EXPECTED_BUNDLE,
+              "kit_archive": str(PRIOR / "revision-05/frozen-kit.zip"), "kit_archive_sha256": sha(PRIOR / "revision-05/frozen-kit.zip"),
+              "script_sha256": sha(Path(__file__)),
+              "limits": ["Exact unaided cold04 output, including unsupported historical claims; no manual correction.",
+                         "Original SESSION.md remains historical; current invocation paths must supersede it explicitly.",
+                         "No maintainer CALLER-REVIEW or semantic grading file is supplied in the seed.",
+                         "Local compatibility checks only; no model, native host, provider or engine calls.",
+                         "No new acceptance or verdict; human acceptance remains separate."]}
+    save(HERE / "RESULT.json", result)
+    if result["status"] != "pass":
+        raise RuntimeError("Preflight preservation checks failed; results retained")
+    print(json.dumps({"status": "pass", "checks": len(checks), "seed_files": len(source_files), "seed": str(seed)}))
+
+
+if __name__ == "__main__":
+    main()

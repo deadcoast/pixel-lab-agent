@@ -1,17 +1,27 @@
 # PX-SKILL-001: consequential choice at the handoff
 
-## Current qualification, 2026-11-14
+## Current native caller review, 2026-11-15
+
+<a id="pxskill001-native-caller-review"></a> **PX-SKILL-001: partial native caller review, 2026-11-15.** A native caller finds one contract defect, the same registered PIXL child corrects it, and the caller verifies the result without maintainer-written feedback. Unsupported answer effects and inherited criteria remain accepted, so cold-authority qualification stays failed. [Exact result](caller-review-20261115/RESULT.json).
+
+The [new ledger](caller-review-20261115/README.md) preserves both workflows,
+the first false acceptance, revised generic caller guidance, actual same-child
+correction and remaining semantic failures. Forty local tests, four packaging
+tests and 42/42 revised-trial mechanics pass separately. Human acceptance is
+unperformed; M1/M2 and broader M3/M4/M5 remain open. Next: controlled
+answer-to-state continuation from the retained revision-8 handoff.
+
+## Prior qualification, 2026-11-14
 
 <a id="pxskill001-qualification"></a> **PX-SKILL-001: partial qualification, 2026-11-14.** Fresh and settled native controls pass narrowly; unaided legacy cold authority remains failed. Recorded caller-reviewed correction passes separately and does not complete the unaided criterion. [Exact results](qualification-20261114/RESULT.json).
 
-The [current ledger](qualification-20261114/README.md) retains all twelve new
+The [prior ledger](qualification-20261114/README.md) retains all twelve new
 native attempts, original failures, frozen revisions and independent reviews.
 The actual interrupted Claude project is resumed through new file-only sessions;
 no original-session continuation or named-child qualification is claimed.
 Shared guidance and a reusable isolated recorder are updated. Human acceptance
-is separate; M1/M2 and broader M3/M4/M5 remain open. The next development slice
-qualifies cold correction through native caller/specialist review without
-maintainer-authored feedback.
+is separate; M1/M2 and broader M3/M4/M5 remain open. Its next development slice
+was native caller/specialist review; the separately recorded result is above.
 
 ## Historical 2026-09-14 increment
 

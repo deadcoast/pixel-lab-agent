@@ -1,0 +1,38 @@
+"""Freeze the clean committed baseline and allowlisted host readiness."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).parent
+
+
+def git(*args):
+    return subprocess.check_output(["git", *args], cwd=ROOT).decode().strip()
+
+
+def main():
+    prior = json.loads((ROOT / "evidence/skill-handoff/qualification-20261114/RESULT.json").read_bytes())
+    sources = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+               for name in prior["source_hashes"]}
+    auth = subprocess.run(["C:/Users/ryanf/.local/bin/claude.exe", "auth", "status"],
+                          capture_output=True, cwd=ROOT)
+    parsed = json.loads(auth.stdout)
+    version = subprocess.check_output(["C:/Users/ryanf/.local/bin/claude.exe", "--version"], cwd=ROOT).decode().strip()
+    result = {"observed_at": datetime.now(UTC).isoformat(), "head": git("rev-parse", "HEAD"),
+              "branch": git("branch", "--show-current"),
+              "tracked_changes": git("diff", "HEAD", "--name-only"),
+              "source_hashes": sources, "host_version": version,
+              "auth": {"exit_code": auth.returncode, **{key: parsed.get(key) for key in
+                       ("loggedIn", "authMethod", "apiProvider")}},
+              "scope": "Readiness only. Authentication account details and credentials are not retained. No native model run or behavioral result."}
+    with (OUT / "baseline.json").open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("head", "branch", "tracked_changes", "host_version", "auth")}))
+
+
+if __name__ == "__main__":
+    main()

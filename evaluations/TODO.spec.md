@@ -111,10 +111,10 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** implementation refined, 2026-11-14; qualification remains open. Bounded
-  native Claude fresh/settled handoffs pass, but unaided legacy cold authority and
-  answer-to-operation fidelity remain failed. Recorded caller-reviewed correction
-  is a separate guided outcome, not completion of the unaided criterion.
+- **Status:** caller procedure refined, 2026-11-15; qualification remains open.
+  Native caller/specialist review now observes an independent same-child correction,
+  but still accepts unsupported answer effects and inherited criteria. Earlier
+  fresh/settled passes, direct cold failures and guided correction remain separate.
 - **WHO:** shared PIXL skill owns the handoff; user owns consequential style choices.
 - **WHAT:** make an unresolved choice actionable at the response boundary when it is
   the next necessary user input, while continuing independent inspection and planning.
@@ -140,17 +140,23 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   source Ruff and expanded Mypy passed. Broad repository Ruff failed on retained
   and supplied scripts; its output remains. Nine saved states pass 36 correctly
   addressed read-only replay operations; four initial evaluator-path failures remain.
-- **Current qualification:** [new frozen native trials and independent review](../evidence/skill-handoff/qualification-20261114/README.md)
+- **Prior qualification, 2026-11-14:** [new frozen native trials and independent review](../evidence/skill-handoff/qualification-20261114/README.md)
   preserve direct-question failures, authority overreach, loading omissions,
   local harness/grader failures and the exact corrected sources. Fresh/settled
   scoped passes, caller-reviewed correction and unaided cold failure are
   reported separately. The actual Claude seed has five project-owned sources
   and needs no library migration. No provider or human acceptance follows.
-- **Remaining boundary:** qualify cold authority correction through native
-  caller/specialist review without maintainer-authored feedback; retain the
-  failed direct-profile cases. Prior PX-SKILL-002 artistic-authority outcomes
-  keep their recorded scope. These trials do not prove general reliability.
-  The separate historical common-seed/package mismatch remains PX-OPS-002.
+- **Current native caller review:** [two frozen workflows](../evidence/skill-handoff/caller-review-20261115/README.md)
+  retain an initial false acceptance and a revised-kit same-child correction with
+  remaining authority failures. The caller's findings are native-authored; no
+  maintainer defect feedback is supplied. The runner, 40 local tests, four
+  packaging tests and 42/42 mechanics are separate from semantic acceptance.
+- **Remaining boundary:** qualify the actual answer-to-state continuation from
+  retained revision 8 using explicitly labeled controlled evaluation answers. Preserve
+  unasked authority, check current sample criteria and retain direct-question
+  failures. The store-locator diagnostic finding supports TM-04/TM-03.
+  Earlier PX-SKILL-002 and PX-OPS-002 outcomes keep their recorded scope;
+  human acceptance and M1/M2/broader M3/M4/M5 remain open.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 
@@ -252,6 +258,8 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 - **Limit:** neither that planning result nor the earlier controlled HTTP deliveries establishes current native MCP generation, generated-art fidelity or engine acceptance.
 
 ## PX-EVAL-005 — current reference-aware native operation
+
+**Current linked evidence, 2026-11-15:** [autonomous caller review](../evidence/skill-handoff/caller-review-20261115/README.md) remains partial: one genuine same-child correction, but failed authority/answer-effect qualification. Native outcomes and all preserved failures remain distinct from local checks and human acceptance.
 
 - **New checkpoint, 2026-11-08:** [cold native consumption](../evidence/package-consumption/README.md) of the completed real-provider package passes in Claude and Codex: native delegation, independent caller comparison, exact delivered-file/handoff identities and new actual-consumer captures. This is one consumption assignment per host using the frozen preceding kit, not new generation or native verification of PX-OPS-004. Same-child resumption and broad host reliability remain open.
 

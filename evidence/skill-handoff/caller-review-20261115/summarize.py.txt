@@ -1,0 +1,108 @@
+"""Bind actual caller-review outcomes to their frozen sources and retained evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def reference(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def load(name):
+    return json.loads((BASE / name).read_bytes())
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--status", choices=("bounded_pass", "partial", "failed"), required=True)
+    parser.add_argument("--outcome", required=True)
+    parser.add_argument("--scope", required=True)
+    parser.add_argument("--semantic", default="semantic-review-02.json")
+    parser.add_argument("--mechanical", default="mechanical-04.json")
+    args = parser.parse_args()
+    latest = load(args.semantic)
+    mechanics = load(args.mechanical)
+    if args.status == "bounded_pass" and (not latest["bounded_workflow_pass"] or mechanics["status"] != "pass"):
+        raise ValueError("A bounded pass requires both semantic workflow and mechanical passes")
+    attempts = []
+    models = set()
+    for number, review_name, mechanical_name in ((1, "semantic-review-01.json", "mechanical-02.json"),
+                                               (2, args.semantic, args.mechanical)):
+        name = f"native-{number:02d}"
+        review, mechanical = load(review_name), load(mechanical_name)
+        identity, preservation = load(name + "/identity.json"), load(name + "/preservation.json")
+        events = [json.loads(line) for line in (BASE / name / "stdout.jsonl").read_text(encoding="utf-8").splitlines()]
+        models.update(event.get("message", {}).get("model") for event in events
+                      if str(event.get("message", {}).get("model", "")).startswith("claude-"))
+        attempts.append({"attempt": name, "semantic_status": review["status"], "outcome": review["outcome"],
+                         "mechanical_status": mechanical["status"], "native_identity": review["native_identity"],
+                         "bundle_manifest_sha256": identity["package"]["sha256"],
+                         "input_files": len(identity["inputs"]), "output_files": len(preservation["outputs"]),
+                         "semantic_review": reference(BASE / review_name),
+                         "mechanical_review": reference(BASE / mechanical_name),
+                         "identity": reference(BASE / name / "identity.json"),
+                         "input_archive": reference(BASE / name / "input-project.zip"),
+                         "output_archive": reference(BASE / name / "project.zip"),
+                         "preservation": reference(BASE / name / "preservation.json"),
+                         "stream": reference(BASE / name / "stdout.jsonl")})
+    baseline = load("baseline.json")
+    source_names = set(baseline["source_hashes"]) | {
+        "plugins/pixl/skills/pixl/references/delegation.md", "plugins/pixl/skills/pixl/references/request-review.md",
+        "plugins/pixl/agents/pixl.md", "evaluations/cold_caller_review.py", "tests/test_cold_caller_review.py",
+        "evaluations/host_trials.py", "pixl/readiness.py", "scripts/build_plugin.py", "tests/test_packaging.py"}
+    protocol_names = ("protocol.json", "protocol-amendment-01.json", "protocol-revision-02.json", "protocol-amendment-02.json")
+    evidence_dirs = ("native-01", "native-02", "local-01", "local-02", "seed-preflight", "revision-01", "package-check-01")
+    evidence_paths = {path for name in evidence_dirs for path in (BASE / name).rglob("*")
+                      if path.is_file() and "__pycache__" not in path.parts}
+    evidence_paths.update(BASE / name for name in ("semantic-review-01.json", args.semantic,
+        "mechanical-01.json", "mechanical-02.json", args.mechanical, "preparation-01.json", "preparation-02.json",
+        "guidance-change-01.json", "baseline.json", "mechanical-review-notes-01.json", "mechanical-review-notes-02.json",
+        "mechanical-03.json", "store-locator-finding-01.json"))
+    evidence_paths.add(ROOT / "evidence/skill-handoff/qualification-20261114/revision-05/frozen-kit.zip")
+    local_text = (BASE / "local-02/tests-stderr.txt").read_text(encoding="utf-8")
+    local_count = int(re.search(r"Ran (\d+) tests", local_text).group(1))
+    result = {"schema_version": 1, "task": "PX-SKILL-001 / PX-EVAL-005", "observed_at": datetime.now(UTC).isoformat(),
+              "status": args.status, "outcome": args.outcome, "scope": args.scope,
+              "qualification_complete": False, "original_cycle": "IDENTIFY-2026-11-09-01",
+              "source_revision_before_work": baseline["head"], "native_attempt_count": len(attempts),
+              "observed_hosts": sorted({load(row["attempt"] + "/launch.json")["host_version"] for row in attempts}),
+              "observed_models": sorted(models), "attempts": attempts,
+              "latest_semantic_review": reference(BASE / args.semantic),
+              "latest_mechanical_review": reference(BASE / args.mechanical),
+              "implementation": {"caller_guidance": reference(ROOT / "plugins/pixl/skills/pixl/references/delegation.md"),
+                  "harness": reference(ROOT / "evaluations/cold_caller_review.py"),
+                  "runtime_changed": False, "profile_changed": False, "saved_formats_changed": False},
+              "local_verification": {"status": load("local-02/RESULT.json")["status"], "tests_run": local_count,
+                  "new_harness_tests": 7, "existing_handoff_and_recorder_tests": 33,
+                  "receipt": reference(BASE / "local-02/RESULT.json"), "initial_lint_failure_retained": True},
+              "packaging": {"status": load("package-check-01/RESULT.json")["status"], "tests_run": 4,
+                  "receipt": reference(BASE / "package-check-01/RESULT.json")},
+              "source_hashes": {name: sha(ROOT / name) for name in sorted(source_names)},
+              "protocol_hashes": {(BASE / name).relative_to(ROOT).as_posix(): sha(BASE / name) for name in protocol_names},
+              "evidence_hashes": {path.relative_to(ROOT).as_posix(): sha(path) for path in sorted(evidence_paths)},
+              "bundle_manifest_sha256": sha(ROOT / "plugins/pixl/bundle-manifest.json"),
+              "limits": ["Native02 changes general caller guidance, setup locator wording and reporting instructions; this is not an isolated causal experiment.",
+                         "The same original41-file seed and semantic criteria are retained; neither native input receives maintainer defect findings or corrected answers.",
+                         "Earlier direct-profile cold failures and maintainer-guided correction retain their original outcomes.",
+                         "No original-parent recovery, new Codex run, provider execution, engine acceptance or broad host/model reliability is established.",
+                         "No full verifier ran in this increment; the retained full-suite receipt is not a fresh test result."],
+              "human_acceptance": "unperformed; separate", "open_milestones": ["M1", "M2", "broader M3", "broader M4", "broader M5"]}
+    with (BASE / "RESULT.json").open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"status": args.status, "attempts": len(attempts), "tests": local_count,
+                      "packaging_tests": 4, "evidence_bindings": len(evidence_paths)}))
+
+
+if __name__ == "__main__":
+    main()

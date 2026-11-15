@@ -68,6 +68,58 @@ Resume the same task/state where possible. Check retained provider attempts befo
 
 Before adopting a proposed production contract, use the [request and criteria handoff](request-review.md). The specialist returns exact source/request/criteria artifacts; the caller reads them independently and records a source-grounded comparison. Preserve specialist choices as choices, and continue within existing authorization once discrepancies are resolved.
 
+## Caller: review a cold continuation
+
+A returned continuation proposes what the caller should consume next, even when
+it carries forward unchanged state or previously accepted work. Review the
+current note, proposed next operation and literal request/criteria that will
+govern that operation. Reading source files and validating the store establish
+inputs for this comparison; they do not establish that its conclusions follow.
+
+1. Recover the original brief, adopted decisions and existing authorization from
+   their actual sources. Open the returned continuation and the full relevant
+   saved criteria yourself. Compare inherited clauses as well as new ones. Keep
+   historical acceptance attached to the candidate and contract it evaluated;
+   an unchanged hash or earlier passing verdict does not establish a clause's
+   authority for the next work.
+
+2. Save a compact caller comparison covering each consequential claim,
+   carried-forward restriction and claimed consequence of an answer. Record
+   **claim or literal criterion; source and locator; current authority/status;
+   change actually authorized; actual operation prerequisite; finding and
+   disposition**. Cite the evidence you interpreted, not just the specialist's
+   statement that a source supports it. Split mixed-authority clauses. If a
+   rule rejects a plausible alternative, explain whether the source excludes
+   that alternative or the rule belongs to a narrower expert trial. Preserve
+   required outcomes when correcting an unsupported recipe.
+
+3. For each requested answer, assume only that answer is supplied and trace
+   the exact state/contract changes and next available operation. Each other
+   choice keeps its status unless the answer explicitly adopts it or a cited
+   existing decision already establishes it. Compare every claimed effect in
+   the question, decision table and proposed operation; matching current values
+   does not prove that a proposed status change is authorized. Check actual
+   runtime/tool prerequisites and name the dependencies that remain. Scoped
+   expert proposals can support an authorized sample; do not turn every proposal
+   into a new owner-confirmation requirement or treat later production
+   prerequisites as blockers for independent local work.
+
+4. When this comparison finds a discrepancy, send your own precise finding and
+   source evidence to the same native specialist. Ask for a corrected current
+   proposal with an explicit old-to-new explanation, preserving the historical
+   artifacts and acceptance. Wait for the revision. If the first return is
+   consistent, record the independent comparison without inventing a correction
+   round. Do not declare consistency solely because the specialist followed a
+   checklist, retained earlier bytes or returned a valid state.
+
+5. After the last specialist change, reopen the actual final files and current
+   state, verify their identities and applicable runtime checks, and recheck the
+   affected claims against the sources. Bind your adoption finding to that final
+   version; a clean summary cannot override contradictory saved criteria or
+   continuation instructions. Finish with useful saved progress, any still
+   necessary direct question to the owner, and the concrete operation its answer
+   enables. Carry existing authorization and leave later prerequisites explicit.
+
 ## Specialist → caller at completion
 
 Return a compact structured result (JSON or equivalent named fields). For a

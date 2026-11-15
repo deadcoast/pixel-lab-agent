@@ -1,0 +1,161 @@
+"""Advance the existing cycle with partial native-review evidence and explicit exits."""
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[3]
+LEDGER = "evidence/skill-handoff/caller-review-20261115/README.md"
+NEXT = ("**PX-SKILL-001 / PX-EVAL-005 — controlled answer-to-state continuation [M1, linked CF-02]**: "
+        "use the retained native-02 revision-8 handoff and explicitly labeled controlled evaluation answers to qualify the actual "
+        "intake/contract operation, preserving unasked authority and checking the applicable sample criteria. "
+        "Keep direct-question and authority failures open, separately from the successful native same-child correction. "
+        "The identified store-locator diagnostic fix is supporting TM-04/TM-03 work. Human acceptance stays separate; "
+        "M1/M2 and broader M3/M4/M5 remain open.")
+
+
+def summary(prefix=""):
+    return ("**Native caller review, 2026-11-15: partial.** The [two retained Claude workflows](" + prefix + LEDGER + ") "
+            "receive no maintainer defect feedback. The revised shared caller procedure produces an independent "
+            "source-cited finding, correction by the same registered PIXL child and final caller verification, but "
+            "unsupported answer effects and inherited criteria remain accepted. Qualification stays open. "
+            "The reusable isolated runner passes 40 focused tests and Ruff; four packaging tests and 42/42 "
+            "revised-trial mechanical checks pass separately from failed semantic review. Profile, runtime and saved "
+            "formats are unchanged; all earlier failures and the guided correction retain their original scope. "
+            "Human acceptance is unperformed; M1/M2 and broader M3/M4/M5 remain open.")
+
+
+def change(name, transform):
+    path = ROOT / name
+    raw = path.read_bytes()
+    newline = "\r\n" if b"\r\n" in raw else "\n"
+    body = raw.decode("utf-8").replace("\r\n", "\n")
+    revised = transform(body)
+    if revised == body:
+        raise ValueError("Expected a contextual update: " + name)
+    path.write_bytes(revised.replace("\n", newline).encode("utf-8"))
+
+
+def line(body, prefix, replacement):
+    rows = body.splitlines()
+    matches = [index for index, value in enumerate(rows) if value.startswith(prefix)]
+    if len(matches) != 1:
+        raise ValueError("Expected one line starting " + prefix)
+    rows[matches[0]] = replacement
+    return "\n".join(rows) + "\n"
+
+
+def main():
+    def todo(body):
+        body = body.replace("Updated 2026-11-14 (America/Los_Angeles)", "Updated 2026-11-15 (America/Los_Angeles)", 1)
+        body = line(body, "**Active next increment:**", "**Active next increment:** " + NEXT)
+        body = body.replace("**PX-SKILL-001 qualification remains open:**", summary() + "\n\n**Prior PX-SKILL-001 qualification, 2026-11-14 (still open):**", 1)
+        return body
+    change("TODO.md", todo)
+
+    def plan(body):
+        body = body.replace("Updated: **2026-11-14**", "Updated: **2026-11-15**", 1)
+        body = body.replace("**PX-SKILL-001 qualification remains open:**", summary() + "\n\n**Prior PX-SKILL-001 qualification, 2026-11-14 (still open):**", 1)
+        body = line(body, "**Active next group:**", "**Active next group:** " + NEXT)
+        return line(body, "**Work source:** Continue the earliest unfinished M1", "**Work source:** Continue the earliest unfinished M1 outcome through CF-02's linked [native caller review](" + LEDGER + "). The same-child correction is observed without maintainer feedback; the answer-to-authority exit still fails. Preserve the earlier direct and guided scopes, and the separate CF-08 profile-loading gap. No new IDENTIFY cycle or conditional framework extraction follows.")
+    change("PLAN.md", plan)
+
+    def shelved(body):
+        body = body.replace("Updated: **2026-11-14**", "Updated: **2026-11-15**", 1)
+        rows = body.splitlines()
+        for index, value in enumerate(rows):
+            if value.startswith("| [CF-02]"):
+                retained = value.split(" **Active linked continuation:**")[0]
+                rows[index] = retained + " **Active linked continuation:** [Native caller review](" + LEDGER + ") observes a genuine same-child correction without maintainer feedback, but authority/answer-effect qualification remains failed. Next: controlled answer-to-state continuation from revision 8. The [prior qualification](evidence/skill-handoff/qualification-20261114/README.md), completed literal comparison, guided correction and all failures remain separate. |"
+            if value.startswith("| [TM-04]"):
+                rows[index] = value.removesuffix(" |").rstrip(".") + ". **Identified supporting follow-up:** [store directory/head-file ambiguity and misleading recovery advice](evidence/skill-handoff/caller-review-20261115/store-locator-finding-01.json), linked TM-03; not implemented. |"
+        body = "\n".join(rows) + "\n"
+        return line(body, "**Current next group:**", "**Current next group:** " + NEXT + " The [new ledger](" + LEDGER + ") preserves both native failures, the actual correction and all evaluator corrections. TM-02 and conditional SC-07/NF-05/NF-09 dispositions remain unchanged; the active PLAN cycle continues.")
+    change("SHELVED.md", shelved)
+
+    def identified(body):
+        body = body.replace("**Current handoff after PX-SKILL-001 qualification:**", "**Historical handoff after PX-SKILL-001 qualification:**", 1)
+        return body.rstrip() + "\n\n" + summary("../") + "\n\n**Current handoff after native caller review:** " + NEXT + " Keep all 50 finding IDs and the existing cycle. [A–E and exact limits](../" + LEDGER + "#ae-review) distinguish the useful native correction from remaining authority failures.\n"
+    change("docs/IDENTIFIED.md", identified)
+
+    def capability(body):
+        body = line(body, "**PX-SKILL-001 handoff qualification:**", "**PX-SKILL-001 handoff qualification:** [Current native caller review](../" + LEDGER + ") observes a source-grounded same-child correction but still fails answer-to-authority fidelity. Forty local tests, four packaging tests and 42/42 mechanics do not establish a semantic pass. [Earlier fresh/settled and guided outcomes](../evidence/skill-handoff/qualification-20261114/README.md) retain their scope; direct cold failures, human acceptance and broader milestones remain open.")
+        body = body.replace("**Active group: PX-SKILL-001 consequential-choice and cold-handoff qualification", "**Historical active group after TM-02: PX-SKILL-001 consequential-choice and cold-handoff qualification", 1)
+        return body.rstrip() + "\n\n**Current active group:** " + NEXT + " [Actual native outcomes and A–E](../" + LEDGER + "#ae-review) supply the next operation; no advertised domain or broad host qualification is closed.\n"
+    change("docs/CAPABILITY-OUTCOMES.md", capability)
+
+    def specification(body):
+        old = ("- **Status:** implementation refined, 2026-11-14; qualification remains open. Bounded\n"
+               "  native Claude fresh/settled handoffs pass, but unaided legacy cold authority and\n"
+               "  answer-to-operation fidelity remain failed. Recorded caller-reviewed correction\n"
+               "  is a separate guided outcome, not completion of the unaided criterion.")
+        new = ("- **Status:** caller procedure refined, 2026-11-15; qualification remains open.\n"
+               "  Native caller/specialist review now observes an independent same-child correction,\n"
+               "  but still accepts unsupported answer effects and inherited criteria. Earlier\n"
+               "  fresh/settled passes, direct cold failures and guided correction remain separate.")
+        if old not in body:
+            raise ValueError("Missing PX-SKILL-001 status")
+        body = body.replace(old, new, 1)
+        body = body.replace("- **Current qualification:** [new frozen native trials", "- **Prior qualification, 2026-11-14:** [new frozen native trials", 1)
+        start = body.index("- **Remaining boundary:** qualify cold authority correction through native")
+        end = body.index("  The separate historical common-seed/package mismatch remains PX-OPS-002.", start)
+        end += len("  The separate historical common-seed/package mismatch remains PX-OPS-002.")
+        body = body[:start] + ("- **Current native caller review:** [two frozen workflows](../" + LEDGER + ")\n"
+            "  retain an initial false acceptance and a revised-kit same-child correction with\n"
+            "  remaining authority failures. The caller's findings are native-authored; no\n"
+            "  maintainer defect feedback is supplied. The runner, 40 local tests, four\n"
+            "  packaging tests and 42/42 mechanics are separate from semantic acceptance.\n"
+            "- **Remaining boundary:** qualify the actual answer-to-state continuation from\n"
+            "  retained revision 8 using explicitly labeled controlled evaluation answers. Preserve\n"
+            "  unasked authority, check current sample criteria and retain direct-question\n"
+            "  failures. The store-locator diagnostic finding supports TM-04/TM-03.\n"
+            "  Earlier PX-SKILL-002 and PX-OPS-002 outcomes keep their recorded scope;\n"
+            "  human acceptance and M1/M2/broader M3/M4/M5 remain open.") + body[end:]
+        marker = "## PX-EVAL-005 — current reference-aware native operation\n"
+        return body.replace(marker, marker + "\n**Current linked evidence, 2026-11-15:** [autonomous caller review](../" + LEDGER + ") remains partial: one genuine same-child correction, but failed authority/answer-effect qualification. Native outcomes and all preserved failures remain distinct from local checks and human acceptance.\n", 1)
+    change("evaluations/TODO.spec.md", specification)
+
+    def index(body):
+        start = body.index("- **Consequential-choice and cold handoffs:**")
+        end = body.index("- **Latest full local checkpoint:**", start)
+        body = body[:start] + ("- **Consequential-choice and cold handoffs:** [native caller review](skill-handoff/caller-review-20261115/README.md)\n"
+            "  records partial progress across two completed Claude workflows. A source-cited\n"
+            "  finding and correction by the same registered child are observed without\n"
+            "  maintainer feedback, but the caller still accepts unsupported authority claims.\n"
+            "  [Semantic review](skill-handoff/caller-review-20261115/semantic-review-02.json)\n"
+            "  stays separate from 42/42 mechanics, 40 local tests and four packaging tests.\n"
+            "  The [earlier twelve-attempt qualification](skill-handoff/qualification-20261114/README.md)\n"
+            "  retains fresh/settled passes, unaided cold failures and separately guided correction.\n") + body[end:]
+        start = body.index("  The [current inspection]")
+        end = body.index("  [TM-02](", start)
+        body = body[:start] + ("  The [current inspection](skill-handoff/caller-review-20261115/integrity-01/report.json)\n"
+            "  covers 25 claims and 88 receipts: two current (TM-02 measurements and the\n"
+            "  explicitly **partial** native caller review), eleven historical and twelve stale.\n"
+            "  The earlier PX-SKILL-001 qualification is now stale against the revised kit;\n"
+            "  its original partial outcome remains unchanged. The retained full-checkpoint\n"
+            "  binding also stays stale. [Before/after preservation](skill-handoff/caller-review-20261115/integrity-01/RESULT.json)\n"
+            "  checks exact bytes/mtimes; exit 1 retains applicability/release gaps, not a new\n"
+            "  runtime-failure claim. The [prior inspection](skill-handoff/qualification-20261114/integrity-01/report.json)\n"
+            "  remains unchanged.\n") + body[end:]
+        return body
+    change("evidence/README.md", index)
+
+    def handoff(body):
+        marker = "## Current qualification, 2026-11-14"
+        intro = ("## Current native caller review, 2026-11-15\n\n"
+            '<a id="pxskill001-native-caller-review"></a> **PX-SKILL-001: partial native caller review, 2026-11-15.** A native caller finds one contract defect, the same registered PIXL child corrects it, and the caller verifies the result without maintainer-written feedback. Unsupported answer effects and inherited criteria remain accepted, so cold-authority qualification stays failed. [Exact result](caller-review-20261115/RESULT.json).\n\n'
+            "The [new ledger](caller-review-20261115/README.md) preserves both workflows,\n"
+            "the first false acceptance, revised generic caller guidance, actual same-child\n"
+            "correction and remaining semantic failures. Forty local tests, four packaging\n"
+            "tests and 42/42 revised-trial mechanics pass separately. Human acceptance is\n"
+            "unperformed; M1/M2 and broader M3/M4/M5 remain open. Next: controlled\n"
+            "answer-to-state continuation from the retained revision-8 handoff.\n\n"
+            "## Prior qualification, 2026-11-14")
+        body = body.replace(marker, intro, 1)
+        body = body.replace("The [current ledger](qualification-20261114/README.md)", "The [prior ledger](qualification-20261114/README.md)", 1)
+        body = body.replace("is separate; M1/M2 and broader M3/M4/M5 remain open. The next development slice\nqualifies cold correction through native caller/specialist review without\nmaintainer-authored feedback.", "is separate; M1/M2 and broader M3/M4/M5 remain open. Its next development slice\nwas native caller/specialist review; the separately recorded result is above.", 1)
+        return body
+    change("evidence/skill-handoff/README.md", handoff)
+    print("Updated eight living documents without changing prior pinned claims or finding IDs.")
+
+
+if __name__ == "__main__":
+    main()

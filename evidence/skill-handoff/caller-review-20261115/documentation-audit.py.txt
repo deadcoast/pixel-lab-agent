@@ -1,0 +1,113 @@
+"""Audit the continuing living-document chain without rebuilding evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+from urllib.parse import unquote
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = "a0b39cdb6a4cffdb26c65187865691dd3578609b"
+PREFIX = "evidence/skill-handoff/caller-review-20261115/"
+DOCS = ["TODO.md", "PLAN.md", "SHELVED.md", "docs/IDENTIFIED.md",
+        "docs/CAPABILITY-OUTCOMES.md", "evaluations/TODO.spec.md", "evidence/README.md",
+        "evidence/skill-handoff/README.md", PREFIX + "README.md"]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def original(name):
+    return subprocess.check_output(["git", "show", BASE + ":" + name], cwd=ROOT)
+
+
+def anchors(path):
+    body = path.read_text(encoding="utf-8-sig")
+    found = set(re.findall(r'<a\s+id=["\']([^"\']+)["\']', body))
+    counts = {}
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*#*$", body, re.M):
+        slug = re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
+        count = counts.get(slug, 0)
+        counts[slug] = count + 1
+        found.add(slug + (f"-{count}" if count else ""))
+    return found
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", required=True, type=Path)
+    args = parser.parse_args()
+    checks = []
+
+    def check(name, passed, detail=None):
+        checks.append({"name": name, "passed": bool(passed), "detail": detail})
+
+    for name in DOCS:
+        path = ROOT / name
+        body = re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*(?:\n|$)", "", path.read_text(encoding="utf-8-sig"))
+        for target in re.findall(r"\]\(([^)]+)\)", body):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                continue
+            local, _, fragment = unquote(target).partition("#")
+            destination = (path.parent / local).resolve() if local else path
+            exists = destination.exists() or destination == args.out.resolve()
+            valid = not fragment or (destination.is_file() and fragment in anchors(destination))
+            check(f"link:{name}:{target}", exists and valid)
+    pattern = r"^- \*\*((?:NF|SC|QOL|CF|TM)-\d+)\s"
+    old_ids = re.findall(pattern, original("docs/IDENTIFIED.md").decode(), re.M)
+    new_ids = re.findall(pattern, (ROOT / "docs/IDENTIFIED.md").read_text(encoding="utf-8"), re.M)
+    backlog = re.findall(r"^\| \[((?:NF|SC|QOL|CF|TM)-\d+)\]", (ROOT / "SHELVED.md").read_text(encoding="utf-8"), re.M)
+    check("fifty_original_ids", len(new_ids) == len(set(new_ids)) == len(backlog) == len(set(backlog)) == 50
+          and set(old_ids) == set(new_ids) == set(backlog))
+    for name in DOCS[:4]:
+        body = (ROOT / name).read_text(encoding="utf-8")
+        check("active_cycle:" + name, "IDENTIFY-2026-11-09-01" in body and "PX-SKILL-001" in body and "PX-EVAL-005" in body)
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    sections = dict(re.findall(r"(?ms)^## (M[1-5]) [^\n]+\n(.*?)(?=^## |\Z)", plan))
+    for milestone in ("M1", "M2", "M3", "M4", "M5"):
+        status = re.search(r"^\*\*Status:\*\* ([^\n]+)", sections.get(milestone, ""), re.M)
+        body = status.group(1).split("**Existing work:")[0] if status else ""
+        check("milestone_open:" + milestone, bool(re.search(r"\b(open|active)\b", body, re.I))
+              and not re.search(r"\b(closed|complete)\b", body, re.I), body)
+    before = json.loads(original("evaluations/evidence-claims.json"))
+    after = json.loads((ROOT / "evaluations/evidence-claims.json").read_bytes())
+    for kind in ("claims", "receipts"):
+        current = {row["id"]: row for row in after[kind]}
+        check("old_registry_objects_unchanged:" + kind, all(current.get(row["id"]) == row for row in before[kind]))
+    check("release_declarations_unchanged", before["release"] == after["release"])
+    for claim in after["claims"]:
+        doc = claim["document"]
+        pinned = [line for line in (ROOT / doc["path"]).read_text(encoding="utf-8").splitlines()
+                  if f'id="{doc["anchor"]}"' in line]
+        check("pinned_claim_line:" + claim["id"], len(pinned) == 1 and sha(pinned[0].encode()) == doc["line_sha256"])
+    baseline = json.loads((Path(__file__).parent / "baseline.json").read_bytes())
+    revision = json.loads((Path(__file__).parent / "revision-01/RESULT.json").read_bytes())
+    check("only_declared_guidance_and_manifest_changed", revision["status"] == "pass" and
+          revision["changed_package_paths"] == ["bundle-manifest.json", "skills/pixl/references/delegation.md"])
+    for name, digest in baseline["source_hashes"].items():
+        if name == "plugins/pixl/bundle-manifest.json":
+            digest = revision["bundle_manifest_sha256"]
+        check("retained_prior_source:" + name, sha((ROOT / name).read_bytes()) == digest)
+    check("tested_caller_guidance", sha((ROOT / "plugins/pixl/skills/pixl/references/delegation.md").read_bytes()) ==
+          revision["package_files"]["skills/pixl/references/delegation.md"])
+    changed = subprocess.check_output(["git", "diff", "--name-only", "--diff-filter=MDTR", BASE], text=True, cwd=ROOT).splitlines()
+    allowed = {"evidence/README.md", "evidence/skill-handoff/README.md"}
+    check("historical_evidence_unchanged", not [name for name in changed
+          if name.startswith("evidence/") and not name.startswith(PREFIX) and name not in allowed])
+    result = {"observed_at": datetime.now(UTC).isoformat(), "baseline": BASE,
+              "status": "pass" if all(row["passed"] for row in checks) else "fail",
+              "passed": sum(row["passed"] for row in checks), "total": len(checks), "checks": checks,
+              "document_hashes": {name: sha((ROOT / name).read_bytes()) for name in DOCS},
+              "scope": "Navigation, unchanged finding IDs/cycle, open milestones, prior receipts and source identities. No model replay or human acceptance."}
+    with args.out.open("x", encoding="utf-8") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total")}))
+    print(json.dumps([row for row in checks if not row["passed"]]))
+
+
+if __name__ == "__main__":
+    main()

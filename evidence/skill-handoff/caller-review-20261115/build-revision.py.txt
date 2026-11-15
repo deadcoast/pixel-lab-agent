@@ -1,0 +1,81 @@
+"""Freeze the revised caller guidance and run its packaging checks."""
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+KIT = ROOT / "plugins/pixl"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def files(root):
+    return {p.relative_to(root).as_posix(): sha(p.read_bytes()) for p in sorted(root.rglob("*"))
+            if p.is_file() and "__pycache__" not in p.parts}
+
+
+def write(path, value):
+    with path.open("x", encoding="utf-8") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def execute(out, name, args):
+    started = time.monotonic()
+    command = [sys.executable, "-B", *args]
+    result = subprocess.run(command, cwd=ROOT, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, capture_output=True)
+    (out / (name + "-stdout.txt")).write_bytes(result.stdout)
+    (out / (name + "-stderr.txt")).write_bytes(result.stderr)
+    return {"name": name, "command": command, "returncode": result.returncode,
+            "elapsed_seconds": round(time.monotonic() - started, 3)}
+
+
+def main():
+    out = BASE / "revision-01"
+    out.mkdir()
+    original = json.loads((BASE / "native-01/identity.json").read_bytes())["package_files"]
+    command = execute(out, "build", ["scripts/build_plugin.py"])
+    current = files(KIT)
+    changed = sorted(name for name in original.keys() | current.keys() if original.get(name) != current.get(name))
+    checks = {"build_passed": command["returncode"] == 0,
+              "only_delegation_and_manifest_changed": changed == ["bundle-manifest.json", "skills/pixl/references/delegation.md"]}
+    with zipfile.ZipFile(out / "frozen-kit.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for name in current:
+            archive.writestr(name, (KIT / name).read_bytes())
+    revision = {"status": "pass" if all(checks.values()) else "fail", "observed_at": datetime.now(UTC).isoformat(),
+                "checks": checks, "command": command, "changed_package_paths": changed,
+                "bundle_manifest_sha256": current["bundle-manifest.json"], "package_files": current,
+                "archive_sha256": sha((out / "frozen-kit.zip").read_bytes()),
+                "scope": "General caller semantic review guidance only. Runtime, profile, saved formats and fixture inputs unchanged. Native behavior remains untested on this revision until separately recorded."}
+    write(out / "RESULT.json", revision)
+    print(json.dumps({"revision": revision["status"], "changed": changed, "manifest": current["bundle-manifest.json"]}), flush=True)
+    if not all(checks.values()):
+        raise SystemExit(1)
+    package = BASE / "package-check-01"
+    package.mkdir()
+    command = execute(package, "packaging", ["-m", "unittest", "tests.test_packaging", "-v"])
+    after = files(KIT)
+    from pixl.readiness import verify_manifest
+    readiness = verify_manifest(KIT)
+    result = {"status": "pass" if command["returncode"] == 0 and after == current and readiness["status"] == "verified" else "fail",
+              "observed_at": datetime.now(UTC).isoformat(), "command": command, "packaging_tests": 4,
+              "package_bytes_unchanged": current == after, "readiness": readiness,
+              "source_sha256": sha((ROOT / "tests/test_packaging.py").read_bytes()),
+              "bundle_manifest_sha256": current["bundle-manifest.json"],
+              "scope": "Four local packaging tests including copied runtime/source proofs and synthetic provider/family probes. Builder writes expected; byte identity checked. No native or remote execution, artistic or human acceptance."}
+    write(package / "RESULT.json", result)
+    print(json.dumps({"packaging": result["status"], "tests": 4, "unchanged": current == after}))
+
+
+if __name__ == "__main__":
+    sys.path.insert(0, str(ROOT))
+    main()
