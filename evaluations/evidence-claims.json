@@ -1517,6 +1517,94 @@
           "equals": "pass"
         }
       ]
+    },
+    {
+      "id": "pxskill001-claude-model-result",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/RESULT.json",
+      "sha256": "87648b55c7cc3b2e6bf35094a393b1a51c6a887c34e576c8e58c8ca09e7628cd",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "partial"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-semantic",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/semantic-review.json",
+      "sha256": "23b4b0ec9c9d29d4394cb287e1d1b4c60629f590da36fd109701e6c0147621b6",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "fail"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-mechanical",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/mechanical.json",
+      "sha256": "3f8b67a18cedefac270b3aa9c8254b19de3343d4785fa3bc36ef88e98e384490",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "partial"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-delivery",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/mechanical-delivery-addendum.json",
+      "sha256": "a45acfb4d72593c5be9b7ce05849ed3b74f4185d8eaafc6f035835d0455293e2",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-access",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/mechanical-access.json",
+      "sha256": "a829dea140f619f8efd2d543ec6756840ff25045f5a75b3b2f3f013e8f612020",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-focused",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/focused-verification.json",
+      "sha256": "97b5adcc9f2a08849ff046733f187f46f622703aa3463406b75c1020685b9bdd",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-native",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/native-01/continuation.json",
+      "sha256": "0c3e19f8c3f069cf1b0b4335ebd1bf696008c5b23b860fa8227839f9f2b320a5",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "finished"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-claude-model-semantic-bindings",
+      "path": "evidence/skill-handoff/claude-model-continuation-20261116/semantic-verification.json",
+      "sha256": "f820266275469da146447ccaef24400613a93a4bd97f0dea0c7f957ab80506e7",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -3142,6 +3230,62 @@
           "domain": "package",
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "pxskill001-literal-result",
+          "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PX-SKILL-001-CLAUDE-MODEL-CONTINUATION",
+      "task": "Restore configured native Claude model and complete the retained caller/specialist continuation",
+      "document": {
+        "path": "evidence/skill-handoff/claude-model-continuation-20261116/README.md",
+        "anchor": "claude-model-continuation",
+        "line_sha256": "5d3d20ef77f3d40f06af895eb0e5e6373a57e2409d69d0b3699beb07fecc492e"
+      },
+      "tier": "native same-parent/same-child completion, independent semantic review, scoped launcher tests and host access observations",
+      "scope": "One additional invocation of the existing handoff-only case. Existing Max OAuth and configured Opus model produce completed native returns. Handoff semantic qualification still fails. Prior failures and checker limitations are retained.",
+      "limits": [
+        "Same native identities and successful execution do not establish correct handoff meaning.",
+        "The initial mechanical checker remains partial; a separate delivery-format correction supplies composed evidence.",
+        "37 focused tests and a changed-test rerun are separate from native behavior; no full verifier rerun.",
+        "No PixelLab execution, new art, demonstrated usability improvement, engine or human acceptance.",
+        "M1/M2 and broader M3/M4/M5 remain open."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "pxskill001-claude-model-result",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "pxskill001-claude-model-result",
+        "pxskill001-claude-model-semantic",
+        "pxskill001-claude-model-mechanical",
+        "pxskill001-claude-model-delivery",
+        "pxskill001-claude-model-access",
+        "pxskill001-claude-model-focused",
+        "pxskill001-claude-model-native",
+        "pxskill001-claude-model-semantic-bindings"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-claude-model-result",
+          "pointer": "/source_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-claude-model-result",
+          "pointer": "/evidence_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "pxskill001-claude-model-result",
           "pointer": "/bundle_manifest_sha256"
         }
       ]

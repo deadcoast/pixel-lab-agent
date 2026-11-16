@@ -100,6 +100,20 @@ completed attempt, then prepare a fresh invocation:
 .venv/Scripts/python.exe -m evaluations.native_trial_records run evidence/my-trial/round2
 ```
 
+The isolated evaluation launcher uses `--setting-sources ""`; it therefore does
+not load the user's configured model. For a controlled fresh or resumed Claude
+trial, pass `--model MODEL` to its preparation command. On resume this replaces
+the saved model selection in the new launch only; the predecessor, original
+session and existing child remain intact. Select the model from the user's
+existing native configuration rather than assuming the host default is their
+choice. The production plugin normally inherits its host's configuration.
+
+Verify native authentication and actual parent/child response models separately.
+A `model_requires_usage_credits` error is not proof that the account's included
+plan limits are exhausted. Preserve the exact error and investigate the model
+selection before requesting another login or a plan change. See the
+[retained correction](../evidence/skill-handoff/claude-model-continuation-20261116/README.md).
+
 Preparation verifies the previous input/configuration identities and the original
 parent and child transcripts. It keeps the consumer directory, agent definition,
 MCP configuration and package, replaces session-creation flags with the exact

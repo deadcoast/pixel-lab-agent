@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "evidence_kind": "development_worker_report_from_recorded_tool_results",
+  "raw_stdout_retained": false,
+  "source_hashes": {
+    "evaluations/cold_caller_review.py": "71a03fe0539645adb80465cabd6b6d3030b30ba5c22ef07467f5cb9122681ebd",
+    "evaluations/native_trial_records.py": "f09711750508e6122f69e25da92ec05a491bb07c0a1b2b5ca96bab08341ee471",
+    "tests/test_cold_caller_review.py": "7815aeb6c98de5e88f378700ed0fb85938ccb0cc940b2a9044fdadc9fc5f52fa",
+    "tests/test_native_trial_records.py": "e956d45ed7374e587612bdaefbf4f9d349b14b5735327070a01b8f8bbd85b3ed"
+  },
+  "checks": [
+    {
+      "command": ".venv/Scripts/python.exe -B -m unittest tests.test_native_trial_records tests.test_cold_caller_review",
+      "returncode": 0,
+      "tests": 37,
+      "elapsed_seconds": 10.825,
+      "scope": "Final implementation sources; one test callback subsequently bound its loop variable."
+    },
+    {
+      "command": ".venv/Scripts/python.exe -B -m ruff check evaluations/cold_caller_review.py evaluations/native_trial_records.py tests/test_cold_caller_review.py tests/test_native_trial_records.py",
+      "initial_returncode": 1,
+      "initial_failure": "B023 test_native_trial_records.py:320 mock callback root loop variable unbound",
+      "correction": "Test-only lambda s, c, root=root binding",
+      "final_returncode": 0
+    },
+    {
+      "command": ".venv/Scripts/python.exe -B -m unittest tests.test_native_trial_records.NativeTrialRecordTests.test_resume_without_model_preserves_saved_model_arguments",
+      "returncode": 0,
+      "tests": 1,
+      "elapsed_seconds": 0.071,
+      "scope": "Changed test rerun against final files; not an additional independent suite total."
+    }
+  ],
+  "limits": [
+    "No full verifier rerun.",
+    "Previous full-suite receipt does not cover modified evaluation and test sources.",
+    "These tests check launch preparation and identity preservation, not art or model behavior."
+  ]
+}

@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 
 from evaluations import skill_handoff_trials as handoff
 from evaluations.host_trials import sha, write_json
-from evaluations.native_trial_records import reference
+from evaluations.native_trial_records import reference, validate_model
 from evaluations.request_review_trials import ROOT
 from evaluations.request_review_trials import run as run_native
 from pixl.readiness import verify_manifest
@@ -49,8 +49,9 @@ def _assignment(protocol: Path, amendment: Path | None, consumer: Path, python: 
 
 def prepare(destination: Path, *, seed: Path, seed_manifest: Path | dict[str, str], protocol: Path,
             amendment: Path | None = None, python: Path = DEFAULT_PYTHON,
-            package: Path | None = None, consumer: Path | None = None) -> Path:
-    """Freeze exact inputs and native declarations; run version/inventory probes only."""
+            package: Path | None = None, consumer: Path | None = None, model: str | None = None) -> Path:
+    """Freeze inputs and an optional explicit model; run version/inventory probes only."""
+    validate_model(model)
     destination, python, seed, protocol = (p.resolve() for p in (destination, python, seed, protocol))
     package = (package or ROOT / "plugins/pixl").resolve()
     amendment = amendment.resolve() if amendment else None
@@ -115,6 +116,8 @@ def prepare(destination: Path, *, seed: Path, seed_manifest: Path | dict[str, st
         "--mcp-config", str(destination / "mcp.json"), "--plugin-dir", str(kit),
         "--permission-mode", "acceptEdits", "--permission-prompts", "none",
         "--tools", TOOLS, "--allowedTools", TOOLS + ",mcp__pixl-local__*"]
+    if model is not None:
+        command += ["--model", model]
     write_json(destination / "launch.json", {"host": "claude", "case": "cold-caller-review",
         "cwd": str(consumer), "command": command, "host_version": host_version,
         "expected_session_id": session, "continuation_mode": "file_only_cold",
@@ -182,6 +185,7 @@ def main() -> None:
     prep.add_argument("--python", type=Path, default=DEFAULT_PYTHON)
     prep.add_argument("--package", type=Path)
     prep.add_argument("--consumer", type=Path)
+    prep.add_argument("--model", help="Explicit native caller model; omission preserves the host default")
     execute = sub.add_parser("run")
     execute.add_argument("destination", type=Path)
     execute.add_argument("--timeout", type=float)
@@ -190,7 +194,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.action == "prepare":
         consumer = prepare(args.destination, seed=args.seed, seed_manifest=args.seed_manifest,
-            protocol=args.protocol, amendment=args.amendment, python=args.python, package=args.package, consumer=args.consumer)
+            protocol=args.protocol, amendment=args.amendment, python=args.python, package=args.package,
+            consumer=args.consumer, model=args.model)
         print(json.dumps({"attempt": str(args.destination.resolve()), "consumer": str(consumer), "launched": False}))
     elif args.action == "run":
         run(args.destination, timeout=args.timeout)

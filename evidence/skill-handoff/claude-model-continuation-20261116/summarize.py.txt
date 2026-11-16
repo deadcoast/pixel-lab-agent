@@ -1,0 +1,79 @@
+"""Bind the observed native recovery separately from failed handoff semantics."""
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+BASE = Path(__file__).parent.resolve()
+ROOT = BASE.parents[2]
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(name):
+    return json.loads((BASE / name).read_bytes())
+
+
+def ref(name):
+    path = BASE / name
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": digest(path)}
+
+
+def main():
+    result_path = BASE / "RESULT.json"
+    assert not result_path.exists(), "Preserve earlier results"
+    semantic = read("semantic-review.json")
+    mechanics = read("mechanical.json")
+    delivery = read("mechanical-delivery-addendum.json")
+    access = read("mechanical-access.json")
+    native = read("native-01/continuation.json")
+    preservation = read("native-01/preservation.json")
+    assert native["status"] == "finished" and native["returncode"] == 0
+    assert access["status"] == delivery["status"] == "pass"
+    assert semantic["status"] == "fail"
+    assert not preservation["changed"] and not preservation["removed"]
+    sources = ["evaluations/native_trial_records.py", "evaluations/cold_caller_review.py",
+               "evaluations/request_review_trials.py", "tests/test_native_trial_records.py",
+               "tests/test_cold_caller_review.py", ".agents/PROFILE.md",
+               "plugins/pixl/skills/pixl/SKILL.md", "plugins/pixl/skills/pixl/references/delegation.md",
+               "plugins/pixl/skills/pixl/references/intake-sample.md",
+               "plugins/pixl/skills/pixl/references/handoff-review.md"]
+    result = {
+        "schema_version": 1, "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "task": "PX-SKILL-001 / PX-EVAL-005", "linked_finding": "CF-02",
+        "status": "partial", "native_completion_status": "completed",
+        "semantic_status": "fail", "qualification_complete": False,
+        "source_revision_before_work": "c07b2e3123c6651393b33d9d0bf252a607085cfb",
+        "scope": "One additional native invocation of the existing literal-reconciliation case. Model selection corrected to the user's Opus configuration and existing Max OAuth; same caller, child, consumer and frozen kit. No new owner input or maintainer feedback supplied.",
+        "caller": native["session_id"], "child": native["expected_child_id"],
+        "actual_models": mechanics["actual_model_observations"],
+        "mechanical_first": {"status": mechanics["status"], "passed": mechanics["passed"], "total": mechanics["total"]},
+        "mechanical_reconciled": delivery["reconciled_mechanics"],
+        "semantic_counts": semantic.get("criterion_counts", semantic.get("counts")),
+        "current_state": mechanics["current_state"],
+        "files": {"entry": len(preservation["inputs"]), "output": len(preservation["outputs"]),
+                  "added": len(preservation["new"]), "changed": 0, "removed": 0,
+                  "frozen_kit_unchanged": preservation["package_unchanged"]},
+        "receipts": {name: ref(name) for name in ("semantic-review.json", "mechanical.json",
+            "mechanical-delivery-addendum.json", "mechanical-access.json", "focused-verification.json",
+            "native-01/continuation.json", "native-01/preservation.json")},
+        "source_hashes": {name: digest(ROOT / name) for name in sources},
+        "evidence_hashes": {p.relative_to(ROOT).as_posix(): digest(p) for p in sorted(BASE.rglob("*"))
+                            if p.is_file() and p.name not in {"RESULT.json", "README.md"}},
+        "bundle_manifest_sha256": digest(ROOT / "plugins/pixl/bundle-manifest.json"),
+        "next_action": "Simplify ordinary/direct-brief handoffs and proportionate caller review while correcting consequential answer effects and required/optional consistency. Qualify useful asset delivery separately; do not add exhaustive paperwork or repeat an unchanged failed case as progress.",
+        "limits": ["Prior failed native and checker receipts are retained; composed mechanics are not a clean checker rerun.",
+                   "No full verifier rerun; the earlier full-suite receipt does not cover changed evaluation/test sources.",
+                   "No PixelLab call, art generation, visual/engine acceptance, or demonstrated usability improvement.",
+                   "No-overage CLI events describe this invocation, not an account billing audit."],
+        "human_acceptance": "separate_unperformed", "open_milestones": ["M1", "M2", "M3", "M4", "M5"],
+    }
+    result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": result["status"], "native": result["native_completion_status"],
+                      "semantic": result["semantic_status"], "files": result["files"]}))
+
+
+if __name__ == "__main__":
+    main()

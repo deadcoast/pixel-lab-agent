@@ -1,0 +1,135 @@
+"""Bind the host's system attachment delivery and correct an over-scoped artifact guard."""
+from datetime import UTC, datetime
+import hashlib
+import html
+import json
+from pathlib import Path
+import re
+
+BASE = Path(__file__).parent
+ATTEMPT = BASE / "native-01"
+CHILD = "a94b4dc767b65b243"
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {"path": str(path.resolve()), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "bytes": path.stat().st_size}
+
+
+def text(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            if key not in {"thinking", "signature"}:
+                yield from text(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from text(item)
+
+
+def task_result(value):
+    for block in re.findall(r"<task-notification>(.*?)</task-notification>", value, re.S):
+        if "<task-id>" + CHILD + "</task-id>" not in block or "<status>completed</status>" not in block:
+            continue
+        result = re.search(r"<result>(.*?)</result>", block, re.S)
+        if result:
+            yield result[1], html.unescape(result[1])
+
+
+def main():
+    first = read(BASE / "mechanical.json")
+    parent_path = ATTEMPT / "native-transcripts/parent.jsonl"
+    child_path = ATTEMPT / "native-transcripts" / (CHILD + ".jsonl")
+    rows = [json.loads(line) for line in parent_path.read_text(encoding="utf-8").splitlines()]
+    boundary = first["fresh_event_boundaries"]["parent_lines"]
+    child_finals = {row["child_final"]["sha256"]: row["child_final"] for row in first["child_finals_and_deliveries"]}
+    attachments, blobs, deliveries = [], [], []
+    for line, row in enumerate(rows, 1):
+        if line <= boundary:
+            continue
+        if row.get("type") == "attachment":
+            values = [row.get("attachment", {}).get("prompt", "")]
+        elif row.get("type") == "api-request-blob" and row.get("message", {}).get("role") == "system":
+            values = list(text(row.get("message", {}).get("content", [])))
+        else:
+            continue
+        for value in values:
+            for encoded, decoded in task_result(value):
+                digest = hashlib.sha256(decoded.encode()).hexdigest()
+                if digest not in child_finals or decoded != child_finals[digest]["text"]:
+                    continue
+                item = {"line": line, "event_type": row["type"], "child_final_line": child_finals[digest]["line"],
+                        "child_final_sha256": digest, "encoded_result_sha256": hashlib.sha256(encoded.encode()).hexdigest(),
+                        "exact_decoded_result_match": True}
+                if row["type"] == "attachment":
+                    attachments.append(item)
+                else:
+                    item["blob_hash"] = row["hash"]
+                    blobs.append(item)
+    for blob in blobs:
+        for line, row in enumerate(rows, 1):
+            if line <= blob["line"] or row.get("type") != "api-request" or blob["blob_hash"] not in row.get("tail", []):
+                continue
+            later_assistants = [n for n, event in enumerate(rows, 1) if n > line and event.get("type") == "assistant"
+                                and event.get("sessionId", event.get("session_id")) == first["session"]
+                                and not event.get("isSidechain") and not event.get("agentId", event.get("agent_id"))]
+            deliveries.append({**blob, "request_line": line, "request_id": row.get("id"),
+                               "request_model": row.get("params", {}).get("model"),
+                               "subsequent_caller_assistant_lines": later_assistants})
+    artifact_matches = []
+    for delivery in deliveries:
+        final = child_finals[delivery["child_final_sha256"]]
+        for item in first["caller_file_references"]:
+            if item["matches_actual_bytes"] and item["verification_snapshot"] == "output" and item["path"] in final["text"]:
+                artifact_matches.append({"path": item["path"], "sha256": item["sha256"],
+                                         "child_final_line": final["line"], "parent_request_line": delivery["request_line"]})
+    corrected = {
+        "fresh_child_final_actually_delivered_to_caller": bool(attachments) and bool(deliveries)
+            and all(row["subsequent_caller_assistant_lines"] for row in deliveries),
+        "caller_final_after_child_delivery": bool(deliveries) and bool(first["parent_finals"])
+            and first["parent_finals"][-1]["line"] > max(row["request_line"] for row in deliveries),
+        "completed_child_return_names_retained_work": bool(artifact_matches),
+    }
+    preparation = read(BASE / "mechanical-preparation.json")
+    supporting = {
+        "original_frozen_checker_and_helpers_unchanged": all(ref(Path(preparation[key]["path"])) == preparation[key]
+            for key in ("checker", "native_helper", "identity_helper")),
+        "same_native_capture_as_first_review": ref(parent_path) == first["native_parent"] and ref(child_path) == first["native_child"],
+        "same_caller_result_as_first_review": ref(Path(first["caller_result"]["path"])) == first["caller_result"],
+        "correction_replaces_only_three_unobserved_checks": {row["check"] for row in first["checks"] if row["status"] != "pass"} == set(corrected)
+            and all(row["status"] == "not_observed" for row in first["checks"] if row["check"] in corrected),
+    }
+    corrected_rows = [{**row, "status": "pass" if corrected[row["check"]] else "fail", "correction_receipt": "mechanical-delivery-addendum.json"}
+                      if row["check"] in corrected else row for row in first["checks"]]
+    result = {
+        "observed_at": datetime.now(UTC).isoformat(),
+        "status": "pass" if all(corrected.values()) and all(supporting.values()) else "fail",
+        "passed": sum(corrected.values()) + sum(supporting.values()), "total": len(corrected) + len(supporting),
+        "corrected_checks": corrected, "supporting_checks": supporting,
+        "reconciled_mechanics": {"passed": sum(row["status"] == "pass" for row in corrected_rows),
+                                 "total": len(corrected_rows), "checks": corrected_rows},
+        "first_mechanics": ref(BASE / "mechanical.json"), "checker": ref(Path(__file__)),
+        "attachment_observations": attachments, "actual_request_deliveries": deliveries,
+        "current_artifact_matches": artifact_matches,
+        "corrections": [
+            "The original delivery helper only scans user-role messages. This host supplies the child result in a system attachment and system-role API request blob. The exact HTML-decoded result is bound to the actual subsequent request tail and caller responses; queue presence alone is insufficient.",
+            "The original artifact guard incorrectly required a new deliverables/ or review/ file. The assignment permits completion of already-written revision16 work and files in other consumer directories. The corrected check requires a current caller-verified retained file actually named in the delivered child return, without inventing a path or novelty condition.",
+        ],
+        "limits": "The original29/32 partial receipt and frozen checker remain unchanged. This is an additive mechanical interpretation, not a new native run, a semantic34-criterion pass, or PixelLab/art/engine/human acceptance.",
+    }
+    with (BASE / "mechanical-delivery-addendum.json").open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, indent=2, ensure_ascii=False)
+        output.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "reconciled_passed": result["reconciled_mechanics"]["passed"], "reconciled_total": len(corrected_rows),
+                      "attachment_lines": [item["line"] for item in attachments],
+                      "request_lines": [item["request_line"] for item in deliveries]}))
+
+
+if __name__ == "__main__":
+    main()

@@ -12,7 +12,17 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
-- **Current consequential-choice and cold handoffs:** [literal reconciliation](skill-handoff/literal-reconciliation-20261116/README.md)
+- **Current native continuation and handoff result:** [configured-model continuation](skill-handoff/claude-model-continuation-20261116/README.md)
+  completes the same caller/child return on Opus 5.5 with exit 0, existing Max
+  authentication and explicit `isUsingOverage: false` rate events. All 167 entry
+  files remain unchanged within 184 output files; revision 16, the 261-file kit
+  and global settings are preserved. Behavioral qualification remains failed:
+  the final caller adopts insufficient-answer production clearance and makes a
+  review background mandatory despite the permitted fallback. Thirty-seven
+  focused tests and scoped Ruff pass; the full verifier was not rerun. Next:
+  simpler ordinary handoffs and direct-brief asset delivery, proportionate review
+  and corrected consequential effects. No art improvement or human acceptance follows.
+- **Prior literal-reconciliation checkpoint:** [literal reconciliation](skill-handoff/literal-reconciliation-20261116/README.md)
   retains a failed first native case (25 passing criteria, eight failures, one
   inherited; partial 57/60 mechanics; 17 read-only-kit cache additions). The revised
   case saves five caller findings and a child correction, but the original process
@@ -20,12 +30,20 @@ M3/M4/M5 remain open.**
   resume ended at `usage_limit` without a final caller result. The cumulative
   mechanical receipt is failed at 65/84 (nine failures, nine unobserved, one N/A);
   14 objective observations pass separately. Semantic review is incomplete with
-  all 34 criteria ungraded. Resume the retained caller/child after execution access
-  returns; human acceptance is separate.
+  all 34 criteria ungraded. The user's Max OAuth login is valid: the prior launcher
+  excluded user settings and omitted `--model`, leaving a retained Fable selection
+  that hit `model_requires_usage_credits`. This does not show exhausted Max included
+  usage. The [configured-model continuation](skill-handoff/claude-model-continuation-20261116/README.md)
+  subsequently completes execution; this earlier checkpoint and its incomplete
+  semantic receipt remain unchanged. Human acceptance is separate.
   The new [coverage helper](../plugins/pixl/skills/pixl/references/handoff-review.md)
   has 20 focused test passes, scoped Ruff and an 18/18 retained-result diagnostic;
   complete coverage remains `semantic_verdict: not_assessed`. Four packaging tests
   pass on each frozen kit. Earlier lint/privilege observations and failures stay retained.
+  CF-02/PX-SKILL-001 also retains the user's core usability concern: manual every-leaf
+  review and a complex starting fixture have not demonstrated everyday product benefit.
+  Next product work should simplify direct brief → PixelLab → inspect/revise → files,
+  reserving extensive review for actual consequences or discrepancies.
 - **Prior production-prerequisite handoffs:** [production-prerequisite continuation](skill-handoff/production-prerequisites-20261115/README.md)
   retains useful request/handoff work and genuine same-child corrections in two
   native cases. The structured result still overclaims full production clearance,
@@ -43,13 +61,15 @@ M3/M4/M5 remain open.**
   [Prior native caller review](skill-handoff/caller-review-20261115/README.md) and
   [earlier qualification](skill-handoff/qualification-20261114/README.md) retain
   their own failures, scoped successes, guidance changes and guided correction.
-- **Latest retained full local checkpoint (not rerun for the current helper/guide revision):** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
+- **Latest retained full local checkpoint (not rerun for the current model-launcher revision):** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
   records 1,461 passing tests, four existing Windows privilege skips (1,465 run),
   39 reference checks and distribution probes. Ten new regressions cover the
   directory guard and CLI/MCP recovery/help; earlier harness additions are also
   in that inventory, not newly completed work in this increment. All 328 checked
-  source hashes remain unchanged, but the new module/tests are outside that old
-  inventory and the bundle identity is historical to the revised helper/guides.
+  source hashes were unchanged at the retained literal-reconciliation checkpoint;
+  the added helper module/tests were outside that inventory. The current launcher
+  and test revisions have not received a new full run, and the recorded bundle
+  identity remains historical.
   Source identity is not a fresh full run. The
   [first full run](verification-runs/20261115T162528.482654Z/result.json) precedes
   the auxiliary-directory refinement and retains its own 1,460 passes/four skips.
@@ -73,10 +93,10 @@ M3/M4/M5 remain open.**
   preserves the wider untyped-body baseline and intermediate integration/lint
   failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [literal-reconciliation inspection](skill-handoff/literal-reconciliation-20261116/integrity-01/report.json)
-  checks 28 claims and 119 receipts: one current, eleven historical and sixteen
-  stale. All receipt identities and pinned claim bindings are intact. The current
-  claim records a **partial increment with incomplete, quota-blocked native qualification**;
+  The [prior literal-reconciliation inspection](skill-handoff/literal-reconciliation-20261116/integrity-01/report.json)
+  checked 28 claims and 119 receipts: one current, eleven historical and sixteen
+  stale at that checkpoint. All receipt identities and pinned claim bindings are intact. The current
+  claim then recorded a **partial increment with incomplete native qualification and a retained `usage_limit`**;
   current applicability and integrity do not establish a behavioral pass.
   [Read-only preservation](skill-handoff/literal-reconciliation-20261116/integrity-01/RESULT.json)
   passes: all 6,880 snapshot entries retain their bytes and mtimes, with the

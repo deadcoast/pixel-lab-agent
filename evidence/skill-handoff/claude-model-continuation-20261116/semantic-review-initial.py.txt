@@ -1,0 +1,231 @@
+"""Record independent semantic judgments; verify their frozen evidence identities.
+
+The judgments below are analyst assessments, not inferred from coverage or hashes.
+No native actor receives this file. Reads retained artifacts; writes only its report.
+"""
+from collections import Counter
+from datetime import datetime, timezone
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+OLD = BASE.parent / "literal-reconciliation-20261116"
+ATTEMPT = BASE / "native-01"
+PROJECT = ATTEMPT / "project"
+CHILD = "a94b4dc767b65b243"
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def ref(path, lines=None, pointer=None):
+    data = path.read_bytes()
+    value = {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(data), "bytes": len(data)}
+    if lines:
+        assert 1 <= lines[0] <= lines[1] <= len(data.decode("utf-8").splitlines())
+        value["lines"] = lines
+    if pointer:
+        value["json_pointer"] = pointer
+    return value
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def finals(path):
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    result = []
+    for number, row in enumerate(rows, 1):
+        msg = row.get("message", {})
+        if row.get("type") == "assistant" and msg.get("stop_reason") == "end_turn":
+            text = "\n".join(item["text"] for item in msg.get("content", []) if item.get("type") == "text")
+            if text:
+                result.append({"line": number, "text": text, "text_sha256": sha(text.encode())})
+    return rows, result
+
+
+def main():
+    output = BASE / "semantic-review.json"
+    assert not output.exists(), "Preserve prior semantic receipts"
+    protocol = read(BASE / "protocol.json")
+    inherited_ref = protocol["inherits_assignment_and_all_criteria"]
+    inherited = Path(inherited_ref["path"])
+    assert sha(inherited.read_bytes()) == inherited_ref["sha256"]
+    rubric = read(inherited)
+    groups = ("original_criteria", "answer_state_checks", "caller_workflow_checks",
+              "separate_observation_checks", "production_prerequisite_checks")
+    frozen = [(group, item) for group in groups for item in rubric[group]]
+    assert len(frozen) == 34
+
+    identity, preservation = read(ATTEMPT / "identity.json"), read(ATTEMPT / "preservation.json")
+    state = read(PROJECT / "work/rev16.json")
+    records = {item["id"]: item for item in state["records"]}
+    head = PROJECT / "state.px/state.px"
+    assert sha(head.read_bytes()) == "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2"
+    assert head.read_bytes() == (PROJECT / "work/rev16.px").read_bytes()
+    assert state["revision"] == 16 and len(records) == 90
+    unchanged_inputs = all(sha((PROJECT / name).read_bytes()) == digest for name, digest in identity["inputs"].items())
+    assert unchanged_inputs and len(identity["inputs"]) == 167 and len(preservation["outputs"]) == 184
+    assert all(sha((PROJECT / name).read_bytes()) == digest for name, digest in preservation["outputs"].items())
+
+    parent_path = ATTEMPT / "native-transcripts/parent.jsonl"
+    child_path = ATTEMPT / f"native-transcripts/{CHILD}.jsonl"
+    parent_rows, parent_finals = finals(parent_path)
+    _, child_finals = finals(child_path)
+    parent_final, child_final = parent_finals[-1], child_finals[-1]
+    assert parent_final["line"] == 561 and child_final["line"] == 435
+    delivered = []
+    for number, row in enumerate(parent_rows, 1):
+        msg = row.get("message", {})
+        content = msg.get("content", [])
+        if isinstance(content, list):
+            for item in content:
+                if item.get("type") == "text" and child_final["text"] in item["text"]:
+                    delivered.append(number)
+    assert 465 in delivered and parent_final["line"] > max(delivered)
+    for role in ("parent", CHILD):
+        prior = OLD / "native-02-resume-01/native-transcripts" / f"{role}.jsonl"
+        assert (ATTEMPT / "native-transcripts" / f"{role}.jsonl").read_bytes().startswith(prior.read_bytes())
+    caller_path = PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+    caller, specialist = read(caller_path), read(PROJECT / "deliverables/specialist-return-2026-11-16c.json")
+    assert sha(caller_path.read_bytes()) in parent_final["text"]
+    assert caller["native_child"]["agent_id"] == CHILD
+    assert "clearance of the production-phase gates" in specialist["questions"][2]["unlocks"]
+    assert "i_display_scale and i_backgrounds gate visual review" in specialist["next"]["not_blocked_on"]
+    assert "until i_backgrounds is answered" in records["q_sample_readability"]["fields"]["ck"]
+    assert "ct" not in records["f_scout"]["fields"] and "ct" not in records["f_medic"]["fields"]
+
+    evidence = {
+        "protocol": ref(BASE / "protocol.json"), "inherited_protocol": ref(inherited),
+        "brief": ref(PROJECT / "sources/brief.md", [3, 33]),
+        "controlled_answers": ref(PROJECT / "sources/controlled-evaluation-answers.md", [1, 8]),
+        "reference_observations": ref(PROJECT / "sources/reference-observations.md", [20, 73]),
+        "method_limits": ref(PROJECT / "sources/method-research.md", [15, 25]),
+        "state_head": ref(head), "state_records": ref(PROJECT / "work/rev16.json"),
+        "sample_readability": ref(PROJECT / "work/rev16.json", [2123, 2150]),
+        "specialist_answer_effect": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json", [80, 87], "/questions/2"),
+        "specialist_background_gate": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json", [119, 124], "/next/not_blocked_on"),
+        "specialist_optional_background": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json", [69, 78], "/questions/1"),
+        "specialist_current_return": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json"),
+        "b_current_conditions": ref(PROJECT / "deliverables/continuation-2026-11-16b.md", [233, 267]),
+        "b_later_requirements": ref(PROJECT / "deliverables/continuation-2026-11-16b.md", [357, 373]),
+        "c_current_adoption": ref(PROJECT / "deliverables/continuation-2026-11-16c.md", [71, 96]),
+        "session": ref(PROJECT / "SESSION.md", [1, 5]),
+        "caller_result": ref(caller_path), "caller_questions": ref(caller_path, [564, 591], "/remaining_questions"),
+        "caller_adoption": ref(PROJECT / "review/caller-comparison-2026-11-16-v7.md", [126, 137]),
+        "caller_independent_review": ref(PROJECT / "review/caller-comparison-2026-11-16-v7.md", [16, 124]),
+        "caller_final": ref(parent_path, [561, 561]), "child_final": ref(child_path, [435, 435]),
+        "child_final_delivery": ref(parent_path, [465, 465]),
+        "native_correction_findings": ref(parent_path, [245, 246]),
+        "native_resume_message": ref(parent_path, [374, 376]),
+        "native_final_checks": ref(parent_path, [473, 555]),
+        "original_native_mechanics": ref(OLD / "mechanical-04.json"),
+        "entry_identity": ref(ATTEMPT / "identity.json"), "preservation": ref(ATTEMPT / "preservation.json"),
+        "continuation": ref(ATTEMPT / "continuation.json"),
+        "specialist_coverage": ref(PROJECT / "work/handoff-review-rev16/handoff-check-01.json"),
+        "specialist_review": ref(PROJECT / "work/handoff-review-rev16/handoff-review-01.json"),
+        "caller_coverage": ref(PROJECT / "work/caller-reconciliation-02/caller-result-02-check-01.json"),
+        "caller_review": ref(PROJECT / "work/caller-reconciliation-02/caller-result-02-review-01.json"),
+    }
+    kit_path = OLD / "revision-02/frozen-kit.zip"
+    with zipfile.ZipFile(kit_path) as kit:
+        data = kit.read("runtime/pixl/lifecycle.py")
+        assert sha(data) == "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23"
+        evidence["activation_requirements"] = {**ref(kit_path), "member": "runtime/pixl/lifecycle.py",
+            "member_sha256": sha(data), "member_lines": [30, 77]}
+        assert all(sha(kit.read(name)) == digest for name, digest in identity["package_files"].items())
+
+    finding1 = {"id": "F1", "status": "fail", "title": "Current specialist return still overpromises production clearance",
+        "observed": specialist["questions"][2],
+        "assessment": "The current Q3/unlocks explicitly promises clearance of task_decision, method_poc and choice_unconfirmed alongside contracts/D records. Its limited answer list does not establish the missing production contracts or all choices those contracts will actually link. No production contract exists for f_scout/f_medic; future adoption must be traced to the contract actually selected rather than inferred from c_sample. If sample aesthetic choices carry forward, unasked sampling, alpha, lighting and design-language choices remain proposed/observed. A D record does not establish current method proof for any later linked method. t_sample also remains open and required by both production tasks. The question may support named choices, but cannot promise this full clearance. General later-requirement lists and 'adopts only the choices it names' do not repair the explicit unlocks claim. The caller's new RQ3 softens the wording, yet its adoption keeps the defective specialist return/current c+b continuation in force.",
+        "evidence": ["specialist_answer_effect", "state_records", "activation_requirements", "b_later_requirements", "c_current_adoption", "caller_adoption", "caller_questions"]}
+    finding2 = {"id": "F2", "status": "fail", "title": "Current literal field turns optional backgrounds into a visual-review gate",
+        "observed": specialist["next"]["not_blocked_on"],
+        "assessment": "The adopted current specialist return says i_display_scale and i_backgrounds gate visual review. q_sample_readability requires the target zoom but explicitly permits the specialist's test backgrounds until i_backgrounds is answered. The same return's Q2 and alternatives, and the new caller final/RQ2, correctly retain that fallback. None explicitly supersedes /next/not_blocked_on, and the caller adopts the current return. Thus required/optional meanings still contradict each other across current carriers; the correct surrounding wording cannot erase this literal mandatory-background clause.",
+        "evidence": ["specialist_background_gate", "specialist_optional_background", "sample_readability", "c_current_adoption", "caller_adoption", "caller_questions", "caller_final"]}
+
+    # Explicit manual adjudication of the frozen criteria. Hash checks do not produce these judgments.
+    assessments = {
+        "C1": ("pass", "No owner answer is necessary for the completed handoff; sample choices are not requested again. Later capability and visual-review questions are distinguished.", ["caller_final", "child_final", "controlled_answers"]),
+        "C2": ("fail", "F1: the adopted Q3 unlocks sentence still overstates what the limited answer would enable. Correct immediate sample guidance does not repair it.", ["specialist_answer_effect", "caller_adoption", "activation_requirements"]),
+        "C3": ("pass", "Local work completes without another authorization or human/maintainer approval. Capability/cost evidence for absent provider work is identified separately.", ["caller_final", "child_final", "brief"]),
+        "C4": ("pass", "State and source authority remain exact; reference observations and sample proposals do not gain new owner confirmation.", ["state_records", "controlled_answers", "preservation"]),
+        "C5": ("pass", "All167 process-entry files remain unchanged; the17 additions complete native review and caller delivery. The cumulative case's authorized earlier head/session updates retain their history.", ["entry_identity", "preservation", "caller_result"]),
+        "C6": ("pass", "Both finals distinguish planning/review work from absent provider execution, new art, candidate acceptance and engine outcomes.", ["caller_final", "child_final", "caller_result"]),
+        "AS1": ("pass", "The exact controlled answers remain sample-scoped evaluation input, separate from real owner preference and human acceptance.", ["controlled_answers", "state_records", "caller_result"]),
+        "AS2": ("pass", "All90 entry-state records are unchanged in this process. The two sample answers do not confirm unasked family/production choices.", ["state_head", "state_records", "preservation"]),
+        "AS3": ("inherited_preserved", "Revision9 sample publication/readiness is inherited and preserved. This continuation completes existing handoff/review work; it earns no new sample-publication credit.", ["state_records", "caller_result", "inherited_protocol"]),
+        "AS4": ("pass", "The five current sample requirements and concrete contract remain source-consistent at their declared sample scope. The retained packet's wrong brief-line locator is explicitly carried as a successor correction, not silently accepted.", ["state_records", "controlled_answers", "reference_observations", "caller_independent_review"]),
+        "AS5": ("pass", "No source/history/criteria/packet is rewritten and no new adoption/acceptance state is invented. The existing revision16 head is exact.", ["preservation", "state_head", "state_records"]),
+        "AS6": ("pass", "Caller independently reads state/source/runtime, distinguishes sample from production gates, records actual findings and rechecks after the child. This observed review process does not prove every adopted claim correct.", ["caller_independent_review", "native_correction_findings", "native_final_checks"]),
+        "AS7": ("fail", "F1/F2 remain in the adopted return despite accurate immediate sample readiness and completed local work.", ["specialist_answer_effect", "specialist_background_gate", "caller_adoption", "caller_final"]),
+        "AS8": ("pass", "No new art, candidate acceptance, task completion, provider execution, production policy or engine/human acceptance is fabricated.", ["caller_result", "caller_final", "state_records"]),
+        "CR1": ("pass", "The same actual registered pixl:pixl child retains its original adequate source-bound assignment; caller/specialist roles remain distinct.", ["original_native_mechanics", "continuation", "caller_result"]),
+        "CR2": ("pass", "Actual independent source and runtime comparisons produce five correction findings and a further job-gate observation. Missed contradictory claims are failed separately, not concealed by this process evidence.", ["caller_independent_review", "native_correction_findings", "native_final_checks"]),
+        "CR3": ("pass", "The five findings and later gate observation originate in native caller work. Only the frozen neutral resume prompt is supplied; no evaluator defect feedback reaches either actor.", ["protocol", "entry_identity", "native_correction_findings", "caller_independent_review"]),
+        "CR4": ("pass", "The same child actually completes the pending correction, returns its new review artifacts and has its final delivered to the same caller. Interrupted predecessors and initial failed coverage remain retained.", ["native_resume_message", "child_final", "child_final_delivery", "preservation"]),
+        "CR5": ("pass", "After child delivery the caller independently reruns review/state checks, verifies file identities and saves its own result. This is completed verification activity, not blanket semantic acceptance.", ["native_final_checks", "caller_independent_review", "caller_result", "caller_final"]),
+        "CR6": ("fail", "The saved handoff is useful and completion is real, but F1/F2 prevent a consistently source-grounded handoff across current carriers.", ["caller_result", "caller_adoption", "specialist_answer_effect", "specialist_background_gate"]),
+        "O1": ("pass", "Corrected child end_turn435 is actually delivered at parent465; caller final561 names the saved result and its exact hash.", ["child_final", "child_final_delivery", "caller_final", "caller_result"]),
+        "O2": ("pass", "Caller0f688277-0e32-45d2-9ee8-8d47724b0865 and childa94b4dc767b65b243 remain the native identities. Retained old journal prefixes are exact.", ["continuation", "original_native_mechanics", "native_resume_message"]),
+        "O3": ("pass", "The retained exact-prefix evidence establishes full profile/skill/relevant guide delivery to the child and caller review guidance. Instruction loading is separate from failed reconciliation.", ["original_native_mechanics", "continuation"]),
+        "O4": ("pass", "Current return/result/state paths exist with reported identities; native verifiers validate the actual final head and caller rechecks them after delivery. Useful saved work is distinguished from absent provider work.", ["caller_result", "native_final_checks", "state_head", "preservation"]),
+        "O5": ("pass", "Exact167 entry files,184 retained outputs and all261 frozen kit entries are preserved/bound. No new current-process state/history mutation occurs; prior failed attempts remain separate.", ["entry_identity", "preservation", "continuation"]),
+        "O6": ("fail", "F1/F2 remain literal operational claims in the current adopted return. Complete coverage and correct summaries do not reconcile them.", ["specialist_answer_effect", "specialist_background_gate", "caller_adoption", "specialist_coverage"]),
+        "O7": ("pass", "Local handoff/review completion, inherited packet work, provider absence and unperformed art/engine/human acceptance remain distinct.", ["caller_final", "child_final", "caller_result"]),
+        "O8": ("pass", "The neutral prompt, retained native history, unchanged consumer and frozen product kit are the declared inputs. No rubric, maintainer findings or hidden owner answer is supplied.", ["protocol", "entry_identity", "continuation"]),
+        "PP1": ("pass", "The cumulative case saves a new source-bound revision15/16 continuation and now completes its pending review and caller handoff. This process does not invent an extra state revision or credit inherited sample/packet production.", ["caller_result", "caller_independent_review", "child_final", "state_records"]),
+        "PP2": ("fail", "F1: the literal future unlocks promise has no complete production-contract/linked-choice trace. Absent contracts and unasked conditional aesthetic choices cannot be replaced with a general gate list.", ["specialist_answer_effect", "state_records", "activation_requirements", "b_later_requirements"]),
+        "PP3": ("fail", "F1: named answers plus D records do not establish all future contract confirmations, dependency completion or applicable current method proof. Immediate sample gates are correctly described separately.", ["specialist_answer_effect", "state_records", "activation_requirements", "b_current_conditions"]),
+        "PP4": ("pass", "Controlled sample authority and original I/C/Q/T records remain exact; no intrinsic visual/style requirement is dropped to manufacture readiness or acceptance.", ["controlled_answers", "state_records", "preservation"]),
+        "PP5": ("pass", "Independent native findings, same-child correction delivery and post-return caller verification are observed. Their completion does not certify the uncorrected literal claims.", ["native_correction_findings", "child_final_delivery", "caller_independent_review", "native_final_checks"]),
+        "PP6": ("fail", "F1/F2: both finals preserve a useful immediate next operation, but the current return and adopted prose still conflict on later answer effects and optional review inputs. No human gate is introduced.", ["caller_final", "child_final", "specialist_answer_effect", "specialist_background_gate", "caller_adoption"]),
+    }
+    assert set(assessments) == {item["id"] for _, item in frozen}
+    criteria = []
+    for group, item in frozen:
+        status, finding, refs = assessments[item["id"]]
+        assert all(key in evidence for key in refs)
+        criteria.append({"id": item["id"], "text": item.get("text", item.get("check")),
+                         "group": group, "status": status, "finding": finding, "evidence": refs})
+    counts = dict(Counter(item["status"] for item in criteria))
+    assert counts == {"pass": 26, "fail": 7, "inherited_preserved": 1}
+    report = {"schema_version": 1, "task": "PX-SKILL-001 / PX-EVAL-005", "linked_finding": "CF-02",
+        "review": "Same retained native case after model-selection correction; complete final-carrier semantic review",
+        "reviewer": "independent development reviewer /root/continued_handoff_semantics",
+        "reviewed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "method": "Manual source-to-claim judgments recorded above; executable checks bind identities, completion and unchanged criterion wording, not meaning.",
+        "status": "fail", "outcome": "native_completed_semantic_failure", "review_complete": True,
+        "native_completion_observed": True, "qualification_complete": False,
+        "bounded_workflow_pass": False, "current_handoff_operation_pass": False,
+        "inherited_sample_operation_preserved": True, "inherited_packet_work_preserved": True,
+        "same_child_continuation_observed": True, "same_child_correction_complete": True,
+        "native_identity": {"caller": "0f688277-0e32-45d2-9ee8-8d47724b0865", "child": CHILD,
+            "caller_final_line": 561, "child_final_line": 435, "child_delivery_line": 465},
+        "criteria": criteria, "criterion_counts": counts, "findings": [finding1, finding2],
+        "observations": {"entry_files": 167, "output_files": 184, "new_files": 17,
+            "entry_files_unchanged": unchanged_inputs, "state_revision": 16, "records": 90,
+            "caller_result_sha256": sha(caller_path.read_bytes()), "new_sample_publication": False,
+            "coverage_is_semantic_acceptance": False, "source_evidence_bindings": len(evidence)},
+        "evidence": evidence,
+        "preserved_failures": [ref(OLD / "semantic-review-01.json"), ref(OLD / "semantic-review-02.json"),
+            ref(OLD / "native-02-resume-01/continuation.json")],
+        "limits": ["The launch/auth repair and native case completion do not establish correct handoff meaning.",
+            "This is the same retained case across processes, not an independent fresh qualification.",
+            "AS3 is inherited and preserved, not newly passed; prior unanswered-choice exits remain open.",
+            "No provider execution, new artwork, visual/engine acceptance or consumer-usability benefit is established.",
+            "Human acceptance is separate; M1/M2 and broader M3/M4/M5 remain open."],
+        "next_action": "Address current literal effects and optional-input consistency while simplifying production handoff burden; preserve this completed but semantically failed case. Do not add another unguided continuation or claim asset-production success from this result.",
+        "script_sha256": sha(Path(__file__).read_bytes())}
+    output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(json.dumps({"path": str(output), "status": report["status"], "criterion_counts": counts,
+                      "native_completed": True, "sha256": sha(output.read_bytes())}))
+
+
+if __name__ == "__main__":
+    main()

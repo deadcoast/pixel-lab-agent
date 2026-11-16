@@ -1,0 +1,174 @@
+"""Independently check the prepared same-session model correction before inference."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+OLD = ROOT / "evidence/skill-handoff/literal-reconciliation-20261116"
+PREVIOUS = OLD / "native-02-resume-01"
+ATTEMPT = BASE / "native-01"
+SESSION = "0f688277-0e32-45d2-9ee8-8d47724b0865"
+CHILD = "a94b4dc767b65b243"
+MODEL = "claude-opus-5-5"
+OLD_TREE_SHA256 = "1c104bbd548207d38a72bcd28a11632fd6c7cabb567e3db1912decd73297b2a0"
+USER_SETTINGS_SHA256 = "22e5d7c6d96d51f286b9f5625ced6263fa988db8ba2eedbe3da2117d5de17ab7"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {"path": str(path.resolve()), "sha256": sha(path), "bytes": path.stat().st_size}
+
+
+def files(root, exclude=()):
+    result = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_symlink() or getattr(path, "is_junction", lambda: False)():
+            raise ValueError("Linked entry in retained tree")
+        if not path.resolve().is_relative_to(root.resolve()):
+            raise ValueError("Retained entry resolves outside declared tree")
+        if path.is_file() and not any(part in exclude for part in path.relative_to(root).parts):
+            result[path.relative_to(root).as_posix()] = sha(path)
+    return result
+
+
+def tree_sha(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def archive(path):
+    with zipfile.ZipFile(path) as source:
+        names = source.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate archive entries")
+        return {name: hashlib.sha256(source.read(name)).hexdigest()
+                for name in names if not name.endswith("/")}
+
+
+def values(command, flag):
+    return [command[index + 1] for index, arg in enumerate(command) if arg == flag]
+
+
+def without(command, flags):
+    result = []
+    index = 0
+    while index < len(command):
+        if command[index] in flags:
+            index += 2
+        else:
+            result.append(command[index])
+            index += 1
+    return result
+
+
+def main():
+    identity, launch = (read(ATTEMPT / name) for name in ("identity.json", "launch.json"))
+    old_identity, old_launch, old_completion, old_preservation = (
+        read(PREVIOUS / name)
+        for name in ("identity.json", "launch.json", "continuation.json", "preservation.json")
+    )
+    original_identity = read(OLD / "native-02/identity.json")
+    protocol_path = Path(identity["continuation_protocol"]["path"])
+    protocol = read(protocol_path)
+    original_protocol = read(OLD / "protocol-continuation-02.json")
+    consumer = Path(identity["consumer"])
+    command = launch["command"]
+    settings_path = Path(values(command, "--settings")[0])
+    settings = read(settings_path)
+    user_settings_path = Path.home() / ".claude/settings.json"
+    user_settings = read(user_settings_path)
+    prior_files = files(OLD, ("__pycache__",))
+    previous_files = files(PREVIOUS, ("__pycache__",))
+    kit_files = files(consumer / "pixl-kit")
+    current = files(consumer, ("pixl-kit", "__pycache__"))
+    transcripts = [old_completion["transcripts"]["parent"],
+                   old_completion["transcripts"]["children"][CHILD]]
+    preserved_configuration = old_launch["configuration_files"]
+    checks = {
+        "same_parent_same_child_without_fork": launch["expected_session_id"] == identity["session_id"] == SESSION
+            and launch["expected_child_id"] == identity["child_id"] == CHILD
+            and values(command, "--resume") == [SESSION]
+            and not any(flag in command for flag in ("--fork-session", "--session-id", "--continue", "-c")),
+        "same_native_consumer": Path(launch["cwd"]).resolve() == Path(old_launch["cwd"]).resolve() == consumer.resolve(),
+        "only_declared_model_settings_launch_delta": without(command, {"--model", "--settings"}) == old_launch["command"],
+        "explicit_current_user_model": values(command, "--model") == [MODEL] == [user_settings["model"]],
+        "attempt_only_child_model_and_effort": settings_path.resolve().is_relative_to(BASE.resolve())
+            and settings.get("env") == {"CLAUDE_CODE_SUBAGENT_MODEL": MODEL, "CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1"}
+            and settings.get("effortLevel") == user_settings.get("effortLevel") == "xhigh",
+        "model_settings_bound_as_configuration": str(settings_path) in launch["configuration_files"].values()
+            and all(launch["configuration_files"].get(key) == value for key, value in preserved_configuration.items())
+            and len(launch["configuration_files"]) == len(preserved_configuration) + 1,
+        "global_user_settings_unchanged": sha(user_settings_path) == USER_SETTINGS_SHA256,
+        "exact_neutral_continuation_prompt": (ATTEMPT / "prompt.txt").read_bytes() == (PREVIOUS / "prompt.txt").read_bytes()
+            and sha(ATTEMPT / "prompt.txt") == identity["prompt_sha256"]
+            and (ATTEMPT / "prompt.txt").read_text(encoding="utf-8") == original_protocol["assignment"]["resume_prompt"],
+        "new_protocol_binding": ref(protocol_path) == identity["continuation_protocol"],
+        "original_criteria_not_rewritten": all(protocol[key] == original_protocol[key]
+            for key in ("original_criteria", "answer_state_checks", "caller_workflow_checks",
+                        "separate_observation_checks", "production_prerequisite_checks") if key in protocol),
+        "exact_167_live_and_retained_entry": len(current) == 167
+            and current == identity["inputs"] == old_preservation["outputs"] == files(PREVIOUS / "project"),
+        "input_snapshot_and_archive_exact": files(ATTEMPT / "input-project") == archive(ATTEMPT / "input-project.zip") == current
+            and ref(ATTEMPT / "input-project.zip") == {key: identity["input_archive"][key] for key in ("path", "sha256", "bytes")},
+        "original_135_baseline_preserved_separately": identity["original_inputs"] == original_identity["inputs"]
+            and len(identity["original_inputs"]) == 135,
+        "registered_role_and_exact_261_file_kit": identity["target_role"] == "pixl:pixl"
+            and identity["registered_agent"] == old_identity["registered_agent"]
+            and kit_files == identity["package_files"] == old_identity["package_files"] == archive(OLD / "revision-02/frozen-kit.zip")
+            and len(kit_files) == 261,
+        "entire_previous_attempt_unchanged": previous_files == identity["predecessor_files"],
+        "all_1465_prior_evidence_files_unchanged": len(prior_files) == 1465 and tree_sha(prior_files) == OLD_TREE_SHA256,
+        "predecessor_references_exact": ref(PREVIOUS / "continuation.json") == identity["predecessor"] == launch["predecessor"]
+            and ref(PREVIOUS / "identity.json") == identity["predecessor_identity"]
+            and ref(PREVIOUS / "preservation.json") == identity["predecessor_preservation"],
+        "live_original_transcripts_exact": all(ref(Path(item["path"])) == item for item in transcripts),
+        "original_child_available_for_native_resume": old_completion["native_resume"]["available"]
+            and CHILD in {item["id"] for item in old_completion["children"]},
+        "full_retention_fields_and_static_inputs": all(key in identity for key in ("case", "inputs", "input_archive", "static_inputs", "package_files"))
+            and identity["case"] == old_identity["case"] and identity["static_inputs"] == old_identity["static_inputs"],
+        "no_inference_or_outputs_yet": not any((ATTEMPT / name).exists()
+            for name in ("stdout.jsonl", "continuation.json", "record.json", "project", "preservation.json")),
+        "expected_caller_result_still_absent": "CALLER-RESULT-LITERAL-RECONCILIATION-02.json" not in current,
+    }
+    binding_paths = {
+        "launch": ATTEMPT / "launch.json", "identity": ATTEMPT / "identity.json",
+        "prompt": ATTEMPT / "prompt.txt", "protocol": protocol_path, "model_settings": settings_path,
+        "recorder_source": ROOT / "evaluations/native_trial_records.py",
+        "executor_source": ROOT / "evaluations/request_review_trials.py",
+        "retention_source": ROOT / "evaluations/skill_handoff_trials.py",
+        "preflight_source": Path(__file__),
+    }
+    result = {
+        "observed_at": datetime.now(UTC).isoformat(),
+        "status": "pass" if all(checks.values()) else "fail",
+        "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+        "bindings": {key: ref(path) for key, path in binding_paths.items()},
+        "prior_evidence_tree_sha256": tree_sha(prior_files),
+        "user_settings_sha256": sha(user_settings_path),
+        "session_id": SESSION, "actual_child_id": CHILD, "requested_model": MODEL,
+        "resume_entry_files": len(current), "original_case_files": 135, "kit_files": len(kit_files),
+        "scope": "Read-only pre-inference checks of a model-corrected invocation of the same native caller and child.",
+        "limits": ["No inference or account authentication is performed by this checker.",
+                   "Requested model is configuration only; actual parent and child response models require native observation.",
+                   "A completed process is not a completed assignment; require corrected same-child return, delivery, final caller result and independent review.",
+                   "No provider/art/engine/human acceptance is established."],
+    }
+    with (BASE / "preflight.json").open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, indent=2)
+        output.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "failed": [name for name, passed in checks.items() if not passed]}))
+    raise SystemExit(0 if result["status"] == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()

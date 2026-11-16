@@ -111,8 +111,18 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** partial development increment, 2026-11-16; the retained native
-  continuation is quota-blocked. The first worksheet-only case remains failed
+- **Status:** partial development increment, 2026-11-16; [corrected model selection](../evidence/skill-handoff/claude-model-continuation-20261116/README.md)
+  completes the same caller/child return on Opus 5.5 with exit 0 and the existing
+  Max OAuth login. Recorded rate events say `isUsingOverage: false`; all 167 entry
+  files remain unchanged within 184 output files, with revision 16, the 261-file
+  kit and global settings preserved. Behavioral qualification remains failed:
+  `/questions/2/unlocks` promises production clearance from insufficient answers,
+  and `/next/not_blocked_on` makes review backgrounds mandatory despite the
+  allowed fallback; the caller adopts both. Thirty-seven focused tests and scoped
+  Ruff pass; no full verifier rerun or art/human acceptance follows.
+- **Retained interrupted checkpoint:** the prior launcher excluded user settings
+  and omitted `--model`; retained Fable hit `model_requires_usage_credits`, which
+  did not establish exhausted Max included usage. The first worksheet-only case remains failed
   (25 passing criteria, eight failures, one inherited). The revised case saves
   caller findings and a same-child correction at revision 16, but its original
   process stopped the child before the corrected return. A 17/17-preflight
@@ -198,14 +208,19 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   remaining authority failures. The caller's findings are native-authored; no
   maintainer defect feedback is supplied. The runner, 40 local tests, four
   packaging tests and 42/42 mechanics are separate from semantic acceptance.
-- **Remaining boundary:** after Claude usage access returns, resume the retained
-  caller `0f688277-0e32-45d2-9ee8-8d47724b0865` and registered child
-  `a94b4dc767b65b243`. Complete the already-requested correction, independent
-  literal review and final caller result on the same frozen kit. Current operative
-  instructions must have one home; older notes cannot override primary criteria.
-  Coverage is not semantic acceptance. Retain sample authority, useful work,
-  unasked choices and earlier failures. The access dependency is separate from
-  human acceptance; M1/M2 and broader M3/M4/M5 remain open.
+- **Remaining boundary:** simplify ordinary handoffs and reduce unnecessary
+  every-leaf paperwork while correcting consequential literal answer effects and
+  preserving permitted fallbacks. Qualify direct brief → PixelLab → inspect/revise
+  → files using existing operations separately from the retained harness case.
+  Current operative instructions must have one home; older notes cannot override
+  primary criteria. Retain sample authority, useful work, unasked choices and
+  original failures. Human acceptance stays separate; M1/M2 and broader M3/M4/M5
+  remain open.
+- **Core usability follow-up [CF-02 / PX-SKILL-001]:** the shipped route requires
+  manual every-leaf review, and the everyday route starts from a complex fixture.
+  Its product benefit is not established by harness or coverage tests. Simplify
+  direct brief → PixelLab → inspect/revise → files using existing operations,
+  applying extensive review when an actual consequence or discrepancy warrants it.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 

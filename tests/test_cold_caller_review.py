@@ -86,6 +86,7 @@ class ColdCallerReviewTests(unittest.TestCase):
         self.assertNotIn("--no-session-persistence", command)
         self.assertNotIn("--resume", command)
         self.assertNotIn("--agents", command)
+        self.assertNotIn("--model", command)
         self.assertEqual(Path(launch["configuration_files"]["claude_plugin_agent"]), consumer / trials.KIT / "agents/pixl.md")
         expected = (self.assignment["neutral_task_core"] + "\n\n"
             + self.assignment["setup_template"].format(CONSUMER_ROOT=consumer.as_posix(), PYTHON_EXE=Path(sys.executable).resolve().as_posix())
@@ -101,6 +102,37 @@ class ColdCallerReviewTests(unittest.TestCase):
             self.assertEqual(archive.read(".pixl/library-sources/source.txt"), (self.seed / ".pixl/library-sources/source.txt").read_bytes())
         for item in identity["source_files"]:
             self.assertEqual(item["source"]["sha256"], item["snapshot"]["sha256"])
+
+    def test_explicit_model_is_frozen_in_launch_without_running_native_caller(self):
+        with patch.object(trials, "run_native") as native:
+            destination, _ = self.prepare(model="claude-opus-5-5")
+        native.assert_not_called()
+        launch = json.loads((destination / "launch.json").read_bytes())
+        identity = json.loads((destination / "identity.json").read_bytes())
+        command = launch["command"]
+        self.assertEqual(command.count("--model"), 1)
+        self.assertEqual(command[command.index("--model") + 1], "claude-opus-5-5")
+        self.assertEqual(command[command.index("--setting-sources") + 1], "")
+        self.assertEqual(identity["launch"]["sha256"], sha(destination / "launch.json"))
+
+    def test_invalid_model_stops_before_creating_outputs(self):
+        for model in ("", " ", "two models", "--bare", 42):
+            with self.subTest(model=model), self.assertRaisesRegex(ValueError, "Model must"):
+                self.prepare(model=model)
+        self.assertFalse((self.root / "attempt").exists())
+        self.assertFalse((self.root / "attempt consumer").exists())
+
+    def test_prepare_cli_freezes_explicit_model(self):
+        destination, consumer = self.root / "cli", self.root / "cli consumer"
+        args = ["cold_caller_review", "prepare", str(destination), "--seed", str(self.seed),
+                "--seed-manifest", str(self.manifest), "--protocol", str(self.protocol),
+                "--python", sys.executable, "--package", str(self.package), "--consumer", str(consumer),
+                "--model", "claude-opus-5-5"]
+        with patch.object(sys, "argv", args), patch("builtins.print"):
+            trials.main()
+        launch = json.loads((destination / "launch.json").read_bytes())
+        command = launch["command"]
+        self.assertEqual(command[command.index("--model") + 1], "claude-opus-5-5")
 
     def test_stale_or_missing_supplied_manifest_stops_before_creating_outputs(self):
         for supplied in (None, {}, {"reference.png": "0" * 64}):

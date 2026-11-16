@@ -1,0 +1,66 @@
+"""Retain native authentication and explicit overage observations separately from billing."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+ATTEMPT = BASE / "native-01"
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {"path": str(path.resolve()), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "bytes": path.stat().st_size}
+
+
+def main():
+    continuation = read(ATTEMPT / "continuation.json")
+    if continuation["status"] == "running" or not (ATTEMPT / "preservation.json").exists():
+        raise ValueError("Wait for complete native recording and retention")
+    host = read(BASE / "host-selection.json")
+    rates, terminals, errors = [], [], []
+    for line, raw in enumerate((ATTEMPT / "stdout.jsonl").read_text(encoding="utf-8").splitlines(), 1):
+        event = json.loads(raw)
+        if event.get("type") == "rate_limit_event":
+            rates.append({"line": line, "uuid": event.get("uuid"), "session_id": event.get("session_id"),
+                          "rate_limit_info": event.get("rate_limit_info")})
+        if event.get("type") == "result" and not event.get("parent_tool_use_id"):
+            terminals.append({"line": line, "subtype": event.get("subtype"), "is_error": event.get("is_error")})
+        if (event.get("type") == "error" or event.get("isApiErrorMessage") is True
+                or event.get("subtype") == "api_error" or event.get("api_error")):
+            errors.append({"line": line, "type": event.get("type"), "subtype": event.get("subtype"),
+                           "api_error": event.get("api_error"), "api_error_origin": event.get("api_error_origin")})
+    checks = {
+        "native_preparation_observed_existing_max_oauth": host["auth"] == {
+            "loggedIn": True, "authMethod": "claude.ai", "apiProvider": "firstParty", "subscriptionType": "max"},
+        "every_reported_rate_event_explicitly_not_using_overage": bool(rates)
+            and all(row["rate_limit_info"].get("isUsingOverage") is False for row in rates),
+        "no_reported_rejected_rate_event": bool(rates)
+            and all(row["rate_limit_info"].get("status") in {"allowed", "allowed_warning"} for row in rates),
+        "no_structured_native_api_error": not errors,
+        "native_terminal_success": bool(terminals) and terminals[-1]["subtype"] == "success" and terminals[-1]["is_error"] is False,
+    }
+    result = {
+        "observed_at": datetime.now(UTC).isoformat(), "status": "pass" if all(checks.values()) else "fail",
+        "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+        "authentication": host["auth"], "rate_events": rates, "terminals": terminals, "structured_api_errors": errors,
+        "bindings": {"host_selection": ref(BASE / "host-selection.json"), "stdout": ref(ATTEMPT / "stdout.jsonl"),
+                     "continuation": ref(ATTEMPT / "continuation.json"), "checker": ref(Path(__file__))},
+        "limits": ["The rate events explicitly report isUsingOverage:false for this invocation; this is not an account billing audit.",
+                   "A returned total_cost_usd is not used as evidence of subscription charges.",
+                   "The earlier Fable model-credit failure remains unchanged and does not establish exhausted Max included access.",
+                   "Authentication and access observations do not establish task completion, art quality or human acceptance."],
+    }
+    with (BASE / "mechanical-access.json").open("x", encoding="utf-8", newline="\n") as destination:
+        json.dump(result, destination, indent=2)
+        destination.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "rate_events": len(rates), "errors": len(errors)}))
+
+
+if __name__ == "__main__":
+    main()

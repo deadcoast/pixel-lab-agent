@@ -280,6 +280,68 @@ class NativeTrialRecordTests(unittest.TestCase):
             self.assertFalse((root / "wrong").exists())
             self.assertFalse((root / "drift").exists())
 
+    def test_explicit_resume_model_replaces_all_saved_forms_without_changing_identity_or_receipts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            attempt, consumer, launch = self.setup_attempt(root)
+            self.transcript(root)
+            launch["command"] += ["--model", "old-alias", "--setting-sources", "", "--model=old-full-name",
+                                  "--permission-mode", "acceptEdits", "--model", "another-old-alias"]
+            write_json(attempt / "launch.json", launch)
+            self.event(attempt, {"type": "assistant", "session_id": SESSION, "agent_id": CHILD})
+            self.event(attempt, {"type": "result", "session_id": SESSION, "is_error": False})
+            records.AttemptRecord(attempt, launch, {}, host_root=root / "host").snapshot("finished", returncode=0, retain=True)
+            original = {p.relative_to(attempt): p.read_bytes() for p in attempt.rglob("*") if p.is_file()}
+            with patch.object(records, "transcript_locations", side_effect=lambda s, c: records_locations(s, c, root / "host")):
+                records.prepare_resume(attempt, root / "round2", "Continue same child", CHILD, model="claude-opus-5-5")
+            resumed = json.loads((root / "round2/launch.json").read_bytes())
+            identity = json.loads((root / "round2/identity.json").read_bytes())
+            self.assertEqual(resumed["command"], ["claude", "--print", "--setting-sources", "",
+                "--permission-mode", "acceptEdits", "--model", "claude-opus-5-5", "--resume", SESSION])
+            self.assertEqual(resumed["cwd"], str(consumer))
+            self.assertEqual(resumed["expected_session_id"], SESSION)
+            self.assertEqual(resumed["expected_child_id"], CHILD)
+            self.assertEqual(identity["session_id"], SESSION)
+            self.assertEqual(identity["child_id"], CHILD)
+            self.assertEqual(identity["predecessor"], records.reference(attempt / "continuation.json"))
+            self.assertEqual(original, {p.relative_to(attempt): p.read_bytes() for p in attempt.rglob("*") if p.is_file()})
+
+    def test_resume_without_model_preserves_saved_model_arguments(self):
+        for flags in ([], ["--model", "saved-alias"], ["--model=saved-full-name"]):
+            with self.subTest(flags=flags), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                attempt, _, launch = self.setup_attempt(root)
+                self.transcript(root)
+                launch["command"] += flags
+                write_json(attempt / "launch.json", launch)
+                self.event(attempt, {"type": "assistant", "session_id": SESSION, "agent_id": CHILD})
+                self.event(attempt, {"type": "result", "session_id": SESSION, "is_error": False})
+                records.AttemptRecord(attempt, launch, {}, host_root=root / "host").snapshot("finished", returncode=0)
+                with patch.object(records, "transcript_locations", side_effect=lambda s, c, root=root: records_locations(s, c, root / "host")):
+                    records.prepare_resume(attempt, root / "round2", "Continue same child", CHILD)
+                resumed = json.loads((root / "round2/launch.json").read_bytes())
+                self.assertEqual(resumed["command"], ["claude", "--print", *flags, "--resume", SESSION])
+
+    def test_resume_rejects_invalid_model_before_creating_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for model in ("", " ", "two models", "--bare", 42):
+                with self.subTest(model=model), self.assertRaisesRegex(ValueError, "Model must"):
+                    records.prepare_resume(root / "missing", root / "round2", "Continue", CHILD, model=model)
+            self.assertFalse((root / "round2").exists())
+
+    def test_resume_cli_passes_explicit_model_to_preparation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prompt = root / "prompt.txt"
+            prompt.write_text("Continue same child", encoding="utf-8")
+            previous, destination = root / "previous", root / "next"
+            args = ["native_trial_records", "resume", str(previous), str(destination),
+                    "--child", CHILD, "--prompt", str(prompt), "--model", "claude-opus-5-5"]
+            with patch.object(sys, "argv", args), patch.object(records, "prepare_resume") as prepare:
+                records.main()
+            prepare.assert_called_once_with(previous, destination, "Continue same child", CHILD, model="claude-opus-5-5")
+
     def test_real_process_timeout_retains_last_artifact_and_resumable_metadata(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -1,0 +1,1219 @@
+{
+ "version": 1,
+ "result": {
+  "path": "CALLER-RESULT-LITERAL-RECONCILIATION-02.json",
+  "sha256": "28c2976f3fcc9036ba60cdb3feed4a9b9a98b5920d4bd6e28937b7e45209e0a6"
+ },
+ "scopes": [
+  "/remaining_questions",
+  "/next_action"
+ ],
+ "claims": [
+  {
+   "pointer": "/remaining_questions/0/id",
+   "expected": "RQ1",
+   "basis": "metadata",
+   "finding": "Identifier of this question; not an operational claim.",
+   "sources": []
+  },
+  {
+   "pointer": "/remaining_questions/0/addressed_to",
+   "expected": "the caller / host: a capability input, not an owner art decision",
+   "basis": "source_comparison",
+   "finding": "platform.py 869-889 lists provider, tool, schema, discovery and authorization as request fields; SKILL.md 26 and PROFILE.md 32 make the route a host/caller selection; no owner choice is involved.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      869,
+      889
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/SKILL.md",
+     "sha256": "04a46dae9b55e5e54eec5b1a033e6e597f3e44170d930e96da3554289b34a5a2",
+     "lines": [
+      26,
+      26
+     ]
+    },
+    {
+     "path": "pixl-kit/resources/agent/PROFILE.md",
+     "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+     "lines": [
+      32,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/0/necessary_for",
+   "expected": "job-prepare for t_sample / f_sample against c_sample, the next operation",
+   "basis": "source_comparison",
+   "finding": "jobs.py 717-743 prepare() calls platform.prepare_discovered with these inputs; without them the call cannot be made. t_sample is the only ready task.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      717,
+      743
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/0/question",
+   "expected": "Which official PixelLab operation is available in your host, with what exact live inputSchema; how will reference.png (sha256 d997cadefc6b94c1c14f4ec17159deaf5ceb7ea9543b2522390ea1a577470aa7, role style) travel as an actual image input (upload handle, URL or owned asset ID); and will you supply discovery evidence (source, host-clock observed_at, nonempty evidence) and an authorization evidence object covering one paid call? Choose the route: the authenticated official MCP tool surface, or the HTTP adapter explicitly selected for its documented operation.",
+   "basis": "source_comparison",
+   "finding": "Each element maps to a required field: identity and tool 869-870, schema 888-889, discovery 873-876 and 1017-1023, authorization 874-885. PROFILE.md 44: a filename in a prompt is not an uploaded reference. readiness.md 101-102: a dated catalog is not live visibility. The authorization scope text already exists in brief.md 6-7; only the evidence object is missing.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      869,
+      889
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      1017,
+      1023
+     ]
+    },
+    {
+     "path": "pixl-kit/resources/agent/PROFILE.md",
+     "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+     "lines": [
+      44,
+      44
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/readiness.md",
+     "sha256": "fd9156896d7789046d45a09dc5e94330f59a1949ad44953843ac128a1a823d4f",
+     "lines": [
+      101,
+      102
+     ]
+    },
+    {
+     "path": "sources/brief.md",
+     "sha256": "a78aca77135c5e533b8000272558b5b65e40ee421d1913cab961d7adc4cf5324",
+     "lines": [
+      6,
+      7
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/0/unlocks",
+   "expected": "Answering SQ1-SQ4 of sample-creative-brief-v2.json (lines 143-146; SQ5-SQ9 at 147-151 in the same pass) against the live declaration, translating the brief into exact provider arguments, the provider_arguments successor packet with the criteria-v2 supersession of sample-criteria.json, pixl_request_review on that packet and the caller's comparison, and then job-prepare. It does not prepare, dispatch, generate or accept anything by itself.",
+   "basis": "source_comparison",
+   "finding": "brief-v2 142-152 holds the schema questions (SQ1-SQ4 at 143-146). request_review.py 130-134 accepts only kind provider_arguments. delegation.md 69 requires the caller comparison before adopting the request. g note 61-74 makes the criteria-v2 supersession a required step of that successor packet. c note 56-64 corrected the locator.",
+   "sources": [
+    {
+     "path": "deliverables/sample-request/sample-creative-brief-v2.json",
+     "sha256": "f84b262818bbf044eb22716ab5d02eed1103cc65714360fcfc5d9efd019a5b80",
+     "lines": [
+      142,
+      152
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/request_review.py",
+     "sha256": "af7bf5bf1f599a03645d12e6faadb14db050dec5a31eae067ed3fc36295a1c23",
+     "lines": [
+      130,
+      134
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/delegation.md",
+     "sha256": "72bd2cdfd03333ae0cc3bcd325c4a231f0730ca2f42fbece1955b18b5648199b",
+     "lines": [
+      69,
+      69
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-15g.md",
+     "sha256": "001065a3422bfb76997b375f9f66d22324e87a2841eb06d742e166d44fef2e4f",
+     "lines": [
+      61,
+      74
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16c.md",
+     "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+     "lines": [
+      56,
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/0/blocks_next_operation",
+   "expected": true,
+   "basis": "source_comparison",
+   "finding": "No default exists for provider identity, tool, schema, discovery or authorization evidence; jobs.py prepare() cannot be called without them.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      717,
+      743
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      869,
+      889
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/1/id",
+   "expected": "RQ2",
+   "basis": "metadata",
+   "finding": "Identifier of this question; not an operational claim.",
+   "sources": []
+  },
+  {
+   "pointer": "/remaining_questions/1/addressed_to",
+   "expected": "the owner, through the caller",
+   "basis": "source_comparison",
+   "finding": "i_display_scale and i_backgrounds are owner choices recorded as unresolved in the head.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      31,
+      31
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      28,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/1/necessary_for",
+   "expected": "visual review of a returned sample candidate (pixl_inspection_prepare / pixl_inspection_review), two steps after job-prepare; not job-prepare itself",
+   "basis": "source_comparison",
+   "finding": "q_sample_readability's check requires i_display_scale before review. Neither choice is linked through c_sample.ch, so lifecycle.py 57-64 does not gate preparation on them. The d note sequence places review after import.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      53,
+      53
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      3,
+      3
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      57,
+      64
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-15d.md",
+     "sha256": "826460e5ff96f7dae2bccff8b8df1278e5457614cfaadd3c0510e0f64feeb1dc",
+     "lines": [
+      249,
+      255
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/1/question",
+   "expected": "What target integer display scale should the sample be reviewed at? Optionally, what are the typical level backgrounds of the side-view game?",
+   "basis": "source_comparison",
+   "finding": "Both are open in the head; the check text names the target zoom and the test backgrounds.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      31,
+      31
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      28,
+      28
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      53,
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/1/unlocks",
+   "expected": "The target zoom for q_sample_readability and q_sample_outline in inspection, and representative review backgrounds in place of the specialist's light, dark and busy test set. The test set is an authorized fallback for backgrounds; no default exists for the scale.",
+   "basis": "source_comparison",
+   "finding": "q_sample_readability states the test backgrounds stand until i_backgrounds is answered and requires i_display_scale before review; no saved default zoom exists.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      53,
+      53
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      31,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/1/blocks_next_operation",
+   "expected": false,
+   "basis": "source_comparison",
+   "finding": "Neither choice is in c_sample.ch; t_sample has no blockers in the workflow; lifecycle.py 57-64 gates only linked choices.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      3,
+      3
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      57,
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/2/id",
+   "expected": "RQ3",
+   "basis": "metadata",
+   "finding": "Identifier of this question; not an operational claim.",
+   "sources": []
+  },
+  {
+   "pointer": "/remaining_questions/2/addressed_to",
+   "expected": "the owner, through the caller",
+   "basis": "source_comparison",
+   "finding": "The brief leaves outline, canvas, animation and engine unstated, and the controlled answers bind the sample only.",
+   "sources": [
+    {
+     "path": "sources/brief.md",
+     "sha256": "a78aca77135c5e533b8000272558b5b65e40ee421d1913cab961d7adc4cf5324",
+     "lines": [
+      26,
+      33
+     ]
+    },
+    {
+     "path": "sources/controlled-evaluation-answers.md",
+     "sha256": "87cf7eec2d97fdd994d338054b578c330b0c69253fdfe4b540bd45d3952f6e30",
+     "lines": [
+      8,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/2/necessary_for",
+   "expected": "scout and medic production (t_scout, t_medic) and family delivery (t_family); not the sample",
+   "basis": "source_comparison",
+   "finding": "lifecycle.py 65-75 applies task_decision, method_poc and choice_unconfirmed only in production and delivery phases; t_scout and t_medic depend on t_sample.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      12,
+      14
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      65,
+      75
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      83,
+      83
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      81,
+      81
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      80,
+      80
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/2/question",
+   "expected": "For the family: which outline treatment and final canvas do you choose; what device distinguishes the scout from the medic (and does the palette gain a reserved accent); is each member one sprite or an animation set; and which engine or importer is the destination?",
+   "basis": "source_comparison",
+   "finding": "Each element is an unresolved or sample-scoped choice: i_outline and i_canvas are proposed under the sample-scoped answers; i_role_diff, i_animation and i_engine are unresolved.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      34,
+      34
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      29,
+      29
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      36,
+      36
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      27,
+      27
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      32,
+      32
+     ]
+    },
+    {
+     "path": "sources/controlled-evaluation-answers.md",
+     "sha256": "87cf7eec2d97fdd994d338054b578c330b0c69253fdfe4b540bd45d3952f6e30",
+     "lines": [
+      5,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/2/unlocks",
+   "expected": "Production contracts for f_scout and f_medic whose linked choices can be confirmed, the evidence-backed adoption decisions the production phases require, and the engine import check on f_family. Answers adopt only the choices they name and accept no artwork.",
+   "basis": "source_comparison",
+   "finding": "lifecycle.py 53-56 needs a raster contract per production output; 65-75 needs a decision and confirmed linked choices; q_engine_import needs an engine. intake-sample.md 97-104: project only the supplied answer.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      53,
+      56
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      65,
+      75
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/intake-sample.md",
+     "sha256": "9fd421030d44e104ff36446409d4562a976daec1650f7a956a950ae8043846ef",
+     "lines": [
+      97,
+      104
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/remaining_questions/2/blocks_next_operation",
+   "expected": false,
+   "basis": "source_comparison",
+   "finding": "t_sample is in the sample phase, outside the adoption phases; its blockers are empty.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      12,
+      14
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/operation",
+   "expected": "pixl_job_prepare (CLI: python -B -I pixl-kit/scripts/pixl.py job-prepare state.px JOB t_sample REQUEST_JSON --outputs f_sample --expect <current canonical hash> --root <consumer root>)",
+   "basis": "source_comparison",
+   "finding": "jobs.py 717-743 is the operation; handoff-review.md 40-42 prescribes -B -I for Python reads of the read-only kit; the b note's current operation section names the same command.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      717,
+      743
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/handoff-review.md",
+     "sha256": "42f73d779736ce90738542f7d5fb52d78d0f6c65c6ea81ddf151f181f794204f",
+     "lines": [
+      40,
+      42
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16b.md",
+     "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+     "lines": [
+      233,
+      238
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/task",
+   "expected": "t_sample",
+   "basis": "source_comparison",
+   "finding": "The only ready task; phase sample; output f_sample.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/output",
+   "expected": "f_sample",
+   "basis": "source_comparison",
+   "finding": "t_sample.op names f_sample; f_sample.ct is c_sample.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      11,
+      11
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/contract",
+   "expected": "c_sample: 32 x 32, palette #56B5BC #F4DDA2 #25354A, side view, nearest sampling, binary alpha; sample-scoped",
+   "basis": "source_comparison",
+   "finding": "Fields read from the c_sample record; the canvas and outline are sample-scoped controlled-evaluation answers.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      3,
+      3
+     ]
+    },
+    {
+     "path": "sources/controlled-evaluation-answers.md",
+     "sha256": "87cf7eec2d97fdd994d338054b578c330b0c69253fdfe4b540bd45d3952f6e30",
+     "lines": [
+      5,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/expect",
+   "expected": "Reread state.px/state.px immediately before the call and pass its canonical hash; when this result was saved it was 762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2 (revision 16).",
+   "basis": "source_comparison",
+   "finding": "jobs.py 731 loads with the expected hash; the head's measured sha256 equals the canonical hash.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      731,
+      731
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/owner_answer_needed",
+   "expected": false,
+   "basis": "source_comparison",
+   "finding": "No linked choice of c_sample is unresolved or in conflict; the adoption-phase gates do not apply to the sample phase.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      57,
+      75
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      3,
+      3
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/executable_locally_now",
+   "expected": false,
+   "basis": "source_comparison",
+   "finding": "platform.py 869-889 requires inputs no local file supplies; official PixelLab tools are not observed in this host.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      869,
+      889
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/readiness.md",
+     "sha256": "fd9156896d7789046d45a09dc5e94330f59a1949ad44953843ac128a1a823d4f",
+     "lines": [
+      101,
+      102
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/state_side_gates",
+   "expected": "Satisfied or not applicable: new job ID, outputs within t_sample, t_study done, f_sample has c_sample, no unresolved or conflicting linked choice, sample phase outside the adoption gates, no families or connected plans, no PLAR selection binding, t_sample open, no pending attempt.",
+   "basis": "source_comparison",
+   "finding": "lifecycle.py 44-77 and jobs.py 145-161 (plan blockers, PLAR selection bindings, task state) and 320 (pending) were read by the caller; the head shows t_sample open with dp [t_study], ip [] and no J record. The worksheet covers the jobs.py 145-161 gates in substance but not by line (caller observation O1).",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/lifecycle.py",
+     "sha256": "5e37cefb2bcb357373332af4970b7c30df4e18df6d78e36022fe349a616a6a23",
+     "lines": [
+      44,
+      77
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      145,
+      161
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      732,
+      738
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      84,
+      84
+     ]
+    },
+    {
+     "path": "review/caller-comparison-2026-11-16-v7.md",
+     "sha256": "cdd46b20d41adb9d6d17e8c44b30fbe89ab0c01266403836894e3fb05dc9dea0",
+     "lines": [
+      96,
+      104
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/blocked_on/0",
+   "expected": "Provider identity, tool name, the full live inputSchema and discovery evidence with a host-clock timestamp, from the host's PixelLab connection (RQ1).",
+   "basis": "source_comparison",
+   "finding": "platform.py 869-870, 873, 875-876, 888-889 and 1017-1023.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      869,
+      889
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      1017,
+      1023
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/blocked_on/1",
+   "expected": "Exact provider arguments with reference.png as an actual image input, inside the provider_arguments successor packet that supersedes sample-criteria.json with a v2 criteria file (q_sample_readability brief source lines [20, 20], optionally [5, 5]; five check texts unchanged; validated only with validate_criteria_v2.py; bound as a new S beside s_sample_criteria), reviewed with pixl_request_review and compared by the caller.",
+   "basis": "source_comparison",
+   "finding": "platform.py 871-872 and 889; PROFILE.md 44; request_review.py 130-134; g note 23-31 and 61-74; brief.md line 20 is the side-view destination; delegation.md 69.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      871,
+      889
+     ]
+    },
+    {
+     "path": "pixl-kit/resources/agent/PROFILE.md",
+     "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+     "lines": [
+      44,
+      44
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/request_review.py",
+     "sha256": "af7bf5bf1f599a03645d12e6faadb14db050dec5a31eae067ed3fc36295a1c23",
+     "lines": [
+      130,
+      134
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-15g.md",
+     "sha256": "001065a3422bfb76997b375f9f66d22324e87a2841eb06d742e166d44fef2e4f",
+     "lines": [
+      23,
+      31
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-15g.md",
+     "sha256": "001065a3422bfb76997b375f9f66d22324e87a2841eb06d742e166d44fef2e4f",
+     "lines": [
+      61,
+      74
+     ]
+    },
+    {
+     "path": "sources/brief.md",
+     "sha256": "a78aca77135c5e533b8000272558b5b65e40ee421d1913cab961d7adc4cf5324",
+     "lines": [
+      20,
+      20
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/delegation.md",
+     "sha256": "72bd2cdfd03333ae0cc3bcd325c4a231f0730ca2f42fbece1955b18b5648199b",
+     "lines": [
+      69,
+      69
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/blocked_on/2",
+   "expected": "An authorization evidence object covering one paid call; the scope text exists in brief.md lines 6-7.",
+   "basis": "source_comparison",
+   "finding": "platform.py 874, 877-885 require scope text and a nonempty evidence object.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      874,
+      885
+     ]
+    },
+    {
+     "path": "sources/brief.md",
+     "sha256": "a78aca77135c5e533b8000272558b5b65e40ee421d1913cab961d7adc4cf5324",
+     "lines": [
+      6,
+      7
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/alternatives/0",
+   "expected": "Route: the authenticated official PixelLab MCP tool surface, or the HTTP adapter explicitly selected for its documented operation; a caller/host selection, not an owner decision.",
+   "basis": "source_comparison",
+   "finding": "SKILL.md 26 and PROFILE.md 32 name both routes.",
+   "sources": [
+    {
+     "path": "pixl-kit/skills/pixl/SKILL.md",
+     "sha256": "04a46dae9b55e5e54eec5b1a033e6e597f3e44170d930e96da3554289b34a5a2",
+     "lines": [
+      26,
+      26
+     ]
+    },
+    {
+     "path": "pixl-kit/resources/agent/PROFILE.md",
+     "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+     "lines": [
+      32,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/alternatives/1",
+   "expected": "First-candidate path: record-level job-prepare is the route here; PLAR preparation is unavailable because no plar.txt exists in this consumer.",
+   "basis": "source_comparison",
+   "finding": "intake-sample.md 25 offers PLAR preparation for a selected PLAR asset; t_sample.ip is empty.",
+   "sources": [
+    {
+     "path": "pixl-kit/skills/pixl/references/intake-sample.md",
+     "sha256": "9fd421030d44e104ff36446409d4562a976daec1650f7a956a950ae8043846ef",
+     "lines": [
+      25,
+      25
+     ]
+    },
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      82,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/alternatives/2",
+   "expected": "Visual-review inputs: the owner's display scale and backgrounds, or the specialist's light, dark and busy test set as the authorized fallback for backgrounds only; needed before inspection, not before job-prepare.",
+   "basis": "source_comparison",
+   "finding": "q_sample_readability's check text establishes the fallback and the scale requirement.",
+   "sources": [
+    {
+     "path": "state.px/state.px",
+     "sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+     "lines": [
+      53,
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/preparatory_steps/0",
+   "expected": "Answer SQ1-SQ9 of sample-creative-brief-v2.json (lines 143-151) against the live declaration; operation-shortlist.json is a dated catalog and decides nothing.",
+   "basis": "source_comparison",
+   "finding": "brief-v2 142-152; readiness.md 101-102.",
+   "sources": [
+    {
+     "path": "deliverables/sample-request/sample-creative-brief-v2.json",
+     "sha256": "f84b262818bbf044eb22716ab5d02eed1103cc65714360fcfc5d9efd019a5b80",
+     "lines": [
+      142,
+      152
+     ]
+    },
+    {
+     "path": "deliverables/sample-request/operation-shortlist.json",
+     "sha256": "7294d9d779982ee6602412eaed925ca2dab6e0b0c787f314455de6f53ed00186",
+     "lines": [
+      1,
+      1
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/readiness.md",
+     "sha256": "fd9156896d7789046d45a09dc5e94330f59a1949ad44953843ac128a1a823d4f",
+     "lines": [
+      101,
+      102
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/preparatory_steps/1",
+   "expected": "Write the v2 criteria file with the corrected brief locator, validate it only with validate_criteria_v2.py --out to a fresh work/ path, and bind it as a new S record.",
+   "basis": "source_comparison",
+   "finding": "g note 61-74; b note prescription P4.",
+   "sources": [
+    {
+     "path": "deliverables/continuation-2026-11-15g.md",
+     "sha256": "001065a3422bfb76997b375f9f66d22324e87a2841eb06d742e166d44fef2e4f",
+     "lines": [
+      61,
+      74
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16b.md",
+     "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+     "lines": [
+      288,
+      290
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/preparatory_steps/2",
+   "expected": "Translate the v2 brief into exact provider arguments with reference.png carried as an actual image input bound to its sha256.",
+   "basis": "source_comparison",
+   "finding": "PROFILE.md 44; platform.py 871-872 and 889.",
+   "sources": [
+    {
+     "path": "pixl-kit/resources/agent/PROFILE.md",
+     "sha256": "8aeaedb1f345af7f80d289f3f8372de00e20619ccf4ec685ed6db229c4d99265",
+     "lines": [
+      44,
+      44
+     ]
+    },
+    {
+     "path": "pixl-kit/runtime/pixl/platform.py",
+     "sha256": "7693533dea30d9027cd7f89b47629227b87b18f23e993ae6eab848cb78efbea0",
+     "lines": [
+      871,
+      889
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/preparatory_steps/3",
+   "expected": "Save the successor request-review packet with request kind provider_arguments, run pixl_request_review, and have the caller compare request and criteria with the sources.",
+   "basis": "source_comparison",
+   "finding": "request_review.py 130-134; delegation.md 69.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/request_review.py",
+     "sha256": "af7bf5bf1f599a03645d12e6faadb14db050dec5a31eae067ed3fc36295a1c23",
+     "lines": [
+      130,
+      134
+     ]
+    },
+    {
+     "path": "pixl-kit/skills/pixl/references/delegation.md",
+     "sha256": "72bd2cdfd03333ae0cc3bcd325c4a231f0730ca2f42fbece1955b18b5648199b",
+     "lines": [
+      69,
+      69
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/preparatory_steps/4",
+   "expected": "Then call job-prepare with a fresh expect hash; preparation is not submission, payment or acceptance.",
+   "basis": "source_comparison",
+   "finding": "jobs.py 717-743 saves a prepared request without remote action.",
+   "sources": [
+    {
+     "path": "pixl-kit/runtime/pixl/jobs.py",
+     "sha256": "18d543f7d81134b46c5282728be7e7681c94789c554a9f6e3abe0f882c92ecc3",
+     "lines": [
+      717,
+      743
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/after_prepare",
+   "expected": "Caller comparison of the saved request, job-dispatch, one host call, job-observe, job-import as an unaccepted candidate, mechanical checks through the local harness, visual inspection (needs the display scale), then task completion only if all five sample criteria pass.",
+   "basis": "source_comparison",
+   "finding": "d note 249-255 and the b note's later-production section state this sequence.",
+   "sources": [
+    {
+     "path": "deliverables/continuation-2026-11-15d.md",
+     "sha256": "826460e5ff96f7dae2bccff8b8df1278e5457614cfaadd3c0510e0f64feeb1dc",
+     "lines": [
+      249,
+      255
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16b.md",
+     "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+     "lines": [
+      357,
+      373
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/read_first",
+   "expected": "SESSION.md, then deliverables/continuation-2026-11-16c.md, then deliverables/continuation-2026-11-16b.md (current except the sentences the c note corrects), then review/caller-comparison-2026-11-16-v7.md.",
+   "basis": "source_comparison",
+   "finding": "The c note's current-instructions section names this order and the corrected b-note sentences.",
+   "sources": [
+    {
+     "path": "deliverables/continuation-2026-11-16c.md",
+     "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+     "lines": [
+      71,
+      96
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/verifier",
+   "expected": "python -B -I work/verify_rev16.py from the consumer root; expect problems [] and no __pycache__ under pixl-kit/.",
+   "basis": "source_comparison",
+   "finding": "c note P5 (updated) and the b note's P2/P3; the caller ran it after the final handback with problems [].",
+   "sources": [
+    {
+     "path": "deliverables/continuation-2026-11-16c.md",
+     "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+     "lines": [
+      81,
+      85
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16b.md",
+     "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+     "lines": [
+      280,
+      287
+     ]
+    }
+   ]
+  },
+  {
+   "pointer": "/next_action/shell_note",
+   "expected": "From Git Bash, set MSYS_NO_PATHCONV=1 before check_handoff.py, or use PowerShell.",
+   "basis": "source_comparison",
+   "finding": "c note F5 and P7; the caller reproduced the failure and the fix.",
+   "sources": [
+    {
+     "path": "deliverables/continuation-2026-11-16c.md",
+     "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+     "lines": [
+      66,
+      69
+     ]
+    },
+    {
+     "path": "deliverables/continuation-2026-11-16c.md",
+     "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+     "lines": [
+      86,
+      89
+     ]
+    }
+   ]
+  }
+ ],
+ "carriers": [
+  {
+   "path": "deliverables/continuation-2026-11-16b.md",
+   "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+   "lines": [
+    233,
+    267
+   ],
+   "text": "## Current operation and conditions (self-contained; `intake-sample.md` 112-126 worksheet)\n\n```text\nCurrent operation and answer effects\nState/plan identity: state.px/state.px, PX2 revision 14, canonical 247b22ba715519ef2033fcea6de3dcabed45f288edcbcc5616b235e26e77e4af on entry (revision 15 after this commit; read its hash from the head, SESSION.md or deliverables/specialist-return-2026-11-16b.json). Plan traced from the live pixl_workflow and pixl_context (focus t_sample, view authoring): T t_sample (ph sample, st open, dp [t_study] done, op [f_sample], ca [], dc [], kn []) -> F f_sample (kd sprite, ct c_sample, rq [q_sample_canvas, q_sample_palette, q_sample_outline, q_sample_readability, q_style_match]) -> C c_sample (record b7f77964...7737; px [32,32], pl [#56B5BC, #F4DDA2, #25354A], vw side, sa nearest, al binary) -> ch [i_canvas proposed, i_palette observed, i_view confirmed, i_sampling proposed, i_alpha observed, i_lighting observed, i_outline proposed, i_design_language proposed]. other_intake: i_animation, i_backgrounds, i_display_scale, i_engine, i_role_diff unresolved; i_roster confirmed. Plans [], jobs [], decisions [], knowledge [].\nOperation and phase: pixl_job_prepare (CLI: python -B -I pixl-kit/scripts/pixl.py job-prepare state.px JOB t_sample REQUEST_JSON --outputs f_sample --expect <current hash> --root <this consumer root>); task t_sample, phase sample, output f_sample, contract c_sample.\nQuestion (or \"no owner answer needed for this operation\"): no owner answer needed for this operation.\nAssume only this answer: none is supplied or assumed; every I record keeps its status, value and scope.\n\nPrerequisite or permitted alternative | Source + locator | Current status | After only this answer | Still required\nR1 job_exists: JOB is not an existing record | pixl-kit/runtime/pixl/jobs.py 732-734 | satisfied for any new ID: no J record exists (pixl_validate record list; pixl_jobs []) | unchanged | choose a new ID at preparation (for example j_sample_1)\nR2 job outputs lie within T.op | jobs.py 735 (_context); t_sample.op [f_sample] (pixl_context authoring view) | satisfied for --outputs f_sample | unchanged | none\nR3 task_prerequisite: every T.dp done | lifecycle.py 49-52; t_sample.dp [t_study], t_study.st done | satisfied | unchanged | none\nR4 output_contract: raster F has ct | lifecycle.py 53-56; f_sample.ct c_sample | satisfied | unchanged | none\nR5 choice_unresolved / choice_conflict over C.ch | lifecycle.py 57-64; c_sample.ch statuses from pixl_workflow intake: 4 proposed, 3 observed, 1 confirmed, 0 unresolved, 0 conflict | satisfied | unchanged | none\nR6 task_decision, method_poc, choice_unconfirmed | lifecycle.py 65-75: applied only when T.ph in ADOPTION_PHASES (production, delivery); t_sample.ph sample | not applicable to this operation | unchanged | none for the sample (they apply to t_scout, t_medic, t_family later)\nR7 family / connected-plan blockers | lifecycle.py 76 (families.blockers); pixl_workflow: no families, no plans; pixl_context plans [] | none | unchanged | none\nR8 job_pending: no other attempt on f_sample | jobs.py 738 (_pending); pixl_jobs [] | satisfied | unchanged | none\nR9 --expect = current canonical hash | jobs.py 731 (_load with expected); state-authority.md 13 | available: revision 15 hash after this commit (SESSION.md, caller return, pixl_validate) | unchanged | reread the head immediately before the call\nR10 provider = identity text of the connected PixelLab service | platform.py 869 (_request_identity) | MISSING: official PixelLab tools not_observed, authentication not_verified (pixl_readiness official_pixellab) | unchanged | the host's authenticated PixelLab connection\nR11 tool = the chosen operation's declared name | platform.py 870 | MISSING: must come from the live declaration; deliverables/sample-request/operation-shortlist.json (7294d9d7...0186) is a dated catalog and decides nothing (readiness.md 101-102; pixl_capabilities is \"not live tool discovery\") | unchanged | live tool listing in the host\nR12 schema = the full live inputSchema object | platform.py 888-889 (_schema_no_secrets, _validate_schema) | MISSING | unchanged | live declaration\nR13 arguments = exact provider arguments (JSON object, no secrets, valid under R12) | platform.py 871-872, 887, 889; PROFILE.md 44 (a filename in a prompt is not an uploaded reference); request_review.py 132 (packet kind provider_arguments) | MISSING: to be translated from sample-creative-brief-v2.json (f84b2628...a5b80; its schema questions SQ1-SQ4 at lines 142-171 are answered against the live declaration first) once R11/R12 are known, with reference.png (d997cade...70aa7, role style) as an actual image input (upload handle / URL / owned ID) | unchanged | R11, R12, image transport handle; then the provider_arguments successor packet, including the criteria-v2 supersession of sample-criteria.json (g note lines 61-74: q_sample_readability brief source lines [20,20], optionally [5,5], five check texts unchanged, validated with validate_criteria_v2.py --criteria <v2 file> --out <fresh work/ path>, bound as a new S beside the unchanged s_sample_criteria), pixl_request_review on that packet, and the caller's request/criteria comparison (delegation.md 69; request-review.md)\nR14 discovery = {source text, observed_at ISO timestamp not in the future, evidence nonempty object} | platform.py 873, 875-876, 878-885; 1018-1023 | MISSING | unchanged | live tool listing plus a host-clock timestamp\nR15 authorization = {scope text, evidence nonempty object} | platform.py 874, 877, 878-885 | scope text AVAILABLE (brief.md lines 6-7 \"Begin the project and make the progress possible in this session\"; P.br); evidence object MISSING | unchanged | caller/host supplies the evidence object, including coverage of the cost of one call\nA1 Route alternative: authenticated official PixelLab MCP tool surface (primary) OR the optional HTTP adapter explicitly selected for its documented operation | SKILL.md 26 (\"Production uses the official paid PixelLab API, preferring the authenticated MCP tool surface. The optional HTTP adapter is a separate explicitly selected route\"); PROFILE.md 32 | neither observed in this host | unchanged | one of the two, selected by the caller/host; not an owner decision\nA2 First-candidate path alternative: record-level job-prepare OR pixl_plar_prepare for a selected PLAR asset | intake-sample.md 25; SKILL.md 24 | no plar.txt exists in this consumer, so the PLAR route is not available here; job-prepare is the route | unchanged | none (job-prepare)\nA3 Visual-review inputs: owner i_display_scale and i_backgrounds OR the specialist's light/dark/busy test set | q_sample_readability.ck (record 541b9a97...acd4); i_backgrounds.wy; i_display_scale.wy | both unresolved; the test set is the authorized fallback for backgrounds (\"the specialist's test set until i_backgrounds is answered\"); no default exists for the target integer zoom | unchanged | before pixl_inspection_prepare / pixl_inspection_review of a returned candidate (two steps after job-prepare); not before job-prepare\n\nCurrent effect sentence: No owner answer is pending for the sample and no state-side gate blocks job-prepare for t_sample / f_sample against c_sample (R1-R9 satisfied or not applicable, the same conclusion as pixl_workflow blockers []); the operation is still not executable locally now, because R10-R15 (provider identity, tool name, live inputSchema, exact arguments with an actual image input for reference.png, discovery evidence with a host-clock timestamp, authorization evidence) are capability or caller inputs that no local file supplies, and R13 additionally requires the provider_arguments successor packet with the criteria-v2 supersession and the caller's comparison before preparation.\nRemaining prerequisites: R10, R11, R12, R13 (including the successor packet, criteria v2 and caller comparison), R14, R15 evidence object.\nAuthorized default/alternative (or none established): A1 is a caller/host selection between two source-permitted routes; A2 is fixed to job-prepare in this consumer; A3: the specialist's test backgrounds are an authorized fallback, the display scale has no default and is needed before visual review only. No default exists for R10-R12, R14 or the R15 evidence object.\nCurrent carriers: this note's sections \"Current operation and conditions\", \"Procedural prescriptions\", \"Decision table\" and \"What later production still needs\"; authored result fields in deliverables/specialist-return-2026-11-16b.json: /status, /questions (whole collection), /next (whole subtree), /limitations; final wording: \"The next operation is job-prepare for t_sample / f_sample against c_sample. It is blocked only on capability inputs (the host's live PixelLab tool declaration and schema, an image transport handle for reference.png, discovery evidence and authorization evidence) and on the provider_arguments successor packet with the criteria-v2 supersession and caller comparison; no owner answer is needed for this operation. i_display_scale is needed before visual review of a returned candidate, not before preparation.\"\nPrior instruction superseded: see the list \"Superseded, old to new\" at the end of this note.\n```\n"
+  },
+  {
+   "path": "deliverables/continuation-2026-11-16b.md",
+   "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+   "lines": [
+    269,
+    302
+   ],
+   "text": "### Procedural prescriptions for this root (current instructions, not gates of `job-prepare`)\n\n- P1 **Literal handoff review of every saved JSON result** that carries authored questions, answer\n  effects or a next operation (`intake-sample.md` 147-153; `handoff-review.md` 20-24, 26-46, 48-99,\n  101-126): from the consumer root, `python -B -I pixl-kit/scripts/check_handoff.py RESULT --root .\n  --scope <each whole authored subtree> --out <fresh path>`; then a version-1 review with one row per\n  inventory leaf and carriers = exact current-instruction excerpts of the current note; then the same\n  command with `--review`. Use the actual field names; keep the review/check hashes out of the\n  result's own file-reference list; report `coverage_complete` and that `semantic_verdict` stays\n  `not_assessed`; reopen the fields and the current text afterwards and compare their meaning with\n  the sources.\n- P2 **`python -B -I`** for `check_handoff.py`, the runner `pixl-kit/scripts/pixl.py` and every other\n  Python read of the read-only kit, with the selected interpreter\n  `C:/github/pixel-lab-agent/.venv/Scripts/python.exe` (`handoff-review.md` 40-42). `-I` alone ignores\n  `PYTHONDONTWRITEBYTECODE`. Scripts that start the runner as a subprocess pass `-B -I` to it\n  (`work/build_rev15.py`, `work/verify_rev15.py`).\n- P3 **No bytecode cache exists in this root and none may be created**: `pixl-kit/` holds 261 files and\n  no `__pycache__`; `work/verify_rev15.py` reports `kit_bytecode_cache_dirs` as an observation. The\n  earlier advice to \"ignore `pixl-kit/runtime/pixl/__pycache__/`\" described the previous root.\n- P4 **Criteria validation only with `deliverables/sample-request/validate_criteria_v2.py`** (read-only;\n  `--out` to a fresh path under `work/` if a file is wanted); never `validate_criteria.py`, which\n  overwrites the retained artifact `criteria-schema-validation.json` (`93643a34...b16a`).\n- P5 **Current verifier**: `python -B -I work/verify_rev15.py` from the consumer root, expected\n  `problems []`; its kit block reports kit identity through the manifest and the runner's manifest\n  verification as observations. `work/verify_rev14.py` remains correct for the 9f6e7c37 root's kit and\n  exits 0 here with `kit_changed_since_snapshot true`; `work/verify_rev13.py` exits 1 here on\n  kit-identity entries only (2026-11-16 note lines 215-229, history).\n- P6 **Cold start for the next session**: read `SESSION.md`, then this note; run `pixl_validate`,\n  `pixl_workflow`, `pixl_ready`, `pixl_jobs` on `state.px/state.px` and expect revision 15, ready\n  `[t_sample]`, no jobs; run P5; if the kit changed again, the verifier's kit block reports it as an\n  observation and the citation re-map must be redone against the new text before any kit locator in\n  this note is relied on. Readers of the bound v1/v2 packet files and the f note read\n  \"`sources/brief.md` line 19\" for the side-view destination as line 20 (g note finding 1) until the\n  criteria-v2 successor exists.\n"
+  },
+  {
+   "path": "deliverables/continuation-2026-11-16b.md",
+   "sha256": "6454d5b65397a7d1b647088055dccfb39e5b58173c34218df436584dae8c62f1",
+   "lines": [
+    357,
+    373
+   ],
+   "text": "## What later production still needs (unchanged; restated so nothing is dropped)\n\n- `t_sample` done: a nominated candidate passing all five `f_sample.rq` criteria (two mechanical/local\n  via the harness under `work/sample-checks/` recorded through `pixl_candidate_review`; three\n  visual via `pixl_inspection_prepare` / `pixl_inspection_review`, which need `i_display_scale` and\n  benefit from `i_backgrounds`).\n- Sequence after `job-prepare` (unchanged from the d note lines 249-255): caller comparison of the\n  saved request with the packet, `job-dispatch` (single claim), one host call, `job-observe`,\n  `job-import` as an unaccepted X for `f_sample`, then the E/V above.\n- Owner answers (not sample-blocking): final outline treatment for the family, final canvas,\n  role-differentiation device (and with it the palette confirmation, possibly a reserved accent),\n  animation requirements, target backgrounds, display scale, engine/importer.\n- Raster contracts for `f_scout` / `f_medic` whose linked choices are **confirmed** (production-phase\n  `choice_unconfirmed` gate, `lifecycle.py` 72-75), evidence-backed `D` records with executed proofs\n  for `t_scout`, `t_medic`, `t_family` (`task_decision`, 66-67), and the family baseline / continuity\n  plan per the family-delivery operation.\n- `q_engine_import` on `f_family` remains unavailable until `i_engine` is answered.\n"
+  },
+  {
+   "path": "deliverables/continuation-2026-11-16c.md",
+   "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+   "lines": [
+    24,
+    69
+   ],
+   "text": "## Corrections (old -> new)\n\n**F1. Kit-file accounting (b note lines 78-80).** Old: \"The kit directory holds **261** files (259\nmanifest-listed files, the manifest itself, and `resources/pixl/handoff_review.py`, which the manifest\nreport counts among its 260 checked files)\". New: the kit directory holds 261 files = the 259 entries\nof the manifest's `files` array (which **includes** `resources/pixl/handoff_review.py`, entry sha256\n`5f49e8f3...`) + `pixl-kit/bundle-manifest.json` itself + `pixl-kit/requirements.txt`, the only file\nlisted under the manifest's `generated_files` (`sha256 9cc16454cea28c8f5e5b6dbd150434f0c3259f698a6fd65086e275760d5891f3`).\n`pixl_readiness` `files_checked 260` = 259 `files` entries + the generated `requirements.txt`. The\ncounts in the b note (261 / 259 / 260) were right; the attribution of the 261st file was wrong. The b\nnote's new-file table (lines 97-105) is unaffected: `resources/pixl/handoff_review.py` is both\nmanifest-listed and new relative to the revision 14 snapshot.\n\n**F2. The b result points at the failed first attempt.** Old: `deliverables/specialist-return-2026-11-16b.json`\n`/handoff_review/paths` names `work/handoff-review-rev15/handoff-inventory-01.json`,\n`handoff-review-01.json` and `handoff-check-01.json`; `handoff-check-01.json` (`4c8ce8b2...`) is the\nretained `coverage_incomplete` attempt (two `sources/brief.md` ranges ended at line 34; the file has 33\nlines), and the completed binding is `handoff-review-02.json` (`e97a3012...`) / `handoff-check-02.json`\n(`fbcd6091...`, `coverage_complete`), bound to the same result hash `7d80d6f9...`. New: the b result and\nall five revision 15 review files are retained unchanged as that round's record; the corrected saved\nreturn is `deliverables/specialist-return-2026-11-16c.json`, whose `/handoff_review/paths` pre-names\n`work/handoff-review-rev16/handoff-inventory-01.json`, `handoff-review-01.json` and\n`handoff-check-01.json`, and exactly those files are produced in this round (a failed attempt, if\nany, would be retained under a later `-0N` name and reported, not relabelled).\n\n**F3. Declared carrier not covered.** Old: b note line 265 lists the authored result fields \"/status,\n/questions (whole collection), /next (whole subtree), /limitations\" as current carriers, while the\nrevision 15 inventory scopes were `/questions`, `/next`, `/limitations`; `/status` had no review row\n(`handoff-review.md` 20-24 and 37-38). New: the revision 16 literal review uses scopes `/status`,\n`/questions`, `/next`, `/limitations`; `/status` has a source-comparison row (judged against the\ndelegated scope per `delegation.md` 145 and 153-155).\n\n**F4. Minor locators.** (a) b note line 103: old \"`semantic_verdict` always `not_assessed` (122, 129)\"\nin `pixl-kit/runtime/pixl/handoff_review.py`; line 129 is `],`; new: lines **122 and 209**. (b) b note\nline 255 (worksheet row R13), the b result `/questions/0/unlocks` and\n`/next/preparatory_steps_once_Q1_is_supplied/0`: old \"SQ1-SQ4 ... at lines 142-171\" of\n`deliverables/sample-request/sample-creative-brief-v2.json` (`f84b2628...a5b80`); measured: the\n`schema_questions_for_the_live_declaration` array spans lines **142-152**, SQ1-SQ4 are lines\n**143-146**, SQ5-SQ9 are lines 147-151, and 171 is the file's last line. New: \"SQ1-SQ4 at lines\n143-146 (array 142-152; SQ5-SQ9 at 147-151 are answered in the same step)\". The step itself is\nunchanged.\n\n**F5. Shell observation (new prescription P7).** Under Git Bash (MSYS), an argument such as\n`--scope /questions` is rewritten to a Windows path before `check_handoff.py` sees it, and the helper\nfails with \"scope and claim pointers must be JSON Pointers\". This is not a kit fault: it succeeds\nwith `MSYS_NO_PATHCONV=1` set in that shell, or from PowerShell / cmd. P7 below records it.\n"
+  },
+  {
+   "path": "deliverables/continuation-2026-11-16c.md",
+   "sha256": "0758e2aa19caf60fa0c86af9201adb0d5f4774f34239bcc04bc3df5c13dbfa16",
+   "lines": [
+    71,
+    96
+   ],
+   "text": "## Current instructions after this note\n\n- The b note remains the current full continuation. Every section of it stays current **except the\n  corrected sentences above**: lines 78-80 (F1), line 103 (F4a), line 255's \"lines 142-171\" (F4b)\n  and line 265's carrier list in so far as the revision 15 review did not cover `/status` (F3). Its\n  worksheet R1-R15 / A1-A3, effect sentence, decision table, procedural prescriptions P1-P4 and P6,\n  \"What later production still needs\", \"Earlier notes\" and \"Superseded\" sections are unchanged\n  current instructions and are carried into the revision 16 literal review as carriers together\n  with this note's two sections \"Corrections (old -> new)\" and \"Current instructions after this\n  note\".\n- **P5 (updated): current verifier** is `python -B -I work/verify_rev16.py` from the consumer root,\n  expected `problems []`; it compares the 88 revision 15 records with `work/rev15.json`, checks the\n  b note, the b result and the five revision 15 review files among its retained hashes, and reports\n  kit identity and any `__pycache__` as observations. `work/verify_rev15.py` remains correct for\n  revision 15 (its snapshot predates this round's files, which it does not list).\n- **P7 (new): shell path conversion.** When invoking `check_handoff.py` (or any command taking\n  JSON-Pointer arguments) from Git Bash / MSYS, set `MSYS_NO_PATHCONV=1` first, or use PowerShell;\n  a \"scope and claim pointers must be JSON Pointers\" error with a leading-slash scope is the shell's\n  rewrite, not a kit defect.\n- The saved return to read is `deliverables/specialist-return-2026-11-16c.json` (hash in the final\n  response and `SESSION.md`); the b result is the retained revision 15 return. Review/check hashes\n  stay out of the result's own file-reference list (`handoff-review.md` 122-126).\n- The next operation, its gates, missing inputs and alternatives are unchanged from the b note:\n  `job-prepare` for `t_sample` / `f_sample` against `c_sample`, blocked only on capability inputs\n  (R10-R15) and the `provider_arguments` successor packet with the criteria-v2 supersession and\n  caller comparison; no owner answer is needed for it; `i_display_scale` gates visual review only.\n"
+  },
+  {
+   "path": "review/caller-comparison-2026-11-16-v7.md",
+   "sha256": "cdd46b20d41adb9d6d17e8c44b30fbe89ab0c01266403836894e3fb05dc9dea0",
+   "lines": [
+    96,
+    104
+   ],
+   "text": "## Caller observation not sent as a correction\n\n**O1 (worksheet locator completeness, no effect on the conclusion).** `jobs.py` `_blockers` (lines\n145-161) adds three job-level gates beyond `lifecycle.py`: connected-plan blockers, PLAR selection bindings\nand the task state being open or active. The worksheet cites only `lifecycle.py` for R7 and does not\ncite these lines. Each gate is satisfied now and is covered in substance: R7 states no plans,\nA2 states no `plar.txt` exists and `t_sample.ip` is empty, and the trace states `t_sample` is open. I did\nnot request a further revision for a locator-only gap. The next session should read R7 together with\n`jobs.py` 145-161.\n"
+  },
+  {
+   "path": "review/caller-comparison-2026-11-16-v7.md",
+   "sha256": "cdd46b20d41adb9d6d17e8c44b30fbe89ab0c01266403836894e3fb05dc9dea0",
+   "lines": [
+    126,
+    139
+   ],
+   "text": "## Adoption finding (bound to revision 16, SESSION.md b265cb92...)\n\nI adopt the c note as the current corrections and the b note as the current full continuation, except\nfor the sentences the c note corrects. The revision 15 handoff was structurally correct and its kit and\nruntime citations landed. Its five defects were a kit-file attribution, a result pointer to a failed check,\nan unreviewed `/status` carrier, two locators and an undocumented shell behaviour. All five are corrected\nin the same child with explicit old-to-new text, and every revision 15 artifact is retained unchanged.\nThe worksheet conclusion holds. No owner answer is needed for `job-prepare` on `t_sample` against\n`c_sample`. The operation stays blocked on capability inputs and on the `provider_arguments` successor packet,\nwhich includes the criteria-v2 supersession and the caller comparison. `i_display_scale` is needed before\nvisual review only. Observation O1 above is carried in my saved result. Nothing was generated, accepted or\ndecided, and no intake or task status changed.\n\nReviewer: calling agent, 2026-11-16. Specialist output and caller review are distinct files.\n"
+  }
+ ]
+}

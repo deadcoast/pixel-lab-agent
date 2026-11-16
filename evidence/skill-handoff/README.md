@@ -1,10 +1,34 @@
 # PX-SKILL-001: consequential choice at the handoff
 
-## Current literal-reconciliation qualification, 2026-11-16
+## Current configured-model continuation, 2026-11-16
+
+The [configured-model continuation](claude-model-continuation-20261116/README.md)
+completes caller `0f688277-0e32-45d2-9ee8-8d47724b0865` and registered PIXL child
+`a94b4dc767b65b243` on actual Opus 5.5 responses, with exit 0 and a saved final
+caller result. Existing Max OAuth authentication is retained; recorded rate events
+explicitly say `isUsingOverage: false`. All 167 entry files remain unchanged within
+184 output files. State stays at revision 16; the 261-file kit and global settings
+remain unchanged.
+
+Behavioral qualification remains failed. The current `/questions/2/unlocks`
+still promises production-gate clearance from insufficient answers, while
+`/next/not_blocked_on` makes a review background mandatory despite the permitted
+fallback; the caller adopts both. Thirty-seven focused tests and scoped Ruff pass;
+the full verifier was not rerun. Execution completion is separate from correct
+handoff behavior, art improvement and human acceptance.
+
+Next under CF-02/PX-SKILL-001: simplify ordinary handoffs and reduce unnecessary
+every-leaf paperwork while correcting consequential literal answer effects.
+Qualify useful direct brief → PixelLab → inspect/revise → files through existing
+operations, with extensive review tied to an actual consequence or discrepancy.
+Preserve the original failed and interrupted attempts below. M1/M2 and broader
+M3/M4/M5 remain open.
+
+## Retained literal-reconciliation checkpoint, 2026-11-16
 
 <a id="pxskill001-literal-reconciliation"></a> **PX-SKILL-001: partial literal-reconciliation development increment, 2026-11-16.** The first native qualification failed; the revised case retains caller findings and a saved same-child correction but lacks a final caller return. Its same-parent/same-child continuation ended at `usage_limit`. [Exact result](literal-reconciliation-20261116/RESULT.json).
 
-The [current ledger](literal-reconciliation-20261116/README.md) records the first
+The [retained ledger](literal-reconciliation-20261116/README.md) records the first
 native case as failed: 25 criteria pass, eight fail and one is inherited. Its
 mechanics are partial at 57/60; 17 bytecode-cache files were added to the assigned
 read-only kit. Useful worksheet work and a genuine same-child correction remain
@@ -27,10 +51,12 @@ is incomplete with `blocked_reason: usage_limit` and `review_complete: false`;
 all 34 criteria are `not_graded_incomplete`, not semantic passes. Earlier mechanical
 receipts and the waiting/termination evidence remain unchanged.
 
-After access returns, resume caller `0f688277-0e32-45d2-9ee8-8d47724b0865` and child
-`a94b4dc767b65b243` to finish the already-requested correction, source-grounded
-literal review and caller result. The frozen kit and all captured failures remain
-retained. This execution-access dependency is separate from human acceptance.
+The later [model-selection correction](claude-model-continuation-20261116/README.md)
+preserves these old receipts. The prior launcher excluded user settings and
+omitted `--model`; its retained Fable model hit `model_requires_usage_credits`.
+That failure did not establish exhaustion of the included Max allowance. The
+configured Opus 5.5 continuation above completes execution with the same consumer,
+frozen kit and existing login, while its behavioral failures remain open.
 
 The [read-only handoff review](../../plugins/pixl/skills/pixl/references/handoff-review.md)
 now inventories whole authored subtrees independently of review rows, checks their
@@ -41,12 +67,18 @@ The [18/18 diagnostic](literal-reconciliation-20261116/tool-diagnostic-01/README
 covers all 22 leaves, including five RQ3 fields: omission is detected, while a
 deliberately wrong complete review remains semantically unassessed. Four packaging
 tests pass on each frozen kit. The old 1,461-pass/four-skip full run was not rerun;
-unchanged prior inputs do not cover the new module/tests or revised kit.
-The [read-only integrity inspection](literal-reconciliation-20261116/integrity-01/RESULT.json)
-passes its preservation checks: all 28 registered claims, 119 receipts and pinned
+the then-unchanged prior inputs do not cover the added module/tests or revised kit.
+The user's core usability concern remains under CF-02/PX-SKILL-001: shipped
+delegation/handoff-review requires manual every-leaf review, and the everyday
+route starts from a complex fixture. Its everyday product benefit remains
+unproved by harness/tests. Next product work should simplify direct brief →
+PixelLab → inspect/revise → files using existing operations, with extensive
+review tied to an actual consequence or discrepancy.
+The [prior read-only integrity inspection](literal-reconciliation-20261116/integrity-01/RESULT.json)
+passed its preservation checks: all 28 then-registered claims, 119 receipts and pinned
 claim bindings remain intact, and 6,880 snapshot entries retain their bytes and
-mtimes. One claim is current (this partial increment), eleven historical and
-sixteen stale. Expected source/kit drift and the two retained wheel/sdist
+mtimes. One claim was current (that partial increment), eleven historical and
+sixteen stale at the checkpoint. Expected source/kit drift and the two retained wheel/sdist
 source-applicability gaps keep the CLI at exit 1. These identity checks do not
 complete the native semantic review.
 Human acceptance is separate; M1/M2 and broader M3/M4/M5 remain open.

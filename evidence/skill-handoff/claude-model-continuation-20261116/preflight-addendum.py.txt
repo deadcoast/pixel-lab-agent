@@ -1,0 +1,59 @@
+"""Close the inherited-criteria binding gap without rewriting the first preflight."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {"path": str(path.resolve()), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "bytes": path.stat().st_size}
+
+
+protocol_path = BASE / "protocol.json"
+protocol = read(protocol_path)
+inherited_ref = protocol["inherits_assignment_and_all_criteria"]
+inherited_path = ROOT / "evidence/skill-handoff/literal-reconciliation-20261116/protocol-continuation-02.json"
+inherited = read(inherited_path)
+criteria_counts = {key: len(inherited[key]) for key in (
+    "original_criteria", "answer_state_checks", "caller_workflow_checks",
+    "separate_observation_checks", "production_prerequisite_checks")}
+first = read(BASE / "preflight.json")
+checks = {
+    "exact_inherited_protocol_reference": ref(inherited_path) == inherited_ref
+        and inherited_ref["sha256"] == "7793f616f0d8e98a35b30ec25bb243a90109a7921749474069eb6ea5e2bc1b2a",
+    "assignment_and_prompt_exact": protocol["assignment"] == inherited["assignment"]
+        and (BASE / "native-01/prompt.txt").read_text(encoding="utf-8") == inherited["assignment"]["resume_prompt"],
+    "inherited_criteria_inventory": criteria_counts == {
+        "original_criteria": 6, "answer_state_checks": 8, "caller_workflow_checks": 6,
+        "separate_observation_checks": 8, "production_prerequisite_checks": 6},
+    "no_shadow_criteria_in_new_protocol": not any(key in protocol for key in criteria_counts),
+    "prepared_sources_and_settings_exact": all(ref(Path(item["path"])) == item for item in protocol["source"].values())
+        and ref(Path(protocol["settings"]["path"])) == protocol["settings"]
+        and ref(Path(protocol["preparer"]["path"])) == protocol["preparer"],
+    "first_preflight_and_bound_sources_unchanged": ref(BASE / "preflight.json")["sha256"] == "3d6a77a69d2d1640a426b75deeeb99b83d83ffdba2ddcea87c9a9f63710a96a1"
+        and all(ref(Path(item["path"])) == item for item in first["bindings"].values()),
+    "still_before_inference": not (BASE / "native-01/stdout.jsonl").exists(),
+}
+result = {
+    "observed_at": datetime.now(UTC).isoformat(), "status": "pass" if all(checks.values()) else "fail",
+    "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+    "corrected_interpretation": "The original_criteria_not_rewritten check in preflight.json was vacuous because the new protocol inherits criteria by reference. Do not count that check as criteria-binding proof. This addendum independently binds the exact inherited protocol, unchanged assignment and all 34 criteria.",
+    "criteria_counts": criteria_counts, "criteria_total": sum(criteria_counts.values()),
+    "first_preflight": ref(BASE / "preflight.json"), "protocol": ref(protocol_path),
+    "inherited_protocol": inherited_ref, "checker": ref(Path(__file__)),
+    "limits": "Preparation evidence only; no native model response, child completion, useful asset outcome or human acceptance is established.",
+}
+with (BASE / "preflight-addendum.json").open("x", encoding="utf-8", newline="\n") as output:
+    json.dump(result, output, indent=2)
+    output.write("\n")
+print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                  "criteria": result["criteria_total"], "failed": [key for key, value in checks.items() if not value]}))
+raise SystemExit(0 if result["status"] == "pass" else 1)

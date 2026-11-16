@@ -1,0 +1,220 @@
+"""Read-only completion checks for the model-corrected retained native continuation."""
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import runpy
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+OLD = ROOT / "evidence/skill-handoff/literal-reconciliation-20261116"
+PREVIOUS = OLD / "native-02-resume-01"
+ATTEMPT = BASE / "native-01"
+SESSION = "0f688277-0e32-45d2-9ee8-8d47724b0865"
+CHILD = "a94b4dc767b65b243"
+MODEL = "claude-opus-5-5"
+REPORT = "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+HELPER = OLD / "mechanical-check-04.py.txt"
+UTIL = runpy.run_path(str(HELPER), run_name="retained_mechanical_helpers")
+PRE = runpy.run_path(str(BASE / "preflight.py.txt"), run_name="prepared_identity_helpers")
+read, ref, files, archive = (PRE[key] for key in ("read", "ref", "files", "archive"))
+native_rows, tools, finals = (UTIL[key] for key in ("native_rows", "tools", "finals"))
+
+
+def main():
+    output, command_dir = BASE / "mechanical.json", BASE / "mechanical-runtime"
+    if output.exists() or command_dir.exists():
+        raise ValueError("Use fresh review outputs; preserve earlier receipts")
+    continuation = read(ATTEMPT / "continuation.json")
+    if continuation["status"] == "running" or not (ATTEMPT / "preservation.json").is_file():
+        raise ValueError("Wait for completed native execution and full retention")
+    command_dir.mkdir()
+    launch, identity, saved = (read(ATTEMPT / name) for name in ("launch.json", "identity.json", "preservation.json"))
+    consumer = Path(launch["cwd"]).resolve()
+    parent_path = ATTEMPT / "native-transcripts/parent.jsonl"
+    child_path = ATTEMPT / "native-transcripts" / (CHILD + ".jsonl")
+    old_parent_path = PREVIOUS / "native-transcripts/parent.jsonl"
+    old_child_path = PREVIOUS / "native-transcripts" / (CHILD + ".jsonl")
+    old_parent_bytes, old_child_bytes = old_parent_path.read_bytes(), old_child_path.read_bytes()
+    parent_boundary, child_boundary = len(old_parent_bytes.splitlines()), len(old_child_bytes.splitlines())
+    parent, child, stream = native_rows(parent_path), native_rows(child_path), native_rows(ATTEMPT / "stdout.jsonl")
+    parent_tools, child_tools = tools(parent), tools(child)
+    parent_finals = [item for item in finals(parent, SESSION) if item["line"] > parent_boundary]
+    child_finals = [item for item in finals(child, SESSION, CHILD) if item["line"] > child_boundary]
+    terminal = [item for item in stream if item.get("type") == "result" and item.get("session_id") == SESSION
+                and not item.get("agent_id") and not item.get("parent_tool_use_id")]
+    terminal_final = terminal[-1] if terminal else {}
+    checks = []
+
+    def check(name, passed, detail=None, *, absent=False):
+        checks.append({"check": name, "status": "not_observed" if absent else "pass" if passed else "fail", "detail": detail})
+
+    check("native_parent_process_finished_successfully", continuation["status"] == "finished"
+          and continuation.get("returncode") == 0 and terminal_final.get("subtype") == "success"
+          and terminal_final.get("is_error") is False)
+    check("same_native_parent_resumed_without_fork", continuation.get("session_id") == SESSION == launch["expected_session_id"]
+          and PRE["values"](launch["command"], "--resume") == [SESSION]
+          and not any(flag in launch["command"] for flag in ("--fork-session", "--session-id", "--continue")))
+    check("same_expected_child_identity", launch["expected_child_id"] == identity["child_id"] == CHILD)
+    check("exact_previous_parent_journal_prefix", parent_path.read_bytes().startswith(old_parent_bytes))
+    check("exact_previous_child_journal_prefix", child_path.read_bytes().startswith(old_child_bytes))
+    check("retained_journals_match_native_capture", ref(parent_path)["sha256"] == continuation["transcripts"]["parent"]["sha256"]
+          and ref(child_path)["sha256"] == continuation["transcripts"]["children"][CHILD]["sha256"])
+    new_agents = [{"line": item["call_line"], "tool_use_id": key, "input": item["call"].get("input")}
+                  for key, item in parent_tools.items() if item["call_line"] > parent_boundary and item["call"]["name"] == "Agent"]
+    check("no_new_parent_agent_invocation", not new_agents, new_agents)
+
+    def fresh_models(rows, boundary):
+        old_ids = {row.get("message", {}).get("id") for row in rows[:boundary] if row.get("type") == "assistant"}
+        seen, result = set(), []
+        for line, row in enumerate(rows, 1):
+            message = row.get("message", {})
+            ident, model = message.get("id"), message.get("model")
+            if line <= boundary or row.get("type") != "assistant" or ident in old_ids or ident in seen:
+                continue
+            if not isinstance(model, str) or not model.startswith("claude-"):
+                continue
+            seen.add(ident)
+            result.append({"line": line, "timestamp": row.get("timestamp"), "message_id": ident, "model": model})
+        return result
+
+    model_observations = {"parent": fresh_models(parent, parent_boundary), "child": fresh_models(child, child_boundary)}
+    for actor, rows in model_observations.items():
+        check(actor + "_fresh_responses_use_selected_opus", bool(rows) and all(row["model"] == MODEL for row in rows),
+              rows, absent=not rows)
+    followups = []
+    for key, item in parent_tools.items():
+        if item["call_line"] <= parent_boundary or item["call"]["name"] != "SendMessage":
+            continue
+        arguments, metadata = item["call"].get("input", {}), item.get("metadata") or {}
+        message = arguments.get("message", arguments.get("content", ""))
+        recipient = arguments.get("to", arguments.get("recipient"))
+        delivered = [line for line, row in enumerate(child, 1) if line > child_boundary
+                     and row.get("type") in {"user", "api-request-blob"}
+                     and isinstance(message, str) and message and message in UTIL["content_text"](row)]
+        call_time = UTIL["epoch"](item.get("call_timestamp"))
+        later_finals = [final for final in child_finals if call_time is not None
+                        and UTIL["epoch"](final["timestamp"]) is not None and UTIL["epoch"](final["timestamp"]) >= call_time]
+        followups.append({"tool_use_id": key, "call_line": item["call_line"], "result_line": item.get("result_line"),
+                          "recipient": recipient, "successful_ack": metadata.get("success") is True,
+                          "acknowledged_child": metadata.get("resumedAgentId", metadata.get("revivedAgentId")),
+                          "delivered_lines": delivered, "later_child_final_lines": [final["line"] for final in later_finals]})
+    check("same_actual_child_receives_followup", bool(followups) and all(row["recipient"] == CHILD
+          and row["successful_ack"] and (row["acknowledged_child"] == CHILD or row["delivered_lines"]) for row in followups),
+          followups, absent=not followups)
+    check("all_fresh_same_child_followups_have_actual_final", bool(followups)
+          and all(row["later_child_final_lines"] for row in followups), followups, absent=not followups)
+    deliveries = [{"child_final": final, "parent_delivery": UTIL["child_final_deliveries"](parent, final, CHILD, [])}
+                  for final in child_finals]
+    completed_delivery = [row for row in deliveries if any(item["parent_line"] > parent_boundary for item in row["parent_delivery"])]
+    check("fresh_child_final_actually_delivered_to_caller", bool(completed_delivery), deliveries, absent=not completed_delivery)
+    check("new_caller_end_turn_matches_terminal_result", bool(parent_finals)
+          and parent_finals[-1]["text"] == terminal_final.get("result"), absent=not parent_finals)
+    check("caller_final_after_child_delivery", bool(parent_finals) and bool(completed_delivery)
+          and parent_finals[-1]["line"] > max(item["parent_line"] for row in completed_delivery for item in row["parent_delivery"]),
+          absent=not parent_finals or not completed_delivery)
+
+    before = {path: {"sha256": digest, "mtime_ns": (consumer / path).stat().st_mtime_ns}
+              for path, digest in files(consumer).items()}
+    commands = []
+
+    def run(label, arguments):
+        command = [sys.executable, "-B", "-I", str(consumer / "pixl-kit/scripts/pixl.py"), *arguments]
+        completed = subprocess.run(command, cwd=consumer, capture_output=True, timeout=60,
+                                   env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"})
+        out, err = command_dir / (label + ".stdout.json"), command_dir / (label + ".stderr.txt")
+        out.write_bytes(completed.stdout)
+        err.write_bytes(completed.stderr)
+        commands.append({"command": command, "returncode": completed.returncode, "stdout": ref(out), "stderr": ref(err)})
+        check("independent_" + label, completed.returncode == 0)
+        return json.loads(completed.stdout) if completed.returncode == 0 else {}
+
+    state = consumer / "state.px/state.px"
+    decoded = run("decode", ["decode", str(state)])
+    validation = run("validate", ["validate", str(state), "--root", str(consumer)])
+    run("workflow", ["workflow", str(state), "--root", str(consumer)])
+    current_hash = validation.get("hash")
+    caller_path = consumer / REPORT
+    caller = read(caller_path) if caller_path.is_file() else {}
+    refs = UTIL["caller_file_refs"](caller)
+    for item in refs:
+        relative = Path(item["path"])
+        current_path = (consumer / relative).resolve()
+        confined = not relative.is_absolute() and current_path.is_relative_to(consumer)
+        historical = (item["json_location"].startswith("$.superseded_versions_retained[")
+                      or bool(re.search(r"\b(?:as read )?on entry\b", str(item.get("declared_role", "")).lower())))
+        item["confined_relative_path"] = confined
+        item["verification_snapshot"] = "output"
+        if historical and confined:
+            for label, root in (("resume_input", ATTEMPT / "input-project"), ("original_case_input", OLD / "native-02/input-project")):
+                candidate = root / relative
+                if candidate.is_file() and ref(candidate)["sha256"] == item["sha256"]:
+                    current_path, item["verification_snapshot"] = candidate, label
+                    break
+        item["actual_sha256"] = ref(current_path)["sha256"] if confined and current_path.is_file() else None
+        item["matches_actual_bytes"] = item["actual_sha256"] == item["sha256"]
+    check("new_caller_result_exists", REPORT not in identity["inputs"] and caller_path.is_file(), absent=not caller_path.is_file())
+    check("caller_result_names_actual_child", CHILD in set(UTIL["strings"](caller)), absent=not caller)
+    check("caller_result_references_actual_files", bool(refs) and all(item["matches_actual_bytes"] for item in refs), refs, absent=not refs)
+    check("caller_result_binds_actual_current_state", bool(current_hash) and any(item["path"].replace("\\", "/") == "state.px/state.px"
+          and item["sha256"] == current_hash and item["verification_snapshot"] == "output" for item in refs), absent=not refs)
+    check("caller_final_delivers_result_identity", bool(parent_finals) and caller_path.is_file()
+          and REPORT in parent_finals[-1]["text"] and ref(caller_path)["sha256"] in parent_finals[-1]["text"], absent=not parent_finals or not caller)
+    new_deliverables = [item["path"] for item in refs if item["matches_actual_bytes"] and item["path"] in saved["new"]
+                       and item["path"].startswith(("deliverables/", "review/"))]
+    check("completed_child_return_names_retained_work", bool(new_deliverables) and any(
+        any(path in row["child_final"]["text"] for path in new_deliverables) for row in completed_delivery),
+        {"referenced_new_files": new_deliverables}, absent=not completed_delivery or not new_deliverables)
+
+    actual = files(consumer, ("pixl-kit", "__pycache__"))
+    check("consumer_snapshot_and_archive_exact", actual == saved["outputs"] == files(ATTEMPT / "project") == archive(ATTEMPT / "project.zip")
+          and ref(ATTEMPT / "project.zip")["sha256"] == saved["output_archive"]["sha256"])
+    check("exact_167_entry_snapshot_and_archive_preserved", len(identity["inputs"]) == 167
+          and files(ATTEMPT / "input-project") == identity["inputs"] == archive(ATTEMPT / "input-project.zip")
+          and ref(ATTEMPT / "input-project.zip")["sha256"] == identity["input_archive"]["sha256"])
+    protected = {path: digest for path, digest in identity["inputs"].items()
+                 if path.startswith(("sources/", "state.px/history/", "evidence/", "deliverables/", "review/", "CALLER-RESULT"))}
+    check("prior_sources_results_deliverables_and_history_preserved", all(actual.get(path) == digest for path, digest in protected.items()),
+          {"files": len(protected), "changed_or_removed": [path for path, digest in protected.items() if actual.get(path) != digest]})
+    check("declared_static_inputs_preserved", all(actual.get(path) == digest for path, digest in identity["static_inputs"].items()))
+    check("exact_261_file_frozen_kit_preserved", files(consumer / "pixl-kit") == identity["package_files"]
+          == archive(OLD / "revision-02/frozen-kit.zip") and len(identity["package_files"]) == 261)
+    prior_files = files(OLD, ("__pycache__",))
+    check("all_1465_old_evidence_files_unchanged", len(prior_files) == 1465 and PRE["tree_sha"](prior_files) == PRE["OLD_TREE_SHA256"])
+    check("global_user_settings_unchanged", ref(Path.home() / ".claude/settings.json")["sha256"] == PRE["USER_SETTINGS_SHA256"])
+    preflight = read(BASE / "preflight.json")
+    check("all_preflight_bound_inputs_and_sources_unchanged", all(ref(Path(item["path"])) == item for item in preflight["bindings"].values()))
+    after = {path: {"sha256": digest, "mtime_ns": (consumer / path).stat().st_mtime_ns} for path, digest in files(consumer).items()}
+    check("independent_checks_preserve_consumer_bytes_and_mtimes", before == after)
+    result = {
+        "observed_at": datetime.now(UTC).isoformat(),
+        "status": "fail" if any(row["status"] == "fail" for row in checks) else "partial" if any(row["status"] == "not_observed" for row in checks) else "pass",
+        "passed": sum(row["status"] == "pass" for row in checks), "total": len(checks), "checks": checks,
+        "attempt": str(ATTEMPT), "session": SESSION, "child": CHILD,
+        "fresh_event_boundaries": {"parent_lines": parent_boundary, "child_lines": child_boundary},
+        "actual_model_observations": model_observations, "followups": followups,
+        "child_finals_and_deliveries": deliveries, "parent_finals": parent_finals,
+        "current_state": {"canonical_sha256": current_hash, "file_sha256": ref(state)["sha256"],
+                          "revision": validation.get("revision"), "records": len(decoded.get("records", []))},
+        "caller_result": ref(caller_path) if caller_path.is_file() else None, "caller_file_references": refs,
+        "deltas": {key: saved[key] for key in ("new", "changed", "removed")}, "independent_commands": commands,
+        "source": ref(Path(__file__)), "native_helper": ref(HELPER), "identity_helper": ref(BASE / "preflight.py.txt"),
+        "native_parent": ref(parent_path), "native_child": ref(child_path),
+        "limits": ["Continuation-specific mechanics only; the 34 inherited semantic criteria require independent review.",
+                   "Historical assistant message IDs and old journal prefixes are excluded from fresh model observations.",
+                   "Process success, task-bearing return/file binding and source meaning remain separate claims.",
+                   "No PixelLab generation, art quality, engine or human acceptance is established."],
+    }
+    with output.open("x", encoding="utf-8", newline="\n") as destination:
+        json.dump(result, destination, indent=2, ensure_ascii=False)
+        destination.write("\n")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "unmet": [{"check": item["check"], "status": item["status"]} for item in checks if item["status"] != "pass"]}))
+
+
+if __name__ == "__main__":
+    main()

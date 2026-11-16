@@ -490,8 +490,16 @@ def verify_inputs(saved):
                 raise ValueError("Frozen package payload changed; native continuation requires the same package")
 
 
-def prepare_resume(previous, destination, prompt, child_id):
-    """Prepare a fresh log directory for the same native parent and child."""
+def validate_model(model: str | None) -> None:
+    """Accept one explicit CLI model token without changing its meaning."""
+    if model is not None and (not isinstance(model, str) or not model or model.startswith("-")
+                              or any(character.isspace() for character in model)):
+        raise ValueError("Model must be a nonempty CLI model token without whitespace or a leading dash")
+
+
+def prepare_resume(previous, destination, prompt, child_id, *, model: str | None = None):
+    """Keep the native parent/child, optionally selecting its next launch's model."""
+    validate_model(model)
     previous, destination = Path(previous).resolve(), Path(destination).resolve()
     saved = json.loads((previous / "continuation.json").read_bytes())
     launch = json.loads((previous / "launch.json").read_bytes())
@@ -514,8 +522,16 @@ def prepare_resume(previous, destination, prompt, child_id):
         if arg in {"--continue", "-c", "--fork-session", "--no-session-persistence"}:
             index += 1
             continue
+        if model is not None and arg == "--model":
+            index += 2
+            continue
+        if model is not None and arg.startswith("--model="):
+            index += 1
+            continue
         revised.append(arg)
         index += 1
+    if model is not None:
+        revised += ["--model", model]
     revised += ["--resume", saved["session_id"]]
     destination.mkdir(parents=True, exist_ok=False)
     launch.update(command=revised, predecessor=reference(previous / "continuation.json"),
@@ -538,6 +554,7 @@ def main():
     resume.add_argument("destination", type=Path)
     resume.add_argument("--prompt", type=Path, required=True)
     resume.add_argument("--child", required=True)
+    resume.add_argument("--model", help="Explicit model for this continuation; omission retains the saved selection")
     run = sub.add_parser("run", help="Execute an already prepared attempt and retain interruption metadata")
     run.add_argument("attempt", type=Path)
     run.add_argument("--timeout", type=float)
@@ -546,7 +563,7 @@ def main():
         from evaluations.request_review_trials import run as run_attempt
         run_attempt(args.attempt.resolve(), timeout=args.timeout)
     elif args.action == "resume":
-        prepare_resume(args.attempt, args.destination, args.prompt.read_text(encoding="utf-8"), args.child)
+        prepare_resume(args.attempt, args.destination, args.prompt.read_text(encoding="utf-8"), args.child, model=args.model)
     else:
         if args.out.exists():
             raise ValueError("Choose a fresh inspection output")
