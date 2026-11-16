@@ -1,0 +1,109 @@
+"""Exact source-delivery helpers extracted from the retained corrected mechanical checker."""
+
+import hashlib
+
+import json
+
+from pathlib import Path
+
+import re
+
+import zipfile
+
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+def sha(path):
+    return digest(path.read_bytes())
+
+def inventory(root, excluded=()):
+    return {p.relative_to(root).as_posix(): sha(p) for p in sorted(root.rglob("*"))
+            if p.is_file() and not any(part in excluded for part in p.relative_to(root).parts)}
+
+def archive(path):
+    with zipfile.ZipFile(path) as z:
+        names = z.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate archive members")
+        return {name: digest(z.read(name)) for name in names if not name.endswith("/")}
+
+def events(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+def text(event):
+    parts = event.get("message", {}).get("content", [])
+    return "".join(part.get("text", "") for part in parts if isinstance(part, dict) and part.get("type") == "text")
+
+def reference(path):
+    return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
+
+def source_reads(stream, consumer, package_files, frozen):
+    """Bind actual successful Read payloads to exact frozen source line ranges."""
+    calls, results = {}, {}
+    for line, event in enumerate(stream, 1):
+        for block in event.get("message", {}).get("content", []):
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use":
+                calls[block["id"]] = (line, block)
+            elif block.get("type") == "tool_result":
+                results[block["tool_use_id"]] = (line, block, event.get("tool_use_result"))
+    observed, failures = [], []
+    for call_id, (line, call) in calls.items():
+        if call["name"] not in {"Read", "Grep"}:
+            continue
+        file_path = Path(call.get("input", {}).get("file_path" if call["name"] == "Read" else "path", ""))
+        if not file_path.is_relative_to(consumer / "pixl-kit"):
+            continue
+        relative = file_path.relative_to(consumer / "pixl-kit").as_posix()
+        if relative not in package_files:
+            continue
+        result_line, block, result = results.get(call_id, (None, {}, None))
+        if call["name"] == "Grep" and isinstance(result, dict) and result.get("mode") == "content" and not block.get("is_error"):
+            original = frozen.read(relative).decode("utf-8-sig").splitlines()
+            delivered, omitted, mismatched = [], [], []
+            for item in result.get("content", "").splitlines():
+                match = re.fullmatch(r"(\d+)[:-](.*)", item)
+                if match is None:
+                    continue
+                number, value = int(match[1]), match[2]
+                if value in {"[Omitted long context line]", "[Omitted long matching line]"}:
+                    omitted.append(number)
+                elif 1 <= number <= len(original) and value == original[number - 1]:
+                    delivered.append(number)
+                else:
+                    mismatched.append(number)
+            if not delivered and not omitted and not mismatched:
+                failures.append({"source": relative, "call_line": line, "result_line": result_line,
+                                 "delivery_tool": "Grep", "outcome": "search_returned_no_source_lines", "error": False})
+                continue
+            observed.append({"source": relative, "file_sha256": package_files[relative], "delivery_tool": "Grep",
+                "call_line": line, "result_line": result_line, "tool_use_id": call_id,
+                "coverage_lines": sorted(set(delivered)), "explicitly_omitted_lines": omitted,
+                "read_payload_matches_frozen_lines": bool(delivered) and not mismatched,
+                "complete_file_observed": set(delivered) == set(range(1, len(original) + 1))})
+            continue
+        if block.get("is_error") or not isinstance(result, dict) or result.get("type") != "text":
+            failures.append({"source": relative, "call_line": line, "result_line": result_line,
+                             "error": block.get("is_error", False)})
+            continue
+        file = result["file"]
+        start, count = file["startLine"], file["numLines"]
+        original_text = frozen.read(relative).decode("utf-8-sig").replace("\r\n", "\n")
+        loaded_text = file["content"].replace("\r\n", "\n")
+        # Read counts a delivered terminal empty line. splitlines() drops it and
+        # falsely rejects a limited range whose final requested line is blank.
+        original = original_text.split("\n")
+        loaded = loaded_text.split("\n")
+        observed.append({"source": relative, "file_sha256": package_files.get(relative),
+            "delivery_tool": "Read", "coverage_lines": list(range(start, start + len(loaded))),
+            "call_line": line, "result_line": result_line, "tool_use_id": call_id,
+            "start_line": start, "reported_lines": count, "total_lines": file["totalLines"],
+            "read_payload_matches_frozen_lines": loaded == original[start - 1:start - 1 + count],
+            "complete_file_observed": start == 1 and loaded_text.rstrip("\n") == original_text.rstrip("\n")})
+    return observed, failures, calls, results

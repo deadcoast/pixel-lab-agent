@@ -1,0 +1,143 @@
+"""Synthetic coverage probes against exact retained native01 bytes, not semantic review."""
+
+import argparse
+import copy
+import datetime
+import hashlib
+import json
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+
+BASE = Path(__file__).resolve().parent
+REPO = BASE.parents[3]
+NATIVE = BASE.parent / "native-01"
+ARCHIVE = NATIVE / "project.zip"
+MEMBER = "CALLER-RESULT-LITERAL-RECONCILIATION.json"
+SCOPES = ["/remaining_questions", "/next_action"]
+OMITTED = "/remaining_questions/2/unlocks"
+
+
+def identity(path):
+    return {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "size": path.stat().st_size, "mtime_ns": path.stat().st_mtime_ns}
+
+
+def snapshot(root):
+    return {path.relative_to(root).as_posix(): identity(path)
+            for path in sorted(root.rglob("*")) if path.is_file()}
+
+
+def save(path, value):
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run", required=True, help="new direct child run directory")
+    args = parser.parse_args()
+    if not args.run or Path(args.run).name != args.run or args.run in (".", ".."):
+        raise ValueError("run must name a new direct child directory")
+    run = BASE / args.run
+    run.mkdir(exist_ok=False)
+    consumer = run / "consumer"
+    consumer.mkdir()
+    started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    before = snapshot(NATIVE)
+    runtime_before = snapshot(REPO / "pixl")
+    save(run / "native-inputs-before.json", before)
+    save(run / "runtime-before.json", runtime_before)
+    commands = []
+
+    def invoke(name, review=None):
+        command = [sys.executable, "-B", "-m", "pixl.handoff_review", MEMBER,
+                   "--root", str(consumer), "--scope", SCOPES[0], "--scope", SCOPES[1],
+                   "--out", name + ".json"]
+        if review:
+            command.extend(["--review", review])
+        result = subprocess.run(command, cwd=REPO, capture_output=True)
+        (run / (name + "-stdout.txt")).write_bytes(result.stdout)
+        (run / (name + "-stderr.txt")).write_bytes(result.stderr)
+        commands.append({"command": command, "cwd": str(REPO), "exit_code": result.returncode})
+        return result.returncode, json.loads((consumer / (name + ".json")).read_bytes())
+
+    try:
+        with zipfile.ZipFile(ARCHIVE) as archive:
+            original = archive.read(MEMBER)
+        with (consumer / MEMBER).open("xb") as stream:
+            stream.write(original)
+        copied_before = identity(consumer / MEMBER)
+        inventory_exit, inventory = invoke("inventory")
+        rows = [{"pointer": item["pointer"], "expected": item["value"],
+                 "basis": "metadata", "sources": [],
+                 "finding": "SYNTHETIC MECHANICAL PROBE ONLY: copied saved value and intentionally marked metadata, including operational claims. This is not a valid source-grounded or semantic review; it demonstrates that complete coverage cannot certify meaning."}
+                for item in inventory["inventory"]]
+        complete_review = {"version": 1, "result": inventory["result"],
+                           "scopes": SCOPES, "claims": rows, "carriers": []}
+        save(consumer / "synthetic-complete-review.json", complete_review)
+        omitted_review = copy.deepcopy(complete_review)
+        omitted_review["claims"] = [row for row in omitted_review["claims"] if row["pointer"] != OMITTED]
+        save(consumer / "synthetic-omitted-row-review.json", omitted_review)
+        review_before = {name: identity(consumer / name) for name in
+                         ("synthetic-complete-review.json", "synthetic-omitted-row-review.json")}
+        omitted_exit, omitted = invoke("omitted-row-check", "synthetic-omitted-row-review.json")
+        complete_exit, complete = invoke("wrong-but-complete-check", "synthetic-complete-review.json")
+        rq3 = [item for item in inventory["inventory"]
+               if item["pointer"].startswith("/remaining_questions/2/")]
+        save(run / "rq3-exact-inventory.json", rq3)
+        after = snapshot(NATIVE)
+        runtime_after = snapshot(REPO / "pixl")
+        save(run / "native-inputs-after.json", after)
+        save(run / "runtime-after.json", runtime_after)
+        checks = {
+            "archive_member_bytes_preserved": (consumer / MEMBER).read_bytes() == original,
+            "inventory_exit_zero": inventory_exit == 0,
+            "inventory_status_is_not_a_pass": inventory["status"] == "inventory" and inventory["coverage"] is None,
+            "whole_declared_scopes_retained": inventory["scopes"] == SCOPES,
+            "twenty_two_leaves_inventoried": len(inventory["inventory"]) == 22,
+            "all_five_rq3_fields_inventoried": {item["pointer"] for item in rq3} == {
+                "/remaining_questions/2/" + key for key in ("id", "necessary_for", "question", "type", "unlocks")},
+            "later_rq3_unlocks_included": any(item["pointer"] == OMITTED for item in rq3),
+            "omitted_row_exit_one": omitted_exit == 1,
+            "omitted_row_refused": omitted["status"] == "coverage_incomplete" and omitted["coverage"]["missing"] == [OMITTED],
+            "synthetic_complete_exit_zero": complete_exit == 0,
+            "synthetic_complete_coverage_only": complete["status"] == "coverage_complete" and complete["coverage"]["complete"],
+            "synthetic_rows_explicitly_metadata": len(complete["coverage"]["metadata_pointers"]) == 22,
+            "no_source_or_carrier_authority_claimed": all(not row["sources"] for row in complete["comparisons"]) and complete["coverage"]["declared_carriers"] == 0,
+            "all_semantic_verdicts_not_assessed": all(item["semantic_verdict"] == "not_assessed" for item in (inventory, omitted, complete)),
+            "original_native_tree_bytes_mtimes_unchanged": before == after,
+            "source_runtime_tree_bytes_mtimes_unchanged": runtime_before == runtime_after,
+            "copied_result_bytes_mtime_unchanged": copied_before == identity(consumer / MEMBER),
+            "review_inputs_bytes_mtimes_unchanged": review_before == {name: identity(consumer / name) for name in review_before},
+        }
+        receipt = {
+            "version": 1, "kind": "synthetic_mechanical_diagnostic_not_native_qualification",
+            "started_utc": started, "finished_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "status": "pass" if all(checks.values()) else "failed", "checks": checks,
+            "source": {"archive": ARCHIVE.relative_to(REPO).as_posix(), "archive_identity": identity(ARCHIVE),
+                       "member": MEMBER, "member_sha256": hashlib.sha256(original).hexdigest()},
+            "runtime": {"path": "pixl/handoff_review.py", **identity(REPO / "pixl/handoff_review.py")},
+            "helper": identity(Path(__file__)), "commands": commands,
+            "limits": [
+                "The review files intentionally copy actual values and misclassify operational claims as metadata. They are mechanical probes, not acceptable production reviews.",
+                "The preserved native RQ3 clearance claim is unchanged. The diagnostic does not approve it, correct it, or certify any source meaning.",
+                "No source citations or operational carriers are certified in these probes. Their scope is explicit pointer coverage and identity preservation.",
+                "This uses current repository source, not the native01 frozen kit. Relocated-kit execution is separately tested in tool-development-01.",
+                "No native02 inputs, project state, owner confirmations, or human acceptance were changed.",
+            ],
+        }
+        save(run / "receipt.json", receipt)
+        print(json.dumps({"status": receipt["status"], "checks": len(checks),
+                          "passed": sum(checks.values()), "receipt": str(run / "receipt.json")}, indent=2))
+        return 0 if all(checks.values()) else 1
+    except Exception as error:
+        save(run / "failure.json", {"type": type(error).__name__, "detail": str(error), "commands": commands})
+        raise
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

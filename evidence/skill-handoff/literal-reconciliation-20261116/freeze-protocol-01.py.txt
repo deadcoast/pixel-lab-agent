@@ -1,0 +1,161 @@
+"""Freeze the new handoff-only case after the declared guide/kit revision exists."""
+from copy import deepcopy
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+PRIOR = ROOT / "evidence/skill-handoff/production-prerequisites-20261115"
+CRITERION_GROUPS = ("original_criteria", "answer_state_checks", "caller_workflow_checks",
+                    "separate_observation_checks", "production_prerequisite_checks")
+RESULT_NAME = "CALLER-RESULT-LITERAL-RECONCILIATION.json"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def main():
+    old = json.loads((PRIOR / "protocol-revision-02.json").read_bytes())
+    protocol = deepcopy(old)
+    kit = json.loads((BASE / "revision-01/RESULT.json").read_bytes())
+    seed = json.loads((BASE / "seed-preflight-01/RESULT.json").read_bytes())
+    assert kit["status"] == seed["status"] == "pass"
+    assert seed["files"] == 123 and seed["revision"] == 13
+    assert seed["state_sha256"] == "42db4c758d328c521c1f73baae1873b56b14e8a4d4d1b580c1d720dcecd8acd2"
+    protocol.update({
+        "protocol": "literal-answer-effect-reconciliation-20261116-01",
+        "frozen_at_utc": datetime.now(UTC).isoformat(),
+        "purpose": "Qualify a useful current native handoff whose literal answer effects and required/optional/fallback conditions follow from actual sources and operation prerequisites across every newly authored or adopted operational carrier. Preserve all prior work and failures without narrowing success to clean summary prose.",
+    })
+    assignment = deepcopy(old["assignment"])
+    assignment["neutral_task_core"] = old["assignment"]["neutral_task_core"].replace(
+        "CALLER-RESULT-PREREQUISITES-02.json", RESULT_NAME)
+    setup = old["assignment"]["setup_template"]
+    setup = setup.replace(
+        "deliverables/continuation-2026-11-15e.md, which continues deliverables/continuation-2026-11-15d.md; the current state includes handoff_7.",
+        "deliverables/continuation-2026-11-15g.md, which corrects and continues deliverables/continuation-2026-11-15f.md; the current state includes handoff_9.")
+    setup = setup.replace(
+        "CALLER-RESULT-PREREQUISITES.json, prior caller comparisons",
+        "CALLER-RESULT-PREREQUISITES.json, CALLER-RESULT-PREREQUISITES-02.json, prior caller comparisons")
+    assert "handoff_9" in setup and "handoff_7" not in setup
+    assert "CALLER-RESULT-PREREQUISITES-02.json, prior caller" in setup
+    assignment["setup_template"] = setup
+    assignment["new_result_path"] = RESULT_NAME
+    assignment["native_visibility"] = (
+        "Only assignment fields, the exact123-file revision13 project input and installed kit are native inputs. "
+        "No evaluator rubric, grading interpretation, prior semantic receipt, defect list, corrected artifact "
+        "or hidden owner answer is supplied. Existing native-authored reports, comparisons and incorrect "
+        "historical conclusions remain unmodified project history.")
+    protocol["assignment"] = assignment
+    protocol["scope"]["required_cases"] = ["retained-revision13-literal-handoff"]
+    protocol["scope"]["minimum_useful_case"] = (
+        "One actual registered specialist saves a useful current source-grounded handoff over the existing "
+        "sample plan and prepared packet/tooling; its native caller independently verifies the consumed "
+        "handoff and actual saved state. All current operational carriers are included in semantic review. "
+        "No new packet/fixture production, state revision, owner answer, art or adoption is required.")
+    protocol["scope"]["continuation_identity"] = (
+        "Fresh caller and registered child continuing all123 retained output files from the predecessor "
+        "native02 revision13. Same-child correction is conditional within this new trial; earlier native "
+        "parents/children are not claimed resumed.")
+    protocol["seed"] = {
+        "directory": (BASE / "seed-preflight-01/seed").relative_to(ROOT).as_posix(),
+        "manifest": ref(BASE / "seed-preflight-01/seed-manifest.json"),
+        "source_archive": ref(PRIOR / "native-02/project.zip"),
+        "preflight": ref(BASE / "seed-preflight-01/RESULT.json"),
+        "files": 123, "revision": 13, "state_sha256": seed["state_sha256"],
+        "input_rule": "All123 predecessor output files are byte-identical at entry, including every prior caller result/comparison/note, current g+f, both packet generations, all history, the source-pointer correction and the restored validation receipt. No evaluator finding, answer, expectation or repaired artifact is added.",
+        "prior_semantic_receipts": [
+            {**ref(PRIOR / name), "native_visibility": "evaluator-only"}
+            for name in ("semantic-review-01.json", "semantic-review-02.json", "semantic-review-coverage-note-01.json")],
+    }
+    protocol["criterion_applicability"]["new_handoff_scope"] = (
+        "The revision9 sample contract, revision10/11 packet/tooling and revision12/13 handoff/corrections "
+        "are inherited work. Preserve and inspect them without crediting their creation as new operation "
+        "evidence. PP1 requires a useful new durable current handoff and actual current inspection. "
+        "No packet, fixture or gratuitous state publication is needed; this does not waive any current "
+        "structured/note/final claim or permit contradictory inherited text to remain adopted as current.")
+    protocol["semantic_interpretation"]["prior_native_reviews"] = (
+        "The exact123-file input preserves prior native-authored reports and comparisons, including "
+        "incorrect conclusions, and their actual corrections. These are history, not evaluator feedback "
+        "or proof of current correctness. Prior failure receipts are outside the native input.")
+    protocol["semantic_interpretation"]["current_carrier_surface"] = (
+        "Review every newly authored operational claim and every earlier carrier affirmatively adopted "
+        "as the current continuation: specialist handback, caller result fields, current notes/addenda, "
+        "decision section, applicable criteria, current state and actual caller final. In particular, "
+        "read literal question/necessary_for/unlocks/next/blocked_on values rather than inferring them "
+        "from a correct surrounding summary. A correct table, a general gate list, hashes or concise "
+        "final wording cannot override a contradictory current literal effect. The handoff-only scope "
+        "does not reduce this surface to only the immediate operation or to newly changed state.")
+    protocol["semantic_interpretation"]["required_optional_fallback"] = (
+        "For each claimed necessary input, inspect the actual source/criterion condition and operation: "
+        "required value, optional context, proposed preference, allowed alternative/fallback, or future "
+        "conditional obligation. Retain the actual required outcomes while preserving any permitted "
+        "fallback. A missing optional answer cannot become a gate, and an available fallback cannot "
+        "silently waive a different required input. Grade these meanings across all current carriers; "
+        "no particular wording, table layout or corrected artifact format is prescribed.")
+    protocol["semantic_interpretation"]["current_vs_history"] = (
+        "The new useful handoff must give the current operational decision and identify its reviewed "
+        "source/state/history references. It can use a new self-contained section or an explicit "
+        "source-bound correction/addendum with unambiguous applicability; no exact worksheet format "
+        "is required. Defective predecessor files can remain byte-identical history. They do not fail "
+        "merely for existing, but an adopted current claim cannot be ignored because it originated "
+        "earlier or is contradicted by a newer sentence elsewhere. Explicitly superseded old claims "
+        "must not continue to govern the next operation.")
+    protocol["semantic_interpretation"]["citation_support"] = (
+        "Read the exact cited source statements when evaluating their asserted authority. Correct "
+        "hashes and in-range line numbers establish identity/bounds, not semantic support. Preserve "
+        "the predecessor's already documented source-pointer correction and any genuinely new native "
+        "findings; do not credit historical discovery or inherited packet production as this trial's work.")
+    protocol["instruction_identity"] = {
+        "expected_instruction_source_sha256": {
+            name: sha(ROOT / name) for name in old["instruction_identity"]["expected_instruction_source_sha256"]},
+        "prelaunch_binding": "The new shared-guide revision and exact full kit are declared before inference. The instruction worksheet is product guidance, not evaluator feedback. Exact input archives, expanded assignment, runtime and role identities must be retained; no prior grading or defect list enters either native actor.",
+        "loading": old["instruction_identity"]["loading"],
+        "frozen_kit_receipt": ref(BASE / "revision-01/RESULT.json"),
+        "frozen_kit_archive": ref(BASE / "revision-01/frozen-kit.zip"),
+        "bundle_manifest_sha256": kit["bundle_manifest_sha256"],
+    }
+    protocol["source_anchors"] = [
+        {**entry, "sha256": sha(ROOT / entry["path"])} for entry in old["source_anchors"]]
+    protocol["predecessor_protocol"] = ref(PRIOR / "protocol-revision-02.json")
+    protocol["revision_scope"] = {
+        "prospective_changes": [
+            "Exact123-file revision13 predecessor output and current g+f/handoff_9 entry pointer, with no repaired input or new answers.",
+            "New result filename within the same ordinary handoff-only native assignment; all earlier result names remain protected.",
+            "Declared product-guide procedure for literal answer-effect and fallback reconciliation.",
+            "Explicit evaluator-only current-carrier/citation/fallback interpretation of the unchanged criteria, frozen before inference.",
+        ],
+        "unchanged": [
+            "All34 original C/AS/CR/O/PP criterion texts",
+            "Sample-only controlled input and runtime/saved-format authority",
+            "Inherited sample/packet work remains inherited; no new art, provider, acceptance or forced publication",
+            "No maintainer findings, rubric, hidden answers or human approval gate in native inputs",
+        ],
+        "causal_limit": "This is an additive artifact continuation with a new guide revision and seed, not a paired control. No difference is attributed solely to guidance; neither predecessor case is rescored.",
+    }
+    for key in CRITERION_GROUPS:
+        assert protocol[key] == old[key]
+    assert sum(len(protocol[key]) for key in CRITERION_GROUPS) == 34
+    assert sha(ROOT / "plugins/pixl/bundle-manifest.json") == kit["bundle_manifest_sha256"]
+    for source, installed in (
+        ("plugins/pixl/skills/pixl/references/delegation.md", "skills/pixl/references/delegation.md"),
+        ("plugins/pixl/skills/pixl/references/intake-sample.md", "skills/pixl/references/intake-sample.md"),
+        (".agents/PROFILE.md", "resources/agent/PROFILE.md"),
+    ):
+        assert sha(ROOT / source) == kit["package_files"][installed]
+    with (BASE / "protocol.json").open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(protocol, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"protocol": ref(BASE / "protocol.json"), "seed_files": 123,
+                      "preserved_criteria": 34, "kit": kit["bundle_manifest_sha256"]}))
+
+
+if __name__ == "__main__":
+    main()

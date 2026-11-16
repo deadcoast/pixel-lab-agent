@@ -1,0 +1,97 @@
+"""Record the incomplete second native capture, preserving tool failures and scope."""
+from collections import Counter
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+ATTEMPT = BASE / 'native-02'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def rows(path):
+    return [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
+
+
+mechanical = read(BASE / 'mechanical-03.json')
+parent = rows(ATTEMPT / 'native-transcripts/parent.jsonl')
+child = rows(ATTEMPT / 'native-transcripts' / (mechanical['actual_child_id'] + '.jsonl'))
+stream = rows(ATTEMPT / 'stdout.jsonl')
+project = ATTEMPT / 'project'
+expected_result = 'CALLER-RESULT-LITERAL-RECONCILIATION-02.json'
+assert not (project / expected_result).exists()
+reports = []
+for path in sorted(project.rglob('*.json')):
+    try:
+        value = read(path)
+    except (ValueError, OSError):
+        continue
+    if isinstance(value, dict) and value.get('operation') == 'handoff_review':
+        reports.append({'file': ref(path), 'status': value['status'], 'result': value.get('result'),
+            'scopes': value.get('scopes'), 'coverage': value.get('coverage'),
+            'semantic_verdict': value.get('semantic_verdict')})
+last_parent = parent[mechanical['parent_final']['line'] - 1]
+last_text = ''.join(block.get('text', '') for block in last_parent['message']['content'] if block.get('type') == 'text')
+terminal = [{'line': i, 'session_id': row.get('session_id'), 'subtype': row.get('subtype'),
+    'duration_ms': row.get('duration_ms'), 'num_turns': row.get('num_turns'),
+    'result_sha256': hashlib.sha256(row.get('result', '').encode()).hexdigest()}
+    for i, row in enumerate(stream, 1) if row.get('type') == 'result']
+result = {
+    'observed_at': datetime.now(UTC).isoformat(), 'status': 'incomplete_native_work',
+    'process_status': read(ATTEMPT / 'continuation.json')['status'],
+    'process_returncode': read(ATTEMPT / 'continuation.json')['returncode'],
+    'task_complete': False, 'expected_caller_result': expected_result, 'expected_caller_result_present': False,
+    'mechanical_receipt': ref(BASE / 'mechanical-03.json'),
+    'mechanical_status': mechanical['status'], 'passed': mechanical['passed'], 'total': mechanical['total'],
+    'check_status_counts': dict(Counter(row['status'] for row in mechanical['checks'])),
+    'unmet_checks': [row for row in mechanical['checks'] if row['status'] != 'pass'],
+    'native_identity': {'caller_session': mechanical['session_id'], 'actual_child': mechanical['actual_child_id']},
+    'native_parent': ref(ATTEMPT / 'native-transcripts/parent.jsonl'),
+    'native_child': ref(ATTEMPT / 'native-transcripts' / (mechanical['actual_child_id'] + '.jsonl')),
+    'terminal_results': terminal, 'parent_terminal': {**mechanical['parent_final'], 'text': last_text},
+    'actual_child_finals': mechanical['child_finals'],
+    'same_child_correction': mechanical['same_child_correction_rounds'],
+    'correction_interpretation': 'The actual same child received the caller finding and performed more work including revision16 publication. No post-correction child final exists in this capture. Acknowledgement, work and publication do not satisfy completed specialist delivery or independent caller review.',
+    'child_interruption_marker': {'line': len(child), 'event': child[-1],
+        'scope': 'Observed host transcript marker only; no human stop instruction or precise host termination cause is inferred.'},
+    'captured_state': mechanical['current_state'],
+    'retained_project': {'input_files': len(read(ATTEMPT / 'identity.json')['inputs']),
+        'output_files': len(read(ATTEMPT / 'preservation.json')['outputs']),
+        'new_files': len(mechanical['deltas']['new']), 'changed': mechanical['deltas']['changed'],
+        'removed': mechanical['deltas']['removed'], 'archive': ref(ATTEMPT / 'project.zip')},
+    'tool_report_inventory': reports,
+    'tool_observation_details': {
+        'caller_failed_invocation': {'call_line': 205, 'result_line': 207,
+            'observed_outcome': 'Both helper calls exited2; subsequent reads reported FileNotFoundError. These failed attempts did not create the report files later found at the reused output paths.'},
+        'caller_successful_retry': {'call_line': 235, 'result_line': 236,
+            'observed_outcome': 'MSYS_NO_PATHCONV=1, inventory/check exit0;78 leaves,7 carriers,coverage_complete and semantic_verdict not_assessed for specialist-return-2026-11-16b.json.'},
+        'retained_initial_incomplete_coverage': 'work/handoff-review-rev15/handoff-check-01.json preserves unresolved-source issues at /questions/2/owner_answer and /questions/2/question; the later check02 is a distinct retained report.',
+        'temporal_attribution_limit': 'The frozen observer associates explicit output paths with their end-of-capture files. Its entries for caller205 therefore expose later retained files, not proof that the failed205 invocation created them. Actual success is established at235/236. This note preserves the distinction without changing frozen observations or grading criteria.',
+        'scope': 'These reports cover the retained first specialist return and rev15 sources. They are neither coverage of the absent new caller result nor post-correction rev16 adoption. All structural reports explicitly leave semantics not_assessed.',
+    },
+    'installed_tree': next(row['detail'] for row in mechanical['checks'] if row['check'] == 'installed_tree_has_no_files_beyond_frozen_payload'),
+    'evaluator_failure': ref(BASE / 'mechanical-execution-02.json'),
+    'evaluator_repair': 'New checker03 changes only the local variable that shadowed the tool_observations function and fresh receipt paths. Original checker02, its failed execution snapshot and preflight hashes remain unchanged. No criteria changed.',
+    'limits': ['A zero exit code and matching success terminal establish process termination only; the actual terminal text says it is waiting for correction.',
+        'This is an immutable incomplete capture. Later same-parent/same-child continuation needs separate receipts and cannot overwrite this attempt.',
+        'No final current-carrier semantic verdict, completed caller review, provider/art/visual/engine/human acceptance or milestone closure is established.'],
+    'recorder': ref(Path(__file__)),
+}
+output = BASE / 'mechanical-review-notes-02.json'
+with output.open('x', encoding='utf-8') as stream_out:
+    json.dump(result, stream_out, indent=2)
+    stream_out.write('\n')
+print(json.dumps({'status': result['status'], 'notes': ref(output), 'retained_tool_reports': len(reports)}))

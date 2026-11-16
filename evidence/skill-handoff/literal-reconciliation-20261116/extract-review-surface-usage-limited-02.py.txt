@@ -1,0 +1,175 @@
+"""Index the incomplete second case after the resumed process hit a usage limit."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+FIRST = BASE / "native-02"
+NATIVE = BASE / "native-02-resume-01"
+PROJECT = NATIVE / "project"
+OUT = BASE / "semantic-extraction-02.json"
+CHILD = "a94b4dc767b65b243"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def extract(path, prior_path=None):
+    raw_bytes = path.read_bytes()
+    rows = [json.loads(line) for line in raw_bytes.decode("utf-8").splitlines()]
+    prior = prior_path.read_bytes() if prior_path is not None else b""
+    prefix_lines = len(prior.decode("utf-8").splitlines())
+    finals, operations, seen = [], [], set()
+    for line, row in enumerate(rows, 1):
+        message = row.get("message", {})
+        content = message.get("content", [])
+        if message.get("role") == "assistant" and message.get("stop_reason") == "end_turn" and isinstance(content, list):
+            text = "\n".join(block.get("text", "") for block in content
+                             if isinstance(block, dict) and block.get("type") == "text")
+            if text:
+                finals.append({"line": line, "text": text,
+                               "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                               "after_original_process_prefix": line > prefix_lines})
+        for block in content if isinstance(content, list) else []:
+            if not isinstance(block, dict) or block.get("type") != "tool_use":
+                continue
+            tool = block.get("name")
+            is_operation = tool in {"Agent", "SendMessage", "mcp__pixl-local__pixl_commit"}
+            is_coverage = tool == "Bash" and "check_handoff" in str(block.get("input", {}).get("command", ""))
+            if not (is_operation or is_coverage) or block.get("id") in seen:
+                continue
+            seen.add(block.get("id"))
+            operations.append({"line": line, "tool_use_id": block.get("id"), "tool": tool,
+                               "input": block.get("input"),
+                               "after_original_process_prefix": line > prefix_lines})
+    return {
+        **ref(path), "lines": len(rows), "nonempty_end_turns": finals,
+        "native_operations": operations,
+        "prior_process_transcript": ref(prior_path) if prior_path is not None else None,
+        "prior_prefix_lines": prefix_lines,
+        "original_process_bytes_are_exact_prefix": raw_bytes.startswith(prior) if prior_path is not None else None,
+    }, rows
+
+
+def visible_text(row):
+    content = row.get("message", {}).get("content", [])
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    parts = []
+    for block in content:
+        if not isinstance(block, dict):
+            continue
+        if block.get("type") == "text":
+            parts.append(block.get("text", ""))
+        elif block.get("type") == "tool_result":
+            value = block.get("content", "")
+            if isinstance(value, str):
+                parts.append(value)
+            elif isinstance(value, list):
+                parts.extend(item.get("text", "") for item in value
+                             if isinstance(item, dict) and item.get("type") == "text")
+    return "\n".join(parts)
+
+
+def main():
+    assert (NATIVE / "preservation.json").is_file(), "Wait for completed resumed retention."
+    assert sha(BASE / "semantic-review-01.json") == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    assert sha(BASE / "interruption-review-02.json") == "b375e32fadc0f224b84ed2a29fd94dbf678ab910a80470e5d42b45b3a2dffda9"
+    caller_path = PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+    assert not caller_path.exists(), "This helper is for the observed usage-limited incomplete snapshot."
+    resume_record = json.loads((NATIVE / "record.json").read_bytes())
+    assert resume_record["returncode"] == 1 and resume_record["continuation"]["interruption_reason"] == "usage_limit"
+    partial_result_path = PROJECT / "deliverables/specialist-return-2026-11-16c.json"
+    caller = json.loads(partial_result_path.read_bytes())
+    claim_fields = []
+    tracked = {"question", "necessary_for", "unlocks", "next", "next_action", "next_operation",
+               "blocked_on", "remaining_questions", "current_continuation", "current_handoff", "limitations"}
+
+    def visit(value, pointer=""):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                target = pointer + "/" + key.replace("~", "~0").replace("/", "~1")
+                if key in tracked:
+                    claim_fields.append({"json_pointer": target, "value": child})
+                visit(child, target)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, pointer + "/" + str(index))
+
+    visit(caller)
+    transcripts = {}
+    resumed_rows = {}
+    for process in (FIRST, NATIVE):
+        for path in sorted((process / "native-transcripts").glob("*.jsonl")):
+            prior_path = FIRST / "native-transcripts" / path.name if process == NATIVE else None
+            info, rows = extract(path, prior_path)
+            transcripts[process.name + "/" + path.name] = info
+            if process == NATIVE:
+                resumed_rows[path.name] = rows
+    parent_key = NATIVE.name + "/parent.jsonl"
+    child_key = NATIVE.name + "/" + CHILD + ".jsonl"
+    parent_info, child_info = transcripts[parent_key], transcripts[child_key]
+    new_parent_finals = [item for item in parent_info["nonempty_end_turns"] if item["after_original_process_prefix"]]
+    new_child_finals = [item for item in child_info["nonempty_end_turns"] if item["after_original_process_prefix"]]
+    completion_observations = {
+        "actual_new_parent_end_turn_present": bool(new_parent_finals),
+        "actual_new_child_end_turn_present": bool(new_child_finals),
+        "actual_caller_final_includes_saved_result_hash": False,
+        "new_same_child_sendmessage_present": any(item["after_original_process_prefix"] and item["tool"] == "SendMessage"
+            and item.get("input", {}).get("to") == CHILD for item in parent_info["native_operations"]),
+    }
+    delivery_candidates = []
+    if new_child_finals:
+        final_text = new_child_finals[-1]["text"]
+        for line, row in enumerate(resumed_rows["parent.jsonl"], 1):
+            if line <= parent_info["prior_prefix_lines"] or row.get("message", {}).get("role") != "user":
+                continue
+            text = visible_text(row)
+            if final_text in text or final_text[:256] in text:
+                delivery_candidates.append({"line": line, "complete_final_text_present": final_text in text,
+                    "child_final_line": new_child_finals[-1]["line"], "event_type": row.get("type")})
+    completion_observations["corrected_child_final_delivery_candidate_present"] = bool(delivery_candidates)
+    preservation = json.loads((NATIVE / "preservation.json").read_bytes())
+    original = json.loads((FIRST / "preservation.json").read_bytes())
+    inputs, outputs = preservation["inputs"], preservation["outputs"]
+    result = {
+        "schema_version": 1, "observed_at_utc": datetime.now(UTC).isoformat(),
+        "scope": "Index only, not a semantic verdict. Both native02 processes are incomplete: process1 stopped during correction; process2 hit a usage limit. Claim fields below come from the partial specialist return, not an absent final caller result. Records explicit native text, actual operations and coverage commands without hidden thinking. No completed correction, final caller reconciliation or semantic pass is inferred.",
+        "caller_result": {"expected_path": caller_path.relative_to(ROOT).as_posix(), "present": False},
+        "partial_specialist_result": ref(partial_result_path),
+        "literal_claim_fields_from_partial_specialist_result": claim_fields,
+        "status": "incomplete", "blocked_reason": "usage_limit", "qualification_complete": False,
+        "completion_observations": completion_observations,
+        "corrected_child_delivery_candidates": delivery_candidates,
+        "new_output_files_since_resume": {name: digest for name, digest in outputs.items() if name not in inputs},
+        "changed_resumed_input_files": {name: {"before": digest, "after": outputs.get(name)} for name, digest in inputs.items() if outputs.get(name) != digest},
+        "new_output_files_since_original_entry": {name: digest for name, digest in outputs.items() if name not in original["inputs"]},
+        "changed_original_input_files": {name: {"before": digest, "after": outputs.get(name)} for name, digest in original["inputs"].items() if outputs.get(name) != digest},
+        "transcripts": transcripts,
+        "evidence": {
+            "original_protocol": ref(BASE / "protocol-revision-02.json"),
+            "continuation_protocol": ref(BASE / "protocol-continuation-02.json"),
+            "interruption": ref(BASE / "interruption-review-02.json"),
+            "original_preservation": ref(FIRST / "preservation.json"),
+            "resumed_preservation": ref(NATIVE / "preservation.json"),
+        },
+        "script_sha256": sha(Path(__file__)),
+    }
+    with OUT.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"path": OUT.relative_to(ROOT).as_posix(), "sha256": sha(OUT),
+                      "claim_fields": len(claim_fields), "completion_observations": completion_observations}))
+
+
+if __name__ == "__main__":
+    main()

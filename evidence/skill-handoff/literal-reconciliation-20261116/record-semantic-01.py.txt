@@ -1,0 +1,211 @@
+"""Record the completed literal-reconciliation case without altering native evidence."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-01"
+PROJECT = NATIVE / "project"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path, needle=None, before=0, after=0):
+    result = {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+    if needle:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        index = next(i for i, line in enumerate(lines) if needle in line)
+        first, last = max(0, index-before), min(len(lines), index+after+1)
+        result.update({"lines": [first+1, last], "quote": "\n".join(lines[first:last])})
+    return result
+
+
+def event(name, line):
+    path = NATIVE / "native-transcripts" / name
+    row = json.loads(path.read_text(encoding="utf-8").splitlines()[line-1])
+    return {**ref(path), "line": line, "event_type": row.get("type"),
+            "message_role": row.get("message", {}).get("role")}
+
+
+def main():
+    protocol = json.loads((BASE / "protocol.json").read_bytes())
+    caller_path = PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION.json"
+    caller = json.loads(caller_path.read_bytes())
+    observed = json.loads((BASE / "semantic-observation-01/RESULT.json").read_bytes())
+    mechanics = json.loads((BASE / "mechanical-01.json").read_bytes())
+    assert observed["status"] == "pass"
+    assert sha(caller_path) == "7b033ec23f1307ab3083e8061fb5456a61fc389085b8b00ac36158d0f03229e3"
+    assert sha(PROJECT / "state.px/state.px") == "247b22ba715519ef2033fcea6de3dcabed45f288edcbcc5616b235e26e77e4af"
+    for prior in protocol["seed"]["prior_semantic_receipts"]:
+        assert sha(ROOT / prior["path"]) == prior["sha256"]
+    evidence = {
+        "protocol": ref(BASE / "protocol.json"),
+        "current_observation": ref(BASE / "semantic-observation-01/RESULT.json"),
+        "current_state": ref(PROJECT / "state.px/state.px"),
+        "decoded_state": ref(BASE / "semantic-observation-01/decode.stdout.json"),
+        "workflow": ref(BASE / "semantic-observation-01/workflow.stdout.json"),
+        "surface_index": ref(BASE / "semantic-extraction-01.json"),
+        "mechanics": ref(BASE / "mechanical-01.json"),
+        "mechanical_notes": ref(BASE / "mechanical-review-notes-01.json"),
+        "cache_inventory": ref(BASE / "runtime-observation-cache-01.json"),
+        "kit": ref(BASE / "revision-01/frozen-kit.zip"),
+        "source_snapshot_identity": ref(BASE / "semantic-source-snapshots/IDENTITY.json"),
+        "phase_gate": ref(BASE / "semantic-source-snapshots/lifecycle.py.txt", 'if task["ph"].value in ADOPTION_PHASES:', before=21, after=12),
+        "phase_spec": ref(BASE / "semantic-source-snapshots/PIXL-2.md", "Research and sample phases can investigate", after=2),
+        "caller_result": ref(caller_path),
+        "RQ3": ref(caller_path, '"id": "RQ3"', after=4),
+        "RQ2": ref(caller_path, '"id": "RQ2"', after=4),
+        "caller_adopts_old_sections": ref(PROJECT / "review/caller-comparison-2026-11-16-v6.md", "## Adoption finding", after=13),
+        "new_note_adopts_old_sections": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "## Earlier notes: what remains applicable", after=14),
+        "old_current_background_gate": ref(PROJECT / "deliverables/continuation-2026-11-15f.md", "Those two unresolved choices gate", before=4, after=1),
+        "actual_background_fallback": ref(PROJECT / "deliverables/sample-request/sample-criteria.json", "three test backgrounds are the specialist's test set"),
+        "new_A3": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "A3 Visual-review inputs:"),
+        "new_alternatives": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "Authorized default/alternative"),
+        "new_worksheet": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "## Current-effect worksheet", after=28),
+        "new_carrier_check": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "### Carrier check", after=7),
+        "new_production_list": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "## What later production still needs", after=16),
+        "owner_brief": ref(PROJECT / "sources/brief.md"),
+        "controlled_answers": ref(PROJECT / "sources/controlled-evaluation-answers.md"),
+        "inherited_packet": ref(PROJECT / "deliverables/sample-request/request-review-v2.json"),
+        "inherited_locator_correction": ref(PROJECT / "deliverables/continuation-2026-11-15g.md", "## Finding 1:", after=48),
+        "current_session": ref(PROJECT / "SESSION.md"),
+        "cache_correction": ref(PROJECT / "review/caller-comparison-2026-11-16-v6.md", "## Round 2", after=16),
+        "cache_readonly_limitation": ref(PROJECT / "review/caller-comparison-2026-11-16-v6.md", "Limitation I carry forward:", after=4),
+        "old_verifier_failure": ref(PROJECT / "deliverables/continuation-2026-11-16.md", "## `work/verify_rev13.py` drift", after=15),
+        "current_verifier": ref(PROJECT / "work/verify_rev14.py"),
+        "first_child_final": event("a2243e0a858503645.jsonl", 202),
+        "native_caller_finding": event("parent.jsonl", 230),
+        "same_child_receives_finding": event("a2243e0a858503645.jsonl", 203),
+        "state_publication": event("a2243e0a858503645.jsonl", 158),
+        "corrected_child_final": event("a2243e0a858503645.jsonl", 232),
+        "corrected_return_delivery": event("parent.jsonl", 244),
+        "interim_caller_end_turn": event("parent.jsonl", 238),
+        "actual_caller_final": event("parent.jsonl", 309),
+    }
+    findings = [
+        {"id": "F1", "status": "open", "kind": "literal_future_answer_effect_overclaim",
+         "finding": "The newly authored caller result again says RQ3's limited owner-answer list yields production contracts with confirmed linked choices and clearance of the production-phase gates. Those answers do not confirm sampling, alpha, lighting or design language, complete t_sample, or establish the missing production contracts and their links. Adding an evidence-backed D per task does not itself supply unrelated confirmations or dependency completion.",
+         "evidence": ["RQ3", "phase_gate", "phase_spec", "decoded_state", "workflow", "new_production_list"],
+         "qualification_limit": "This is the actual new caller field, not a failure merely because a historical result still exists. The specialist's new next-operation fields are narrower and do not themselves repeat the clearance sentence; the caller does. No production activation was attempted, and the correct current sample worksheet is credited separately."},
+        {"id": "F2", "status": "open", "kind": "contradictory_adopted_background_precondition",
+         "finding": "The new note's A3 and the new RQ2 correctly preserve a background fallback and require target scale. However, the new note, specialist handback, caller comparison/result and SESSION explicitly keep the f note's Operation-effect check (152-197) applicable. That adopted section says both unresolved scale and backgrounds gate visual review. It is not explicitly superseded by the new section, so an unnecessary background requirement remains a current instruction alongside the permitted fallback.",
+         "evidence": ["new_A3", "new_alternatives", "RQ2", "old_current_background_gate", "new_note_adopts_old_sections", "caller_adopts_old_sections", "first_child_final", "current_session", "actual_background_fallback"],
+         "qualification_limit": "Named section adoption is narrower than adopting the entire old note, but still carries the contradictory sentence in the named section. A cleaner new worksheet does not automatically supersede an affirmatively adopted old instruction. Display scale remains required; this is not a zoom-default finding."},
+        {"id": "F3", "status": "open", "kind": "readonly_kit_bytecode_side_effect",
+         "finding": "The specialist's direct isolated Python runner calls wrote17 .pyc files under the assigned read-only installed kit. The frozen257-file payload map remains unchanged, but it excludes __pycache__ and cannot prove a wholly read-only installed tree. Native caller review corrects the SESSION explanation to attribute the effect to direct -I calls ignoring PYTHONDONTWRITEBYTECODE; the writes remain and are disclosed.",
+         "evidence": ["native_caller_finding", "corrected_child_final", "cache_correction", "cache_readonly_limitation", "actual_caller_final", "mechanics", "cache_inventory", "mechanical_notes"],
+         "qualification_limit": "The same-child correction fixes a factual explanation, not the physical read-only violation. No package source/manifest bytes changed, no credentials or host settings were changed, and the cache stays inside the assigned consumer. This observed side effect is separate from the two core handoff defects and from non-kit artifact preservation."},
+    ]
+    notes = {
+        "C1": "No new owner answer is necessary to perform this handoff. The already supplied sample choices are not requested again; current request preparation is distinguished from later visual input. Historical unanswered-choice exits remain open.",
+        "C2": "F1: current RQ3 promises production clearance from an insufficient answer list. Correct RQ1/RQ2 and the current sample worksheet do not repair that literal effect.",
+        "C3": "Authorized handoff work completes without human/maintainer approval. Future provider/discovery/cost-evidence inputs are scoped to the absent capability, not a repeat request for this local authorization.",
+        "C4": "All existing I/C/F/Q/T records and sample-only authority remain unchanged. Neither reference measurements nor expert proposals become new owner confirmations.",
+        "C5": "All123 project input files remain; only the authorized active head and SESSION change. Historical packets, corrections, failures and state history stay byte-identical. Installed-tree cache side effects are separately failed under O5.",
+        "C6": "No provider, new art candidate, asset acceptance or engine outcome is fabricated. Existing packet/tooling are inherited; new work is handoff/review and verifier continuity.",
+        "AS1": "Exact controlled answers remain inherited source evidence separate from the original brief and real owner acceptance.",
+        "AS2": "Every one of84 entry records is unchanged; no unasked choice/status/value gains authority from the two historical sample answers.",
+        "AS3": "The revision9 sample operation is inherited/preserved, not newly executed. Revision14 adds a source and handoff record; PP1 covers the new local operation.",
+        "AS4": "All five operative Q texts remain exact and source-consistent for the sample. The inherited pointer correction is carried explicitly for the next packet. F2 concerns an adopted prose condition, not an altered or dropped intrinsic Q.",
+        "AS5": "History, old criteria/packets and failed receipts remain. No new X/E/V/D/J or invalidation is bypassed; only S/N are added.",
+        "AS6": "Caller independently inspects state/source/current sample gates and its genuine cache finding, then verifies the final pointer and unchanged head before adoption. This process pass is not proof of every future effect or adopted clause.",
+        "AS7": "F1/F2: the actual adopted handoff retains unsupported or contradictory later effects despite truthful immediate sample readiness and a useful local outcome.",
+        "AS8": "No sample completion, provider execution, candidate acceptance, production adoption or human/engine acceptance is invented.",
+        "CR1": "A real registered pixl:pixl child receives the isolated handoff-only assignment and original source/authorization context. Caller and specialist roles remain distinct.",
+        "CR2": "The caller actually reads original sources, new work, criteria and runtime, derives its own cache finding and checks current sample prerequisites. Missed future/adopted claims are separately failed rather than hidden by this process evidence.",
+        "CR3": "The cache explanation finding originates in native observations and interpreter-flag comparisons. No maintainer defect feedback reaches either actor; exact messages and first return remain.",
+        "CR4": "One actual SendMessage continues the same child; it edits SESSION and returns the corrected hash. A state revision is unnecessary for this mutable pointer correction; this is more than acknowledgement.",
+        "CR5": "After the last child change, caller reopens SESSION, rechecks its finding, verifies artifact identities and final head, and adopts that version. Three strict endpoint/record observations remain separately not observed.",
+        "CR6": "The caller delivers useful saved work but F1/F2 prevent a fully source-consistent handoff. No approval pause occurs.",
+        "O1": "The first end-turn/terminal success is interim while the correction runs. Corrected child232 is delivered at parent244; actual caller final309 and terminal606 complete the assignment.",
+        "O2": "Caller6fee503d-c9e7-4070-aee7-2fcff280201d and childa2243e0a858503645 bind to actual transcripts; the same child performs the correction.",
+        "O3": "Actual profile/skill and relevant workflow delivery are established by the frozen mechanical observations. Loading is not treated as proof of correct literal reconciliation.",
+        "O4": "Returned project paths and current/entry/frozen-kit references resolve and reported hashes match; state validates. The three strict missing endpoint/record observations remain explicit.",
+        "O5": "F3: exact seed/project/history and257 payload-file preservation hold, but17 generated cache files were written inside the assigned read-only installed kit. A map that excludes __pycache__ cannot make full installed-tree immutability pass.",
+        "O6": "F1/F2 remain in newly authored/adopted operational carriers. New worksheet correctness and source hashes cannot cancel the literal clearance claim or adopted background gate.",
+        "O7": "New local handoff work, inherited packet/tooling, absent provider, unperformed visual/engine/human acceptance and actual cache side effects are distinguished in the final return.",
+        "O8": "Only the frozen neutral task, exact123-file input and declared product kit are native inputs. No evaluator rubric, findings, corrected artifact or hidden owner answer is delivered.",
+        "PP1": "A useful source-bound current handoff is actually saved after workflow/context inspection; revision14 adds two S/N records. Current sample prerequisites, changed-kit provenance and verifier continuity are explicit. Inherited work is not newly credited.",
+        "PP2": "F1: current RQ3 promises production activation effects without establishing the absent production contracts and all linked-choice authority. A separate general gate list is not the answer-to-operation trace for that field.",
+        "PP3": "F1: the limited answer does not finish t_sample, establish concrete production contracts and applicable confirmations, or otherwise clear every prerequisite. D per task alone does not repair those gaps.",
+        "PP4": "Sample-only controlled authority, genuine owner choices, unasked statuses and intrinsic visual/style/readability outcomes are preserved. State readiness, provider availability and actual acceptance remain distinct.",
+        "PP5": "Native independent cache finding, same-child pointer correction and final caller verification are real. This successful review branch does not certify the uncorrected literal handoff claims.",
+        "PP6": "F1/F2: authored result, new worksheet and explicitly adopted older section do not describe consistent bounded effects and required/optional inputs. Available local work was preserved, but full carrier reconciliation fails.",
+    }
+    failed = {"C2", "AS7", "CR6", "O5", "O6", "PP2", "PP3", "PP6"}
+    rows = []
+    for group in ("original_criteria", "answer_state_checks", "caller_workflow_checks", "separate_observation_checks", "production_prerequisite_checks"):
+        for criterion in protocol[group]:
+            id_ = criterion["id"]
+            refs = ["cache_correction", "cache_readonly_limitation", "corrected_child_final", "cache_inventory", "mechanics"] if id_ == "O5" else ["RQ3", "phase_gate", "old_current_background_gate", "new_note_adopts_old_sections", "actual_background_fallback"] if id_ in failed else ["current_observation", "caller_adopts_old_sections", "mechanics", "actual_caller_final"]
+            rows.append({**criterion, "group": group,
+                         "status": "inherited_preserved" if id_ == "AS3" else "fail" if id_ in failed else "pass",
+                         "finding": notes[id_], "evidence": refs})
+    caller_refs = []
+    def visit(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("path"), str) and isinstance(value.get("sha256"), str): caller_refs.append(value)
+            for child in value.values(): visit(child)
+        elif isinstance(value, list):
+            for child in value: visit(child)
+    visit(caller)
+    checked = []
+    with zipfile.ZipFile(BASE / "revision-01/frozen-kit.zip") as archive:
+        for value in caller_refs:
+            name = value["path"]
+            if name.startswith("pixl-kit/"):
+                digest, domain = hashlib.sha256(archive.read(name.removeprefix("pixl-kit/"))).hexdigest(), "exact_frozen_payload"
+            elif name in {"SESSION.md", "state.px/state.px"} and "on entry" in value.get("role", ""):
+                digest, domain = sha(NATIVE / "input-project" / name), "explicit_entry_snapshot"
+            else:
+                digest, domain = sha(PROJECT / name), "current_project"
+            checked.append({"path": name, "sha256": value["sha256"], "domain": domain, "matches": digest == value["sha256"]})
+    assert all(row["matches"] for row in checked), [row for row in checked if not row["matches"]]
+    for value in evidence.values():
+        path = ROOT / value["path"]
+        assert sha(path) == value["sha256"]
+        if "lines" in value:
+            first, last = value["lines"]
+            assert "\n".join(path.read_text(encoding="utf-8").splitlines()[first-1:last]) == value["quote"]
+    result = {
+        "schema_version": 1, "task": protocol["task"], "linked_finding": "CF-02",
+        "review": "literal-reconciliation-20261116/native-01", "reviewed_at_utc": datetime.now(UTC).isoformat(),
+        "reviewer": "Independent development evaluator; no contact or feedback to native actors.",
+        "status": "failed", "outcome": "Useful handoff/worksheet and same-child cache-explanation correction succeed. Literal qualification still fails: current caller RQ3 overclaims production clearance and the explicitly adopted f section retains an unnecessary background gate. Interpreter cache writes also violate the read-only installed-kit boundary despite unchanged payload bytes.",
+        "review_complete": True, "qualification_complete": False, "bounded_workflow_pass": False,
+        "current_handoff_operation_pass": True,
+        "current_handoff_operation_scope": "Actual source-bound handoff authoring, current sample-operation trace, kit-version/verifier continuity and same-child pointer correction; not full literal semantic qualification or new sample/packet/art production.",
+        "inherited_sample_operation_preserved": True, "inherited_packet_work_preserved": True,
+        "current_state_review_pass": True, "same_child_correction_pass": True, "first_pass_source_correctness": False,
+        "source_grounded_production_effect_pass": False, "optional_background_scope_consistent": False,
+        "frozen_payload_preserved": True, "installed_tree_readonly_boundary_pass": False,
+        "native_identity": {"caller_session": "6fee503d-c9e7-4070-aee7-2fcff280201d", "registered_role": "pixl:pixl", "actual_child": "a2243e0a858503645",
+            "first_child_final": evidence["first_child_final"], "caller_findings": evidence["native_caller_finding"],
+            "corrected_child_final": evidence["corrected_child_final"], "corrected_return_delivery": evidence["corrected_return_delivery"],
+            "interim_caller_end_turn": evidence["interim_caller_end_turn"], "actual_caller_final": evidence["actual_caller_final"]},
+        "protocol": evidence["protocol"], "criteria": rows, "findings": findings, "evidence": evidence,
+        "criterion_counts": {"pass": sum(row["status"] == "pass" for row in rows), "fail": len(failed), "inherited_preserved": 1, "total": len(rows)},
+        "source_reference_validation": {"evidence_references": len(evidence), "all_evidence_hashes_lines_quotes_match": True,
+            "structured_caller_references": len(checked), "all_reported_hashes_match": True, "references": checked,
+            "limit": "Identity and range checks do not prove the literal claim's authority or support. Installed-payload references exclude generated bytecode and do not establish whole-tree read-only behavior."},
+        "mechanical_scope": {"status": mechanics["status"], "passed": mechanics["passed"], "total": mechanics["total"], "receipt": evidence["mechanics"],
+            "note": "Three strict observations remain absent: final full workflow, caller authoring-context endpoint and complete literal c_sample record delivery. Equivalent actual field/source inspection supports narrower current semantics, not invented endpoint reads. Mechanical payload preservation excludes __pycache__; semantic O5 separately fails the observed installed-tree writes."},
+        "independent_observations": evidence["current_observation"],
+        "preserved_failures": ["Both predecessor native failures and their original semantic/coverage receipts remain byte-identical.", "The inherited verifier exits1 against this fresh kit for3 changed payload identities and17 absent old cache files; that failure is retained and not rewritten into success.", "The specialist's initial SESSION explanation attributed cache creation too broadly. The caller finds the environment dependence, and the same child corrects the explanation with actual flag observations; physical cache writes remain.", "The first terminal success is interim while the correction runs; only the later returned correction and caller final count as completion."],
+        "next_action": "Preserve this failed guide-only attempt. Develop a source-grounded check at the actual authored-result/adopted-section boundary so current effect fields and inherited operative clauses are checked together; do not treat worksheet completion as correctness. Preserve required target scale and the allowed background fallback, and keep future production clearance conditional on all actual prerequisites. Suppress interpreter bytecode writes when inspecting a read-only kit. Any further native attempt needs a fresh prospective protocol/kit identity and no maintainer defect feedback to its actors.",
+        "limits": ["One fresh artifact continuation with new guidance/seed; not a paired causal control or a resumed historical caller/child.", "Inherited sample, packet/tooling and earlier source-pointer/provenance corrections are preserved, not new operation credit.", "No new actual art, provider execution, candidate/engine acceptance or human acceptance occurred.", "The read-only project observation excludes the installed kit; it is not evidence that the native installed tree had no writes.", "Broader PX-SKILL-001/PX-EVAL-005, M1/M2 and broader M3/M4/M5 remain open."],
+        "script_sha256": sha(Path(__file__)),
+    }
+    with (BASE / "semantic-review-01.json").open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "criteria": result["criterion_counts"], "references": len(evidence), "caller_references": len(checked), "sha256": sha(BASE / "semantic-review-01.json")}))
+
+
+if __name__ == "__main__":
+    main()

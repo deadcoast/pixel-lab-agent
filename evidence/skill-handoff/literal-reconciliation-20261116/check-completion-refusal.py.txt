@@ -1,0 +1,48 @@
+"""Demonstrate that the completed-run summary rejects the retained quota stop."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def main():
+    out = BASE / 'completion-guard-01'
+    if (BASE / 'RESULT.json').exists():
+        raise ValueError('Run this guard probe before retaining the incomplete aggregate')
+    names = ('summarize.py.txt', 'semantic-review-02.json', 'mechanical-04.json',
+             'native-02-resume-01/continuation.json', 'native-02-resume-01/identity.json',
+             'native-02-resume-01/launch.json', 'native-02-resume-01/preservation.json')
+    def snapshot():
+        return {name: {'sha256': hashlib.sha256((BASE / name).read_bytes()).hexdigest(),
+                       'mtime_ns': (BASE / name).stat().st_mtime_ns} for name in names}
+    before = snapshot()
+    out.mkdir()
+    command = [sys.executable, '-B', str(BASE / 'summarize.py.txt'),
+               '--semantic', 'semantic-review-02.json', '--mechanical', 'mechanical-04.json',
+               '--status', 'partial', '--outcome', 'Expected refusal probe; not a completed native outcome.']
+    run = subprocess.run(command, cwd=ROOT, capture_output=True)
+    (out / 'stdout.txt').write_bytes(run.stdout)
+    (out / 'stderr.txt').write_bytes(run.stderr)
+    after = snapshot()
+    checks = {'incomplete_process_rejected': run.returncode == 1 and
+              b'This completion summary cannot classify an interrupted or unverified native run' in run.stderr,
+              'no_completion_result_written': not (BASE / 'RESULT.json').exists(),
+              'inputs_bytes_and_mtimes_unchanged': before == after}
+    result = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass' if all(checks.values()) else 'fail',
+              'command': command, 'returncode': run.returncode, 'checks': checks, 'inputs': before,
+              'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              'scope': 'Expected refusal of this actual usage-limited native process by the unchanged completed-run summarizer. This is a reporting-boundary check, not a native or semantic pass.'}
+    with (out / 'RESULT.json').open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'checks': checks}))
+    raise SystemExit(0 if result['status'] == 'pass' else 1)
+
+
+if __name__ == '__main__':
+    main()

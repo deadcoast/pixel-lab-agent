@@ -1,0 +1,145 @@
+"""Retain an explicitly incomplete qualification without weakening completion guards."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def verify(binding):
+    path = (ROOT / binding['path']).resolve()
+    if not path.is_relative_to(ROOT) or not path.is_file() or sha(path) != binding['sha256']:
+        raise ValueError('Previously bound evidence changed: ' + binding['path'])
+
+
+def main():
+    final = BASE / 'native-02-resume-01'
+    sem = load(BASE / 'semantic-review-02.json')
+    mech = load(BASE / 'mechanical-04.json')
+    continuation, identity, launch, preservation = (
+        load(final / name) for name in ('continuation.json', 'identity.json', 'launch.json', 'preservation.json'))
+    checks = {row['check']: row['status'] for row in mech['checks']}
+    if (continuation['status'] != 'finished' or continuation['returncode'] != 1
+            or continuation['interruption_reason'] != 'usage_limit'
+            or sem.get('review_complete') is not False or sem['qualification_complete'] is not False
+            or (final / 'project/CALLER-RESULT-LITERAL-RECONCILIATION-02.json').exists()):
+        raise ValueError('This retention helper applies only to the observed unfinished quota stop')
+    if any(checks.get(name) != 'pass' for name in (
+            'same_native_parent_resumed_without_fork', 'same_actual_child_continued_without_replacement')):
+        raise ValueError('Do not claim same-session continuation without observed continuity')
+    if (sem['native_identity']['caller_session'] != mech['session_id']
+            or sem['native_identity']['actual_child'] != mech['actual_child_id']
+            or launch['expected_session_id'] != mech['session_id']
+            or launch['expected_child_id'] != mech['actual_child_id']):
+        raise ValueError('Independent native identities disagree')
+    predecessor = BASE / 'native-02'
+    current_predecessor = {p.relative_to(predecessor).as_posix(): sha(p)
+                           for p in predecessor.rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    if current_predecessor != identity['predecessor_files']:
+        raise ValueError('The stopped predecessor capture changed')
+    for name in ('parent.jsonl', mech['actual_child_id'] + '.jsonl'):
+        before = (predecessor / 'native-transcripts' / name).read_bytes()
+        after = (final / 'native-transcripts' / name).read_bytes()
+        if not after.startswith(before) or len(after) <= len(before):
+            raise ValueError('Resumed journals must extend exact retained history')
+    protocol = load(BASE / 'protocol-continuation-02.json')
+    verify(protocol['incomplete_process'])
+    for name in ('interruption-review-02.json', 'semantic-review-01.json', 'semantic-review-02.json'):
+        for binding in load(BASE / name)['evidence'].values():
+            verify(binding)
+    for binding in protocol['evidence'].values():
+        verify(binding)
+    for binding in load(BASE / 'protocol-revision-02.json')['seed']['prior_semantic_receipts']:
+        verify(binding)
+    verify({'path': (BASE / 'mechanical-03.json').relative_to(ROOT).as_posix(),
+            'sha256': '21db78d788762ab408bd4b63d0f3b152ef5aa7b277d36a0a16fa6c3ecee387bb'})
+    for name in ('mechanical-01.json', 'mechanical-03.json', 'mechanical-04.json'):
+        for key in ('checker', 'frozen_kit', 'native_parent', 'native_child', 'protocol'):
+            verify(load(BASE / name)[key])
+    kit = load(BASE / 'revision-02/RESULT.json')
+    current_kit = {p.relative_to(ROOT / 'plugins/pixl').as_posix(): sha(p)
+                   for p in (ROOT / 'plugins/pixl').rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    if kit['status'] != 'pass' or current_kit != kit['package_files']:
+        raise ValueError('The tested kit changed')
+    if any(sha(ROOT / name) != digest for name, digest in kit['source_hashes'].items()):
+        raise ValueError('Qualified local sources changed')
+    historical = ROOT / 'evidence/verification-runs/20261115T163600.991198Z/result.json'
+    full = load(historical)
+    if any(sha(ROOT / name) != digest for name, digest in full['checked_input_hashes'].items()):
+        raise ValueError('Historical checked inputs changed')
+    excluded = {'README.md', 'RESULT.json', 'register-result.py.txt', 'inspect-integrity.py.txt',
+                'documentation-audit.py.txt', 'final-worktree-check.py.txt'}
+    evidence = [p for p in BASE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
+                and p.relative_to(BASE).parts[0] not in excluded
+                and not p.name.startswith(('documentation-', 'final-worktree-'))
+                and not p.relative_to(BASE).parts[0].startswith('integrity-')]
+    source_names = set(full['checked_input_hashes']) | set(kit['source_hashes'])
+    result = {
+        'schema_version': 1, 'task': 'PX-SKILL-001 / PX-EVAL-005', 'linked_finding': 'CF-02',
+        'observed_at': datetime.now(UTC).isoformat(), 'status': 'partial',
+        'outcome': 'Read-only coverage implementation and local checks complete; native qualification remains incomplete after an early parent final and a same-session resume blocked by Claude usage credits.',
+        'qualification_complete': False, 'native_completion_status': 'blocked_usage_limit',
+        'original_cycle': 'IDENTIFY-2026-11-09-01',
+        'source_revision_before_work': load(BASE / 'baseline.json')['head'],
+        'scope': 'Two native handoff-only cases across three processes. The first worksheet case fails semantic qualification. The second observes actual coverage-tool use, independent caller findings and partially saved same-child corrections; its original process ends early and its same-parent/same-child resume hits a usage limit. No final caller result or completed revised semantic qualification exists. No new owner answer or maintainer defect feedback is supplied.',
+        'native_attempt_count': 2, 'native_process_count': 3, 'native_identity': sem['native_identity'],
+        'processes': [
+            {'attempt': 'native-01', 'task_return_completed': True, 'semantic_status': 'failed',
+             'semantic_review': ref(BASE / 'semantic-review-01.json'), 'mechanical_review': ref(BASE / 'mechanical-01.json')},
+            {'attempt': 'native-02', 'task_return_completed': False, 'transport_exit_code': 0,
+             'interruption_review': ref(BASE / 'interruption-review-02.json'), 'mechanical_review': ref(BASE / 'mechanical-03.json')},
+            {'attempt': 'native-02-resume-01', 'task_return_completed': False, 'transport_exit_code': 1,
+             'reason': 'usage_limit', 'semantic_review': ref(BASE / 'semantic-review-02.json'),
+             'mechanical_review': ref(BASE / 'mechanical-04.json')}],
+        'native_completion': ref(final / 'continuation.json'), 'observed_host': launch['host_version'],
+        'semantic_status': sem['status'], 'mechanical_status': mech['status'],
+        'bounded_workflow_pass': False, 'current_handoff_operation_pass': False,
+        'current_handoff_operation_assessment': 'unfinished; no final caller reconciliation',
+        'inherited_sample_operation_preserved': sem.get('inherited_sample_operation_preserved'),
+        'case_entry_files': len(load(predecessor / 'identity.json')['inputs']),
+        'input_files': len(identity['inputs']), 'output_files': len(preservation['outputs']),
+        'latest_semantic_review': ref(BASE / 'semantic-review-02.json'),
+        'latest_mechanical_review': ref(BASE / 'mechanical-04.json'),
+        'input_archive': ref(final / 'input-project.zip'), 'output_archive': ref(final / 'project.zip'),
+        'implementation': {'guidance_changed': True, 'profile_changed': False,
+            'runtime_changed': True, 'existing_runtime_modules_changed': False, 'saved_formats_changed': False,
+            'operation': 'Inventory whole authored result subtrees and check literal values, review coverage and exact declared source/carrier bindings. Semantic meaning and omitted prose remain independently reviewed.'},
+        'package_verification': ref(BASE / 'revision-02/RESULT.json'),
+        'focused_tool_verification': ref(BASE / 'tool-development-01/checks-02/receipt.json'),
+        'retained_full_verification': {'receipt': ref(historical), 'tests': full['tests'],
+            'scope': 'Historical full run, not rerun. All 328 checked inputs remain unchanged; the new helper and tests and revised kit have separate focused evidence.'},
+        'source_hashes': {name: sha(ROOT / name) for name in sorted(source_names)},
+        'protocol_hashes': {(BASE / name).relative_to(ROOT).as_posix(): sha(BASE / name)
+                            for name in ('protocol.json', 'protocol-revision-02.json', 'protocol-continuation-02.json')},
+        'evidence_hashes': {p.relative_to(ROOT).as_posix(): sha(p) for p in sorted(evidence)},
+        'bundle_manifest_sha256': kit['bundle_manifest_sha256'],
+        'limits': ['Coverage complete never means semantic acceptance; selected scopes and declared carriers can omit claims.',
+                   'The first semantic failure, stopped process, evaluator failure, native helper failures and usage limit remain preserved.',
+                   'Same-session recovery is observed; completed recovery and broader host reliability are not established.',
+                   'No provider execution, new art, production adoption, visual/engine or human acceptance is established.'],
+        'next_action': 'After Claude access is restored, prepare a new immutable same-parent/same-child resume from native-02-resume-01; finish the existing correction, final literal review and caller result before completing qualification.',
+        'human_acceptance': 'unperformed; separate',
+        'open_milestones': ['M1', 'M2', 'broader M3', 'broader M4', 'broader M5']}
+    with (BASE / 'RESULT.json').open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'completion': result['native_completion_status'],
+                      'evidence_bindings': len(evidence), 'files': result['output_files']}))
+
+
+if __name__ == '__main__':
+    main()

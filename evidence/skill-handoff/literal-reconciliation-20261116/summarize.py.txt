@@ -1,0 +1,190 @@
+"""Bind the completed native result to its exact instructions and retained evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def verify_reference(binding):
+    path = (ROOT / binding['path']).resolve()
+    if not path.is_relative_to(ROOT) or not path.is_file() or sha(path) != binding['sha256']:
+        raise ValueError('Previously bound evidence changed: ' + binding['path'])
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--semantic', required=True)
+    parser.add_argument('--mechanical', required=True)
+    parser.add_argument('--status', required=True, choices=['bounded_pass', 'partial', 'failed'])
+    parser.add_argument('--outcome', required=True)
+    args = parser.parse_args()
+    sem, mech = load(BASE / args.semantic), load(BASE / args.mechanical)
+    kit = load(BASE / 'revision-02/RESULT.json')
+    final_process = BASE / 'native-02-resume-01'
+    identity, launch, preservation = (load(final_process / name) for name in
+                                     ('identity.json', 'launch.json', 'preservation.json'))
+    continuation = load(final_process / 'continuation.json')
+    native_checks = {row['check']: row['status'] for row in mech['checks']}
+    if (continuation['status'] != 'finished' or continuation['returncode'] != 0
+            or continuation['expected_session_id'] != launch['expected_session_id']
+            or native_checks.get('native_parent_terminal_success') != 'pass'
+            or native_checks.get('actual_parent_final_matches_stream') != 'pass'
+            or native_checks.get('new_caller_result_saved_without_replacing_input') != 'pass'
+            or native_checks.get('caller_final_delivers_result_identity') != 'pass'
+            or native_checks.get('same_child_followups_have_actual_reply') != 'pass'
+            or native_checks.get('same_native_parent_resumed_without_fork') != 'pass'
+            or native_checks.get('same_actual_child_continued_without_replacement') != 'pass'
+            or not (final_process / 'project/CALLER-RESULT-LITERAL-RECONCILIATION-02.json').is_file()):
+        raise ValueError('This completion summary cannot classify an interrupted or unverified native run')
+    if args.status == 'bounded_pass' and (sem['status'] != 'pass' or mech['status'] != 'pass'):
+        raise ValueError('Bounded pass needs both independent reviews to pass')
+    if kit['status'] != 'pass' or identity['package']['sha256'] != kit['bundle_manifest_sha256']:
+        raise ValueError('Native kit differs from qualified kit')
+    current = {p.relative_to(ROOT / 'plugins/pixl').as_posix(): sha(p)
+               for p in (ROOT / 'plugins/pixl').rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    if current != kit['package_files']:
+        raise ValueError('Current kit files differ from the executed frozen kit')
+    if any(sha(ROOT / name) != digest for name, digest in kit['source_hashes'].items()):
+        raise ValueError('Qualified sources changed')
+    if (mech['session_id'] != launch['expected_session_id']
+            or sem['native_identity']['caller_session'] != mech['session_id']
+            or sem['native_identity']['actual_child'] != mech['actual_child_id']):
+        raise ValueError('Independent native identities disagree')
+    historical = ROOT / 'evidence/verification-runs/20261115T163600.991198Z/result.json'
+    full = load(historical)
+    if any(sha(ROOT / name) != digest for name, digest in full['checked_input_hashes'].items()):
+        raise ValueError('Historical checked runtime/test sources drifted')
+    excluded = {'README.md', 'RESULT.json', 'register-result.py.txt', 'inspect-integrity.py.txt',
+                'documentation-audit.py.txt', 'final-worktree-check.py.txt'}
+    evidence = [p for p in BASE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
+                and p.relative_to(BASE).parts[0] not in excluded
+                and not p.name.startswith(('documentation-', 'final-worktree-'))
+                and not p.relative_to(BASE).parts[0].startswith('integrity-')]
+    models = set()
+    for line in (final_process / 'stdout.jsonl').read_text(encoding='utf-8').splitlines():
+        model = json.loads(line).get('message', {}).get('model', '')
+        if model.startswith('claude-'):
+            models.add(model)
+    source_names = set(full['checked_input_hashes']) | set(kit['source_hashes'])
+    # Check already-frozen links before collecting current bytes into a new map.
+    # Consumer-relative references inside native results have their own checker;
+    # these direct reviewer references are repository evidence identities.
+    for binding in load(BASE / 'protocol-revision-02.json')['seed']['prior_semantic_receipts']:
+        verify_reference(binding)
+    resume_protocol = load(BASE / 'protocol-continuation-02.json')
+    verify_reference(resume_protocol['incomplete_process'])
+    for binding in load(BASE / 'interruption-review-02.json')['evidence'].values():
+        verify_reference(binding)
+    for binding in resume_protocol['evidence'].values():
+        verify_reference(binding)
+    verify_reference({
+        'path': (BASE / 'mechanical-03.json').relative_to(ROOT).as_posix(),
+        'sha256': '21db78d788762ab408bd4b63d0f3b152ef5aa7b277d36a0a16fa6c3ecee387bb'})
+    for name in ('parent.jsonl', mech['actual_child_id'] + '.jsonl'):
+        before = (BASE / 'native-02/native-transcripts' / name).read_bytes()
+        after = (final_process / 'native-transcripts' / name).read_bytes()
+        if not after.startswith(before) or len(after) <= len(before):
+            raise ValueError('Native continuation must extend the exact retained journal: ' + name)
+    attempts = []
+    for number, process, semantic_name, mechanical_name in (
+            ('01', 'native-01', 'semantic-review-01.json', 'mechanical-01.json'),
+            ('02', 'native-02-resume-01', args.semantic, args.mechanical)):
+        directory = BASE / process
+        attempt_semantic, attempt_mechanical = load(BASE / semantic_name), load(BASE / mechanical_name)
+        attempt_completion, attempt_launch = load(directory / 'continuation.json'), load(directory / 'launch.json')
+        attempt_identity = load(directory / 'identity.json')
+        attempt_kit = load(BASE / ('revision-' + number) / 'RESULT.json')
+        for binding in attempt_semantic['evidence'].values():
+            verify_reference(binding)
+        for name in ('checker', 'frozen_kit', 'native_parent', 'native_child', 'protocol'):
+            verify_reference(attempt_mechanical[name])
+        attempt_checks = {row['check']: row['status'] for row in attempt_mechanical['checks']}
+        if (attempt_completion['status'] != 'finished' or attempt_completion['returncode'] != 0
+                or attempt_completion['expected_session_id'] != attempt_launch['expected_session_id']
+                or attempt_checks.get('native_parent_terminal_success') != 'pass'
+                or attempt_checks.get('actual_parent_final_matches_stream') != 'pass'
+                or attempt_identity['package']['sha256'] != attempt_kit['bundle_manifest_sha256']
+                or attempt_mechanical['session_id'] != attempt_launch['expected_session_id']
+                or attempt_semantic['native_identity']['caller_session'] != attempt_mechanical['session_id']
+                or attempt_semantic['native_identity']['actual_child'] != attempt_mechanical['actual_child_id']):
+            raise ValueError('Attempt completion, kit or independent identity differs: ' + number)
+        attempts.append({'case': 'native-' + number, 'final_process': process, 'native_identity': attempt_semantic['native_identity'],
+                         'semantic_status': attempt_semantic['status'], 'mechanical_status': attempt_mechanical['status'],
+                         'completion': ref(directory / 'continuation.json'),
+                         'semantic_review': ref(BASE / semantic_name), 'mechanical_review': ref(BASE / mechanical_name),
+                         'package_verification': ref(BASE / ('revision-' + number) / 'RESULT.json'),
+                         'input_archive': ref(directory / 'input-project.zip'), 'output_archive': ref(directory / 'project.zip')})
+    attempts[1]['incomplete_first_process'] = {
+        'attempt': 'native-02', 'transport_exit_code': 0, 'task_complete': False,
+        'interruption_review': ref(BASE / 'interruption-review-02.json'),
+        'mechanical_review': ref(BASE / 'mechanical-03.json'),
+        'output_archive': ref(BASE / 'native-02/project.zip'),
+        'scope': 'The parent ended with a waiting message; the host stopped the pending child correction. The original process and failure remain immutable.'}
+    predecessor_root = BASE / 'native-02'
+    predecessor_current = {p.relative_to(predecessor_root).as_posix(): sha(p)
+                           for p in predecessor_root.rglob('*')
+                           if p.is_file() and '__pycache__' not in p.parts}
+    attempts[1]['resume_predecessor_preserved'] = predecessor_current == identity['predecessor_files']
+    if not attempts[1]['resume_predecessor_preserved']:
+        raise ValueError('The incomplete predecessor capture changed during continuation')
+    result = {
+        'schema_version': 1, 'task': 'PX-SKILL-001 / PX-EVAL-005', 'linked_finding': 'CF-02',
+        'observed_at': datetime.now(UTC).isoformat(), 'status': args.status, 'outcome': args.outcome,
+        'qualification_complete': False, 'original_cycle': 'IDENTIFY-2026-11-09-01',
+        'source_revision_before_work': load(BASE / 'baseline.json')['head'],
+        'scope': 'Two native caller/registered PIXL handoff-only cases: first exact retained revision13 with a current-effect worksheet; second exact first-case revision14 with a read-only coverage utility and revised guidance. The second case continues the same parent and child in an additive process after its first process ended prematurely. All 34 criterion texts are unchanged. No new owner answer or maintainer defect feedback; changed inputs prevent a paired-control causal claim.',
+        'native_attempt_count': 2, 'native_process_count': 3, 'attempts': attempts, 'native_identity': sem['native_identity'],
+        'native_completion': ref(final_process / 'continuation.json'),
+        'observed_host': launch['host_version'], 'observed_models': sorted(models),
+        'semantic_status': sem['status'], 'mechanical_status': mech['status'],
+        'bounded_workflow_pass': sem['bounded_workflow_pass'],
+        'current_handoff_operation_pass': sem['current_handoff_operation_pass'],
+        'inherited_sample_operation_preserved': sem['inherited_sample_operation_preserved'],
+        'input_files': len(identity['inputs']), 'output_files': len(preservation['outputs']),
+        'case_entry_files': len(load(BASE / 'native-02/identity.json')['inputs']),
+        'latest_semantic_review': ref(BASE / args.semantic), 'latest_mechanical_review': ref(BASE / args.mechanical),
+        'input_archive': ref(final_process / 'input-project.zip'), 'output_archive': ref(final_process / 'project.zip'),
+        'implementation': {'guidance_changed': True, 'profile_changed': False, 'runtime_changed': True,
+                           'existing_runtime_modules_changed': False,
+                           'saved_formats_changed': False,
+                           'operation': 'Write source-grounded answer effects and current operational instructions; inventory whole authored result subtrees and check every declared comparison and carrier against exact saved bytes. Coverage never certifies semantics or omitted prose.'},
+        'package_verification': ref(BASE / 'revision-02/RESULT.json'),
+        'focused_tool_verification': ref(BASE / 'tool-development-01/checks-02/receipt.json'),
+        'retained_full_verification': {'receipt': ref(historical), 'tests': full['tests'],
+            'scope': 'Historical full run, not rerun. All 328 checked runtime/test inputs are byte-identical; its tested package predates the revised guides and new helper. The new module and tests have separate focused evidence.'},
+        'source_hashes': {name: sha(ROOT / name) for name in sorted(source_names)},
+        'protocol_hashes': {(BASE / name).relative_to(ROOT).as_posix(): sha(BASE / name)
+                            for name in ('protocol.json', 'protocol-revision-02.json', 'protocol-continuation-02.json')},
+        'evidence_hashes': {p.relative_to(ROOT).as_posix(): sha(p) for p in sorted(evidence)},
+        'bundle_manifest_sha256': kit['bundle_manifest_sha256'],
+        'limits': ['Both cases start fresh sessions over retained artifacts. Only the second case resumes its own same parent and child across processes; earlier historical parent/child sessions are not resumed.',
+                   'Inherited sample publication, packet/tooling and prior corrections are preserved, not new operation credit.',
+                   'No provider, new art, production adoption or visual/engine acceptance is established by a handoff.',
+                   'Prior failures retain their original outcomes; unresolved-choice/direct-question and broader host-reliability exits remain open.'],
+        'human_acceptance': 'unperformed; separate',
+        'open_milestones': ['M1', 'M2', 'broader M3', 'broader M4', 'broader M5']}
+    with (BASE / 'RESULT.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'evidence_bindings': len(evidence),
+                      'input_files': result['input_files'], 'output_files': result['output_files']}))
+
+
+if __name__ == '__main__':
+    main()

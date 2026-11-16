@@ -111,7 +111,17 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** source-grounded production-prerequisite development increment is
+- **Status:** partial development increment, 2026-11-16; the retained native
+  continuation is quota-blocked. The first worksheet-only case remains failed
+  (25 passing criteria, eight failures, one inherited). The revised case saves
+  caller findings and a same-child correction at revision 16, but its original
+  process stopped the child before the corrected return. A 17/17-preflight
+  same-parent/same-child resume ended at `usage_limit` without a final caller result.
+  Its cumulative mechanical receipt is failed at 65/84: nine failures, nine
+  unobserved checks and one N/A remain. Fourteen objective observations pass
+  separately; semantic review is incomplete and all 34 criteria are ungraded.
+  A complete local coverage report does not establish source-grounded meaning.
+- **Prior production-prerequisite status:** source-grounded production-prerequisite development increment is
   partial, 2026-11-15; both native semantic qualifications failed and remain open.
   Useful request/handoff work and genuine same-child corrections are retained,
   but the structured future-effect claim still overstates production clearance
@@ -154,6 +164,14 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   scoped passes, caller-reviewed correction and unaided cold failure are
   reported separately. The actual Claude seed has five project-owned sources
   and needs no library migration. No provider or human acceptance follows.
+- **Literal-reconciliation implementation and retained failure:** [current evidence](../evidence/skill-handoff/literal-reconciliation-20261116/README.md)
+  preserves the first case's partial 57/60 mechanics, semantic failures and 17
+  bytecode-cache additions to its read-only kit. A new read-only helper/launcher
+  inventories every leaf of selected complete question and next-operation subtrees;
+  source and carrier bindings remain separate from semantic judgment. Twenty focused
+  tests and scoped Ruff pass; 18 diagnostic checks retain the deliberately wrong
+  complete review as `semantic_verdict: not_assessed`. Four packaging tests pass on
+  each kit. The old full suite was not rerun and does not cover the new module/tests.
 - **Source-grounded production-prerequisite continuation:** [two native cases](../evidence/skill-handoff/production-prerequisites-20261115/README.md)
   preserve useful pre-discovery sample preparation and a later handoff-only source/
   provenance correction through the same child within each case. The latest state
@@ -180,13 +198,14 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   remaining authority failures. The caller's findings are native-authored; no
   maintainer defect feedback is supplied. The runner, 40 local tests, four
   packaging tests and 42/42 mechanics are separate from semantic acceptance.
-- **Remaining boundary:** continue from revision 13 and reconcile literal authored
-  answer effects and required/optional fallback conditions across the structured
-  result, current notes, criteria and final response. A complete gate list elsewhere
-  does not repair an overclaimed effect or contradictory blocker. Retain qualified
-  sample authority, useful work, unasked choices and earlier direct-question failures.
-  No new provider/engine/artistic acceptance is implied; human acceptance and
-  M1/M2/broader M3/M4/M5 remain open.
+- **Remaining boundary:** after Claude usage access returns, resume the retained
+  caller `0f688277-0e32-45d2-9ee8-8d47724b0865` and registered child
+  `a94b4dc767b65b243`. Complete the already-requested correction, independent
+  literal review and final caller result on the same frozen kit. Current operative
+  instructions must have one home; older notes cannot override primary criteria.
+  Coverage is not semantic acceptance. Retain sample authority, useful work,
+  unasked choices and earlier failures. The access dependency is separate from
+  human acceptance; M1/M2 and broader M3/M4/M5 remain open.
 
 ## PX-OPS-002 — preserve project proof dependencies across kit updates
 

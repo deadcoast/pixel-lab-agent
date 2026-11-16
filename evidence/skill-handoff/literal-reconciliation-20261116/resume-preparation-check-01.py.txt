@@ -1,0 +1,116 @@
+"""Independently bind same-parent/same-child resume before inference."""
+import ast
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+PREVIOUS = BASE / 'native-02'
+ATTEMPT = BASE / 'native-02-resume-01'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': str(path.resolve()), 'sha256': sha(path), 'bytes': path.stat().st_size}
+
+
+def files(root, exclude=()):
+    return {p.relative_to(root).as_posix(): sha(p) for p in root.rglob('*')
+            if p.is_file() and not any(part in exclude for part in p.relative_to(root).parts)}
+
+
+def archive(path):
+    with zipfile.ZipFile(path) as source:
+        names = source.namelist()
+        assert len(names) == len(set(names)), 'Duplicate archive entries'
+        return {name: hashlib.sha256(source.read(name)).hexdigest() for name in names if not name.endswith('/')}
+
+
+protocol_path = BASE / 'protocol-continuation-02.json'
+protocol = read(protocol_path)
+identity, launch = read(ATTEMPT / 'identity.json'), read(ATTEMPT / 'launch.json')
+old_identity, old_launch = read(PREVIOUS / 'identity.json'), read(PREVIOUS / 'launch.json')
+old_completion, old_preservation = read(PREVIOUS / 'continuation.json'), read(PREVIOUS / 'preservation.json')
+consumer = Path(identity['consumer'])
+session, child = protocol['native_identity']['caller_session'], protocol['native_identity']['actual_child']
+kit = read(BASE / 'revision-02/RESULT.json')
+checker = BASE / 'mechanical-check-04.py.txt'
+for name in ('mechanical-check-04.py.txt', 'mechanical-read-support.py.txt', 'mechanical-handoff-tool-support-02.py.txt'):
+    ast.parse((BASE / name).read_text(encoding='utf-8'))
+bindings = {
+    'launch': ref(ATTEMPT / 'launch.json'), 'prompt': ref(ATTEMPT / 'prompt.txt'),
+    'identity': ref(ATTEMPT / 'identity.json'), 'continuation_protocol': ref(protocol_path),
+    'original_protocol': ref(BASE / 'protocol-revision-02.json'),
+    'mcp': ref(PREVIOUS / 'mcp.json'), 'runtime_environment': ref(PREVIOUS / 'runtime-environment.json'),
+    'recorder_source': ref(ROOT / 'evaluations/native_trial_records.py'),
+    'native_executor_source': ref(ROOT / 'evaluations/request_review_trials.py'),
+    'full_retention_source': ref(ROOT / 'evaluations/skill_handoff_trials.py'),
+}
+checks = {
+    'exact_prospective_resume_protocol': sha(protocol_path) == '7793f616f0d8e98a35b30ec25bb243a90109a7921749474069eb6ea5e2bc1b2a',
+    'exact_neutral_prompt': (ATTEMPT / 'prompt.txt').read_text(encoding='utf-8') == protocol['assignment']['resume_prompt']
+        and sha(ATTEMPT / 'prompt.txt') == protocol['assignment']['resume_prompt_utf8_sha256'] == identity['prompt_sha256'],
+    'same_parent_same_child_without_fork': launch['expected_session_id'] == identity['session_id'] == old_launch['expected_session_id'] == session
+        and launch['expected_child_id'] == identity['child_id'] == child
+        and launch['command'][-2:] == ['--resume', session]
+        and not any(item in launch['command'] for item in ('--fork-session', '--session-id', '--continue')),
+    'same_consumer_and_original_configuration': Path(launch['cwd']).resolve() == Path(old_launch['cwd']).resolve() == consumer.resolve()
+        and launch['configuration_files'] == old_launch['configuration_files']
+        and launch['command'][launch['command'].index('--mcp-config') + 1] == str(PREVIOUS / 'mcp.json'),
+    'registered_role_and_unchanged_kit': identity['target_role'] == 'pixl:pixl'
+        and identity['registered_agent'] == old_identity['registered_agent']
+        and identity['package_files'] == old_identity['package_files'] == kit['package_files'] == archive(BASE / 'revision-02/frozen-kit.zip') == files(consumer / 'pixl-kit')
+        and len(identity['package_files']) == 261 and kit['status'] == 'pass',
+    'exact_166_live_and_retained_entry': len(identity['inputs']) == 166
+        and identity['inputs'] == old_preservation['outputs'] == files(PREVIOUS / 'project') == files(consumer, ('pixl-kit', '__pycache__')),
+    'resume_input_snapshot_and_archive': files(ATTEMPT / 'input-project') == archive(ATTEMPT / 'input-project.zip') == identity['inputs']
+        and ref(ATTEMPT / 'input-project.zip') == {key: identity['input_archive'][key] for key in ('path', 'sha256', 'bytes')},
+    'original_135_baseline_separate_and_unchanged': identity['original_inputs'] == old_identity['inputs'] == read(ROOT / protocol['seed']['original_input_manifest']['path'])
+        and len(identity['original_inputs']) == 135,
+    'entire_incomplete_process_capture_unchanged': files(PREVIOUS, ('__pycache__',)) == identity['predecessor_files'],
+    'predecessor_refs_exact': ref(PREVIOUS / 'continuation.json') == identity['predecessor'] == launch['predecessor']
+        and ref(PREVIOUS / 'identity.json') == identity['predecessor_identity']
+        and ref(PREVIOUS / 'preservation.json') == identity['predecessor_preservation'],
+    'live_original_transcripts_match_retained': all(ref(Path(item['path'])) == item for item in [old_completion['transcripts']['parent'], old_completion['transcripts']['children'][child]]),
+    'resume_available_for_actual_original_child': old_completion['native_resume']['available']
+        and child in {item['id'] for item in old_completion['children']},
+    'original_runner_sources_and_configs_unchanged': all(ref(Path(item[key]['path'])) == item[key]
+        for item in old_identity['source_files'] for key in ('source', 'snapshot'))
+        and all(ref(Path(old_identity[key]['path'])) == old_identity[key] for key in ('mcp', 'runtime_environment')),
+    'full_project_retention_contract_fields_present': all(name in identity for name in ('case', 'inputs', 'input_archive', 'static_inputs', 'package_files'))
+        and identity['case'] == old_identity['case'] and identity['static_inputs'] == old_identity['static_inputs'],
+    'source_instructions_and_new_tool_still_frozen': all(sha(ROOT / name) == digest for name, digest in protocol['instruction_identity']['expected_instruction_source_sha256'].items())
+        and all(sha(ROOT / item['path']) == item['sha256'] for item in protocol['declared_tool_intervention']['source_files']),
+    'no_inference_or_output_yet': not any((ATTEMPT / name).exists() for name in ('stdout.jsonl', 'continuation.json', 'project', 'preservation.json', 'record.json')),
+    'expected_caller_result_still_absent': protocol['assignment']['new_result_path'] not in identity['inputs'],
+}
+result = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass' if all(checks.values()) else 'fail',
+    'passed': sum(checks.values()), 'total': len(checks), 'checks': checks,
+    'session_id': session, 'actual_child_id': child, 'consumer': str(consumer),
+    'original_case_files': 135, 'resume_entry_files': 166,
+    'prepared_bindings': bindings,
+    'mechanical_checker': ref(checker), 'source_delivery_support': ref(BASE / 'mechanical-read-support.py.txt'),
+    'tool_observer': ref(BASE / 'mechanical-handoff-tool-support-02.py.txt'),
+    'preparation_checker': ref(Path(__file__)),
+    'scope': 'Pre-inference preparation of a second process for the same native02 caller/child and original assignment. Full-project retain can consume the enriched generic identity; execution and final task completion remain unobserved. Original135 baseline and166 resume-entry preservation are separate.',
+    'completion_requirements': ['Actual same-child corrected task-bearing return and delivery after the resume boundary.',
+        'Final expected caller result, exact identities, independent caller review and useful actual final.',
+        'Whole retained first process unchanged; original failed mechanical03 and evaluator execution failure remain retained.'],
+    'limits': ['No native inference performed by this preflight. Process exit0 or a waiting terminal is not completed work.',
+        'The final checker observes combined historical journals and labels their scope; it does not count historical instruction delivery as fresh resume delivery.']}
+with (BASE / 'resume-preparation-01.json').open('x', encoding='utf-8') as output:
+    json.dump(result, output, indent=2)
+    output.write('\n')
+print(json.dumps({'status': result['status'], 'passed': result['passed'], 'total': result['total'],
+    'failed': [name for name, passed in checks.items() if not passed], 'checker_sha256': sha(checker)}))
+raise SystemExit(0 if result['status'] == 'pass' else 1)

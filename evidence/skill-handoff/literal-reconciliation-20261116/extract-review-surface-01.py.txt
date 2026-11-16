@@ -1,0 +1,86 @@
+"""Index completed native finals and authored claim fields without grading them."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-01"
+PROJECT = NATIVE / "project"
+OUT = BASE / "semantic-extraction-01.json"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    assert (NATIVE / "preservation.json").is_file(), "Wait for completed retention."
+    result_name = "CALLER-RESULT-LITERAL-RECONCILIATION.json"
+    caller = json.loads((PROJECT / result_name).read_bytes())
+    claim_fields = []
+    tracked = {"question", "necessary_for", "unlocks", "next", "next_action", "next_operation",
+               "blocked_on", "remaining_questions", "current_continuation", "current_handoff"}
+
+    def visit(value, pointer=""):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                next_pointer = pointer + "/" + key.replace("~", "~0").replace("/", "~1")
+                if key in tracked:
+                    claim_fields.append({"json_pointer": next_pointer, "value": child})
+                visit(child, next_pointer)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, pointer + "/" + str(index))
+
+    visit(caller)
+    transcripts = {}
+    for path in sorted((NATIVE / "native-transcripts").glob("*.jsonl")):
+        finals, operations, seen = [], [], set()
+        for line, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            row = json.loads(raw)
+            message = row.get("message", {})
+            content = message.get("content", [])
+            if message.get("role") == "assistant" and message.get("stop_reason") == "end_turn" and isinstance(content, list):
+                text = "\n".join(block.get("text", "") for block in content
+                                 if isinstance(block, dict) and block.get("type") == "text")
+                if text:
+                    finals.append({"line": line, "text": text,
+                                   "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()})
+            for block in content if isinstance(content, list) else []:
+                if not isinstance(block, dict) or block.get("type") != "tool_use":
+                    continue
+                if block.get("name") not in {"Agent", "SendMessage", "mcp__pixl-local__pixl_commit"}:
+                    continue
+                identity = block.get("id")
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                operations.append({"line": line, "tool_use_id": identity,
+                                   "tool": block["name"], "input": block.get("input")})
+        transcripts[path.name] = {"path": path.relative_to(ROOT).as_posix(),
+                                  "sha256": sha(path), "nonempty_end_turns": finals,
+                                  "native_operations": operations}
+    preservation = json.loads((NATIVE / "preservation.json").read_bytes())
+    inputs, outputs = preservation["inputs"], preservation["outputs"]
+    result = {
+        "schema_version": 1, "observed_at_utc": datetime.now(UTC).isoformat(),
+        "scope": "Index only, not a semantic verdict. Current/adopted notes and full context still require direct reading. This collects explicit assistant finals and actual tool calls; it does not extract hidden thinking blocks or prescribe corrected answers.",
+        "caller_result": {"path": (PROJECT / result_name).relative_to(ROOT).as_posix(),
+                          "sha256": sha(PROJECT / result_name)},
+        "literal_claim_fields": claim_fields,
+        "new_output_files": {name: digest for name, digest in outputs.items() if name not in inputs},
+        "changed_input_files": {name: {"before": digest, "after": outputs.get(name)}
+                                for name, digest in inputs.items() if outputs.get(name) != digest},
+        "transcripts": transcripts, "script_sha256": sha(Path(__file__)),
+    }
+    with OUT.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"path": OUT.relative_to(ROOT).as_posix(), "sha256": sha(OUT),
+                      "claim_fields": len(claim_fields), "transcripts": len(transcripts)}))
+
+
+if __name__ == "__main__":
+    main()

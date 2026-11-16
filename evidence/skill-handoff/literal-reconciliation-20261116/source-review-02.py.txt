@@ -1,0 +1,73 @@
+"""Freeze independent static review of the added handoff coverage operation."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--handoff-guide-sha256', required=True)
+args = parser.parse_args()
+paths = ['pixl/handoff_review.py', 'plugins/pixl/scripts/check_handoff.py',
+    'plugins/pixl/skills/pixl/references/delegation.md',
+    'plugins/pixl/skills/pixl/references/intake-sample.md',
+    'plugins/pixl/skills/pixl/references/handoff-review.md', 'tests/test_handoff_review.py']
+hashes = {name: sha(ROOT / name) for name in paths}
+assert hashes[paths[0]] == '5f49e8f3514bc59117714f7392528b9f60f1aa0ba874d5caef262a093153c7d4'
+assert hashes[paths[1]] == 'ac1afd38549c6e951ab02afdfcc1695f3dcd309b3e357bca524a679271c02acc'
+assert hashes[paths[2]] == '72bd2cdfd03333ae0cc3bcd325c4a231f0730ca2f42fbece1955b18b5648199b'
+assert hashes[paths[3]] == '9fd421030d44e104ff36446409d4562a976daec1650f7a956a950ae8043846ef'
+assert hashes[paths[4]] == args.handoff_guide_sha256
+old_review = json.loads((BASE / 'source-review-01.json').read_bytes())
+for item in old_review['reviewed_sources']:
+    assert sha(ROOT / item['path']) == item['sha256']
+baseline = json.loads((BASE / 'baseline.json').read_bytes())['head']
+tracked = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', baseline, 'pixl'], cwd=ROOT, text=True).splitlines()
+existing_changes = [name for name in tracked if (ROOT / name).read_bytes() != subprocess.check_output(['git', 'show', baseline + ':' + name], cwd=ROOT)]
+actual_runtime = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'pixl').rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+assert not existing_changes and actual_runtime - set(tracked) == {'pixl/handoff_review.py'}
+findings = [
+    {'id': 'SR2-1', 'status': 'pass', 'finding': 'The new module is the only runtime-source addition. Existing runtime sources, PX2 specification/registry and lifecycle/decision/family meanings are unchanged. The utility adds no UDL record, caller-result schema mutation, provider action or acceptance event.'},
+    {'id': 'SR2-2', 'status': 'pass', 'finding': 'Inventory derives every scalar/empty-container leaf from explicitly selected disjoint saved-result subtrees independently of review rows. JSON pointer escaping, typed literal values, duplicate/finite JSON, overlap and stale-result identity are explicitly handled.'},
+    {'id': 'SR2-3', 'status': 'pass', 'finding': 'Coverage reports distinguish absent, duplicated, unexpected, changed and incomplete claims plus stale result/scope/source/carrier bindings. Metadata is explicitly reviewer-classified and separately enumerated. All statuses preserve semantic_verdict not_assessed; coverage cannot certify source support or authority.'},
+    {'id': 'SR2-4', 'status': 'pass', 'finding': 'The observed lines:null legacy-locator loophole is fixed: citations require an explicit list, then the unchanged source resolver rejects malformed or out-of-bounds integer ranges. Carrier excerpts compare exact text including line endings; the bounded resolver requires narrower ranges when needed.'},
+    {'id': 'SR2-5', 'status': 'pass', 'finding': 'Input, source and optional output paths use existing root confinement. The API reads only; CLI output is one exclusive fresh file. Existing result/review/source/report bytes are not overwritten. Direct copied launcher sets dont_write_bytecode before runtime imports and selects its own relocated runtime.'},
+    {'id': 'SR2-6', 'status': 'pass', 'finding': 'Guidance requires whole question and authored next-operation subtrees, actual final result binding, every leaf reviewed, and all current operational excerpts declared. It explicitly acknowledges that unlisted prose, metadata classification and source meaning remain outside automatic coverage.'},
+    {'id': 'SR2-7', 'status': 'pass', 'finding': 'Current operational instructions belong in a self-contained new section. Old operational notes remain history/evidence even when linked by section; the new section cannot supersede primary owner requirements or source criteria. Existing authorization and independent useful work continue without a new human permission gate.'},
+    {'id': 'SR2-8', 'status': 'pass', 'finding': 'Authored explanations remain separate from unchanged runtime-derived continuation. Product guidance contains no retained fixture-specific answers and requires final semantic rereading even after complete coverage. Review/report hashes are returned alongside their bound result to avoid circular identity.'},
+    {'id': 'SR2-9', 'status': 'pass', 'finding': 'The final test source addresses omitted later questions, stale/type/metadata/carrier cases, malformed JSON and paths, real link/junction escape, input bytes/mtime preservation, and relocated -I execution without caches. Existing focused test evidence is bound separately; this review did not rerun the product tests.'},
+]
+result = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass',
+    'review_type': 'independent manual code/source and guidance review', 'reviewer': '/root/prerequisite_mechanics',
+    'source_sha256': hashes, 'baseline': baseline, 'existing_runtime_source_changes': existing_changes,
+    'runtime_source_additions': sorted(actual_runtime - set(tracked)),
+    'unchanged_source_authorities': old_review['reviewed_sources'],
+    'reviewed_dependencies': [ref(ROOT / name) for name in ('pixl/request_review.py', 'pixl/graph.py', 'pixl/service.py')],
+    'resolved_pre_freeze_finding': 'Initial citation lines:null could fall back to legacy locator text despite explicit-line contract. Worker fixed the shape guard before freeze and retained a regression test.',
+    'findings': findings, 'passed': len(findings), 'total': len(findings),
+    'separate_scoped_test_receipt': ref(BASE / 'tool-development-01/checks-02/receipt.json'),
+    'prior_test_attempt_preserved': 'tool-development-01/checks-01 retains initial lint failure and Windows symlink skip; checks-02 uses a real junction fallback without skip.',
+    'fresh_runtime_execution_in_this_review': False,
+    'limits': ['Static source review, not a new full suite or native-behavior result.',
+        'Tool-contract tests, actual native tool invocation, whole-carrier coverage and source-grounded semantic correctness remain different evidence levels.',
+        'The helper accepts declared scopes and metadata classification; it does not discover every omitted operational carrier or decide whether cited text supports a claim.',
+        'No provider, new art, production adoption, visual/engine/human acceptance or broader milestone closure is established.'],
+    'recorder': ref(Path(__file__)),
+}
+with (BASE / 'source-review-02.json').open('x', encoding='utf-8') as stream:
+    json.dump(result, stream, indent=2)
+    stream.write('\n')
+print(json.dumps({'status': result['status'], 'passed': len(findings), 'receipt': ref(BASE / 'source-review-02.json')}))

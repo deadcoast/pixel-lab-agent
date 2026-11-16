@@ -1,0 +1,154 @@
+"""Retain final attribution and installed-cache observations without changing native evidence."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+ATTEMPT = BASE / 'native-01'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def rows(path):
+    return [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def write(path, value):
+    with path.open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+def inventory(root):
+    return {path.relative_to(root).as_posix(): {'sha256': sha(path),
+        'bytes': path.stat().st_size, 'mtime_ns': path.stat().st_mtime_ns}
+        for path in sorted(root.rglob('*')) if path.is_file()}
+
+
+def blocks(row):
+    content = row.get('message', {}).get('content', [])
+    return content if isinstance(content, list) else []
+
+
+identity = read(ATTEMPT / 'identity.json')
+consumer = Path(identity['consumer'])
+kit = consumer / 'pixl-kit'
+mech = read(BASE / 'mechanical-01.json')
+assert mech['checker']['sha256'] == 'dfa7ee588561365055d4bcd2d4c555865dbe9f603b40cbeb296797a85b41b116'
+assert read(ATTEMPT / 'continuation.json')['status'] == 'finished'
+parent_path = ATTEMPT / 'native-transcripts/parent.jsonl'
+child_path = ATTEMPT / 'native-transcripts' / (mech['actual_child_id'] + '.jsonl')
+parent, child, stream = rows(parent_path), rows(child_path), rows(ATTEMPT / 'stdout.jsonl')
+before = inventory(kit)
+payload = identity['package_files']
+added = sorted(set(before) - set(payload))
+missing = sorted(set(payload) - set(before))
+changed = sorted(name for name in set(payload) & set(before) if before[name]['sha256'] != payload[name])
+assert len(payload) == 257 and len(added) == 17 and not missing and not changed
+assert all('__pycache__' in Path(name).parts and name.endswith('.pyc') for name in added)
+cache_archive = BASE / 'runtime-observation-cache-01.zip'
+with zipfile.ZipFile(cache_archive, 'x', zipfile.ZIP_DEFLATED) as archive:
+    for name in added:
+        archive.writestr(name, (kit / name).read_bytes())
+with zipfile.ZipFile(cache_archive) as archive:
+    assert len(archive.namelist()) == len(set(archive.namelist())) == len(added)
+    assert set(archive.namelist()) == set(added)
+    assert all(hashlib.sha256(archive.read(name)).hexdigest() == before[name]['sha256'] for name in added)
+after = inventory(kit)
+assert before == after
+direct_calls = {}
+session_writes = {}
+for number, row in enumerate(child, 1):
+    for block in blocks(row):
+        if block.get('type') != 'tool_use':
+            continue
+        inp = block.get('input', {})
+        command = inp.get('command', '')
+        if ' -I pixl-kit/scripts/pixl.py ' in command:
+            direct_calls.setdefault(block['id'], {'first_native_line': number, 'command': command})
+        if block.get('name') == 'Write' and inp.get('file_path', '').endswith('/SESSION.md'):
+            text = inp['content']
+            session_writes.setdefault(block['id'], {'first_native_line': number,
+                'utf8_payload_sha256': hashlib.sha256(text.encode()).hexdigest(), 'content': text})
+cache = {
+    'observed_at': datetime.now(UTC).isoformat(),
+    'status': 'observed_installed_tree_additions',
+    'mechanical_receipt': ref(BASE / 'mechanical-01.json'),
+    'native_parent': ref(parent_path), 'native_child': ref(child_path),
+    'consumer': str(consumer), 'installed_tree_file_count': len(before),
+    'frozen_payload_file_count': len(payload), 'unchanged_payload_file_count': len(payload) - len(changed) - len(missing),
+    'payload_changed': changed, 'payload_missing': missing,
+    'added_files': {name: before[name] for name in added},
+    'cache_archive': ref(cache_archive), 'archive_member_count': len(added),
+    'observation_preserved_all_installed_bytes_and_mtimes': before == after,
+    'native_observations': {
+        'caller_finding_and_request_parent_lines': [230, 231],
+        'actual_same_child_delivery_line': 203,
+        'direct_isolated_runner_calls': direct_calls,
+        'bytecode_setting_probe_child_lines': [207, 208],
+        'probe_observed_default_dont_write_bytecode': True,
+        'probe_observed_isolated_dont_write_bytecode': False,
+        'post_correction_verification_child_lines': [225, 226],
+        'post_correction_observed_cache_count': 17,
+    },
+    'interpretation': 'The installed payload map excludes __pycache__ and remains exact. Seventeen interpreter cache files were nevertheless written inside the read-only installed tree during native execution. The parent independently found the attribution error and the same child corrected SESSION.md; the correction did not remove or undo these writes.',
+    'attribution_limit': 'Actual isolated runner calls, bytecode-setting probe, native cache observations and timestamps support the native attribution. This observer did not trace the individual filesystem syscalls; the archive is a post-run read-only capture of actual retained live cache bytes.',
+    'mechanical_scope': 'installed_kit_matches_frozen_identity excludes __pycache__; no_observed_external_scratch_writes concerns writes outside the consumer. Neither passing check establishes no writes anywhere inside the installed kit. The frozen mechanical result remains unchanged; semantic O5 is assessed separately.',
+}
+cache_path = BASE / 'runtime-observation-cache-01.json'
+write(cache_path, cache)
+terminals = [{'stream_line': i, 'uuid': row.get('uuid'), 'session_id': row.get('session_id'),
+    'subtype': row.get('subtype'), 'duration_ms': row.get('duration_ms'), 'num_turns': row.get('num_turns'),
+    'result_sha256': hashlib.sha256(row.get('result', '').encode()).hexdigest()}
+    for i, row in enumerate(stream, 1) if row.get('type') == 'result' and not row.get('parent_tool_use_id')]
+notes = {
+    'observed_at': datetime.now(UTC).isoformat(), 'status': 'partial',
+    'mechanical_receipt': ref(BASE / 'mechanical-01.json'),
+    'mechanical_status': mech['status'], 'passed': mech['passed'], 'total': mech['total'],
+    'evaluator_correction_applied': False,
+    'strict_gaps': [row for row in mech['checks'] if row['status'] != 'pass'],
+    'native_identity': {'caller_session': mech['session_id'], 'actual_child': mech['actual_child_id']},
+    'terminal_results': terminals,
+    'first_caller_return': mech['parent_turn_finals'][0], 'actual_caller_final': mech['parent_final'],
+    'first_child_final': mech['child_finals'][0], 'actual_child_final': mech['task_bearing_child_final'],
+    'actual_child_delivery': mech['task_bearing_child_final_delivery'],
+    'same_child_correction': mech['same_child_correction_rounds'],
+    'correction_scope': 'One independently found cache-attribution discrepancy. The same actual child revised the mutable SESSION.md pointer and verified unchanged revision14. This was a correction request and reply, not an acknowledgement-only exchange. It did not repair the separately graded current-carrier semantic defects.',
+    'session_write_payloads': session_writes,
+    'current_state': mech['current_state'],
+    'retained_project': {'input_files': len(identity['inputs']), 'output_files': len(read(ATTEMPT / 'preservation.json')['outputs']),
+        'new_files': len(mech['deltas']['new']), 'changed': mech['deltas']['changed'], 'removed': mech['deltas']['removed']},
+    'caller_file_reference_occurrences': len(mech['caller_file_references']),
+    'all_caller_file_references_match': all(row['matches_actual_bytes'] for row in mech['caller_file_references']),
+    'final_artifacts': [ref(ATTEMPT / 'project' / name) for name in [
+        'CALLER-RESULT-LITERAL-RECONCILIATION.json', 'SESSION.md', 'deliverables/continuation-2026-11-16.md',
+        'review/caller-comparison-2026-11-16-v6.md']],
+    'cache_observation': ref(cache_path),
+    'failure_scope': {
+        'native_tool_result_is_error_counts': {actor: len(mech[actor + '_tool_observations']['errors']) for actor in ('parent', 'child')},
+        'qualification': 'Zero wrapper is_error records does not mean no refused/failed subprocess checks. The historical revision13 verifier reports kit-identity drift under the changed guide kit; comparing the old snapshot also reports SESSION/head mismatches after intentional publication. Raw transcripts retain these outcomes. The added cache writes are a genuine confinement observation, not an evaluator classification bug.',
+        'reviewer_read_failures': 'Two exploratory transcript reads initially used Windows default cp1252 and raised UnicodeDecodeError; they were retried read-only with explicit UTF-8. No native evidence or receipt was changed.',
+    },
+    'limits': ['The three strict caller observation gaps remain not_observed. Equivalent unchanged-record/source checks do not invent a fresh workflow/context read or complete literal contract delivery.',
+        'The inherited sample, older tooling/packets and prior corrections are preserved, not new production or acceptance credit.',
+        'Cache byte retention and payload identity do not reverse the installed-tree write or establish semantic conformance.',
+        'Semantic authority, provider execution, art quality, visual/engine and human acceptance are separate.'],
+    'recorder': ref(Path(__file__)),
+}
+notes_path = BASE / 'mechanical-review-notes-01.json'
+write(notes_path, notes)
+print(json.dumps({'mechanical_status': mech['status'], 'passed': mech['passed'], 'total': mech['total'],
+    'notes': ref(notes_path), 'cache': ref(cache_path), 'cache_files': len(added)}))

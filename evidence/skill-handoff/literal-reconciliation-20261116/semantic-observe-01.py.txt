@@ -1,0 +1,98 @@
+"""Read the completed literal-reconciliation case without replaying its inherited production work."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-01"
+PROJECT = NATIVE / "project"
+OUT = BASE / "semantic-observation-01"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def snapshot(directory):
+    return {p.relative_to(directory).as_posix():
+            {"sha256": sha(p), "mtime_ns": p.stat().st_mtime_ns}
+            for p in directory.rglob("*") if p.is_file()}
+
+
+def write(name, value):
+    with (OUT / name).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+
+
+def main():
+    assert (NATIVE / "preservation.json").is_file(), "Await completed retained snapshot."
+    OUT.mkdir(exist_ok=False)
+    before = snapshot(PROJECT)
+    initial_files = snapshot(NATIVE / "input-project")
+    write("before.json", before)
+    runner = ROOT / "plugins/pixl/scripts/pixl.py"
+    commands = {
+        "workflow": [str(runner), "workflow", str(PROJECT / "state.px/state.px"), "--root", str(PROJECT)],
+        "decode": [str(runner), "decode", str(PROJECT / "state.px/state.px")],
+    }
+    results = {}
+    for name, args in commands.items():
+        command = [sys.executable, "-B", "-I", *args]
+        run = subprocess.run(command, cwd=PROJECT, capture_output=True)
+        (OUT / (name + ".stdout.json")).write_bytes(run.stdout)
+        (OUT / (name + ".stderr.txt")).write_bytes(run.stderr)
+        results[name] = {"command": command, "returncode": run.returncode, "output": json.loads(run.stdout)}
+    decoded = results["decode"]["output"]
+    records = {row["id"]: row for row in decoded["records"]}
+    initial = json.loads((BASE / "seed-preflight-01/decode.stdout.json").read_bytes())
+    previous = {row["id"]: row for row in initial["records"]}
+    workflow = results["workflow"]["output"]
+    changes = [id_ for id_, row in previous.items() if records.get(id_) != row]
+    additions = sorted(set(records) - set(previous))
+    changed_files = [name for name, value in initial_files.items()
+                     if name not in before or value["sha256"] != before[name]["sha256"]]
+    criteria = json.loads((PROJECT / "deliverables/sample-request/sample-criteria.json").read_bytes())
+    mapped = {row["id"]: row for row in criteria["outputs"][0]["criteria"]}
+    checks = {
+        "read_only_state_commands_succeeded": all(row["returncode"] == 0 for row in results.values()),
+        "all84_input_records_unchanged": len(previous) == 84 and not changes,
+        "only_source_and_handoff_records_added_if_any": all(records[id_]["kind"] in {"S", "N"} for id_ in additions),
+        "sample_still_only_ready": workflow["ready"] == ["t_sample"],
+        "no_new_candidate_evidence_verdict_decision_job": all(records[id_]["kind"] not in {"X", "E", "V", "D", "J"} for id_ in additions),
+        "all123_input_files_retained": len(initial_files) == 123 and all(name in before for name in initial_files),
+        "only_active_head_and_session_change_among_input": set(changed_files) <= {"state.px/state.px", "SESSION.md"},
+        "exact_five_current_criteria": set(mapped) == {ref["$ref"] for ref in records["f_sample"]["fields"]["rq"]}
+             and all(row["check"] == records[id_]["fields"]["ck"] for id_, row in mapped.items()),
+    }
+    after = snapshot(PROJECT)
+    write("after.json", after)
+    checks["all_retained_project_bytes_and_mtimes_unchanged_by_observer"] = before == after
+    runtime_files = {name: sha(ROOT / name) for name in (
+        "plugins/pixl/scripts/pixl.py", "plugins/pixl/runtime/pixl/lifecycle.py",
+        "plugins/pixl/runtime/pixl/codec.py", "plugins/pixl/runtime/pixl/asset-plan.schema.json")}
+    kit_files = json.loads((BASE / "revision-01/RESULT.json").read_bytes())["package_files"]
+    checks["inspected_runtime_matches_native_kit"] = all(
+        digest == kit_files[name.removeprefix("plugins/pixl/")] for name, digest in runtime_files.items())
+    result = {
+        "status": "pass" if all(checks.values()) else "fail",
+        "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+        "observed_at": datetime.now(UTC).isoformat(),
+        "scope": "Read-only final state, source authority, exact criteria and input preservation observation. Inherited packet creation and harness tests are not rerun or credited as new work; the predecessor's independent observations remain historical evidence. These objective checks do not grade current handoff semantics.",
+        "state_sha256": sha(PROJECT / "state.px/state.px"), "revision": decoded["revision"],
+        "record_count": len(records), "output_files": len(before),
+        "added_records": additions, "changed_input_records": changes, "changed_input_files": changed_files,
+        "current_blockers": {task["id"]: task["blockers"] for task in workflow["tasks"]},
+        "commands": {name: {key: row[key] for key in ("command", "returncode")} for name, row in results.items()},
+        "runtime_files": runtime_files, "script_sha256": sha(Path(__file__)),
+    }
+    write("RESULT.json", result)
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total", "revision", "record_count", "output_files")}))
+
+
+if __name__ == "__main__":
+    main()

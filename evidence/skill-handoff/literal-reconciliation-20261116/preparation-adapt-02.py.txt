@@ -1,0 +1,51 @@
+"""Create prospective second-case checker copies without changing frozen case01."""
+import ast
+from pathlib import Path
+
+BASE = Path(__file__).parent
+source = (BASE / 'mechanical-check.py.txt').read_text(encoding='utf-8')
+for old, new in [('default="native-01"', 'default="native-02"'),
+                 ('default="mechanical-01.json"', 'default="mechanical-02.json"'),
+                 ('default="mechanical-runtime-observations-01"', 'default="mechanical-runtime-observations-02"'),
+                 ('default="revision-01/frozen-kit.zip"', 'default="revision-02/frozen-kit.zip"'),
+                 ('default="protocol.json"', 'default="protocol-revision-02.json"')]:
+    assert source.count(old) == 1
+    source = source.replace(old, new)
+needle = '    result = {"status": "fail" if any(row["status"] == "fail" for row in checks)'
+insertion = '''    tool_support = BASE / "mechanical-handoff-tool-support-02.py.txt"
+    tool_observer = runpy.run_path(str(tool_support), run_name="handoff_tool_observer")["observe"]
+    tool_observations = tool_observer(parent_tools=parent_tools, child_tools=tools(child), consumer=consumer,
+        caller_path=caller_path, caller=caller, json_objects=json_objects, frozen_files=frozen_files)
+    for item in tool_observations["checks"]:
+        check(item["name"], item["passed"], item.get("detail", {"group": tool_observations["group"], "semantic_verdict": "not_assessed"}),
+              absent=item.get("absent", False), applicable=item.get("applicable", True))
+'''
+assert source.count(needle) == 1
+source = source.replace(needle, insertion + needle)
+source = source.replace('"parent_tool_observations": parent_tool_observations,',
+    '"literal_review_tool_observations": tool_observations, "literal_review_tool_support": reference(tool_support),\n        "parent_tool_observations": parent_tool_observations,')
+with (BASE / 'mechanical-check-02.py.txt').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(source)
+
+source = (BASE / 'preparation-check.py.txt').read_text(encoding='utf-8')
+for old, new in [('revision13', 'revision14'), ('native-01', 'native-02'),
+                 ("BASE / 'protocol.json'", "BASE / 'protocol-revision-02.json'"),
+                 ('revision-01/', 'revision-02/'),
+                 ("BASE / 'mechanical-check.py.txt'", "BASE / 'mechanical-check-02.py.txt'"),
+                 ('all_123', 'all_135'), ('len(seed) == 123', 'len(seed) == 135'),
+                 ('exact123', 'exact135'), ('four_retained_results', 'five_retained_results'),
+                 ("'CALLER-RESULT-PREREQUISITES-02.json'))", "'CALLER-RESULT-PREREQUISITES-02.json','CALLER-RESULT-LITERAL-RECONCILIATION.json'))"),
+                 ('preparation-01.json', 'preparation-02.json')]:
+    assert old in source
+    source = source.replace(old, new)
+source = source.replace("    ast.parse(support.read_text(encoding='utf-8'))",
+    "    ast.parse(support.read_text(encoding='utf-8'))\n    tool_support = BASE / 'mechanical-handoff-tool-support-02.py.txt'\n    ast.parse(tool_support.read_text(encoding='utf-8'))")
+source = source.replace("        'no_inference_output_yet':",
+    "        'no_installed_cache_before_inference': not any('__pycache__' in p.parts for p in (consumer / 'pixl-kit').rglob('*')),\n        'no_inference_output_yet':")
+source = source.replace("'source_delivery_support_sha256': sha(support),",
+    "'source_delivery_support_sha256': sha(support),\n        'literal_tool_observer_sha256': sha(tool_support),")
+with (BASE / 'preparation-check-02.py.txt').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(source)
+for name in ['mechanical-check-02.py.txt', 'preparation-check-02.py.txt', 'mechanical-handoff-tool-support-02.py.txt']:
+    ast.parse((BASE / name).read_text(encoding='utf-8'))
+print('Three prospective helpers parsed; not frozen or executed')

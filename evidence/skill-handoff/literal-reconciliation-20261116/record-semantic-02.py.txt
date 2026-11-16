@@ -1,0 +1,222 @@
+"""Record the incomplete second case after its same-session resume hit usage limits."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+FIRST = BASE / "native-02"
+NATIVE = BASE / "native-02-resume-01"
+PROJECT = NATIVE / "project"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path, line=None):
+    result = {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+    if line is not None:
+        result["line"] = line
+    return result
+
+
+def main():
+    protocol = json.loads((BASE / "protocol-revision-02.json").read_bytes())
+    continuation_protocol = json.loads((BASE / "protocol-continuation-02.json").read_bytes())
+    observed = json.loads((BASE / "semantic-observation-02/RESULT.json").read_bytes())
+    extracted = json.loads((BASE / "semantic-extraction-02.json").read_bytes())
+    mechanics = json.loads((BASE / "mechanical-04.json").read_bytes())
+    record = json.loads((NATIVE / "record.json").read_bytes())
+    stream = [json.loads(line) for line in (NATIVE / "stdout.jsonl").read_text(encoding="utf-8").splitlines()]
+    terminal = stream[62]
+    assert sha(BASE / "semantic-review-01.json") == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    assert sha(BASE / "interruption-review-02.json") == "b375e32fadc0f224b84ed2a29fd94dbf678ab910a80470e5d42b45b3a2dffda9"
+    for binding in continuation_protocol["evidence"].values():
+        assert sha(ROOT / binding["path"]) == binding["sha256"]
+    assert observed["status"] == "pass" and observed["passed"] == observed["total"] == 14
+    assert observed["revision"] == 16 and observed["record_count"] == 90 and observed["output_files"] == 167
+    assert record["returncode"] == 1 and record["continuation"]["interruption_reason"] == "usage_limit"
+    assert terminal["type"] == "result" and terminal["is_error"] is True and "out of usage credits" in terminal["result"]
+    assert not (PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION-02.json").exists()
+    complete = extracted["completion_observations"]
+    assert complete["new_same_child_sendmessage_present"]
+    assert not complete["actual_new_parent_end_turn_present"] and not complete["actual_new_child_end_turn_present"]
+    assert not complete["corrected_child_final_delivery_candidate_present"]
+    parent = NATIVE / "native-transcripts/parent.jsonl"
+    child = NATIVE / "native-transcripts/a94b4dc767b65b243.jsonl"
+    evidence = {
+        "protocol": ref(BASE / "protocol-revision-02.json"),
+        "continuation_protocol": ref(BASE / "protocol-continuation-02.json"),
+        "previous_failed_semantic": ref(BASE / "semantic-review-01.json"),
+        "original_interruption": ref(BASE / "interruption-review-02.json"),
+        "current_observation": ref(BASE / "semantic-observation-02/RESULT.json"),
+        "decoded_state": ref(BASE / "semantic-observation-02/decode.stdout.json"),
+        "workflow": ref(BASE / "semantic-observation-02/workflow.stdout.json"),
+        "surface_index": ref(BASE / "semantic-extraction-02.json"),
+        "mechanics": ref(BASE / "mechanical-04.json"),
+        "mechanical_notes": ref(BASE / "mechanical-review-notes-03.json"),
+        "kit": ref(BASE / "revision-02/frozen-kit.zip"),
+        "kit_receipt": ref(BASE / "revision-02/RESULT.json"),
+        "source_snapshot_identity": ref(BASE / "semantic-source-snapshots-02/IDENTITY.json"),
+        "original_identity": ref(FIRST / "identity.json"),
+        "original_preservation": ref(FIRST / "preservation.json"),
+        "original_project_archive": ref(FIRST / "project.zip"),
+        "resume_launch": ref(NATIVE / "launch.json"),
+        "resume_prompt": ref(NATIVE / "prompt.txt"),
+        "resume_identity": ref(NATIVE / "identity.json"),
+        "resume_entry_archive": ref(NATIVE / "input-project.zip"),
+        "resume_preservation": ref(NATIVE / "preservation.json"),
+        "resume_output_archive": ref(NATIVE / "project.zip"),
+        "resume_record": ref(NATIVE / "record.json"),
+        "resume_continuation_record": ref(NATIVE / "continuation.json"),
+        "usage_limit_terminal": ref(NATIVE / "stdout.jsonl", 63),
+        "caller_usage_limit": ref(parent, 335),
+        "child_rate_limit_notification": ref(parent, 329),
+        "child_api_limit_event": ref(child, 383),
+        "native_resume_followup": ref(parent, 296),
+        "same_child_receives_resume": ref(child, 368),
+        "first_child_return": ref(FIRST / "native-transcripts/a94b4dc767b65b243.jsonl", 285),
+        "native_caller_findings": ref(FIRST / "native-transcripts/parent.jsonl", 245),
+        "same_child_receives_findings": ref(FIRST / "native-transcripts/a94b4dc767b65b243.jsonl", 286),
+        "correction_publication": ref(FIRST / "native-transcripts/a94b4dc767b65b243.jsonl", 330),
+        "current_state": ref(PROJECT / "state.px/state.px"),
+        "current_session": ref(PROJECT / "SESSION.md"),
+        "first_specialist_note": ref(PROJECT / "deliverables/continuation-2026-11-16b.md"),
+        "first_specialist_result": ref(PROJECT / "deliverables/specialist-return-2026-11-16b.json"),
+        "partial_correction_note": ref(PROJECT / "deliverables/continuation-2026-11-16c.md"),
+        "partial_correction_result": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json"),
+        "failed_first_coverage": ref(PROJECT / "work/handoff-review-rev15/handoff-check-01.json"),
+        "completed_revision15_coverage": ref(PROJECT / "work/handoff-review-rev15/handoff-check-02.json"),
+        "caller_reproduced_revision15_coverage": ref(PROJECT / "work/caller-reconciliation-02/specialist-check-caller.json"),
+        "inherited_sample_criteria": ref(PROJECT / "deliverables/sample-request/sample-criteria.json"),
+        "owner_brief": ref(PROJECT / "sources/brief.md"),
+        "controlled_answers": ref(PROJECT / "sources/controlled-evaluation-answers.md"),
+    }
+    groups = ["original_criteria", "answer_state_checks", "caller_workflow_checks", "separate_observation_checks", "production_prerequisite_checks"]
+    criteria = []
+    for group in groups:
+        assert protocol[group] == continuation_protocol[group]
+        for criterion in protocol[group]:
+            criteria.append({
+                "id": criterion["id"], "text": criterion.get("text", criterion.get("check")),
+                "group": group, "status": "not_graded_incomplete",
+                "finding": "Final-case semantic grading is withheld: the resumed correction lacks an actual completed child handback and final caller reconciliation/result. Partial objective observations are recorded separately; unchanged criterion wording is preserved.",
+                "evidence": ["original_interruption", "usage_limit_terminal", "surface_index"],
+            })
+    assert len(criteria) == 34
+    for binding in evidence.values():
+        path = ROOT / binding["path"]
+        assert sha(path) == binding["sha256"]
+        if "line" in binding:
+            assert 1 <= binding["line"] <= len(path.read_text(encoding="utf-8").splitlines())
+    result = {
+        "schema_version": 1, "task": "PX-SKILL-001 / PX-EVAL-005", "linked_finding": "CF-02",
+        "review": "literal-reconciliation-native02-incomplete-after-usage-limited-continuation",
+        "reviewed_at_utc": datetime.now(UTC).isoformat(), "reviewer": "independent development evaluator",
+        "status": "incomplete", "blocked_reason": "usage_limit",
+        "outcome": "The same caller and child resumed, but the child hit an API rate limit and the parent terminated with an out-of-usage-credits message before final reconciliation. No final semantic pass or complete34-criterion grade is available.",
+        "review_complete": False, "qualification_complete": False,
+        "bounded_workflow_pass": False,
+        "current_handoff_operation_pass": False,
+        "current_handoff_operation_scope": "Not established as a completed reviewed operation. Useful revision15/16 handoff artifacts exist, but the corrected specialist return is unfinished, its revision16 review files are absent, and no final caller result or task-bearing final was produced.",
+        "inherited_sample_operation_preserved": True,
+        "inherited_packet_work_preserved": True,
+        "same_child_continuation_observed": True,
+        "same_child_correction_complete": False,
+        "frozen_payload_preserved": True,
+        "installed_kit_end_snapshot_matches": True,
+        "native_identity": {
+            "caller_session": "0f688277-0e32-45d2-9ee8-8d47724b0865",
+            "actual_child": "a94b4dc767b65b243", "registered_role": "pixl:pixl",
+            "original_process": FIRST.relative_to(ROOT).as_posix(),
+            "latest_process": NATIVE.relative_to(ROOT).as_posix(),
+            "mode": "same_parent_same_child_native_continuation",
+            "parent_transcript_prefix": {"original_lines": 269, "resumed_lines": 337, "exact_bytes": True},
+            "child_transcript_prefix": {"original_lines": 367, "resumed_lines": 383, "exact_bytes": True},
+        },
+        "protocol": ref(BASE / "protocol-revision-02.json"),
+        "criteria": criteria,
+        "criterion_counts": {"not_graded_incomplete": 34},
+        "findings": [
+            {"id": "I1", "status": "blocked", "kind": "external_usage_limit",
+             "finding": "The resumed child receives the same caller's follow-up, then the host reports HTTP429/API rate-limit failure. The parent terminal's subtype is success but is_error is true, returncode is1 and its literal result says usage credits are exhausted. These are interruption signals, not task finals.",
+             "evidence": ["native_resume_followup", "same_child_receives_resume", "child_rate_limit_notification", "child_api_limit_event", "caller_usage_limit", "usage_limit_terminal", "resume_record"]},
+            {"id": "I2", "status": "incomplete", "kind": "final_reconciliation_unavailable",
+             "finding": "CALLER-RESULT-LITERAL-RECONCILIATION-02.json is absent. No new task-bearing parent or child end-turn exists after the original transcript prefixes, and the corrected child final is not delivered. The partial c-result's delivered claim and revision15 coverage_complete report cannot stand in for the missing corrected review and independent caller final.",
+             "evidence": ["surface_index", "resume_preservation", "partial_correction_result", "completed_revision15_coverage", "mechanics"]},
+            {"id": "I3", "status": "observed_partial_work", "kind": "retained_native_tool_and_correction_work",
+             "finding": "The first process authored revision15 handoff and structured return, performed literal coverage review, retained a failed78-row attempt and a coverage_complete78-row/7-carrier successor, and the caller independently reproduced that coverage. The caller then sent its own five findings to the same child: kit-count attribution, failed-check pointer, uncovered status claim, source locators and Git Bash pointer conversion. Revision16 correction note/result/state landed, but the revised review and actual corrected handback did not complete. These observations do not establish final semantic consistency.",
+             "evidence": ["first_child_return", "failed_first_coverage", "completed_revision15_coverage", "caller_reproduced_revision15_coverage", "native_caller_findings", "same_child_receives_findings", "correction_publication", "partial_correction_note", "partial_correction_result"]},
+        ],
+        "independent_observations": {
+            "objective_checks": {"status": observed["status"], "passed": 14, "total": 14},
+            "state": {"revision": 16, "records": 90, "canonical_state_sha256": observed["state_sha256"]},
+            "original_case_entry_files": 135, "original_case_entry_records": 86,
+            "stopped_process_output_files": 166, "resume_entry_files": 166, "latest_output_files": 167,
+            "original_records_unchanged": True,
+            "new_records": observed["added_records"],
+            "changed_original_input_files": ["SESSION.md", "state.px/state.px"],
+            "changed_resume_input_files": [],
+            "new_file_during_resume": "work/caller-reconciliation-02/now-files-2.txt",
+            "sample_ready": True, "sample_completed": False,
+            "new_art_candidate_acceptance_provider_or_engine_outcome": False,
+            "installed_kit_files": 261, "installed_kit_extras": [],
+            "observer_preserves_retained_project_bytes_and_mtimes": True,
+            "scope": "State/retention and native-identity observations are bounded facts. They are not final34-criterion grading, semantic acceptance, new sample publication credit or human acceptance.",
+        },
+        "tool_observation": {
+            "revision15_selected_scopes": ["/questions", "/next", "/limitations"],
+            "revision15_expected_leaves": 78, "revision15_declared_carriers": 7,
+            "failed_check_retained": True, "later_revision15_coverage_status": "coverage_complete",
+            "semantic_verdict_from_tool": "not_assessed",
+            "native_caller_found_missing_status_scope": True,
+            "planned_revision16_selected_scopes": ["/status", "/questions", "/next", "/limitations"],
+            "revision16_actual_review_check_observed": False,
+            "new_helper_invocation_during_resume_observed": False,
+            "limit": "The existing revision15 reports bind the b-result, not the partial c-result or a missing caller result. No successful final coverage or semantic repair is inferred from them.",
+        },
+        "mechanical_scope": {
+            "status": mechanics["status"], "passed": 65, "total": 84,
+            "counts": {"pass": 65, "fail": 9, "not_observed": 9, "not_applicable": 1},
+            "limit": "The mechanical completion failures and missing observations remain retained. Same identity and exact snapshots pass; usage interruption prevents completed handback/caller-result checks. Full workflow/authoring-context/exact contract delivery are not invented from objective state decoding.",
+        },
+        "source_reference_validation": {"direct_evidence_refs": len(evidence), "all_paths_hashes_and_event_bounds_match": True,
+            "limit": "Identity and line bounds only; this does not independently validate every partial artifact's source meaning."},
+        "evidence": evidence,
+        "preserved_failures": [
+            "First literal case semantic-review-01 remains failed25pass/8fail/1inherited with its exact original bytes.",
+            "Native02 process1 remains incomplete after its child correction stopped, despite process exit0.",
+            "First and corrected revision15 coverage attempts remain unchanged; their native findings are retained.",
+            "Native02 resume process returncode1, child429 and parent usage-credit failure remain original evidence.",
+            "Original mechanical evaluator execution error and subsequent additive receipts are retained; they are distinct from native outcomes.",
+            "A read-only evaluator convenience query had a Python assignment-expression SyntaxError; it was rerun as a plain loop, changed no file, and supplies no native failure claim.",
+        ],
+        "next_action": {
+            "prerequisite": "Restore access sufficient for the same native model/session; do not repeatedly launch while the usage block remains.",
+            "continuation_record": (NATIVE / "continuation.json").relative_to(ROOT).as_posix(),
+            "consumer_root": "C:/Users/ryanf/AppData/Local/Temp/pixl caller review 249faf48d4f549729dad6842462c74ce/consumer",
+            "caller_session": "0f688277-0e32-45d2-9ee8-8d47724b0865", "actual_child": "a94b4dc767b65b243",
+            "current_entry_files_for_next_process": 167, "current_revision": 16,
+            "state_sha256": observed["state_sha256"],
+            "remaining_work": "Resume the same child to finish the already-native correction review and actual handback; the same caller must independently reconcile it, save CALLER-RESULT-LITERAL-RECONCILIATION-02.json, run its own appropriate coverage/semantic checks and deliver a useful final. Then independently grade all unchanged34 criteria against the completed current surfaces.",
+            "preservation": "Create additive continuation preparation, process directory and later semantic receipt. Keep both incomplete processes and this review unchanged. Do not send evaluator findings or substitute a new child while calling it same-child continuation.",
+        },
+        "limits": [
+            "Current carrier answer effects and required/optional/fallback consistency remain unqualified because the original task has not reached final reconciliation. No complete pass or fail set is fabricated for the34 criteria.",
+            "The inherited sample operation and existing packet work are preserved, not newly executed or production-adopted.",
+            "No real owner answer, provider execution, new art, visual/engine acceptance or human acceptance occurred.",
+            "M1/M2 and broader M3/M4/M5 remain open; human acceptance stays separate.",
+        ],
+        "script_sha256": sha(Path(__file__)),
+    }
+    target = BASE / "semantic-review-02.json"
+    with target.open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, indent=2, ensure_ascii=False)
+        output.write("\n")
+    print(json.dumps({"status": result["status"], "blocked_reason": result["blocked_reason"], "path": target.relative_to(ROOT).as_posix(), "sha256": sha(target), "criterion_counts": result["criterion_counts"], "evidence_refs": len(evidence)}))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,84 @@
+"""Prepare combined-context checks before same-parent/same-child continuation."""
+import ast
+from pathlib import Path
+
+BASE = Path(__file__).parent
+text = (BASE / 'mechanical-check-03.py.txt').read_text(encoding='utf-8')
+
+
+def replace(old, new):
+    global text
+    assert text.count(old) == 1, old
+    text = text.replace(old, new)
+
+
+replace('default="native-02"', 'default="native-02-resume-01"')
+replace('default="mechanical-03.json"', 'default="mechanical-04.json"')
+replace('default="mechanical-runtime-observations-03"', 'default="mechanical-runtime-observations-04"')
+replace('    consumer, session = Path(launch["cwd"]), launch["expected_session_id"]', '''    consumer, session = Path(launch["cwd"]), launch["expected_session_id"]
+    original_attempt = BASE / "native-02"
+    original_identity = read(original_attempt / "identity.json")
+    resume_protocol = read(BASE / "protocol-continuation-02.json")
+    resume_preparation = read(BASE / "resume-preparation-01.json")
+    expected_child = resume_protocol["native_identity"]["actual_child"]
+    original_parent_bytes = (original_attempt / "native-transcripts/parent.jsonl").read_bytes()
+    original_child_bytes = (original_attempt / "native-transcripts" / (expected_child + ".jsonl")).read_bytes()
+    original_parent_lines = len(original_parent_bytes.splitlines())
+    original_child_lines = len(original_child_bytes.splitlines())
+    resume_entry_inputs = identity["inputs"]''')
+replace('    check("fresh_native_session_not_resume", not any(arg in launch["command"] for arg in ("--resume", "--continue", "-r", "-c")) and continuation.get("session_id") == session)', '''    check("same_native_parent_resumed_without_fork", "--resume" in launch["command"]
+          and launch["command"][launch["command"].index("--resume") + 1] == session
+          and continuation.get("session_id") == session == resume_protocol["native_identity"]["caller_session"]
+          and not any(arg in launch["command"] for arg in ("--fork-session", "--session-id")))
+    check("immutable_original_process_capture_preserved", inventory(original_attempt, ("__pycache__",)) == identity["predecessor_files"])
+    check("resumed_parent_retains_original_journal_prefix", parent_path.read_bytes().startswith(original_parent_bytes))''')
+replace('    check("exact_declared_seed_inputs", identity["inputs"] == expected_seed, {"files": len(expected_seed)})', '''    check("exact_original_case_seed_inputs", identity["original_inputs"] == original_identity["inputs"] == expected_seed,
+          {"original_case_files": len(expected_seed), "resume_entry_files": len(resume_entry_inputs)})
+    check("exact_resume_entry_bound_to_incomplete_outputs", resume_entry_inputs == read(original_attempt / "preservation.json")["outputs"]
+          and len(resume_entry_inputs) == 166)''')
+replace('    check("input_snapshot_and_zip_preserved", inventory(attempt / "input-project") == expected_seed and archive(attempt / "input-project.zip") == expected_seed', '    check("resume_input_snapshot_and_zip_preserved", inventory(attempt / "input-project") == resume_entry_inputs and archive(attempt / "input-project.zip") == resume_entry_inputs')
+replace('''    for field in ("launch", "prompt", "mcp", "runtime_environment"):
+        check("prepared_" + field + "_unchanged", reference(Path(identity[field]["path"])) == identity[field])
+    check("protocol_and_amendment_bindings_unchanged", all(reference(Path(item["path"])) == item for item in identity["binding_files"].values()))
+    check("runner_source_snapshots_unchanged", all(reference(Path(item["snapshot"]["path"])) == item["snapshot"]
+          and item["source"]["sha256"] == item["snapshot"]["sha256"] for item in identity["source_files"]))''', '''    for field, item in resume_preparation["prepared_bindings"].items():
+        check("prepared_resume_" + field + "_unchanged", reference(Path(item["path"])) == item)
+    check("original_protocol_and_amendment_bindings_unchanged", all(reference(Path(item["path"])) == item for item in original_identity["binding_files"].values()))
+    check("original_runner_source_snapshots_unchanged", all(reference(Path(item["snapshot"]["path"])) == item["snapshot"]
+          and item["source"]["sha256"] == item["snapshot"]["sha256"] for item in original_identity["source_files"]))''')
+replace('    child_finals = finals(child, session, child_id) if child_id else []', '''    child_finals = finals(child, session, child_id) if child_id else []
+    check("same_actual_child_continued_without_replacement", child_id == expected_child
+          and not any(row["call_line"] > original_parent_lines for row in agent_calls), agent_calls)
+    check("resumed_child_retains_original_journal_prefix", child_path.exists() and child_path.read_bytes().startswith(original_child_bytes))''')
+replace('    with zipfile.ZipFile(frozen_path) as frozen:', '''    check("corrected_child_return_after_resume_delivered", bool(work_final)
+          and work_final["line"] > original_child_lines
+          and any(row["parent_line"] > original_parent_lines for row in work_delivery),
+          {"original_child_lines": original_child_lines, "original_parent_lines": original_parent_lines,
+           "task_bearing_final": work_final, "delivery": work_delivery},
+          absent=not work_final or not any(row["parent_line"] > original_parent_lines for row in work_delivery))
+    with zipfile.ZipFile(frozen_path) as frozen:''')
+replace('    entry = run("decode-entry", ["decode", str(attempt / "input-project/state.px/state.px")])', '''    entry = run("decode-original-case-entry", ["decode", str(original_attempt / "input-project/state.px/state.px")])
+    resume_entry = run("decode-resume-entry", ["decode", str(attempt / "input-project/state.px/state.px")])''')
+replace('''            if item["historical_snapshot_candidates"]["input"] == item["sha256"]:
+                resolved = original
+                item["verification_snapshot"] = "input"''', '''            case_original = (original_attempt / "input-project" / path).resolve()
+            item["historical_snapshot_candidates"]["original_case_input"] = sha(case_original) if item["confined_relative_path"] and case_original.is_file() else None
+            if item["historical_snapshot_candidates"]["input"] == item["sha256"]:
+                resolved = original
+                item["verification_snapshot"] = "resume_input"
+            elif item["historical_snapshot_candidates"]["original_case_input"] == item["sha256"]:
+                resolved = case_original
+                item["verification_snapshot"] = "original_case_input"''')
+replace('        "attempt": str(attempt), "session_id": session, "actual_child_id": child_id,', '''        "attempt": str(attempt), "session_id": session, "actual_child_id": child_id,
+        "native_case_context": {"mode": "same_case_two_processes", "original_attempt": str(original_attempt),
+            "original_case_input_files": len(expected_seed), "resume_entry_files": len(resume_entry_inputs),
+            "original_case_revision": entry.get("revision"), "resume_entry_revision": resume_entry.get("revision"),
+            "resume_entry_to_final_record_delta": record_changes(resume_entry, decoded),
+            "original_process_mechanical": reference(BASE / "mechanical-03.json"),
+            "continuation_protocol": reference(BASE / "protocol-continuation-02.json"),
+            "preparation": reference(BASE / "resume-preparation-01.json"),
+            "scope": "Combined actual parent/child journals include original-case activity. Fresh instruction delivery is not inferred for the resumed process. Original incomplete process and its failed mechanical grade remain unchanged."},''')
+ast.parse(text)
+with (BASE / 'mechanical-check-04.py.txt').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(text)
+print('Prospective combined-context checker04 created; not run')

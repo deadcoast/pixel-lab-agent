@@ -1,0 +1,115 @@
+"""Freeze a neutral same-parent/same-child continuation of incomplete native02."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-02"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def main():
+    previous = json.loads((BASE / "protocol-revision-02.json").read_bytes())
+    preservation = json.loads((NATIVE / "preservation.json").read_bytes())
+    assert len(preservation["outputs"]) == 166
+    assert sha(NATIVE / "project/state.px/state.px") == "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2"
+    assert sha(BASE / "semantic-review-01.json") == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    assert sha(BASE / "interruption-review-02.json") == "b375e32fadc0f224b84ed2a29fd94dbf678ab910a80470e5d42b45b3a2dffda9"
+    groups = ["original_criteria", "answer_state_checks", "caller_workflow_checks", "separate_observation_checks", "production_prerequisite_checks"]
+    assert sum(len(previous[group]) for group in groups) == 34
+    prompt = "Continue the unfinished handoff-only assignment in this same caller session and consumer. Resume the existing specialist a94b4dc767b65b243 to finish the correction round you already requested; preserve existing artifacts and earlier versions. Wait for its actual completed handback, independently verify the returned work, and complete the saved caller result and useful final response required by the original assignment. No new owner answers or scope changes are supplied."
+    result = {
+        "schema_version": 1,
+        "protocol": "literal-reconciliation-native02-same-session-continuation",
+        "status": "prospectively_frozen_before_continuation_inference",
+        "frozen_at_utc": datetime.now(UTC).isoformat(),
+        "purpose": "Finish the original ordinary handoff-only task after the first process stopped during its native caller-requested correction. This is the same native02 case across two processes, not a new independent success or corrective rerun with evaluator feedback.",
+        "predecessor_protocol": ref(BASE / "protocol-revision-02.json"),
+        "incomplete_process": ref(BASE / "interruption-review-02.json"),
+        "native_identity": {
+            "caller_session": "0f688277-0e32-45d2-9ee8-8d47724b0865",
+            "actual_child": "a94b4dc767b65b243",
+            "registered_role": "pixl:pixl",
+            "mode": "same_parent_same_child_native_continuation",
+            "consumer_root": "C:/Users/ryanf/AppData/Local/Temp/pixl caller review 249faf48d4f549729dad6842462c74ce/consumer",
+            "continuation_output_directory": "evidence/skill-handoff/literal-reconciliation-20261116/native-02-resume-01",
+            "identity_rule": "Observe resumed parent identity and actual delivery/return from the exact retained child. A new Agent invocation is a replacement instance and must not be credited as same-child continuation.",
+        },
+        "assignment": {
+            "resume_prompt": prompt,
+            "resume_prompt_utf8_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+            "new_result_path": previous["assignment"]["new_result_path"],
+            "scope": "Original handoff-only assignment and authorization unchanged. Finish the already-native correction, independent caller review, saved caller result and useful actual final. No further packet/fixture/art/provider/engine work, new owner answer, forced state revision or human approval is added.",
+            "native_visibility": "Only the exact neutral resume prompt, the original native session history, unchanged current consumer artifacts and frozen kit2. This protocol, interruption review, evaluator findings and grades are not native inputs.",
+            "prompt_binding": "Use resume_prompt verbatim. Retain actual prompt bytes, preparation command and their identities before inference. Recorder path metadata is preparation evidence; changes to native task text, input state, kit, criteria or scope require a prospective additive amendment.",
+        },
+        "seed": {
+            "kind": "existing consumer after incomplete process1; no evaluator artifact repair",
+            "files": 166,
+            "revision": 16,
+            "state_sha256": "762659d9df9a92dd54a6489289ca5824d4d6fd8507016f04db66fb37bb8d9ce2",
+            "project_archive": ref(NATIVE / "project.zip"),
+            "preservation_manifest": ref(NATIVE / "preservation.json"),
+            "original_input_files": 135,
+            "original_input_manifest": previous["seed"]["manifest"],
+            "retention_rule": "Verify all166 retained non-kit outputs match the live consumer before resume, and verify the complete installed kit2 identity. Preserve native-02 bytes and all historical reports. Resume may finish its own partial new files, with process1 versions retained in native-02; original135 input preservation remains graded under the original protocol.",
+        },
+        "instruction_identity": previous["instruction_identity"],
+        "declared_tool_intervention": previous["declared_tool_intervention"],
+        "controlled_input": previous["controlled_input"],
+        **{group: previous[group] for group in groups},
+        "criterion_applicability": previous["criterion_applicability"],
+        "semantic_interpretation": previous["semantic_interpretation"],
+        "review_method": {
+            "completion": "Process1's returncode0/success and waiting caller end-turn are incomplete. Grade final native02 only after observing the resumed same child's completed handback, its delivery, the same caller's independent final verification, expected saved caller result and actual useful final response.",
+            "combined_evidence": "Retain process1 and continuation receipts separately and bind the final semantic verdict to both. Do not erase native first-return failures, interrupted correction, failed coverage attempts or repeated tool calls. Label process continuation distinctly from first-pass success.",
+            "semantic_scope": "All34 criterion texts and full literal current authored/adopted-carrier scope remain unchanged. Coverage_complete is not semantic acceptance. Required/optional/fallback and every current answer-effect field still need independent source comparison.",
+            "no_feedback": "No maintainer finding, answer or expected patch is sent to caller or specialist. Existing correction findings remain attributed to the native caller's first-process work.",
+            "inherited_work": "Original sample publication and prior packet production stay inherited; a new useful handoff is the current operation. No extra state revision is demanded merely because execution was resumed.",
+        },
+        "prelaunch_requirements": [
+            "Exact same parent and child persistence is observed; resume configuration binds both IDs.",
+            "All166 prior output files and frozen kit2 match before launch; any drift is retained and explained before inference.",
+            "Native02 original stream, transcripts, snapshot, preservation and interruption receipt remain byte-identical.",
+            "Exact neutral resume prompt and preparation/configuration identities are retained in native-02-resume-01.",
+            "Preparation checks confirm complete project retention, not only selected artifacts, for the eventual continued snapshot.",
+        ],
+        "human_acceptance": "Separate and unperformed; no approval gate added.",
+        "qualification_complete": False,
+        "open_milestones": previous["open_milestones"],
+        "evidence": {
+            "protocol2": ref(BASE / "protocol-revision-02.json"),
+            "interruption": ref(BASE / "interruption-review-02.json"),
+            "previous_semantic": ref(BASE / "semantic-review-01.json"),
+            "record": ref(NATIVE / "record.json"),
+            "continuation_record": ref(NATIVE / "continuation.json"),
+            "identity": ref(NATIVE / "identity.json"),
+            "preservation": ref(NATIVE / "preservation.json"),
+            "project_archive": ref(NATIVE / "project.zip"),
+            "state": ref(NATIVE / "project/state.px/state.px"),
+            "parent_transcript": ref(NATIVE / "native-transcripts/parent.jsonl"),
+            "child_transcript": ref(NATIVE / "native-transcripts/a94b4dc767b65b243.jsonl"),
+            "stream": ref(NATIVE / "stdout.jsonl"),
+            "kit": ref(BASE / "revision-02/frozen-kit.zip"),
+            "kit_receipt": ref(BASE / "revision-02/RESULT.json"),
+        },
+        "script_sha256": sha(Path(__file__)),
+    }
+    target = BASE / "protocol-continuation-02.json"
+    with target.open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, indent=2, ensure_ascii=False)
+        output.write("\n")
+    print(json.dumps({"path": target.relative_to(ROOT).as_posix(), "sha256": sha(target), "prompt_key": "assignment.resume_prompt", "prompt_sha256": result["assignment"]["resume_prompt_utf8_sha256"]}))
+
+
+if __name__ == "__main__":
+    main()

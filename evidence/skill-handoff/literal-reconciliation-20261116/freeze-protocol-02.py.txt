@@ -1,0 +1,159 @@
+"""Freeze the additive coverage-tool case only after root supplies qualified kit2."""
+from copy import deepcopy
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+GROUPS = ("original_criteria", "answer_state_checks", "caller_workflow_checks",
+          "separate_observation_checks", "production_prerequisite_checks")
+NEW_RESULT = "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def main():
+    old = json.loads((BASE / "protocol.json").read_bytes())
+    protocol = deepcopy(old)
+    kit = json.loads((BASE / "revision-02/RESULT.json").read_bytes())
+    seed = json.loads((BASE / "seed-preflight-02/RESULT.json").read_bytes())
+    assert kit["status"] == seed["status"] == "pass"
+    assert seed["files"] == 135 and seed["revision"] == 14
+    assert seed["state_sha256"] == "247b22ba715519ef2033fcea6de3dcabed45f288edcbcc5616b235e26e77e4af"
+    assert sha(BASE / "semantic-review-01.json") == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    protocol.update({
+        "protocol": "literal-answer-effect-reconciliation-20261116-02",
+        "frozen_at_utc": datetime.now(UTC).isoformat(),
+        "purpose": "Qualify an ordinary useful current native handoff over the exact retained revision14 project, with a declared read-only authored-result coverage utility and revised product guidance. Assess every actual current carrier's semantic authority independently of inventory completeness or tool success. Preserve the first case's useful work and failed qualification unchanged.",
+    })
+    assignment = deepcopy(old["assignment"])
+    assignment["neutral_task_core"] = assignment["neutral_task_core"].replace(
+        "CALLER-RESULT-LITERAL-RECONCILIATION.json", NEW_RESULT)
+    setup = assignment["setup_template"].replace(
+        "deliverables/continuation-2026-11-15g.md, which corrects and continues deliverables/continuation-2026-11-15f.md; the current state includes handoff_9.",
+        "deliverables/continuation-2026-11-16.md; it names the retained g/f sections it treats as applicable, and the current state includes handoff_10.")
+    setup = setup.replace(
+        "CALLER-RESULT-PREREQUISITES-02.json, prior caller comparisons",
+        "CALLER-RESULT-PREREQUISITES-02.json, CALLER-RESULT-LITERAL-RECONCILIATION.json, prior caller comparisons")
+    assert "handoff_10" in setup and "handoff_9" not in setup
+    assert "CALLER-RESULT-LITERAL-RECONCILIATION.json, prior caller" in setup
+    assignment["setup_template"] = setup
+    assignment["new_result_path"] = NEW_RESULT
+    assignment["native_visibility"] = (
+        "Only assignment fields, the exact 135-file revision14 project input and installed kit2 are native "
+        "inputs. No evaluator rubric, grading, defect list, corrected artifact or hidden answer is supplied. "
+        "The utility and its workflow are declared product implementation, not maintainer feedback. All "
+        "earlier native-authored results/notes/comparisons remain unmodified historical project input.")
+    protocol["assignment"] = assignment
+    protocol["scope"]["required_cases"] = ["retained-revision14-literal-handoff-with-coverage-tool"]
+    protocol["scope"]["continuation_identity"] = (
+        "Fresh caller and registered child continue all 135 project output files from this increment's "
+        "first native case, revision14. Same-child correction is conditional within the new trial; "
+        "the predecessor parent/child is not claimed resumed.")
+    protocol["seed"] = {
+        "directory": (BASE / "seed-preflight-02/seed").relative_to(ROOT).as_posix(),
+        "manifest": ref(BASE / "seed-preflight-02/seed-manifest.json"),
+        "source_archive": ref(BASE / "native-01/project.zip"),
+        "preflight": ref(BASE / "seed-preflight-02/RESULT.json"),
+        "files": 135, "revision": 14, "state_sha256": seed["state_sha256"],
+        "input_rule": "All 135 first-case project outputs are byte-identical at entry, including its erroneous current result and adopted notes, worksheet, same-child SESSION explanation correction, verifier, all earlier packets/history and all five prior caller results. No evaluator repair, answer or expected artifact is added. The first run's installed-kit caches are separately retained evidence; the new installed kit has its own frozen identity.",
+        "prior_semantic_receipts": old["seed"]["prior_semantic_receipts"] + [
+            {**ref(BASE / "semantic-review-01.json"), "native_visibility": "evaluator-only"}],
+    }
+    protocol["criterion_applicability"]["new_handoff_scope"] = (
+        "The revision9 sample, revision10/11 packet/tooling, revision12/13 corrections and revision14 "
+        "handoff/worksheet/verifier are inherited work. Preserve and inspect them without crediting their "
+        "creation as this case's operation. PP1 requires a new useful durable current handoff and actual "
+        "inspection; no further packet/fixture production or gratuitous state revision is assigned. "
+        "Every newly authored/adopted current carrier remains in the full semantic surface.")
+    protocol["semantic_interpretation"]["prior_native_reviews"] = (
+        "The exact 135-file seed includes all native-authored reviews and actual corrections as historical "
+        "project input, including incorrect conclusions. Their existence does not establish current "
+        "authority. Prior evaluator receipts and installed-cache capture/grades are not native inputs.")
+    protocol["semantic_interpretation"]["coverage_tool_limit"] = (
+        "The declared utility inventories all leaves in externally selected result subtrees and checks "
+        "coverage rows, actual expected values and source/metadata/carrier bindings. Its completion "
+        "status is coverage_complete or coverage_incomplete, never semantic acceptance. Independently "
+        "read the exact current effects and source conditions even if every inventory row is covered. "
+        "A native actor's finding label, complete row count, exact hash/range/text binding, selected "
+        "scope or successful helper exit cannot make an unsupported claim true or hide an adopted "
+        "conflict. Original semantic criteria and current-carrier scope remain unchanged.")
+    protocol["semantic_interpretation"]["tool_use_observation"] = (
+        "Record actual native tool use, arguments, selected scopes, input/result/review identities, "
+        "reported omissions and corrections separately from semantic grading. Verify that any claimed "
+        "coverage refers to the actual final authored result and adopted sections, not stale or narrower "
+        "inputs. Do not infer use from guide loading or infer semantic success from a coverage report. "
+        "The task itself stays ordinary handoff-only; no exact review format or fixture-specific answer "
+        "is inserted into the native assignment by the evaluator.")
+    tool_paths = (
+        "pixl/handoff_review.py",
+        "plugins/pixl/scripts/check_handoff.py",
+        "plugins/pixl/skills/pixl/references/handoff-review.md",
+    )
+    protocol["declared_tool_intervention"] = {
+        "kind": "read-only authored-result coverage analysis with optional fresh report output",
+        "source_files": [ref(ROOT / name) for name in tool_paths],
+        "copied_launcher": "pixl-kit/scripts/check_handoff.py",
+        "interface": "RESULT --root ROOT --scope /remaining_questions --scope /next_action [--review REVIEW] [--out NEW]",
+        "scope": "Inventory all leaves in externally selected JSON subtrees; exact expected values/findings/source-or-metadata basis and hash/range/text-bound carriers. It does not assign semantic truth or owner authority.",
+        "native_visibility": "Available through the declared installed kit and its product guidance only; no precomputed corrected review or grader output is supplied.",
+        "qualification_boundary": "Unit/tool-contract results, observed native use, and current-artifact semantic correctness are separate outcomes.",
+    }
+    instruction_names = list(old["instruction_identity"]["expected_instruction_source_sha256"])
+    instruction_names.append("plugins/pixl/skills/pixl/references/handoff-review.md")
+    protocol["instruction_identity"] = {
+        "expected_instruction_source_sha256": {name: sha(ROOT / name) for name in instruction_names},
+        "prelaunch_binding": "The coverage utility, supporting launcher and guide revision are declared before inference in exact kit2. Runtime changes and semantic instruction changes are explicit interventions; no prior grade/finding/answer enters the native prompt. Full input/archive/task/kit/role identities are retained.",
+        "loading": old["instruction_identity"]["loading"],
+        "frozen_kit_receipt": ref(BASE / "revision-02/RESULT.json"),
+        "frozen_kit_archive": ref(BASE / "revision-02/frozen-kit.zip"),
+        "bundle_manifest_sha256": kit["bundle_manifest_sha256"],
+    }
+    protocol["source_anchors"] = [
+        {**entry, "sha256": sha(ROOT / entry["path"])} for entry in old["source_anchors"]]
+    protocol["predecessor_protocol"] = ref(BASE / "protocol.json")
+    protocol["revision_scope"] = {
+        "prospective_changes": [
+            "Exact 135-file revision14 seed and current continuation/handoff_10 pointer, retaining all first-case outputs without repair.",
+            "New result name; all five old caller results, prior notes and comparisons protected.",
+            "Declared result-coverage utility, copied launcher, handoff-review guide and supporting procedure changes in frozen kit2.",
+            "Explicit independent observation of actual tool coverage versus unchanged semantic qualification.",
+        ],
+        "unchanged": [
+            "All 34 original C/AS/CR/O/PP criterion texts and full current-carrier/fallback scope",
+            "Ordinary handoff-only assignment; no further packet or fixture production",
+            "Sample-only inherited answers; no new owner answer, provider, engine or acceptance",
+            "No maintainer defect feedback, grader input or prescribed corrected answers for native actors",
+        ],
+        "causal_limit": "This is an additive continuation with different seed, tool implementation and guidance; it is not a paired causal control and does not rescore the first failure.",
+    }
+    for key in GROUPS:
+        assert protocol[key] == old[key]
+    assert sum(len(protocol[key]) for key in GROUPS) == 34
+    assert sha(ROOT / "plugins/pixl/bundle-manifest.json") == kit["bundle_manifest_sha256"]
+    for source, member in (
+        ("pixl/handoff_review.py", "runtime/pixl/handoff_review.py"),
+        ("plugins/pixl/scripts/check_handoff.py", "scripts/check_handoff.py"),
+        ("plugins/pixl/skills/pixl/references/handoff-review.md", "skills/pixl/references/handoff-review.md"),
+        ("plugins/pixl/skills/pixl/references/delegation.md", "skills/pixl/references/delegation.md"),
+        ("plugins/pixl/skills/pixl/references/intake-sample.md", "skills/pixl/references/intake-sample.md"),
+        (".agents/PROFILE.md", "resources/agent/PROFILE.md"),
+    ):
+        assert sha(ROOT / source) == kit["package_files"][member]
+    with (BASE / "protocol-revision-02.json").open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(protocol, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"protocol": ref(BASE / "protocol-revision-02.json"), "seed_files": 135,
+                      "preserved_criteria": 34, "kit": kit["bundle_manifest_sha256"]}))
+
+
+if __name__ == "__main__":
+    main()

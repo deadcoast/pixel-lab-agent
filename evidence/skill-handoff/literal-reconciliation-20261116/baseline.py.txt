@@ -1,0 +1,42 @@
+"""Record committed identity and allowlisted host readiness without credentials."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=ROOT)
+
+
+def main():
+    names = ['.agents/PROFILE.md', 'plugins/pixl/skills/pixl/SKILL.md',
+             'plugins/pixl/skills/pixl/references/delegation.md',
+             'plugins/pixl/skills/pixl/references/intake-sample.md',
+             'plugins/pixl/bundle-manifest.json', 'evaluations/cold_caller_review.py',
+             'spec/PIXL-2.md', 'pixl/registry-v2.json']
+    host = 'C:/Users/ryanf/.local/bin/claude.exe'
+    auth = subprocess.run([host, 'auth', 'status'], cwd=ROOT, capture_output=True)
+    parsed = json.loads(auth.stdout)
+    result = {
+        'observed_at': datetime.now(UTC).isoformat(),
+        'head': git('rev-parse', 'HEAD').decode().strip(),
+        'branch': git('branch', '--show-current').decode().strip(),
+        'baseline_source': 'Committed HEAD blobs; new increment after production-prerequisite qualification',
+        'committed_source_hashes': {name: hashlib.sha256(git('show', 'HEAD:' + name)).hexdigest() for name in names},
+        'tracked_changes_at_observation': git('diff', 'HEAD', '--name-only').decode().splitlines(),
+        'host_version': subprocess.check_output([host, '--version'], cwd=ROOT).decode().strip(),
+        'auth': {'exit_code': auth.returncode, **{key: parsed.get(key) for key in ('loggedIn', 'authMethod', 'apiProvider')}},
+        'scope': 'Committed identity and local authentication readiness only; no native outcome or account secrets.'}
+    with (BASE / 'baseline.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({key: result[key] for key in ('head', 'host_version', 'auth')}))
+
+
+if __name__ == '__main__':
+    main()

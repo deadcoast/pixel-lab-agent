@@ -1,0 +1,192 @@
+"""Prospective native handoff-review observations; never grade source meaning."""
+import hashlib
+import json
+from pathlib import Path
+import shlex
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def literal(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+def leaves(value, pointer=''):
+    if isinstance(value, (dict, list)) and value:
+        for key, child in (value.items() if isinstance(value, dict) else enumerate(value)):
+            escaped = str(key).replace('~', '~0').replace('/', '~1')
+            yield from leaves(child, pointer + '/' + escaped)
+    else:
+        yield pointer, value
+
+
+def tokens(pointer):
+    return tuple(item.replace('~1', '/').replace('~0', '~') for item in pointer.split('/')[1:]) if pointer else ()
+
+
+def selected(value, pointer):
+    for token in tokens(pointer):
+        value = value[int(token)] if isinstance(value, list) else value[token]
+    return value
+
+
+def confined(consumer, name):
+    if not isinstance(name, str):
+        return None
+    path = Path(name)
+    if not path.is_absolute():
+        path = consumer / path
+    path = path.resolve()
+    return path if path.is_relative_to(consumer) else None
+
+
+def invocations(command):
+    """Observe direct Python launcher/module commands, not an echoed instruction."""
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=';&|')
+        lexer.whitespace_split = True
+        lexer.commenters = ''
+        parts = list(lexer)
+    except ValueError:
+        return []
+    segments, current = [], []
+    for part in parts:
+        if part and all(char in ';&|' for char in part):
+            if current:
+                segments.append(current)
+            current = []
+        else:
+            current.append(part)
+    if current:
+        segments.append(current)
+    found = []
+    for segment in segments:
+        start = 1 if segment and segment[0] == 'env' else 0
+        while start < len(segment) and '=' in segment[start] and not segment[start].startswith('-'):
+            start += 1
+        if start >= len(segment):
+            continue
+        executable = segment[start].replace('\\', '/').rsplit('/', 1)[-1].lower()
+        if not (executable.startswith('python') or executable in {'py', 'py.exe'}):
+            continue
+        marker = next((i for i, part in enumerate(segment[start + 1:], start + 1)
+                       if part.replace('\\', '/').endswith('/scripts/check_handoff.py')
+                       or part == 'pixl.handoff_review' and segment[i - 1] == '-m'), None)
+        if marker is None:
+            continue
+        args = segment[marker + 1:]
+        parsed = {'scopes': [], 'result': None, 'root': None, 'review': None, 'out': None}
+        index = 0
+        while index < len(args):
+            arg = args[index]
+            if arg.startswith('--'):
+                key, equal, value = arg[2:].partition('=')
+                if key not in {'scope', 'root', 'review', 'out'}:
+                    break
+                if not equal:
+                    index += 1
+                    if index >= len(args):
+                        break
+                    value = args[index]
+                if key == 'scope':
+                    parsed['scopes'].append(value)
+                else:
+                    parsed[key] = value
+            elif parsed['result'] is None:
+                parsed['result'] = arg
+            else:
+                break
+            index += 1
+        found.append({'argv': segment, **parsed})
+    return found
+
+
+def observe(*, parent_tools, child_tools, consumer, caller_path, caller, json_objects, frozen_files):
+    consumer = consumer.resolve()
+    observations, reports, read_errors, error_outputs = [], [], [], []
+    for actor, entries in (('caller', parent_tools), ('specialist', child_tools)):
+        for tool_id, entry in entries.items():
+            command = entry.get('call', {}).get('input', {}).get('command', '')
+            if not isinstance(command, str):
+                continue
+            calls = invocations(command)
+            for call in calls:
+                observation = {'actor': actor, 'tool_use_id': tool_id, 'call_line': entry['call_line'],
+                    'result_line': entry.get('result_line'), 'native_tool_result_present': 'result' in entry,
+                    'wrapper_is_error': entry.get('result', {}).get('is_error'), **call}
+                observations.append(observation)
+                for obj in json_objects(entry.get('result', {})):
+                    if 'error' in obj and obj.get('semantic_verdict') == 'not_assessed':
+                        error_outputs.append({'invocation': observation, 'report': obj})
+                delivered = [obj for obj in json_objects(entry.get('result', {}))
+                             if obj.get('operation') == 'handoff_review']
+                for report in delivered:
+                    reports.append({'origin': 'native_tool_result', 'invocation': observation, 'report': report})
+                if call['out'] and 'result' in entry:
+                    path = confined(consumer, call['out'])
+                    if path is not None and path.is_file():
+                        try:
+                            report = json.loads(path.read_bytes())
+                        except (ValueError, OSError) as error:
+                            read_errors.append({'path': str(path), 'error': str(error)})
+                            continue
+                        if isinstance(report, dict) and report.get('operation') == 'handoff_review':
+                            reports.append({'origin': 'retained_explicit_output', 'invocation': observation,
+                                'path': path.relative_to(consumer).as_posix(), 'sha256': digest(path), 'report': report})
+    current_hash = digest(caller_path) if caller_path.is_file() else None
+    current_name = caller_path.relative_to(consumer).as_posix()
+    current = []
+    for item in reports:
+        report = item['report']
+        binding = report.get('result', {})
+        binding_path = confined(consumer, binding.get('path'))
+        item['binds_final_caller_result'] = (binding_path == caller_path.resolve()
+                                            and binding.get('sha256') == current_hash)
+        if item['binds_final_caller_result']:
+            current.append(item)
+        scopes = report.get('scopes', [])
+        item['scope_inventory_matches_final_values'] = None
+        if item['binds_final_caller_result']:
+            try:
+                expected = {pointer: literal(value) for scope in scopes for pointer, value in leaves(selected(caller, scope), scope)}
+                actual = {row['pointer']: literal(row['value']) for row in report.get('inventory', [])}
+                item['scope_inventory_matches_final_values'] = (actual == expected
+                    and len(actual) == len(report.get('inventory', [])))
+            except (ValueError, KeyError, IndexError, TypeError):
+                item['scope_inventory_matches_final_values'] = False
+    expected_roots = ['/' + key for key in ('remaining_questions', 'questions', 'next_action', 'next_operation')
+                      if isinstance(caller, dict) and key in caller]
+    coverage = [item for item in current if item['invocation']['actor'] == 'caller'
+                and item['report'].get('status') in ('coverage_complete', 'coverage_incomplete')]
+    for item in coverage:
+        scopes = item['report'].get('scopes', [])
+        item['whole_present_authored_roots_covered'] = all(any(tokens(root)[:len(tokens(scope))] == tokens(scope)
+            for scope in scopes) for root in expected_roots)
+    inventory_reports = [item for item in reports if item['invocation']['actor'] == 'caller'
+                         and item['report'].get('status') == 'inventory']
+    complete = [item for item in coverage if item['report'].get('status') == 'coverage_complete'
+                and item['report'].get('coverage', {}).get('complete') is True]
+    installed = {path.relative_to(consumer / 'pixl-kit').as_posix(): digest(path)
+                 for path in (consumer / 'pixl-kit').rglob('*') if path.is_file()}
+    nonpayload = sorted(set(installed) - set(frozen_files))
+    checks = [
+        {'name': 'native_handoff_helper_invocation_observed', 'passed': any(row['actor'] == 'caller' and row['native_tool_result_present'] for row in observations), 'absent': not any(row['actor'] == 'caller' for row in observations)},
+        {'name': 'native_handoff_inventory_output_observed', 'passed': bool(inventory_reports), 'absent': not inventory_reports},
+        {'name': 'native_handoff_final_coverage_output_observed', 'passed': bool(coverage), 'absent': not coverage},
+        {'name': 'native_handoff_final_structural_coverage_complete', 'passed': bool(complete), 'absent': not coverage},
+        {'name': 'native_handoff_reports_explicitly_do_not_assess_semantics', 'passed': bool(reports) and all(item['report'].get('semantic_verdict') == 'not_assessed' for item in reports), 'absent': not reports},
+        {'name': 'native_handoff_final_inventory_matches_actual_saved_values', 'passed': bool(coverage) and all(item['scope_inventory_matches_final_values'] for item in coverage), 'absent': not coverage},
+        {'name': 'native_handoff_whole_present_question_and_next_action_roots_covered', 'passed': any(item['whole_present_authored_roots_covered'] for item in complete), 'absent': not coverage, 'applicable': bool(expected_roots)},
+        {'name': 'installed_tree_has_no_files_beyond_frozen_payload', 'passed': not nonpayload, 'detail': {'added': nonpayload, 'file_count': len(installed), 'payload_count': len(frozen_files)}},
+    ]
+    return {'group': 'prospective structural tool observations, separate from semantic review',
+        'semantic_verdict': 'not_assessed', 'final_result': {'path': current_name, 'sha256': current_hash},
+        'invocations': observations, 'reports': reports, 'error_outputs': error_outputs, 'read_errors': read_errors,
+        'expected_present_authored_roots': expected_roots, 'checks': checks,
+        'limits': ['Actual native commands and delivered or explicit-output reports are observed; shell execution is not syscall attestation. The final coverage and inventory checks require caller observations, while specialist uses remain recorded separately.',
+            'The parser recognizes direct Python launcher/module commands. Indirect wrappers require separate demonstrated evidence; absence is not invented delivery.',
+            'All observed incomplete reports are retained. A later complete report establishes structural coverage only for its bound result.',
+            'Whole-root checks cover the named present question/next-action aliases only. Other authored prose and correctness of metadata classification remain semantic review.',
+            'Coverage completion and literal/hash equality never establish source support, authority, correct answer effects, readiness or acceptance.']}

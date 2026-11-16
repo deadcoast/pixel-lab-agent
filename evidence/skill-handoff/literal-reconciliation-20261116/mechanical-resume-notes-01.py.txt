@@ -1,0 +1,143 @@
+"""Retain actual incomplete resume observations without changing frozen grading."""
+from collections import Counter
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+ATTEMPT = BASE / 'native-02-resume-01'
+PREVIOUS = BASE / 'native-02'
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': str(path.resolve()), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'bytes': path.stat().st_size}
+
+
+def rows(path):
+    return [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
+
+
+def texts(row):
+    content = row.get('message', {}).get('content', [])
+    return [content] if isinstance(content, str) else [part['text'] for part in content if part.get('type') == 'text']
+
+
+def error_rows(source, start=0):
+    return [{'line': index, 'error': row.get('error'), 'model': row.get('message', {}).get('model'),
+             'stop_reason': row.get('message', {}).get('stop_reason'), 'text': texts(row)}
+            for index, row in enumerate(source, 1) if index > start and row.get('error')]
+
+
+mechanical = read(BASE / 'mechanical-04.json')
+continuation = read(ATTEMPT / 'continuation.json')
+identity = read(ATTEMPT / 'identity.json')
+saved = read(ATTEMPT / 'preservation.json')
+checks = {row['check']: row for row in mechanical['checks']}
+child_id = mechanical['actual_child_id']
+parent_path = ATTEMPT / 'native-transcripts/parent.jsonl'
+child_path = ATTEMPT / f'native-transcripts/{child_id}.jsonl'
+parent, child, stream = rows(parent_path), rows(child_path), rows(ATTEMPT / 'stdout.jsonl')
+old_parent_path = PREVIOUS / 'native-transcripts/parent.jsonl'
+old_child_path = PREVIOUS / f'native-transcripts/{child_id}.jsonl'
+old_parent, old_child = rows(old_parent_path), rows(old_child_path)
+consumer = Path(identity['consumer'])
+expected_result = consumer / 'CALLER-RESULT-LITERAL-RECONCILIATION-02.json'
+assert not expected_result.exists()
+assert continuation['returncode'] == 1 and continuation['interruption_reason'] == 'usage_limit'
+assert ref(BASE / 'mechanical-03.json')['sha256'] == '21db78d788762ab408bd4b63d0f3b152ef5aa7b277d36a0a16fa6c3ecee387bb'
+assert all(checks[key]['status'] == 'pass' for key in (
+    'same_native_parent_resumed_without_fork', 'same_actual_child_continued_without_replacement',
+    'resumed_parent_retains_original_journal_prefix', 'resumed_child_retains_original_journal_prefix',
+    'immutable_original_process_capture_preserved', 'installed_tree_has_no_files_beyond_frozen_payload',
+    'independent_reads_preserve_all_consumer_bytes_mtimes'))
+assert not saved['changed'] and not saved['removed'] and len(saved['outputs']) == 167
+assert len(identity['inputs']) == 166 and len(identity['original_inputs']) == 135
+assert all(saved['outputs'].get(name) == digest for name, digest in identity['inputs'].items())
+terminal = [{'line': index, 'uuid': row.get('uuid'), 'session_id': row.get('session_id'),
+             'subtype': row.get('subtype'), 'is_error': row.get('is_error'), 'stop_reason': row.get('stop_reason'),
+             'text': row.get('result'), 'text_sha256': hashlib.sha256(row.get('result', '').encode()).hexdigest()}
+            for index, row in enumerate(stream, 1) if row.get('type') == 'result']
+reports = []
+for path in sorted((ATTEMPT / 'project').rglob('*.json')):
+    try:
+        data = read(path)
+    except (OSError, ValueError):
+        continue
+    if isinstance(data, dict) and data.get('operation') == 'handoff_review':
+        name = path.relative_to(ATTEMPT / 'project').as_posix()
+        reports.append({'path': name, 'sha256': ref(path)['sha256'], 'status': data.get('status'),
+                        'semantic_verdict': data.get('semantic_verdict'), 'result': data.get('result'),
+                        'scopes': data.get('scopes'), 'inherited_from_resume_entry': identity['inputs'].get(name) == ref(path)['sha256']})
+assert len(reports) == 5 and all(row['inherited_from_resume_entry'] for row in reports)
+tool = mechanical['literal_review_tool_observations']
+new_invocations = [row for row in tool['invocations']
+                   if row['call_line'] > (len(old_parent) if row['actor'] == 'caller' else len(old_child))]
+assert not new_invocations
+notes = {
+    'observed_at': datetime.now(UTC).isoformat(), 'status': 'incomplete_native_work_usage_limit',
+    'task_complete': False, 'semantic_verdict': 'not_assessed',
+    'same_case_context': mechanical['native_case_context'],
+    'identity': {'caller_session': mechanical['session_id'], 'actual_child': child_id,
+                 'same_parent_resumed': True, 'same_child_resumed': True,
+                 'parent_original_lines': len(old_parent), 'parent_combined_lines': len(parent),
+                 'child_original_lines': len(old_child), 'child_combined_lines': len(child)},
+    'mechanical_result': {'status': mechanical['status'], 'passed': mechanical['passed'], 'total': mechanical['total'],
+                          'status_counts': dict(Counter(row['status'] for row in mechanical['checks'])),
+                          'nonpass': [{'check': row['check'], 'status': row['status']} for row in mechanical['checks'] if row['status'] != 'pass']},
+    'execution': {'returncode': continuation['returncode'], 'interruption_reason': continuation['interruption_reason'],
+                  'stream_lines': len(stream), 'terminal_events': terminal,
+                  'parent_errors_after_resume': error_rows(parent, len(old_parent)),
+                  'child_errors_after_resume': error_rows(child, len(old_child))},
+    'observed_sequence': [
+        'Parent line274 reports that the original background correction did not finish; this does not identify who or what stopped the previous process.',
+        'Neutral resume prompt is delivered at parent276 and API request278; caller independently inspects the landed files at parent284-285.',
+        'Caller sends the same actual child the unfinished correction at parent296, acknowledged298; actual child receives it368 and API request371.',
+        'Caller validates current revision16 at parent297-299. This is a fresh current-state observation; full workflow and authoring-context endpoints remain not_observed.',
+        'Same child inspects landed c artifacts at child375-376; child382 describes review work still to be written. Child383 is a synthetic API rate-limit error, not a corrected return.',
+        'Parent335 is a synthetic usage-credit error. Stream63 carries that error with subtype success but is_error true; recorded process returncode is1.'
+    ],
+    'completion': {'expected_caller_result': expected_result.name, 'exists': False,
+                   'corrected_child_task_bearing_return_after_resume': False,
+                   'last_actual_end_turn_parent': mechanical['parent_final'],
+                   'last_actual_end_turn_child': mechanical['child_finals'][-1],
+                   'scope': 'These end_turn records are historical: parent265 waits for correction and child285 is the first revision15 return. Neither is new completed work. Synthetic usage-limit messages are retained as errors and never substituted for a handback.'},
+    'preservation': {'original_case_input_files': 135, 'resume_entry_files': 166, 'output_files': 167,
+                     'all_resume_entry_files_unchanged': True, 'deltas': mechanical['deltas'],
+                     'current_state': mechanical['current_state'], 'record_count': 90,
+                     'resume_entry_to_final_record_delta': mechanical['native_case_context']['resume_entry_to_final_record_delta'],
+                     'installed_tree': checks['installed_tree_has_no_files_beyond_frozen_payload']['detail'],
+                     'original_process_and_preflight_refs_unchanged': True},
+    'tool_observation_scope': {'new_direct_helper_invocations_after_resume': new_invocations,
+                               'all_retained_reports': reports, 'final_caller_coverage': 'not_observed',
+                               'scope': 'All five reports are inherited revision15 specialist-result coverage; none covers the unfinished revision16 handback or absent final caller result.',
+                               'attribution': 'Frozen observer retained_explicit_output entries associate final files with an --out path, not their creation time. Original caller205-207 failed before files existed; actual successful retry235-236 produced/delivered the preserved inventory and completed report. Original failed coverage report remains retained. No successful helper execution is inferred from the failed invocation or from retained file presence.'},
+    'independent_read_only_observations': {'commands': len(mechanical['independent_commands']),
+                                         'all_returncode_zero': all(row['returncode'] == 0 for row in mechanical['independent_commands']),
+                                         'all_consumer_bytes_mtimes_preserved': True,
+                                         'scope': '13 selected copied-runtime read-only observations, not a new full suite or a native semantic grade.'},
+    'evidence': {name: ref(BASE / path) for name, path in {
+        'mechanical': 'mechanical-04.json', 'frozen_checker': 'mechanical-check-04.py.txt',
+        'first_process_failed_mechanical': 'mechanical-03.json', 'first_process_notes': 'mechanical-review-notes-02.json',
+        'first_evaluator_execution_failure': 'mechanical-execution-02.json',
+        'preparation': 'resume-preparation-01.json', 'preparation_addendum': 'resume-preparation-addendum-01.json',
+        'continuation_protocol': 'protocol-continuation-02.json', 'continuation': 'native-02-resume-01/continuation.json',
+        'preservation': 'native-02-resume-01/preservation.json', 'project_archive': 'native-02-resume-01/project.zip',
+        'stream': 'native-02-resume-01/stdout.jsonl', 'parent': 'native-02-resume-01/native-transcripts/parent.jsonl',
+        'child': f'native-02-resume-01/native-transcripts/{child_id}.jsonl',
+    }.items()},
+    'limits': ['Mechanical04 remains unchanged; no evaluator repair or criteria change was necessary.',
+               'Counts span combined same-case journals and additional continuity checks;65/84 is not evidence that the unfinished production handoff improved or completed.',
+               'All semantic, artistic, provider, engine and human acceptance outcomes remain separate.',
+               'No further inference is attempted while usage access is unavailable.'],
+    'recorder': ref(Path(__file__)),
+}
+destination = BASE / 'mechanical-review-notes-03.json'
+with destination.open('x', encoding='utf-8', newline='\n') as output:
+    json.dump(notes, output, indent=2, ensure_ascii=False)
+    output.write('\n')
+print(json.dumps({'status': notes['status'], 'receipt': ref(destination), 'passed': mechanical['passed'], 'total': mechanical['total']}))

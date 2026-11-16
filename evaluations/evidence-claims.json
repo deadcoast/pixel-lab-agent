@@ -1429,6 +1429,94 @@
           "equals": "partial"
         }
       ]
+    },
+    {
+      "id": "pxskill001-literal-result",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/RESULT.json",
+      "sha256": "ca79c6100a64c1761a174dfff38b1b3f99b56ccc7886f71e06e7643867455281",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "partial"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-semantic",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/semantic-review-02.json",
+      "sha256": "4b1274c77aa5e012a3afa7a9faa0cb1becbf9ae3cf42135ac7fe17291ea7fe92",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "incomplete"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-mechanical",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/mechanical-04.json",
+      "sha256": "ad17c769a9b1feed37d2af680dda962c5a312e0a21a3d9a7fcbdfcde69927a62",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "fail"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-kit",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/revision-02/RESULT.json",
+      "sha256": "66375bf2611b0cd060904e17ebe1fc88cce402ef4785c7834a8c563635be6910",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-preparation",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/resume-preparation-01.json",
+      "sha256": "68fbc24d462e8861de935dbe59d2cde734aaa3d65f7a9c810658a46b663b086e",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-seed",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/seed-preflight-02/RESULT.json",
+      "sha256": "08df14b1265e69b297c2238a0e296c65bf44d1a32f9377a07faf5812408b11b1",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-source",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/source-review-02.json",
+      "sha256": "556a541e79885b0c4171fc687dbbb0b86c32c39dbb3b0ea57059af8319f62632",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pxskill001-literal-observation",
+      "path": "evidence/skill-handoff/literal-reconciliation-20261116/semantic-observation-02/RESULT.json",
+      "sha256": "0b4648474f132d300ba5d6d73c5749fa4e70c4548fd4042a44a4500c378dd526",
+      "assertions": [
+        {
+          "pointer": "/status",
+          "equals": "pass"
+        }
+      ]
     }
   ],
   "claims": [
@@ -2991,6 +3079,69 @@
           "domain": "package",
           "path": "plugins/pixl/bundle-manifest.json",
           "receipt": "pxskill001-prerequisites-result",
+          "pointer": "/bundle_manifest_sha256"
+        }
+      ]
+    },
+    {
+      "id": "PX-SKILL-001-LITERAL-RECONCILIATION",
+      "task": "Literal answer-effect reconciliation and required/optional fallback consistency",
+      "document": {
+        "path": "evidence/skill-handoff/README.md",
+        "anchor": "pxskill001-literal-reconciliation",
+        "line_sha256": "0685e5207e58b31a730916020440b8f9d0a21fe217350384a14bc52572f803b6"
+      },
+      "tier": "native registered caller/specialist handoff, independent semantic and mechanical review, package discovery/copy checks",
+      "scope": "Two native handoff-only cases across three processes. The first worksheet case fails semantic qualification. The second observes actual coverage-tool use, independent caller findings and partially saved same-child corrections; its original process ends early and its same-parent/same-child resume hits a usage limit. No final caller result or completed revised semantic qualification exists. No new owner answer or maintainer defect feedback is supplied.",
+      "limits": [
+        "Coverage complete never means semantic acceptance; selected scopes and declared carriers can omit claims.",
+        "The first semantic failure, stopped process, evaluator failure, native helper failures and usage limit remain preserved.",
+        "Same-session recovery is observed; completed recovery and broader host reliability are not established.",
+        "No provider execution, new art, production adoption, visual/engine or human acceptance is established.",
+        "Human acceptance is separate and unperformed; all stated broader milestones remain open."
+      ],
+      "policy": "current",
+      "outcome": {
+        "receipt": "pxskill001-literal-result",
+        "pointer": "/status"
+      },
+      "receipts": [
+        "pxskill001-literal-result",
+        "pxskill001-literal-semantic",
+        "pxskill001-literal-mechanical",
+        "pxskill001-literal-kit",
+        "pxskill001-literal-preparation",
+        "pxskill001-literal-seed",
+        "pxskill001-literal-source",
+        "pxskill001-literal-observation"
+      ],
+      "bindings": [
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-literal-result",
+          "pointer": "/source_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-literal-result",
+          "pointer": "/protocol_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "map",
+          "domain": "source",
+          "receipt": "pxskill001-literal-result",
+          "pointer": "/evidence_hashes",
+          "prefix": ""
+        },
+        {
+          "kind": "file",
+          "domain": "package",
+          "path": "plugins/pixl/bundle-manifest.json",
+          "receipt": "pxskill001-literal-result",
           "pointer": "/bundle_manifest_sha256"
         }
       ]

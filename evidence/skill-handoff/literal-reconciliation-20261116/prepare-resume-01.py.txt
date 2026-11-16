@@ -1,0 +1,56 @@
+"""Prepare a new recorder directory for the same unfinished caller and child."""
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+
+from evaluations import skill_handoff_trials as handoff
+from evaluations.host_trials import inventory, write_json
+from evaluations.native_trial_records import prepare_resume, reference
+
+
+def main():
+    previous = BASE / 'native-02'
+    destination = BASE / 'native-02-resume-01'
+    protocol_path = BASE / 'protocol-continuation-02.json'
+    protocol = json.loads(protocol_path.read_bytes())
+    old_identity = json.loads((previous / 'identity.json').read_bytes())
+    old_launch = json.loads((previous / 'launch.json').read_bytes())
+    old_preservation = json.loads((previous / 'preservation.json').read_bytes())
+    consumer = Path(old_launch['cwd']).resolve()
+    current = handoff._files(consumer, exclude_kit=True)
+    assert len(current) == 166
+    assert current == handoff._files(previous / 'project') == old_preservation['outputs']
+    assert handoff._files(consumer / handoff.KIT) == old_identity['package_files']
+    assert len([p for p in (consumer / handoff.KIT).rglob('*') if p.is_file()]) == 261
+    predecessor_files = inventory(previous, ('__pycache__',))
+    prepare_resume(previous, destination, protocol['assignment']['resume_prompt'], 'a94b4dc767b65b243')
+    handoff._copy(previous / 'project', destination / 'input-project', current)
+    archive = handoff._archive(destination / 'input-project', destination / 'input-project.zip', current)
+    identity_path = destination / 'identity.json'
+    identity = json.loads(identity_path.read_bytes())
+    identity.update(
+        case=old_identity['case'], consumer=str(consumer), inputs=current,
+        input_archive=archive, static_inputs=old_identity['static_inputs'],
+        package=old_identity['package'], package_files=old_identity['package_files'],
+        source_revision=old_identity['source_revision'],
+        registered_agent=old_identity['registered_agent'], target_role=old_identity['target_role'],
+        original_inputs=old_identity['inputs'],
+        predecessor_identity=reference(previous / 'identity.json'),
+        predecessor_preservation=reference(previous / 'preservation.json'),
+        predecessor_files=predecessor_files, continuation_protocol=reference(protocol_path),
+        retention_scope='Same external consumer; exact 166-file entry snapshot. Generic native recorder execution followed by cold-caller full-project retention. Original process remains immutable and incomplete.',
+    )
+    write_json(identity_path, identity)
+    assert inventory(previous, ('__pycache__',)) == predecessor_files
+    assert current == handoff._files(consumer, exclude_kit=True)
+    print(json.dumps({'prepared': str(destination), 'files': len(current),
+                      'same_parent': old_launch['expected_session_id'],
+                      'same_child': 'a94b4dc767b65b243', 'launched': False}))
+
+
+if __name__ == '__main__':
+    main()

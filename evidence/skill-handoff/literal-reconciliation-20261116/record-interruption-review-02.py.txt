@@ -1,0 +1,141 @@
+"""Record process1's interruption without interpreting it as task completion."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-02"
+PROJECT = NATIVE / "project"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path, line=None):
+    value = {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+    if line is not None:
+        value["line"] = line
+    return value
+
+
+def rows(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def main():
+    old_semantic = BASE / "semantic-review-01.json"
+    assert sha(old_semantic) == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    parent_path = NATIVE / "native-transcripts/parent.jsonl"
+    child_path = NATIVE / "native-transcripts/a94b4dc767b65b243.jsonl"
+    stream_path = NATIVE / "stdout.jsonl"
+    parent, child, stream = rows(parent_path), rows(child_path), rows(stream_path)
+    terminal = stream[698]
+    assert terminal["type"] == "result" and terminal["subtype"] == "success"
+    assert stream[695]["subtype"] == "task_notification" and stream[695]["status"] == "stopped"
+    assert stream[695]["task_id"] == "a94b4dc767b65b243"
+    interim = parent[264]["message"]["content"][0]["text"]
+    assert terminal["result"] == interim
+    assert "correction round, which is running now" in interim
+    assert child[366]["message"]["content"][0]["text"] == "[Request interrupted by user]"
+    new_result = PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+    assert not new_result.exists()
+    assert not (PROJECT / "work/handoff-review-rev16/handoff-check-01.json").exists()
+    preservation = json.loads((NATIVE / "preservation.json").read_bytes())
+    inputs, outputs = preservation["inputs"], preservation["outputs"]
+    assert len(inputs) == 135 and len(outputs) == 166
+    actual = {p.relative_to(PROJECT).as_posix(): sha(p) for p in PROJECT.rglob("*") if p.is_file()}
+    assert actual == outputs
+    record = json.loads((NATIVE / "record.json").read_bytes())
+    commit_result = child[329]["message"]["content"][0]["content"]
+    commit = json.loads(commit_result)
+    assert commit["revision"] == 16
+    assert commit["hash"] == sha(PROJECT / "state.px/state.px")
+    result = {
+        "schema_version": 1,
+        "review": "literal-reconciliation-native02-process1-interruption",
+        "observed_at_utc": datetime.now(UTC).isoformat(),
+        "status": "incomplete",
+        "qualification_complete": False,
+        "semantic_verdict": "not_assessed_incomplete_assignment",
+        "native_identity": {
+            "caller_session": "0f688277-0e32-45d2-9ee8-8d47724b0865",
+            "actual_child": "a94b4dc767b65b243",
+            "registered_role": "pixl:pixl",
+        },
+        "process_observation": {
+            "returncode": record["returncode"],
+            "terminal_subtype": terminal["subtype"],
+            "terminal_line": 699,
+            "terminal_text": interim,
+            "parent_end_turn_line": 265,
+            "first_child_return_line": 285,
+            "native_caller_correction_line": 245,
+            "same_child_receives_correction_line": 286,
+            "correction_publication_lines": [329, 330],
+            "child_stopped_stream_line": 696,
+            "child_host_interruption_marker_line": 367,
+            "limitation": "The host-rendered interruption marker does not establish that the user in this development chat requested a stop. Process success and recorder finished status establish process termination, not completed caller/specialist work.",
+        },
+        "retained_partial_work": {
+            "input_files": len(inputs),
+            "output_files": len(outputs),
+            "revision": 16,
+            "canonical_state_sha256": commit["hash"],
+            "first_specialist_note": "deliverables/continuation-2026-11-16b.md",
+            "first_specialist_result": "deliverables/specialist-return-2026-11-16b.json",
+            "correction_note": "deliverables/continuation-2026-11-16c.md",
+            "correction_result_written_before_interruption": "deliverables/specialist-return-2026-11-16c.json",
+            "corrected_child_final_observed": False,
+            "final_caller_result_present": False,
+            "final_caller_result_expected": new_result.name,
+            "revised_coverage_check_present": False,
+            "limitation": "The correction result's delivered assertion is unfinished work at this boundary, not an independently accepted completion. Its expected review files and corrected child handback are not yet present. No final semantic criterion grade is assigned.",
+        },
+        "prospective_continuation_strategy": {
+            "scope": "Finish the same ordinary handoff-only assignment with the same persisted caller and actual child. Keep all 34 original criteria, exact kit2 and authorization unchanged.",
+            "retention": "Leave native-02 and this receipt byte-identical. Retain a separate process2 directory with exact resume prompt, command, predecessor references, pre-resume consumer identity, transcript-prefix identities and final snapshot.",
+            "native_prompt_boundary": "Use a neutral continuation request to complete the existing assignment and its already-native correction round. Do not send this review, rubric, failure list, desired answers, evaluator repair or new scope to either actor.",
+            "verification": "Observe actual same-parent/same-child continuation, corrected child handback, caller independent review, final saved result and actual final answer. Bind later semantic review to the complete combined evidence while preserving this incomplete process as historical evidence.",
+            "identity_failure": "If the persisted child cannot be resumed, report that fact separately. Do not silently launch a replacement child and credit it as same-child continuation.",
+            "grading": "Coverage completion remains separate from full current authored/adopted-carrier semantic correctness; no interim content is scored as a final completed handoff.",
+        },
+        "evaluator_preflight_observation": {
+            "status": "recovered_read_error",
+            "detail": "An initial read-only inspection used Windows' default cp1252 and raised UnicodeDecodeError at byte 0x9d, position890376. The inspection was rerun with explicit UTF-8. No native artifact was changed and this is not a native failure.",
+        },
+        "evidence": {
+            "protocol": ref(BASE / "protocol-revision-02.json"),
+            "previous_semantic": ref(old_semantic),
+            "record": ref(NATIVE / "record.json"),
+            "continuation_record": ref(NATIVE / "continuation.json"),
+            "preservation": ref(NATIVE / "preservation.json"),
+            "project_archive": ref(NATIVE / "project.zip"),
+            "stdout_terminal": ref(stream_path, 699),
+            "stopped_child": ref(stream_path, 696),
+            "caller_interim": ref(parent_path, 265),
+            "first_child_return": ref(child_path, 285),
+            "caller_native_correction": ref(parent_path, 245),
+            "delivered_correction": ref(child_path, 286),
+            "correction_commit": ref(child_path, 329),
+            "correction_commit_result": ref(child_path, 330),
+            "interruption_marker": ref(child_path, 367),
+            "current_state": ref(PROJECT / "state.px/state.px"),
+            "first_note": ref(PROJECT / "deliverables/continuation-2026-11-16b.md"),
+            "first_result": ref(PROJECT / "deliverables/specialist-return-2026-11-16b.json"),
+            "correction_note": ref(PROJECT / "deliverables/continuation-2026-11-16c.md"),
+            "partial_correction_result": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json"),
+        },
+        "script_sha256": sha(Path(__file__)),
+    }
+    target = BASE / "interruption-review-02.json"
+    with target.open("x", encoding="utf-8", newline="\n") as output:
+        json.dump(result, output, indent=2, ensure_ascii=False)
+        output.write("\n")
+    print(json.dumps({"status": result["status"], "path": target.relative_to(ROOT).as_posix(), "sha256": sha(target)}))
+
+
+if __name__ == "__main__":
+    main()

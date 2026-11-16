@@ -103,24 +103,54 @@ not a fresh readiness result; after authorized changes are actually saved, rerun
 workflow before claiming current readiness. Provider availability and required
 visual/engine acceptance remain separate.
 
-Derive authored structured handoff fields such as `question`, `necessary_for`,
-`unlocks`, `next` and `blocked_on` from that checked table. These fields are
-operational claims, not packaging for prose. Do not carry a predecessor's answer
-effects into a new result merely to reuse its format. Claim that an answer clears
-all production gates only when that exact answer, together with already
-established prerequisites, covers every applicable dependency of the identified
-plan. Otherwise name the narrower next step it enables and what remains; an
-undecided future contract keeps the effect conditional. Preserve runtime-derived
-continuation fields unchanged and put your authored explanation alongside them.
+### Write the current effect before the return
 
-Before publishing the current note and result, reconcile their literal conditions
-with the table, source criteria and intended final response. Preserve permitted
-defaults and alternatives: a preference question does not become a blocker when
-the source already allows an authorized fallback. If one current artifact says
-an answer is required and another says it is optional, resolve that conflict at
-its source and save a corrected version. A correct summary or general list of
-remaining gates does not cancel a contradictory structured effect or restrictive
-sentence elsewhere in the current handoff. Retain earlier versions as history.
+Use this worksheet inside the new continuation note for each consequential answer
+effect or claimed blocker. Shared prerequisite rows may be referenced rather than
+repeated. It is a reasoning aid, not new PIXL syntax or proof of a correct review.
+
+```text
+Current operation and answer effects
+State/plan identity:
+Operation and phase:
+Question (or "no owner answer needed for this operation"):
+Assume only this answer:
+
+Prerequisite or permitted alternative | Source + locator | Current status | After only this answer | Still required
+
+Current effect sentence:
+Remaining prerequisites:
+Authorized default/alternative (or none established):
+Current carriers: note section; authored result field/JSON pointer; final wording
+Prior instruction superseded: note/section + reason (when applicable)
+```
+
+1. Fill the rows from the actual source and prerequisite trace above. Keep every
+   unasked choice unchanged. Preserve source-defined alternatives: an allowed
+   default and an owner-supplied value are alternative routes, not two mandatory
+   inputs. An unknown future contract remains conditional.
+2. Write the effect sentence from the completed rows. If anything needed for the
+   claimed operation remains, name the narrower step available and the remaining
+   requirements; do not say the answer clears the operation's gates. Do not treat
+   an answer as completion of a prerequisite whose required work or evidence
+   remains missing, or as confirmation of an unasked choice.
+3. Make the current operation/condition section self-contained: carry every
+   instruction governing that operation, including permitted alternatives.
+   Old operational notes remain history/evidence, not parallel current
+   instructions, even when linked by section. Cite unchanged sources and facts
+   without duplicating history. Correct prior agent interpretations explicitly;
+   the new note cannot supersede owner requirements or source criteria.
+4. Build authored `question`, `necessary_for`, `unlocks`, `next` and `blocked_on`
+   fields from these fresh checked statements, preserving their conditions and
+   alternatives. Do not initialize their meaning from an old result's fields.
+   Keep runtime-derived continuation unchanged; put authored explanation beside it.
+5. For a saved JSON result, perform the [literal handoff review](handoff-review.md):
+   inventory the whole question collection and whole authored next-operation
+   subtree, review every listed value and bind the complete current instruction
+   excerpts. Start with `python -B -I KIT/scripts/check_handoff.py RESULT --root ROOT --scope /remaining_questions --scope /next_action`, using the actual field names.
+   Reopen the saved fields and current text after the coverage check and compare
+   their meaning with the sources. Coverage is not semantic acceptance. Use the
+   source-checked effect, with remaining requirements, in the final response.
 
 Use this check to ask only for information needed by the immediate dependent
 operation. Existing source-backed decisions and authorization still apply; later
@@ -138,12 +168,11 @@ its material remaining dependencies plainly.
    establish a requirement for a newly authored asset. Preserve earlier reports
    and identify overbroad inferences in the continuation.
 
-2. Save a short continuation note with a decision table: **choice, actual
-   authority/status, whether an answer is needed now, and the effect of that
-   answer**. Include observed and proposed policies so they cannot silently gain
-   confirmation. An answer adopts only the choices it explicitly supplies;
-   unasked rows keep their status. A diagnostic can support a recommendation
-   while the decision remains the owner's. Continue independent useful work.
+2. Save the [current-effect worksheet](#write-the-current-effect-before-the-return)
+   in a new continuation note. Include observed/proposed choices with their real
+   authority, source and scope; unasked rows keep their status. A diagnostic can
+   support a recommendation without deciding for the owner. Keep the current
+   operation section self-contained and continue independent useful work.
 
 3. Apply [the operation-effect check](#check-what-an-answer-enables) to the
    next local operation and any later operation the handoff claims to unlock.

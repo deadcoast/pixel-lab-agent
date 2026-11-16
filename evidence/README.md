@@ -12,7 +12,21 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
-- **Current consequential-choice and cold handoffs:** [production-prerequisite continuation](skill-handoff/production-prerequisites-20261115/README.md)
+- **Current consequential-choice and cold handoffs:** [literal reconciliation](skill-handoff/literal-reconciliation-20261116/README.md)
+  retains a failed first native case (25 passing criteria, eight failures, one
+  inherited; partial 57/60 mechanics; 17 read-only-kit cache additions). The revised
+  case saves five caller findings and a child correction, but the original process
+  stopped the child before its corrected return. A 17/17-preflight same-identity
+  resume ended at `usage_limit` without a final caller result. The cumulative
+  mechanical receipt is failed at 65/84 (nine failures, nine unobserved, one N/A);
+  14 objective observations pass separately. Semantic review is incomplete with
+  all 34 criteria ungraded. Resume the retained caller/child after execution access
+  returns; human acceptance is separate.
+  The new [coverage helper](../plugins/pixl/skills/pixl/references/handoff-review.md)
+  has 20 focused test passes, scoped Ruff and an 18/18 retained-result diagnostic;
+  complete coverage remains `semantic_verdict: not_assessed`. Four packaging tests
+  pass on each frozen kit. Earlier lint/privilege observations and failures stay retained.
+- **Prior production-prerequisite handoffs:** [production-prerequisite continuation](skill-handoff/production-prerequisites-20261115/README.md)
   retains useful request/handoff work and genuine same-child corrections in two
   native cases. The structured result still overclaims full production clearance,
   and the current note contradicts an allowed review-background fallback.
@@ -29,13 +43,14 @@ M3/M4/M5 remain open.**
   [Prior native caller review](skill-handoff/caller-review-20261115/README.md) and
   [earlier qualification](skill-handoff/qualification-20261114/README.md) retain
   their own failures, scoped successes, guidance changes and guided correction.
-- **Latest retained full local checkpoint (not rerun for the current guide revision):** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
+- **Latest retained full local checkpoint (not rerun for the current helper/guide revision):** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
   records 1,461 passing tests, four existing Windows privilege skips (1,465 run),
   39 reference checks and distribution probes. Ten new regressions cover the
   directory guard and CLI/MCP recovery/help; earlier harness additions are also
-  in that inventory, not newly completed work in this guide-only increment. All 328
-  checked source hashes remain unchanged, but the old bundle identity is historical
-  to the revised guides; source identity is not a fresh full run. The
+  in that inventory, not newly completed work in this increment. All 328 checked
+  source hashes remain unchanged, but the new module/tests are outside that old
+  inventory and the bundle identity is historical to the revised helper/guides.
+  Source identity is not a fresh full run. The
   [first full run](verification-runs/20261115T162528.482654Z/result.json) precedes
   the auxiliary-directory refinement and retains its own 1,460 passes/four skips.
   The [TM-02 checkpoint](verification-runs/20261115T023402.446790Z/result.json)
@@ -58,12 +73,21 @@ M3/M4/M5 remain open.**
   preserves the wider untyped-body baseline and intermediate integration/lint
   failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [current inspection](skill-handoff/production-prerequisites-20261115/integrity-01/report.json)
-  covers 27 claims and 111 receipts: one current, eleven historical and fifteen
-  stale. The current claim records the **partial development increment with failed
+  The [literal-reconciliation inspection](skill-handoff/literal-reconciliation-20261116/integrity-01/report.json)
+  checks 28 claims and 119 receipts: one current, eleven historical and sixteen
+  stale. All receipt identities and pinned claim bindings are intact. The current
+  claim records a **partial increment with incomplete, quota-blocked native qualification**;
+  current applicability and integrity do not establish a behavioral pass.
+  [Read-only preservation](skill-handoff/literal-reconciliation-20261116/integrity-01/RESULT.json)
+  passes: all 6,880 snapshot entries retain their bytes and mtimes, with the
+  after-snapshot re-enumerating entries to detect additions. CLI exit 1 retains
+  the expected source/kit drift and two wheel/sdist source-applicability gaps.
+  The [prior production-prerequisite inspection](skill-handoff/production-prerequisites-20261115/integrity-01/report.json)
+  covered 27 claims and 111 receipts: one current, eleven historical and fifteen
+  stale at that checkpoint. Its current claim recorded the **partial development increment with failed
   native semantic qualification**; current applicability does not mean a behavioral
-  pass. All receipt identities and pinned claim lines remain intact. The earlier
-  controlled-continuation claim is now stale against the revised guide kit; its
+  pass. All receipt identities and pinned claim lines were intact. The earlier
+  controlled-continuation claim was stale against that revised guide kit; its
   original qualified sample scope and failed future-effect claim remain unchanged.
   [Read-only preservation](skill-handoff/production-prerequisites-20261115/integrity-01/RESULT.json)
   verifies 5,409 snapshot entries' bytes and mtimes through the inspection. CLI exit

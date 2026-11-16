@@ -1,10 +1,61 @@
 # PX-SKILL-001: consequential choice at the handoff
 
-## Current production-prerequisite handoff, 2026-11-15
+## Current literal-reconciliation qualification, 2026-11-16
+
+<a id="pxskill001-literal-reconciliation"></a> **PX-SKILL-001: partial literal-reconciliation development increment, 2026-11-16.** The first native qualification failed; the revised case retains caller findings and a saved same-child correction but lacks a final caller return. Its same-parent/same-child continuation ended at `usage_limit`. [Exact result](literal-reconciliation-20261116/RESULT.json).
+
+The [current ledger](literal-reconciliation-20261116/README.md) records the first
+native case as failed: 25 criteria pass, eight fail and one is inherited. Its
+mechanics are partial at 57/60; 17 bytecode-cache files were added to the assigned
+read-only kit. Useful worksheet work and a genuine same-child correction remain
+retained. The literal result promise and adopted older operating section still
+conflict with the sources. The second case retains five caller-authored findings
+and a same-child correction saved at revision 16. Its original process ended with
+a waiting response and stopped the child before the corrected return. A subsequent
+same-parent/same-child resume passed 17/17 preflight checks, then ended at
+`usage_limit` without a final caller result. Preparation, saved progress and local
+coverage do not establish a completed native handoff.
+
+The [cumulative mechanical receipt](literal-reconciliation-20261116/mechanical-04.json)
+is failed at 65/84: nine failures, nine unobserved checks and one N/A remain.
+It separately verifies the same caller/child, exact journal prefixes and preserved
+old captures. [Fourteen objective observations](literal-reconciliation-20261116/semantic-observation-02/RESULT.json)
+pass: all 166 pre-resume project files remain unchanged, one scratch inventory is
+added (167 total), and state remains revision 16 with 90 records. The 261-file kit
+has no extra files. [Semantic review](literal-reconciliation-20261116/semantic-review-02.json)
+is incomplete with `blocked_reason: usage_limit` and `review_complete: false`;
+all 34 criteria are `not_graded_incomplete`, not semantic passes. Earlier mechanical
+receipts and the waiting/termination evidence remain unchanged.
+
+After access returns, resume caller `0f688277-0e32-45d2-9ee8-8d47724b0865` and child
+`a94b4dc767b65b243` to finish the already-requested correction, source-grounded
+literal review and caller result. The frozen kit and all captured failures remain
+retained. This execution-access dependency is separate from human acceptance.
+
+The [read-only handoff review](../../plugins/pixl/skills/pixl/references/handoff-review.md)
+now inventories whole authored subtrees independently of review rows, checks their
+expected values and exact declared source/carrier bindings, and always leaves
+semantic meaning unassessed. [Twenty focused tests and scoped Ruff](literal-reconciliation-20261116/tool-development-01/checks-02/receipt.json)
+pass; the first lint failure and earlier privilege skip are retained.
+The [18/18 diagnostic](literal-reconciliation-20261116/tool-diagnostic-01/README.md)
+covers all 22 leaves, including five RQ3 fields: omission is detected, while a
+deliberately wrong complete review remains semantically unassessed. Four packaging
+tests pass on each frozen kit. The old 1,461-pass/four-skip full run was not rerun;
+unchanged prior inputs do not cover the new module/tests or revised kit.
+The [read-only integrity inspection](literal-reconciliation-20261116/integrity-01/RESULT.json)
+passes its preservation checks: all 28 registered claims, 119 receipts and pinned
+claim bindings remain intact, and 6,880 snapshot entries retain their bytes and
+mtimes. One claim is current (this partial increment), eleven historical and
+sixteen stale. Expected source/kit drift and the two retained wheel/sdist
+source-applicability gaps keep the CLI at exit 1. These identity checks do not
+complete the native semantic review.
+Human acceptance is separate; M1/M2 and broader M3/M4/M5 remain open.
+
+## Prior production-prerequisite handoff, 2026-11-15
 
 <a id="pxskill001-production-prerequisites"></a> **PX-SKILL-001: partial production-prerequisite development increment, 2026-11-15.** Both native semantic qualifications failed: useful work and same-child corrections are retained, but structured answer effects still overstate production-gate clearance and current notes contradict a permitted review fallback. [Exact result](production-prerequisites-20261115/RESULT.json).
 
-The [current ledger](production-prerequisites-20261115/README.md) preserves both
+The [prior ledger](production-prerequisites-20261115/README.md) preserves both
 native cases and both frozen guide revisions. Useful pre-discovery request work
 and source/provenance corrections do not close the remaining literal handoff
 failures. Mechanical review is [partial 60/63](production-prerequisites-20261115/mechanical-02.json)

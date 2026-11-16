@@ -1,0 +1,62 @@
+"""Preserve a failed evaluator execution and make a local-name-only repair."""
+import ast
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+original = BASE / 'mechanical-check-02.py.txt'
+assert sha(original) == '16ded04275c7f0aea9e0f33f9e301a435a9d42a772f8d6d29541938c012bbb43'
+assert sha(BASE / 'mechanical-02.checker.py.txt') == sha(original)
+assert not (BASE / 'mechanical-02.json').exists()
+text = original.read_text(encoding='utf-8')
+replacements = [
+    ('default="mechanical-02.json"', 'default="mechanical-03.json"'),
+    ('default="mechanical-runtime-observations-02"', 'default="mechanical-runtime-observations-03"'),
+    ('    tool_observations = tool_observer(', '    literal_tool_observations = tool_observer('),
+    ('    for item in tool_observations["checks"]:', '    for item in literal_tool_observations["checks"]:'),
+    ('{"group": tool_observations["group"],', '{"group": literal_tool_observations["group"],'),
+    ('"literal_review_tool_observations": tool_observations,', '"literal_review_tool_observations": literal_tool_observations,'),
+]
+for old, new in replacements:
+    assert text.count(old) == 1, old
+    text = text.replace(old, new)
+ast.parse(text)
+fixed = BASE / 'mechanical-check-03.py.txt'
+with fixed.open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(text)
+trace = '''Traceback (most recent call last):
+  File "C:\\github\\pixel-lab-agent\\evidence\\skill-handoff\\literal-reconciliation-20261116\\mechanical-check-02.py.txt", line 864, in <module>
+    main()
+    ~~~~^^
+  File "C:\\github\\pixel-lab-agent\\evidence\\skill-handoff\\literal-reconciliation-20261116\\mechanical-check-02.py.txt", line 567, in main
+    parent_tool_observations, child_tool_observations = tool_observations(parent), tool_observations(child)
+                                                        ^^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'tool_observations' where it is not associated with a value
+'''
+with (BASE / 'mechanical-execution-02-error.txt').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(trace)
+receipt = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'evaluator_execution_failed',
+    'command': ['.venv/Scripts/python.exe', '-B', 'evidence/skill-handoff/literal-reconciliation-20261116/mechanical-check-02.py.txt'],
+    'returncode': 1, 'native_attempt': 'native-02', 'grade_produced': False,
+    'error_capture': 'mechanical-execution-02-error.txt',
+    'capture_basis': 'Exact traceback from the actual exec tool output; not a re-execution of the original checker.',
+    'original_checker_sha256': sha(original), 'failed_execution_snapshot_sha256': sha(BASE / 'mechanical-02.checker.py.txt'),
+    'preserved_observation_directory': 'mechanical-runtime-observations-02',
+    'correction': {'new_checker': fixed.name, 'sha256': sha(fixed),
+        'change': 'Rename the new local observation value to literal_tool_observations so it no longer shadows the existing tool_observations function. Fresh output paths avoid overwriting the failed execution.',
+        'criteria_changed': False, 'prospective_original_preserved': True,
+        'classification': 'Post-run evaluator implementation repair, not a product change or lowered criterion.'},
+    'limits': ['This failure is in the evaluator and supplies no native verdict.',
+        'The native process ended while waiting for a same-child correction; its expected caller result is absent. A success terminal/exit code alone is not task completion.']}
+with (BASE / 'mechanical-execution-02.json').open('x', encoding='utf-8') as stream:
+    json.dump(receipt, stream, indent=2)
+    stream.write('\n')
+print(json.dumps({'failure_receipt': 'mechanical-execution-02.json', 'fixed_checker_sha256': sha(fixed)}))

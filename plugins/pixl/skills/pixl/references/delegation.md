@@ -84,14 +84,17 @@ inputs for this comparison; they do not establish that its conclusions follow.
    authority for the next work.
 
 2. Save a compact caller comparison covering each consequential claim,
-   carried-forward restriction and claimed consequence of an answer. Record
-   **claim or literal criterion; source and locator; current authority/status;
-   change actually authorized; actual operation prerequisite; finding and
-   disposition**. Cite the evidence you interpreted, not just the specialist's
-   statement that a source supports it. Split mixed-authority clauses. If a
-   rule rejects a plausible alternative, explain whether the source excludes
-   that alternative or the rule belongs to a narrower expert trial. Preserve
-   required outcomes when correcting an unsupported recipe.
+   carried-forward restriction and answer effect. For JSON returns, use the
+   [literal handoff review](handoff-review.md) to inventory the whole question
+   collection and whole authored next-operation subtree. Review every listed
+   value; the specialist's worksheet does not choose the coverage. Independently
+   read the sources and prerequisites. Record **claim or literal criterion;
+   source and locator; current authority/status; change actually authorized;
+   actual operation prerequisite; finding and disposition**. Cite the evidence
+   you interpreted, not the specialist's assurance. Split mixed-authority clauses
+   and distinguish requirements from permitted defaults or alternatives. If a
+   rule excludes a plausible alternative, identify whether the source excludes
+   it or the rule belongs to a narrower expert trial. Preserve required outcomes.
 
 3. For each requested answer, independently apply the
    [operation-effect check](intake-sample.md#check-what-an-answer-enables): trace
@@ -117,19 +120,19 @@ inputs for this comparison; they do not establish that its conclusions follow.
 
 5. After the last specialist change, reopen the actual final files and current
    state, verify their identities and applicable runtime checks, and recheck the
-   affected claims against the sources. Bind your adoption finding to that final
-   version. Derive your own structured result's questions, prerequisites and
-   answer effects from the verified comparison; do not copy historical effects
-   forward as current findings. Reopen the saved result and compare its literal
-   fields with the current note, decision table, criteria and planned final
-   response. Reconcile required versus optional input, permitted alternatives,
-   defaults and conditional future plans across them. A correct summary or
-   separate gate list cannot override a contradictory `unlocks` or `blocked_on`
-   claim. Correct the current version and preserve its predecessor before
-   returning it. Finish with useful saved progress, any still necessary direct
-   question to the owner, and the precise operation its answer enables; claim
-   full clearance only if all applicable prerequisites are actually covered.
-   Carry existing authorization and leave later prerequisites explicit.
+   affected claims against the sources. Write your authored result fields from
+   that review, not a predecessor's values. The new current operation/condition
+   section must carry all operative instructions; older operational notes remain
+   history/evidence, not additional instructions adopted by section name. Primary
+   source criteria and owner requirements still govern.
+   Run the [literal coverage check](handoff-review.md#check-coverage-then-finish-the-semantic-review)
+   on your saved result and current instruction excerpts. Independently reopen
+   the actual fields and text afterward: coverage, matching values and intact
+   hashes do not establish that their meaning follows from the sources or cover
+   unlisted prose. Resolve contradictory effects or required/optional conditions
+   in a new current version and retain prior bytes. Return useful saved progress,
+   any still necessary direct question and the precise step its answer enables,
+   with existing authorization and remaining dependencies explicit.
 
 ## Specialist → caller at completion
 

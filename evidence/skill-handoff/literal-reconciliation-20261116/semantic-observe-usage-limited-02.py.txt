@@ -1,0 +1,145 @@
+"""Observe retained partial state after a usage-limited same-case continuation."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+FIRST = BASE / "native-02"
+NATIVE = BASE / "native-02-resume-01"
+PROJECT = NATIVE / "project"
+OUT = BASE / "semantic-observation-02"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def snapshot(directory):
+    return {path.relative_to(directory).as_posix():
+            {"sha256": sha(path), "mtime_ns": path.stat().st_mtime_ns}
+            for path in directory.rglob("*") if path.is_file()}
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def write(name, value):
+    with (OUT / name).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+
+
+def main():
+    assert (NATIVE / "preservation.json").is_file(), "Wait for final resumed retention."
+    result_path = PROJECT / "CALLER-RESULT-LITERAL-RECONCILIATION-02.json"
+    assert not result_path.exists(), "This helper records the observed incomplete usage-limited snapshot."
+    resume_record = json.loads((NATIVE / "record.json").read_bytes())
+    assert resume_record["returncode"] == 1
+    assert resume_record["continuation"]["interruption_reason"] == "usage_limit"
+    assert sha(BASE / "semantic-review-01.json") == "8170714531435539d3910a8c191889061ac448ff1a35b34851f99b025ab59b72"
+    assert sha(BASE / "interruption-review-02.json") == "b375e32fadc0f224b84ed2a29fd94dbf678ab910a80470e5d42b45b3a2dffda9"
+    continuation = json.loads((BASE / "protocol-continuation-02.json").read_bytes())
+    for evidence in continuation["evidence"].values():
+        assert sha(ROOT / evidence["path"]) == evidence["sha256"], evidence["path"]
+    runtime_names = ("plugins/pixl/scripts/pixl.py", "plugins/pixl/runtime/pixl/lifecycle.py",
+                     "plugins/pixl/runtime/pixl/codec.py", "plugins/pixl/runtime/pixl/asset-plan.schema.json")
+    runtime_files = {name: sha(ROOT / name) for name in runtime_names}
+    kit_files = json.loads((BASE / "revision-02/RESULT.json").read_bytes())["package_files"]
+    assert all(digest == kit_files[name.removeprefix("plugins/pixl/")]
+               for name, digest in runtime_files.items()), "Read runtime must match frozen kit2."
+    OUT.mkdir(exist_ok=False)
+    before = snapshot(PROJECT)
+    original_entry = snapshot(FIRST / "input-project")
+    stopped_output = snapshot(FIRST / "project")
+    resumed_entry = snapshot(NATIVE / "input-project")
+    write("before.json", before)
+    runner = ROOT / "plugins/pixl/scripts/pixl.py"
+    commands = {
+        "workflow": [str(runner), "workflow", str(PROJECT / "state.px/state.px"), "--root", str(PROJECT)],
+        "decode": [str(runner), "decode", str(PROJECT / "state.px/state.px")],
+    }
+    results = {}
+    for name, args in commands.items():
+        command = [sys.executable, "-B", "-I", *args]
+        run = subprocess.run(command, cwd=PROJECT, capture_output=True)
+        (OUT / (name + ".stdout.json")).write_bytes(run.stdout)
+        (OUT / (name + ".stderr.txt")).write_bytes(run.stderr)
+        results[name] = {"command": command, "returncode": run.returncode, "output": json.loads(run.stdout)}
+    decoded = results["decode"]["output"]
+    records = {row["id"]: row for row in decoded["records"]}
+    initial = json.loads((BASE / "seed-preflight-02/decode.stdout.json").read_bytes())
+    previous = {row["id"]: row for row in initial["records"]}
+    stopped = json.loads((FIRST / "project/work/rev16.json").read_bytes())
+    stopped_records = {row["id"]: row for row in stopped["records"]}
+    workflow = results["workflow"]["output"]
+    changes = [id_ for id_, row in previous.items() if records.get(id_) != row]
+    additions = sorted(set(records) - set(previous))
+    resume_record_changes = [id_ for id_, row in stopped_records.items() if records.get(id_) != row]
+    changed_original_files = [name for name, value in original_entry.items()
+                              if name not in before or value["sha256"] != before[name]["sha256"]]
+    changed_resumed_files = [name for name, value in resumed_entry.items()
+                             if name not in before or value["sha256"] != before[name]["sha256"]]
+    criteria = json.loads((PROJECT / "deliverables/sample-request/sample-criteria.json").read_bytes())
+    mapped = {row["id"]: row for row in criteria["outputs"][0]["criteria"]}
+    hashes = lambda values: {name: row["sha256"] for name, row in values.items()}
+    preservation = json.loads((NATIVE / "preservation.json").read_bytes())
+    checks = {
+        "read_only_state_commands_succeeded": all(row["returncode"] == 0 for row in results.values()),
+        "all86_original_entry_records_unchanged": len(previous) == 86 and not changes,
+        "only_source_and_handoff_records_added_if_any": all(records[id_]["kind"] in {"S", "N"} for id_ in additions),
+        "sample_still_only_ready": workflow["ready"] == ["t_sample"],
+        "no_new_candidate_evidence_verdict_decision_job": all(records[id_]["kind"] not in {"X", "E", "V", "D", "J"} for id_ in additions),
+        "all135_original_entry_files_retained": len(original_entry) == 135 and all(name in before for name in original_entry),
+        "only_active_head_and_session_change_among_original_entry": set(changed_original_files) <= {"state.px/state.px", "SESSION.md"},
+        "exact166_stopped_output_files_equal_resumed_entry": len(stopped_output) == len(resumed_entry) == 166 and hashes(stopped_output) == hashes(resumed_entry),
+        "all166_resumed_entry_paths_retained": all(name in before for name in resumed_entry),
+        "full_final_retention_map_matches_project": hashes(before) == preservation["outputs"],
+        "resumed_preservation_input_matches_exact_entry": hashes(resumed_entry) == preservation["inputs"],
+        "exact_five_current_criteria": set(mapped) == {item["$ref"] for item in records["f_sample"]["fields"]["rq"]}
+             and all(row["check"] == records[id_]["fields"]["ck"] for id_, row in mapped.items()),
+        "inspected_runtime_matches_native_kit2": all(digest == kit_files[name.removeprefix("plugins/pixl/")] for name, digest in runtime_files.items()),
+    }
+    after = snapshot(PROJECT)
+    write("after.json", after)
+    checks["all_retained_project_bytes_and_mtimes_unchanged_by_observer"] = before == after
+    result = {
+        "status": "pass" if all(checks.values()) else "fail",
+        "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+        "observed_at": datetime.now(UTC).isoformat(),
+        "scope": "Read-only retained partial state, exact criteria and preservation across one native02 case in two processes. The original135-file/86-record input remains the semantic baseline. The stopped166-file process is preserved as incomplete and exactly matches resume input. This second process was usage-limited; the expected caller result, completed corrected handback and independent final reconciliation are absent. Objective state/preservation checks do not grade the incomplete semantic task.",
+        "completed_native_assignment": False, "qualification_complete": False,
+        "blocked_reason": "usage_limit", "final_caller_result_present": False,
+        "state_sha256": sha(PROJECT / "state.px/state.px"), "revision": decoded["revision"],
+        "record_count": len(records), "output_files": len(before),
+        "original_input_files": len(original_entry), "resumed_input_files": len(resumed_entry),
+        "added_records": additions, "changed_input_records": changes,
+        "changed_input_files": changed_original_files,
+        "changed_resumed_input_records": resume_record_changes,
+        "changed_resumed_input_files": changed_resumed_files,
+        "current_blockers": {task["id"]: task["blockers"] for task in workflow["tasks"]},
+        "commands": {name: {key: row[key] for key in ("command", "returncode")} for name, row in results.items()},
+        "runtime_files": runtime_files,
+        "evidence": {
+            "original_protocol": ref(BASE / "protocol-revision-02.json"),
+            "continuation_protocol": ref(BASE / "protocol-continuation-02.json"),
+            "interruption": ref(BASE / "interruption-review-02.json"),
+            "original_preservation": ref(FIRST / "preservation.json"),
+            "resumed_identity": ref(NATIVE / "identity.json"),
+            "resumed_preservation": ref(NATIVE / "preservation.json"),
+            "partial_specialist_result": ref(PROJECT / "deliverables/specialist-return-2026-11-16c.json"),
+            "usage_limited_record": ref(NATIVE / "record.json"),
+            "usage_limited_stream": ref(NATIVE / "stdout.jsonl"),
+        },
+        "script_sha256": sha(Path(__file__)),
+    }
+    write("RESULT.json", result)
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total", "revision", "record_count", "output_files")}))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,55 @@
+"""Append the dated handoff result, preserving all prior claim objects and lines."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+PREFIX = BASE.relative_to(ROOT).as_posix() + '/'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    path = ROOT / 'evaluations/evidence-claims.json'
+    registry = json.loads(path.read_bytes())
+    result = json.loads((BASE / 'RESULT.json').read_bytes())
+    identifier = 'PX-SKILL-001-LITERAL-RECONCILIATION'
+    if any(row['id'] == identifier for row in registry['claims']):
+        raise ValueError('Already registered')
+    entries = {
+        'pxskill001-literal-result': PREFIX + 'RESULT.json',
+        'pxskill001-literal-semantic': result['latest_semantic_review']['path'],
+        'pxskill001-literal-mechanical': result['latest_mechanical_review']['path'],
+        'pxskill001-literal-kit': PREFIX + 'revision-02/RESULT.json',
+        'pxskill001-literal-preparation': PREFIX + 'resume-preparation-01.json',
+        'pxskill001-literal-seed': PREFIX + 'seed-preflight-02/RESULT.json',
+        'pxskill001-literal-source': PREFIX + 'source-review-02.json',
+        'pxskill001-literal-observation': PREFIX + 'semantic-observation-02/RESULT.json',
+    }
+    document, anchor = 'evidence/skill-handoff/README.md', 'pxskill001-literal-reconciliation'
+    pinned = [line for line in (ROOT / document).read_text(encoding='utf-8').splitlines() if f'id="{anchor}"' in line]
+    if len(pinned) != 1:
+        raise ValueError('Expected exactly one new dated claim line')
+    for receipt_id, name in entries.items():
+        file = ROOT / name
+        value = json.loads(file.read_bytes())
+        registry['receipts'].append({'id': receipt_id, 'path': name, 'sha256': sha(file),
+            'assertions': [{'pointer': '/status', 'equals': value['status']}]})
+    registry['claims'].append({
+        'id': identifier, 'task': 'Literal answer-effect reconciliation and required/optional fallback consistency',
+        'document': {'path': document, 'anchor': anchor, 'line_sha256': hashlib.sha256(pinned[0].encode()).hexdigest()},
+        'tier': 'native registered caller/specialist handoff, independent semantic and mechanical review, package discovery/copy checks',
+        'scope': result['scope'], 'limits': result['limits'] + ['Human acceptance is separate and unperformed; all stated broader milestones remain open.'],
+        'policy': 'current', 'outcome': {'receipt': 'pxskill001-literal-result', 'pointer': '/status'}, 'receipts': list(entries),
+        'bindings': [{'kind': 'map', 'domain': 'source', 'receipt': 'pxskill001-literal-result', 'pointer': '/' + name, 'prefix': ''}
+            for name in ('source_hashes', 'protocol_hashes', 'evidence_hashes')] +
+            [{'kind': 'file', 'domain': 'package', 'path': 'plugins/pixl/bundle-manifest.json', 'receipt': 'pxskill001-literal-result', 'pointer': '/bundle_manifest_sha256'}]})
+    path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + '\n', encoding='utf-8', newline='\n')
+    print(json.dumps({'claims': len(registry['claims']), 'receipts': len(registry['receipts']), 'outcome': result['status']}))
+
+
+if __name__ == '__main__':
+    main()

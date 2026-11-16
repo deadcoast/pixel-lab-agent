@@ -1,0 +1,39 @@
+"""Additive prelaunch bindings; never edit the original preparation receipt."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+
+
+def ref(path):
+    return {'path': str(path.resolve()), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'bytes': path.stat().st_size}
+
+
+preparation = json.loads((BASE / 'resume-preparation-01.json').read_bytes())
+original = ref(BASE / 'mechanical-03.json')
+assert original['sha256'] == '21db78d788762ab408bd4b63d0f3b152ef5aa7b277d36a0a16fa6c3ecee387bb'
+checker = ref(BASE / 'mechanical-check-04.py.txt')
+assert checker == preparation['mechanical_checker']
+source = (BASE / 'mechanical-check-04.py.txt').read_text(encoding='utf-8')
+keys = ['same_native_parent_resumed_without_fork', 'same_actual_child_continued_without_replacement',
+        'resumed_parent_retains_original_journal_prefix', 'resumed_child_retains_original_journal_prefix',
+        'corrected_child_return_after_resume_delivered']
+assert all('check("' + key + '"' in source for key in keys)
+assert not (BASE / 'native-02-resume-01' / 'stdout.jsonl').exists()
+payload = {
+    'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass',
+    'preparation': ref(BASE / 'resume-preparation-01.json'), 'mechanical_checker': checker,
+    'additional_prepared_bindings': {'original_incomplete_mechanical_receipt': original},
+    'required_continuity_and_return_check_keys': keys,
+    'first_process_status': 'incomplete_native_work',
+    'first_process_mechanics': {'status': 'fail', 'passed': 54, 'total': 71},
+    'tool_observation_attribution_limit': 'The frozen observer associates retained explicit --out paths with earlier calls even if those calls failed before the report existed. This is retained-file association only, never proof that the failed invocation produced the file. Final independent review must bind actual native delivered output, successful retry and saved report separately, preserve failed outputs and identify any reused report path. Structural coverage never certifies source meaning.',
+    'completion_limit': 'Process exit0 and success alone do not complete the task. Require actual post-resume corrected same-child return/delivery, saved expected caller result and useful actual final; retain the incomplete original process and failed mechanical03 unchanged.',
+    'recorder': ref(Path(__file__)),
+}
+with (BASE / 'resume-preparation-addendum-01.json').open('x', encoding='utf-8', newline='\n') as destination:
+    json.dump(payload, destination, indent=2, ensure_ascii=False)
+    destination.write('\n')
+print(json.dumps({'status': payload['status'], 'addendum': ref(BASE / 'resume-preparation-addendum-01.json'), 'checker_sha256': checker['sha256']}))
