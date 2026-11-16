@@ -1,10 +1,33 @@
 # PX-SKILL-001: consequential choice at the handoff
 
-## Current controlled answer-to-state continuation, 2026-11-15
+## Current production-prerequisite handoff, 2026-11-15
+
+<a id="pxskill001-production-prerequisites"></a> **PX-SKILL-001: partial production-prerequisite development increment, 2026-11-15.** Both native semantic qualifications failed: useful work and same-child corrections are retained, but structured answer effects still overstate production-gate clearance and current notes contradict a permitted review fallback. [Exact result](production-prerequisites-20261115/RESULT.json).
+
+The [current ledger](production-prerequisites-20261115/README.md) preserves both
+native cases and both frozen guide revisions. Useful pre-discovery request work
+and source/provenance corrections do not close the remaining literal handoff
+failures. Mechanical review is [partial 60/63](production-prerequisites-20261115/mechanical-02.json)
+for case 1 and [failed 59/63](production-prerequisites-20261115/mechanical-04.json)
+for case 2. The latter retains one strict caller-guidance whole-file delivery failure and
+three unobserved checks; the relevant cold-review section was delivered separately.
+All 61 final caller file references match, which does not resolve the semantic
+contradictions. [Latest semantic review](production-prerequisites-20261115/semantic-review-02.json)
+is failed: 26 criteria pass, seven fail and one sample-operation criterion is
+inherited (34 total). Its [ten independent observations](production-prerequisites-20261115/semantic-observation-02/RESULT.json)
+pass within their separate scope; they do not turn semantic failure into acceptance.
+Earlier mechanical and semantic receipts remain unchanged. Four existing
+packaging tests pass on each guide revision; the earlier 1,461-pass/four-skip full
+run was not rerun and retains its historical kit identity.
+Runtime, profile and saved formats are unchanged. Human acceptance is unperformed;
+M1/M2 and broader M3/M4/M5 remain open. Next: literal structured answer-effect
+reconciliation and required/optional fallback consistency from revision 13.
+
+## Prior controlled answer-to-state continuation, 2026-11-15
 
 <a id="pxskill001-controlled-answer-state"></a> **PX-SKILL-001: partial controlled continuation, 2026-11-15.** The clarified case qualifies sample-only confirmation, actual contract/criteria publication and current-artifact review; its future production-gate answer effect remains overstated. [Exact result](answer-state-20261115/RESULT.json).
 
-The [current ledger](answer-state-20261115/README.md) retains both isolated native
+The [prior ledger](answer-state-20261115/README.md) retains both isolated native
 cases, the first input interpretation confound and genuine loading/scope failures,
 and the prospectively clarified input without feedback or corrected artifacts.
 The second case passes all 50 applicable mechanical checks (52 total, two N/A);

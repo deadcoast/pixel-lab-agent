@@ -1,0 +1,101 @@
+{
+ "harness": "work/sample-checks/check_sample_mechanical.py",
+ "measured_at": "2026-11-16T00:34:37+00:00",
+ "status_meaning": "Measurement only. 'pass'/'fail' here is the harness's reading of the literal mechanical condition; it is not a V verdict, not E evidence and not acceptance. Visual criteria are outside this harness.",
+ "contract": {
+  "record": "c_sample",
+  "record_sha256": "b7f77964257f1bfdbf54ef0dcadc76117e0a3437f40daae1268210ae07147737",
+  "state_hash": "fdf4ebfe7d2dc1565a9c003c28d61ecfa5b255ec19937198aa11d405c38b8ca1",
+  "px": [
+   32,
+   32
+  ],
+  "pl": [
+   "#56B5BC",
+   "#F4DDA2",
+   "#25354A"
+  ],
+  "al": "binary"
+ },
+ "file": {
+  "path": "work/sample-checks/fixture-33x33.png",
+  "sha256": "564fd4d518d96be4db7e38a834862a8e3c43c207e187dc6341fbdcd371487277",
+  "format": "PNG",
+  "source_mode": "RGBA",
+  "frame_count": 1,
+  "width": 33,
+  "height": 33,
+  "visible_pixels": 390,
+  "fractional_alpha_pixels": 0,
+  "visible_colours": [
+   [
+    "#25354A",
+    180
+   ],
+   [
+    "#56B5BC",
+    186
+   ],
+   [
+    "#F4DDA2",
+    24
+   ]
+  ]
+ },
+ "criteria": {
+  "q_sample_canvas": {
+   "record_sha256": "09be7cbaef447bdfe54a2d77c09693000209cd3fa4c5954a067d471e91eaabd8",
+   "domain": "mechanical",
+   "mode": "local",
+   "check": "The candidate file is exactly 32 x 32 pixels, the canvas of the sample contract c_sample, and contains zero fractional-alpha pixels under that contract's binary alpha. Scope: the representative sample only; the canvas is a sample-scoped controlled-evaluation confirmation and the alpha policy an observation from the references, neither a confirmed project policy.",
+   "result": "fail",
+   "measurements": {
+    "size": [
+     33,
+     33
+    ],
+    "size_expected": [
+     32,
+     32
+    ],
+    "size_matches": false,
+    "fractional_alpha_pixels": 0
+   }
+  },
+  "q_sample_palette": {
+   "record_sha256": "0563ebde9637408c1d14d43d1a2c2aa65abdb3110fa4ed0200373f70b6a40589",
+   "domain": "mechanical",
+   "mode": "local",
+   "check": "Every visible pixel of the candidate is one of the three colours of the sample contract c_sample palette, #56B5BC, #F4DDA2 and #25354A, with no colours outside it. Scope: the representative sample only; these are the colours measured in the references, all three admitted by the sample-scoped outlined-treatment confirmation, and exclusivity is a sample working rule that a later role accent may reopen; this is not a confirmed project palette.",
+   "result": "pass",
+   "measurements": {
+    "palette_expected": [
+     "#56B5BC",
+     "#F4DDA2",
+     "#25354A"
+    ],
+    "visible_colours": [
+     [
+      "#25354A",
+      180
+     ],
+     [
+      "#56B5BC",
+      186
+     ],
+     [
+      "#F4DDA2",
+      24
+     ]
+    ],
+    "outside_palette": [],
+    "outside_palette_pixels": 0
+   }
+  }
+ },
+ "additional_measurements_not_in_any_saved_criterion": {
+  "frame_count": 1,
+  "note": "f_sample plans a single static sprite; a multi-frame file would be a cardinality question for import, not a q_sample_canvas failure."
+ },
+ "all_local_checks_pass": false
+}

@@ -1,0 +1,113 @@
+"""Bind a bounded native handoff result without rewriting previous evidence."""
+import argparse
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load(path):
+    return json.loads(path.read_bytes())
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--semantic', required=True)
+    parser.add_argument('--mechanical', required=True)
+    parser.add_argument('--first-semantic', required=True)
+    parser.add_argument('--first-mechanical', required=True)
+    parser.add_argument('--status', required=True, choices=['bounded_pass', 'partial', 'failed'])
+    parser.add_argument('--outcome', required=True)
+    args = parser.parse_args()
+    sem, mech = load(BASE / args.semantic), load(BASE / args.mechanical)
+    revision = load(BASE / 'revision-02/RESULT.json')
+    identity = load(BASE / 'native-02/identity.json')
+    launch = load(BASE / 'native-02/launch.json')
+    preservation = load(BASE / 'native-02/preservation.json')
+    if args.status == 'bounded_pass' and (sem['status'] != 'pass' or mech['status'] != 'pass'):
+        raise ValueError('Bounded pass requires both independent reviews to pass')
+    if revision['status'] != 'pass' or identity['package']['sha256'] != revision['bundle_manifest_sha256']:
+        raise ValueError('Native kit differs from qualified kit')
+    if any(sha(ROOT / name) != digest for name, digest in revision['source_hashes'].items()):
+        raise ValueError('Qualified source bytes changed after kit freeze')
+    current_package = {p.relative_to(ROOT / 'plugins/pixl').as_posix(): sha(p)
+        for p in (ROOT / 'plugins/pixl').rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    if current_package != revision['package_files']:
+        raise ValueError('Current package differs from the actual native kit')
+    if mech['session_id'] != launch['expected_session_id']:
+        raise ValueError('Mechanical receipt describes another caller')
+    if sem['native_identity']['caller_session'] != mech['session_id'] or sem['native_identity']['actual_child'] != mech['actual_child_id']:
+        raise ValueError('Independent reviews disagree on native identities')
+    historical = ROOT / 'evidence/verification-runs/20261115T163600.991198Z/result.json'
+    prior = load(historical)
+    if any(sha(ROOT / name) != digest for name, digest in prior['checked_input_hashes'].items()):
+        raise ValueError('Previously checked runtime/test sources drifted')
+    source_names = set(prior['checked_input_hashes']) | set(revision['source_hashes'])
+    # Maintenance outputs are separate, avoiding cycles and mutable doc bindings.
+    excluded = {'README.md', 'RESULT.json', 'register-result.py.txt', 'inspect-integrity.py.txt', 'documentation-audit.py.txt', 'final-worktree-check.py.txt'}
+    paths = [p for p in BASE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
+        and p.relative_to(BASE).parts[0] not in excluded and not p.name.startswith(('documentation-', 'final-worktree-'))
+        and not p.relative_to(BASE).parts[0].startswith('integrity-')]
+    models, sessions, attempts = set(), set(), []
+    for native, kit, semantic_name, mechanical_name in [('native-01', 'revision-01', args.first_semantic, args.first_mechanical), ('native-02', 'revision-02', args.semantic, args.mechanical)]:
+        s, m = load(BASE / semantic_name), load(BASE / mechanical_name)
+        entry, saved = load(BASE / native / 'identity.json'), load(BASE / native / 'preservation.json')
+        session = load(BASE / native / 'launch.json')['expected_session_id']
+        if session in sessions or m['session_id'] != session or s['native_identity']['caller_session'] != session or s['native_identity']['actual_child'] != m['actual_child_id']:
+            raise ValueError('Attempt identities disagree or are not distinct')
+        if entry['package']['sha256'] != load(BASE / kit / 'RESULT.json')['bundle_manifest_sha256']:
+            raise ValueError('Attempt kit identity does not match its own qualified revision')
+        sessions.add(session)
+        attempts.append({'attempt': native, 'semantic_status': s['status'], 'mechanical_status': m['status'],
+            'native_identity': s['native_identity'], 'input_files': len(entry['inputs']), 'output_files': len(saved['outputs']),
+            'semantic_review': ref(BASE / semantic_name), 'mechanical_review': ref(BASE / mechanical_name),
+            'kit': ref(BASE / kit / 'RESULT.json'), 'input_archive': ref(BASE / native / 'input-project.zip'), 'output_archive': ref(BASE / native / 'project.zip')})
+        for line in (BASE / native / 'stdout.jsonl').read_text(encoding='utf-8').splitlines():
+            model = json.loads(line).get('message', {}).get('model', '')
+            if model.startswith('claude-'):
+                models.add(model)
+    result = {'schema_version': 1, 'task': 'PX-SKILL-001 / PX-EVAL-005', 'linked_finding': 'CF-02',
+        'observed_at': datetime.now(UTC).isoformat(), 'status': args.status, 'outcome': args.outcome,
+        'qualification_complete': False, 'original_cycle': 'IDENTIFY-2026-11-09-01',
+        'source_revision_before_work': load(BASE / 'baseline.json')['head'],
+        'scope': 'Two fresh native caller/registered PIXL workflows. The first continues retained revision9 and preserves failed structured effects after useful packet/correction work. The second prospectively narrows to handoff-only continuation of the exact first output with revised guide reconciliation. No new owner answer or maintainer defect feedback; no paired-control causal claim.',
+        'native_attempt_count': len(attempts), 'attempts': attempts,
+        'native_identity': sem['native_identity'], 'observed_host': launch['host_version'],
+        'observed_models': sorted(models),
+        'semantic_status': sem['status'], 'mechanical_status': mech['status'],
+        'current_handoff_operation_pass': sem['current_handoff_operation_pass'],
+        'inherited_sample_operation_preserved': sem['inherited_sample_operation_preserved'],
+        'input_files': len(identity['inputs']), 'output_files': len(preservation['outputs']),
+        'latest_semantic_review': ref(BASE / args.semantic), 'latest_mechanical_review': ref(BASE / args.mechanical),
+        'implementation': {'guidance_changed': True, 'profile_changed': False, 'runtime_changed': False, 'saved_formats_changed': False,
+            'operation': 'Trace task/output/contract/choice and applicable phase prerequisites before claiming an answer effect; missing future contracts remain conditional.'},
+        'package_verification': ref(BASE / 'revision-02/RESULT.json'),
+        'retained_full_verification': {'receipt': ref(historical), 'tests': prior['tests'], 'scope': 'Historical full run, not rerun for this guide-only revision. All checked runtime/test inputs remain byte-identical; the current package identity differs.'},
+        'source_hashes': {name: sha(ROOT / name) for name in sorted(source_names)},
+        'protocol_hashes': {(BASE / name).relative_to(ROOT).as_posix(): sha(BASE / name) for name in ['protocol.json', 'protocol-revision-02.json']},
+        'evidence_hashes': {p.relative_to(ROOT).as_posix(): sha(p) for p in sorted(paths)},
+        'bundle_manifest_sha256': revision['bundle_manifest_sha256'],
+        'limits': ['Fresh sessions continue retained artifacts; historical parent/child sessions are not resumed.',
+            'No new owner answers, production adoption, provider execution, artwork, visual or engine acceptance is established by handoff readiness.',
+            'Previously qualified sample publication is preserved, not counted as newly published work.',
+            'Earlier failures retain their original outcomes. A bounded handoff result does not close unresolved-choice/direct-question or broader host-reliability exits.'],
+        'human_acceptance': 'unperformed; separate', 'open_milestones': ['M1', 'M2', 'broader M3', 'broader M4', 'broader M5']}
+    with (BASE / 'RESULT.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'evidence_bindings': len(paths), 'input_files': result['input_files'], 'output_files': result['output_files']}))
+
+
+if __name__ == '__main__':
+    main()

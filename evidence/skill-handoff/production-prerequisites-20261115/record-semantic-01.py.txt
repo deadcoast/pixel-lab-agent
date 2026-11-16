@@ -1,0 +1,197 @@
+"""Record independent completed-case review without changing native artifacts."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-01"
+PROJECT = NATIVE / "project"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path, needle=None, before=0, after=0):
+    result = {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+    if needle:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        index = next(i for i, line in enumerate(lines) if needle in line)
+        first, last = max(0, index - before), min(len(lines), index + after + 1)
+        result.update({"lines": [first + 1, last], "quote": "\n".join(lines[first:last])})
+    return result
+
+
+def event(name, line):
+    path = NATIVE / "native-transcripts" / name
+    row = json.loads(path.read_text(encoding="utf-8").splitlines()[line - 1])
+    result = ref(path)
+    result.update({"line": line, "event_type": row.get("type"), "message_role": row.get("message", {}).get("role")})
+    return result
+
+
+def main():
+    protocol = json.loads((BASE / "protocol.json").read_bytes())
+    caller = json.loads((PROJECT / "CALLER-RESULT-PREREQUISITES.json").read_bytes())
+    observed = json.loads((BASE / "semantic-observation-01/RESULT.json").read_bytes())
+    mechanics = json.loads((BASE / "mechanical-02.json").read_bytes())
+    assert observed["status"] == "pass"
+    evidence = {
+        "protocol": ref(BASE / "protocol.json"),
+        "current_observation": ref(BASE / "semantic-observation-01/RESULT.json"),
+        "current_state": ref(PROJECT / "state.px/state.px"),
+        "current_decoded_state": ref(BASE / "semantic-observation-01/decode.stdout.json"),
+        "current_workflow": ref(BASE / "semantic-observation-01/workflow.stdout.json"),
+        "mechanics": ref(BASE / "mechanical-02.json"),
+        "mechanical_notes": ref(BASE / "mechanical-review-notes-01.json"),
+        "kit": ref(BASE / "revision-01/frozen-kit.zip"),
+        "caller_result": ref(PROJECT / "CALLER-RESULT-PREREQUISITES.json"),
+        "RQ3": ref(PROJECT / "CALLER-RESULT-PREREQUISITES.json", '"id": "RQ3"', after=3),
+        "RQ2_optional": ref(PROJECT / "CALLER-RESULT-PREREQUISITES.json", '"id": "RQ2"', after=3),
+        "caller_current_adoption": ref(PROJECT / "review/caller-comparison-2026-11-15-v4.md", "## Adoption finding", after=12),
+        "caller_background_gate": ref(PROJECT / "review/caller-comparison-2026-11-15-v4.md", "i_display_scale`/`i_backgrounds` gate visual review"),
+        "note_e_background_gate": ref(PROJECT / "deliverables/continuation-2026-11-15e.md", "i_display_scale` and `i_backgrounds` are still", before=4, after=1),
+        "criteria_background_fallback": ref(PROJECT / "deliverables/sample-request/sample-criteria.json", "three test backgrounds are the specialist's test set"),
+        "production_note": ref(PROJECT / "deliverables/continuation-2026-11-15d.md", "## What later production still needs", after=10),
+        "sample_trace": ref(PROJECT / "deliverables/continuation-2026-11-15d.md", "## Operation-effect trace", after=17),
+        "decision_table": ref(PROJECT / "deliverables/continuation-2026-11-15d.md", "## Decision table", after=22),
+        "phase_gate": ref(ROOT / "pixl/lifecycle.py", 'if task["ph"].value in ADOPTION_PHASES:', before=21, after=12),
+        "phase_spec": ref(ROOT / "spec/PIXL-2.md", "Research and sample phases can investigate", after=2),
+        "owner_brief": ref(PROJECT / "sources/brief.md"),
+        "controlled_answers": ref(PROJECT / "sources/controlled-evaluation-answers.md"),
+        "prior_packet": ref(PROJECT / "deliverables/sample-request/request-review.json"),
+        "current_packet": ref(PROJECT / "deliverables/sample-request/request-review-v2.json"),
+        "current_brief": ref(PROJECT / "deliverables/sample-request/sample-creative-brief-v2.json"),
+        "current_criteria": ref(PROJECT / "deliverables/sample-request/sample-criteria.json"),
+        "correction_explanation": ref(PROJECT / "deliverables/continuation-2026-11-15e.md"),
+        "validator_old": ref(PROJECT / "deliverables/sample-request/validate_criteria.py"),
+        "validator_new": ref(PROJECT / "deliverables/sample-request/validate_criteria_v2.py"),
+        "restored_receipt": ref(PROJECT / "deliverables/sample-request/criteria-schema-validation.json"),
+        "caller_restore_script": ref(PROJECT / "work/caller-restore-validation.py"),
+        "harness": ref(PROJECT / "work/sample-checks/check_sample_mechanical.py"),
+        "dry_run": ref(PROJECT / "work/sample-checks/dry-run.json"),
+        "expected_request_refusal": ref(PROJECT / "deliverables/sample-request/request-review-v2-tool-refusal.json"),
+        "first_specialist_final": event("a2b7a4ab9b3fa3467.jsonl", 293),
+        "native_caller_findings": event("parent.jsonl", 285),
+        "same_child_receives_findings": event("a2b7a4ab9b3fa3467.jsonl", 294),
+        "same_child_corrected_publication": event("a2b7a4ab9b3fa3467.jsonl", 368),
+        "corrected_specialist_final": event("a2b7a4ab9b3fa3467.jsonl", 399),
+        "corrected_return_delivery": event("parent.jsonl", 314),
+        "interim_caller_end_turn": event("parent.jsonl", 311),
+        "actual_caller_final": event("parent.jsonl", 393),
+    }
+    findings = [
+        {"id": "F1", "status": "open", "kind": "retained_future_answer_effect_overclaim",
+         "finding": "RQ3 still promises clearance of production-phase gates from a limited answer list. Adding the phrase 'with confirmed linked choices' to the claimed outcome does not supply those confirmations. The listed answers do not adopt sampling, alpha, lighting or design language, and do not complete t_sample. The actual production F records still have no C; their future choices must be made explicit or conditional rather than borrowing sample links as confirmed production policy.",
+         "evidence": ["RQ3", "phase_gate", "phase_spec", "sample_trace", "decision_table", "production_note", "current_workflow"],
+         "qualification_limit": "The final prose lists later prerequisites without an exhaustive-clearance phrase, but the new structured caller result explicitly retains it. The current adopted note's generic all-linked-choices condition does not establish the answer's claimed consequence. No production activation was attempted; this is a handoff overclaim, not an observed production execution failure."},
+        {"id": "F2", "status": "open", "kind": "inconsistent_optional_background_precondition",
+         "finding": "The current corrected note says both i_display_scale and i_backgrounds are needed before visual review, and the caller comparison explicitly verifies that both gate review. The unchanged operative q_sample_readability permits the specialist's light/dark/busy test set until i_backgrounds is answered. RQ2 and the actual caller final correctly call owner backgrounds optional, leaving the adopted carriers inconsistent.",
+         "evidence": ["note_e_background_gate", "caller_background_gate", "criteria_background_fallback", "RQ2_optional", "caller_current_adoption", "actual_caller_final"],
+         "qualification_limit": "This is not a new target-zoom failure: target integer display scale remains required by the actual readability criterion. It does not demand removal of required visual outcomes or claim every individual visual observation is impossible without an owner answer."},
+    ]
+    notes = {
+        "C1": "No new owner answer is required for the immediate pre-discovery/local preparation boundary; prior sample choices are not requested again. Historical unanswered-choice exits remain unqualified.",
+        "C2": "F1: the structured future question still overclaims production clearance; the current immediate capability question is distinct.",
+        "C3": "The current local work proceeds under existing authorization. Future provider/cost evidence is scoped to the absent host/call; no new human approval stopped this development operation.",
+        "C4": "All intake status/value/source/rationale and sample authority are unchanged. The caller finds mixed provider-wording authority and the same child publishes a correctly labelled successor; this is not first-pass correctness.",
+        "C5": "All 71 input records and protected source/history/report bytes remain. The new validation receipt was temporarily overwritten by the caller's reproduction, then restored byte-exactly and its unsafe producer retained alongside a safe successor.",
+        "C6": "Only a pre-discovery packet, local tooling and synthetic fixtures are produced; no provider job, new art candidate, acceptance or engine outcome is asserted.",
+        "AS1": "Exact inherited controlled answers and original brief remain distinct sources; no fresh owner answer is supplied.",
+        "AS2": "Sample-only scope and every unrelated authority/status are preserved through unchanged I/C/F/Q records.",
+        "AS3": "Inherited revision9 sample publication is preserved; no new AS3 sample-contract publication is credited. New work is the packet/tooling/handoff operation evaluated under PP1.",
+        "AS4": "All five operative Q texts and their source-scoped sample contract remain unchanged; packet criteria are exact, and the corrected wording choices do not add rejection rules to Q. Future-carrier precondition inconsistency is retained under F2/AS7/O6/PP6.",
+        "AS5": "Revisions10/11 add nine S/N records only. Original records/history and v1/v2 packet identities remain available; no evidence/criterion invalidation is bypassed.",
+        "AS6": "Caller independently checks the exact current state, packet, criteria/source mappings and actual corrections. The future-effect defects are graded separately; this pass does not certify every later handoff claim.",
+        "AS7": "F1 and F2: actual current carriers disagree about later effects/necessary input despite a truthful immediate available-work boundary.",
+        "AS8": "No new X/E/V/D/J or completed sample/production task is fabricated. Synthetic harness outcomes are explicitly tooling, not asset acceptance.",
+        "CR1": "Actual registered pixl:pixl delegation, correct consumer and source assignment, separate caller/specialist roles.",
+        "CR2": "Caller actually opens sources and returned artifacts, detects two independent discrepancies and traces current sample prerequisites. Successful current review is not treated as proof that the later RQ3/background claims are correct.",
+        "CR3": "Findings originate in native reads/reruns, including actual receipt drift; no maintainer feedback enters either actor.",
+        "CR4": "Genuine same-child SendMessage correction, revision11 and completed corrected return are observed; this is not an acknowledgement-only branch.",
+        "CR5": "After revision11, caller rereads successor files and independently reruns state/criteria checks and the safe validator; final output hashes bind the reviewed version. Missing strict endpoint observations remain separately recorded by mechanics.",
+        "CR6": "The handoff is useful but not fully source-consistent: adopted structured RQ3 and note/comparison carriers retain F1/F2.",
+        "O1": "The first terminal success/end-turn is explicitly interim while correction runs. Actual completed caller final is parent393 after child399 delivery at parent314, followed by the second terminal result.",
+        "O2": "One registered actual child a2b7a4ab9b3fa3467; SendMessage continuation and both real publications/finals are retained.",
+        "O3": "Required profile/Skill/procedures and the revised effect-check section are delivered, as independently recorded by mechanics. Product guidance is the declared intervention.",
+        "O4": "Final saved paths and hashes resolve with one explicitly entry-snapshot SESSION reference; runtime validates current state. Preservation/publication/strict delivery details remain in mechanical02.",
+        "O5": "All65 entry files are retained; only authorized active head and SESSION change among them. History, old reports and installed kit stay intact; temporary new-receipt drift/restore is separately disclosed.",
+        "O6": "F1 and F2 remain in current adopted artifacts; clean final wording alone cannot make the structured answer effect or note/comparison prerequisite source-consistent.",
+        "O7": "Local authoring/fixtures, expected tool refusals, absent provider and unperformed human/engine acceptance stay distinct.",
+        "O8": "Only neutral assignment, exact106? No: exact65 input files and frozen product kit were provided to this first case. No evaluator finding/rubric/expected correction was read by actors.",
+        "PP1": "Useful new local work is actually saved: pre-discovery packet, exact criteria, explicit synthetic mechanical tooling, corrected validator and current source-bound handoff through revision11.",
+        "PP2": "F1: the future production contract remains absent and the structured answer effect does not trace how its unanswered linked-choice confirmations would be supplied.",
+        "PP3": "F1: RQ3's promised gate clearance does not satisfy completion of the sample dependency, concrete production contracts and all applicable confirmations. Current observed blockers themselves are correctly retained.",
+        "PP4": "Sample-only authority and actual intrinsic criteria are preserved; no owner adoption, task acceptance or new provider capability is invented. Future-carrier effects fail their separate checks.",
+        "PP5": "Actual independent caller findings, same-child correction, retained first versions and current re-verification establish this review branch. It is not a first-pass success or complete future-effect qualification.",
+        "PP6": "F1/F2: the structured future promise and optional-background carriers need reconciliation before claiming a completely source-grounded handoff. Immediate sample preparation is correctly kept independent of later owner answers.",
+    }
+    notes["O8"] = notes["O8"].replace("exact106? No: exact65", "exact65")
+    failed = {"C2", "AS7", "CR6", "O6", "PP2", "PP3", "PP6"}
+    rows = []
+    for group in ("original_criteria", "answer_state_checks", "caller_workflow_checks", "separate_observation_checks", "production_prerequisite_checks"):
+        for criterion in protocol[group]:
+            id_ = criterion["id"]
+            rows.append({**criterion, "group": group, "status": "inherited_preserved" if id_ == "AS3" else "fail" if id_ in failed else "pass",
+                "finding": notes[id_], "evidence": ["RQ3", "phase_gate", "note_e_background_gate", "caller_background_gate", "criteria_background_fallback"] if id_ in failed else ["current_observation", "caller_current_adoption", "correction_explanation", "mechanics", "actual_caller_final"]})
+    # Verify every structured caller path/hash against current, explicit entry, or exact frozen kit bytes.
+    caller_refs = []
+    def visit(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("path"), str) and isinstance(value.get("sha256"), str):
+                caller_refs.append(value)
+            for child in value.values(): visit(child)
+        elif isinstance(value, list):
+            for child in value: visit(child)
+    visit(caller)
+    checked = []
+    with zipfile.ZipFile(BASE / "revision-01/frozen-kit.zip") as archive:
+        for value in caller_refs:
+            name = value["path"]
+            if name.startswith("pixl-kit/"):
+                digest = hashlib.sha256(archive.read(name.removeprefix("pixl-kit/"))).hexdigest()
+                domain = "exact_frozen_kit"
+            elif name == "SESSION.md" and "on entry" in value.get("role", ""):
+                digest, domain = sha(NATIVE / "input-project" / name), "explicit_entry_snapshot"
+            else:
+                digest, domain = sha(PROJECT / name), "current_project"
+            checked.append({"path": name, "sha256": value["sha256"], "domain": domain, "matches": digest == value["sha256"]})
+    assert all(row["matches"] for row in checked)
+    for value in evidence.values():
+        path = ROOT / value["path"]
+        assert sha(path) == value["sha256"]
+        if "lines" in value:
+            first, last = value["lines"]
+            assert "\n".join(path.read_text(encoding="utf-8").splitlines()[first-1:last]) == value["quote"]
+    result = {"schema_version": 1, "task": protocol["task"], "linked_finding": "CF-02", "review": "production-prerequisites-20261115/native-01",
+        "reviewed_at_utc": datetime.now(UTC).isoformat(), "reviewer": "Independent development evaluator; no contact or feedback to native actors.",
+        "status": "failed", "outcome": "Useful pre-discovery sample work and two genuine caller-discovered same-child corrections succeed, preserving sample authority. Overall handoff qualification fails: structured RQ3 still overclaims production-gate clearance, and adopted background-precondition carriers contradict the operative optional fallback and final wording.",
+        "review_complete": True, "qualification_complete": False, "bounded_workflow_pass": False,
+        "current_handoff_operation_pass": True, "current_handoff_operation_scope": "Actual useful local packet/tooling/handoff authoring and correction only, not all semantic effects.",
+        "inherited_sample_operation_preserved": True, "current_state_review_pass": True, "same_child_correction_pass": True,
+        "first_pass_source_correctness": False, "source_grounded_production_effect_pass": False, "optional_background_scope_consistent": False,
+        "native_identity": {"caller_session": "66a759e7-c110-4397-8c3a-67163e9cd967", "registered_role": "pixl:pixl", "actual_child": "a2b7a4ab9b3fa3467",
+            "first_child_final": evidence["first_specialist_final"], "caller_findings": evidence["native_caller_findings"],
+            "corrected_child_final": evidence["corrected_specialist_final"], "corrected_return_delivery": evidence["corrected_return_delivery"],
+            "interim_caller_end_turn": evidence["interim_caller_end_turn"], "actual_caller_final": evidence["actual_caller_final"]},
+        "protocol": evidence["protocol"], "criteria": rows, "findings": findings, "evidence": evidence,
+        "criterion_counts": {"pass": sum(row["status"] == "pass" for row in rows), "fail": len(failed), "inherited_preserved": 1, "total": len(rows)},
+        "source_reference_validation": {"evidence_references": len(evidence), "all_evidence_hashes_lines_quotes_match": True,
+            "structured_caller_references": len(checked), "all_reported_hashes_match": True, "references": checked},
+        "mechanical_scope": {"status": mechanics["status"], "receipt": evidence["mechanics"], "note": "Three strict fresh endpoint/record delivery observations remain not observed. Current state/criteria semantics use actual delivered field/source checks and independent retained-state verification; no fresh missing endpoint read is invented."},
+        "independent_observations": evidence["current_observation"],
+        "preserved_failures": ["Specialist's initial extra frame-count rejection was self-corrected before first publication, with original tool events retained.", "Caller reproduction actually drifted the new v1 validation receipt; caller restored exact old bytes, then the same child supplied a safe successor.", "Mixed provider-wording authority in v1 was corrected by the same child after caller source findings; both packets remain.", "Expected pre-discovery request-review refusals, synthetic negative fixture runs and overwrite refusal remain distinguishable from defects.", "Earlier native and maintainer preflight/mechanical failures retain their original receipts."],
+        "next_action": "Reconcile every current carrier of a future answer effect against the exact task/contract/choice and criterion scope. In particular, do not copy RQ3's limited-answer clearance promise, and keep the optional background fallback consistent in notes, caller comparison and final questions. Continue useful saved work without new owner answers or production adoption.",
+        "limits": ["This is one fresh artifact continuation using declared revised guidance, not a paired causal control or historical native-session resumption.", "Inherited sample-contract publication is not counted as newly completed work; AS3 is inherited_preserved.", "No new actual art candidate, provider execution, asset/engine acceptance or human acceptance occurred.", "M1/M2 and broader M3/M4/M5 remain open."],
+        "script_sha256": sha(Path(__file__))}
+    with (BASE / "semantic-review-01.json").open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"status": result["status"], "criteria": result["criterion_counts"], "references": len(evidence), "caller_references": len(checked), "sha256": sha(BASE / "semantic-review-01.json")}))
+
+
+if __name__ == "__main__":
+    main()

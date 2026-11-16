@@ -12,7 +12,15 @@ M3/M4/M5 remain open.**
 
 ## Which result applies now?
 
-- **Consequential-choice and cold handoffs:** [controlled answer-to-state continuation](skill-handoff/answer-state-20261115/README.md)
+- **Current consequential-choice and cold handoffs:** [production-prerequisite continuation](skill-handoff/production-prerequisites-20261115/README.md)
+  retains useful request/handoff work and genuine same-child corrections in two
+  native cases. The structured result still overclaims full production clearance,
+  and the current note contradicts an allowed review-background fallback.
+  The development increment is partial; both native semantic qualifications failed.
+  Mechanical review is partial 60/63 for case 1 and failed 59/63 for case 2, with
+  one strict caller-guidance whole-file delivery failure and three unobserved checks in case 2.
+  Four existing packaging tests pass on each revised guide kit; no fresh full suite or provider/art/engine acceptance follows.
+- **Prior controlled answer-to-state handoff:** [controlled answer-to-state continuation](skill-handoff/answer-state-20261115/README.md)
   records two actual local sample operations. The clarified input qualifies
   sample-only authority, contract/criteria publication and current-artifact review;
   a future production-gate promise remains failed. All 50 applicable mechanics
@@ -21,11 +29,13 @@ M3/M4/M5 remain open.**
   [Prior native caller review](skill-handoff/caller-review-20261115/README.md) and
   [earlier qualification](skill-handoff/qualification-20261114/README.md) retain
   their own failures, scoped successes, guidance changes and guided correction.
-- **Latest full local checkpoint:** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
+- **Latest retained full local checkpoint (not rerun for the current guide revision):** [directory-locator verification](verification-runs/20261115T163600.991198Z/result.json)
   records 1,461 passing tests, four existing Windows privilege skips (1,465 run),
   39 reference checks and distribution probes. Ten new regressions cover the
   directory guard and CLI/MCP recovery/help; earlier harness additions are also
-  in this inventory, not newly completed work in this increment. The
+  in that inventory, not newly completed work in this guide-only increment. All 328
+  checked source hashes remain unchanged, but the old bundle identity is historical
+  to the revised guides; source identity is not a fresh full run. The
   [first full run](verification-runs/20261115T162528.482654Z/result.json) precedes
   the auxiliary-directory refinement and retains its own 1,460 passes/four skips.
   The [TM-02 checkpoint](verification-runs/20261115T023402.446790Z/result.json)
@@ -48,11 +58,22 @@ M3/M4/M5 remain open.**
   preserves the wider untyped-body baseline and intermediate integration/lint
   failures; the selected checks do not certify whole-runtime strict typing or broad lint.
 - **Check current inputs:** follow the [read-only integrity guide](../docs/EVIDENCE-INTEGRITY.md).
-  The [current inspection](skill-handoff/answer-state-20261115/integrity-01/report.json)
-  covers 26 claims and 102 receipts: one current (the explicitly **partial**
+  The [current inspection](skill-handoff/production-prerequisites-20261115/integrity-01/report.json)
+  covers 27 claims and 111 receipts: one current, eleven historical and fifteen
+  stale. The current claim records the **partial development increment with failed
+  native semantic qualification**; current applicability does not mean a behavioral
+  pass. All receipt identities and pinned claim lines remain intact. The earlier
+  controlled-continuation claim is now stale against the revised guide kit; its
+  original qualified sample scope and failed future-effect claim remain unchanged.
+  [Read-only preservation](skill-handoff/production-prerequisites-20261115/integrity-01/RESULT.json)
+  verifies 5,409 snapshot entries' bytes and mtimes through the inspection. CLI exit
+  1 retains the two wheel/sdist source-applicability gaps; no fresh full verification
+  or new release qualification is implied.
+  The [prior controlled-continuation inspection](skill-handoff/answer-state-20261115/integrity-01/report.json)
+  covered 26 claims and 102 receipts at that checkpoint: one current (the explicitly **partial**
   controlled continuation), eleven historical and fourteen stale. All receipt
-  identities and pinned claim text remain intact. The older native caller-review
-  and TM-02 measurement bindings are now stale against the changed runtime/kit;
+  identities and pinned claim text were intact in that inspection. The older native caller-review
+  and TM-02 measurement bindings were stale against that changed runtime/kit;
   their original outcomes and timings are unchanged. No new performance comparison
   is claimed. [Before/after preservation](skill-handoff/answer-state-20261115/integrity-01/RESULT.json)
   checks exact bytes/mtimes, allowed input-drift findings and the retained wheel/sdist
@@ -79,8 +100,12 @@ identities without rebuilding or replaying evidence. It does not rerun a host,
 provider or renderer. The registry ID `CURRENT-FULL-VERIFICATION` deliberately
 tracks the **older SC-06** receipt; `NF-07-FULL-VERIFICATION` and
 `SC-09-FULL-VERIFICATION` retain their later, now-stale checkpoints. Use
-`TM-02-FULL-VERIFICATION` for the latest retained full checkpoint; its current applicability is stale. Claim filtering still checks retained releases, so
-an overall exit 1 can coexist with an intact current selected claim.
+the [directory-locator full receipt](verification-runs/20261115T163600.991198Z/result.json)
+for the latest retained full checkpoint, also referenced by
+`PX-SKILL-001-CONTROLLED-ANSWER-STATE`; its tested kit predates the current guides.
+`TM-02-FULL-VERIFICATION` retains its earlier checkpoint and stale applicability.
+Claim filtering still checks retained releases, so an overall exit 1 can coexist
+with an intact current selected claim.
 
 ## Choose the core task
 

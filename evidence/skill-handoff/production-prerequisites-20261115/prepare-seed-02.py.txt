@@ -1,0 +1,115 @@
+"""Freeze the exact 65-file native revision-9 project; do not author answers."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import shutil
+import subprocess
+import sys
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+PRIOR = ROOT / "evidence/skill-handoff/answer-state-20261115/native-02"
+OUT = BASE / "seed-preflight-02"
+HEAD = "fdf4ebfe7d2dc1565a9c003c28d61ecfa5b255ec19937198aa11d405c38b8ca1"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def manifest(folder):
+    return {path.relative_to(folder).as_posix(): sha(path)
+            for path in sorted(folder.rglob("*")) if path.is_file()}
+
+
+def snapshot(paths):
+    return {path.relative_to(ROOT).as_posix(): {"sha256": sha(path), "mtime_ns": path.stat().st_mtime_ns}
+            for path in paths}
+
+
+def write(name, value):
+    with (OUT / name).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, indent=2)
+        stream.write("\n")
+
+
+def main():
+    OUT.mkdir(exist_ok=False)
+    seed = OUT / "seed"
+    seed.mkdir()
+    preservation = json.loads((PRIOR / "preservation.json").read_bytes())
+    expected = preservation["outputs"]
+    archive_path = PRIOR / "project.zip"
+    source_paths = [archive_path, PRIOR / "preservation.json", PRIOR / "identity.json"]
+    source_paths += [path for path in (PRIOR / "project").rglob("*") if path.is_file()]
+    before_sources = snapshot(source_paths)
+    runner = ROOT / "plugins/pixl/scripts/pixl.py"
+    runtime_paths = [runner] + [path for path in (ROOT / "plugins/pixl/runtime").rglob("*")
+                              if path.is_file() and "__pycache__" not in path.parts]
+    before_runtime = snapshot(runtime_paths)
+    old_kit = json.loads((ROOT / "evidence/skill-handoff/answer-state-20261115/revision-02/RESULT.json").read_bytes())
+    checks = {"predecessor_archive_identity": sha(archive_path) == preservation["output_archive"]["sha256"],
+              "predecessor_expanded_project_exact": manifest(PRIOR / "project") == expected,
+              "exact_65_file_predecessor": len(expected) == 65}
+    with zipfile.ZipFile(archive_path) as archive:
+        names = archive.namelist()
+        checks["exact_archive_members"] = len(names) == len(expected) and set(names) == set(expected)
+        for name in names:
+            local = PurePosixPath(name)
+            if local.is_absolute() or ".." in local.parts or "\\" in name or ":" in name:
+                raise ValueError("Unexpected archive path")
+            data = archive.read(name)
+            if hashlib.sha256(data).hexdigest() != expected.get(name):
+                raise ValueError("Predecessor member differs from retained manifest")
+            target = seed.joinpath(*local.parts)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+    shutil.copyfile(archive_path, OUT / "seed.zip")
+    write("seed-manifest.json", expected)
+    seed_before = snapshot([path for path in seed.rglob("*") if path.is_file()])
+    observations = {}
+    for operation in ("validate", "workflow", "ready", "decode"):
+        command = [sys.executable, "-B", "-I", str(runner), operation,
+                   str(seed / "state.px/state.px")]
+        if operation != "decode":
+            command += ["--root", str(seed)]
+        run = subprocess.run(command, cwd=ROOT, capture_output=True)
+        (OUT / (operation + ".stdout.json")).write_bytes(run.stdout)
+        (OUT / (operation + ".stderr.txt")).write_bytes(run.stderr)
+        observations[operation] = {"command": command, "returncode": run.returncode}
+        if run.returncode:
+            raise ValueError("Read-only preflight failed: " + operation)
+    decoded = json.loads((OUT / "decode.stdout.json").read_bytes())
+    ready = json.loads((OUT / "ready.stdout.json").read_bytes())
+    checks.update({
+        "seed_manifest_exact": manifest(seed) == expected,
+        "seed_archive_byte_identical": sha(OUT / "seed.zip") == sha(archive_path),
+        "revision9_head_identity": sha(seed / "state.px/state.px") == HEAD and decoded["revision"] == 9,
+        "sample_locally_ready": ready["ready"] == ["t_sample"] and ready["hash"] == HEAD,
+        "all_prior_native_results_and_reviews_retained": all(name in expected for name in (
+            "CALLER-RESULT.json", "CALLER-RESULT-ANSWER-STATE.json",
+            "review/caller-comparison-2026-11-15-v1.md", "review/caller-comparison-2026-11-15-v2.md",
+            "review/caller-comparison-2026-11-15-v3.md", "deliverables/continuation-2026-11-15c.md")),
+        "no_new_answer_or_evaluator_input": set(manifest(seed)) == set(expected),
+        "seed_bytes_and_mtimes_unchanged_during_reads": seed_before == snapshot([path for path in seed.rglob("*") if path.is_file()]),
+        "predecessor_bytes_and_mtimes_unchanged": before_sources == snapshot(source_paths),
+        "read_only_runtime_unchanged": before_runtime == snapshot(runtime_paths),
+        "runtime_matches_prior_verified_kit": all(sha(path) == old_kit["package_files"][path.relative_to(ROOT / "plugins/pixl").as_posix()] for path in runtime_paths),
+    })
+    result = {"status": "pass" if all(checks.values()) else "fail", "checks": checks,
+        "passed": sum(checks.values()), "total": len(checks), "observed_at": datetime.now(UTC).isoformat(),
+        "scope": "Exact retained native artifact continuation seed; read-only validation/readiness through the unchanged previously verified bundled runtime. No new owner answer, state authoring, native replay or human acceptance.",
+        "source_archive": {"path": archive_path.relative_to(ROOT).as_posix(), "sha256": sha(archive_path)},
+        "source_preservation_sha256": sha(PRIOR / "preservation.json"),
+        "seed": seed.relative_to(ROOT).as_posix(), "seed_manifest_sha256": sha(OUT / "seed-manifest.json"),
+        "seed_archive_sha256": sha(OUT / "seed.zip"), "files": len(expected), "state_sha256": HEAD,
+        "revision": 9, "observations": observations, "runtime_files": before_runtime,
+        "script_sha256": sha(Path(__file__))}
+    write("RESULT.json", result)
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total", "files", "state_sha256")}))
+
+
+if __name__ == "__main__":
+    main()

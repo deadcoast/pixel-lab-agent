@@ -111,11 +111,18 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
 
 ## PX-SKILL-001 — consequential choice at the handoff
 
-- **Status:** controlled sample operation qualified narrowly, 2026-11-15; overall
-  qualification remains open. The clarified input retains sample-only confirmation,
-  concrete contract/criteria and independent current-artifact review. A future
-  production-gate answer effect remains overstated; earlier direct-question,
-  branch-confound, instruction-loading and scratch-scope failures are retained.
+- **Status:** source-grounded production-prerequisite development increment is
+  partial, 2026-11-15; both native semantic qualifications failed and remain open.
+  Useful request/handoff work and genuine same-child corrections are retained,
+  but the structured future-effect claim still overstates production clearance
+  and current notes contradict a permitted review fallback. Sample-only authority
+  remains qualified within its earlier scope; broader qualification is open.
+- **Prior controlled-sample status:** controlled sample operation qualified narrowly,
+  2026-11-15; overall qualification remains open. The clarified input retains
+  sample-only confirmation, concrete contract/criteria and independent current-artifact
+  review. Its future production-gate answer effect remains overstated; earlier
+  direct-question, branch-confound, instruction-loading and scratch-scope failures
+  are retained.
 - **WHO:** shared PIXL skill owns the handoff; user owns consequential style choices.
 - **WHAT:** make an unresolved choice actionable at the response boundary when it is
   the next necessary user input, while continuing independent inspection and planning.
@@ -147,6 +154,19 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   scoped passes, caller-reviewed correction and unaided cold failure are
   reported separately. The actual Claude seed has five project-owned sources
   and needs no library migration. No provider or human acceptance follows.
+- **Source-grounded production-prerequisite continuation:** [two native cases](../evidence/skill-handoff/production-prerequisites-20261115/README.md)
+  preserve useful pre-discovery sample preparation and a later handoff-only source/
+  provenance correction through the same child within each case. The latest state
+  reaches revision 13 without new owner answers or acceptance. A structured claim
+  still says that limited answers clear production gates; the current note also
+  makes review backgrounds mandatory despite a permitted specialist fallback.
+  Mechanical review retains first-case partial 60/63 and second-case failed 59/63:
+  one strict caller-guidance whole-file delivery failure and three unobserved checks remain in
+  the second case. Its semantic review is failed: 26 criteria pass, seven fail and
+  one is inherited (34 total); separate read-only observations do not waive those
+  failures. Both guide revisions receive four passing packaging tests. The
+  prior full suite is not rerun; unchanged runtime inputs do not make its old kit
+  identity current.
 - **Controlled answer-to-state continuation:** [two isolated native cases](../evidence/skill-handoff/answer-state-20261115/README.md)
   preserve the first simulation-label interpretation and its real loading/scope
   failures. The clarified second input changes no product guidance or rubric.
@@ -160,10 +180,11 @@ The [overall plan and TODO](../TODO.md) owns current product status and work ord
   remaining authority failures. The caller's findings are native-authored; no
   maintainer defect feedback is supplied. The runner, 40 local tests, four
   packaging tests and 42/42 mechanics are separate from semantic acceptance.
-- **Remaining boundary:** continue from the clarified revision-9 handoff and
-  ground future production questions/answer effects in all linked-choice, adoption
-  and phase prerequisites. Retain qualified sample authority and useful work,
-  preserve unasked choices and the earlier unanswered direct-question failures.
+- **Remaining boundary:** continue from revision 13 and reconcile literal authored
+  answer effects and required/optional fallback conditions across the structured
+  result, current notes, criteria and final response. A complete gate list elsewhere
+  does not repair an overclaimed effect or contradictory blocker. Retain qualified
+  sample authority, useful work, unasked choices and earlier direct-question failures.
   No new provider/engine/artistic acceptance is implied; human acceptance and
   M1/M2/broader M3/M4/M5 remain open.
 

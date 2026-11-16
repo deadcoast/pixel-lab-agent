@@ -1,0 +1,95 @@
+"""Prospectively freeze a handoff-only continuation of the exact first case output."""
+from copy import deepcopy
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {"path": path.relative_to(ROOT).as_posix(), "sha256": sha(path)}
+
+
+def main():
+    old = json.loads((BASE / "protocol.json").read_bytes())
+    protocol = deepcopy(old)
+    kit = json.loads((BASE / "revision-02/RESULT.json").read_bytes())
+    seed = json.loads((BASE / "seed-preflight-03/RESULT.json").read_bytes())
+    assert kit["status"] == seed["status"] == "pass"
+    assert seed["files"] == 106 and seed["revision"] == 11
+    protocol.update({"protocol": "source-grounded-production-prerequisites-20261115-02",
+                     "frozen_at_utc": datetime.now(UTC).isoformat(),
+                     "purpose": "Qualify the current source-grounded handoff over already prepared local work, preserving the first case's outcomes and failures under an explicitly prospective handoff-only assignment."})
+    assignment = deepcopy(old["assignment"])
+    assignment["neutral_task_core"] = (
+        "Continue the retained scout/medic project under its original brief and established authorization. "
+        "This increment is a handoff-only continuation: retain the prepared work, inspect the actual current "
+        "state and relevant artifacts, and save a useful current continuation for the next session. No further "
+        "request-packet or fixture production is assigned. Use the actual registered pixl:pixl specialist "
+        "through native delegation for this work. Read the original brief and relevant retained sources "
+        "yourself; review the specialist's actual returned handoff and state against those sources and the "
+        "installed runtime before consuming them. If you find discrepancies, send your own source-grounded "
+        "findings to the same native child and wait for its revision. Independently verify the final saved "
+        "artifacts and current state, then report what is preserved, what this session accomplished, the "
+        "concrete next operation and any necessary remaining input for it or later planned work.\n\n"
+        "Save a new CALLER-RESULT-PREREQUISITES-02.json containing assignment status, target_role, "
+        "role_observation, actual native_child ID, the input and source references you reviewed, specialist "
+        "outputs, your independent findings and source evidence, any same-child correction messages/revisions, "
+        "the final state/contract/artifact references you verified, and the remaining questions and next "
+        "action. File references must use consumer-relative paths and actual SHA-256 hashes. Exclude this "
+        "new result file from its own file-reference list; after saving it, compute its actual SHA-256 and "
+        "report that hash in your final response. Distinguish your review from the specialist's and retain "
+        "earlier versions. If the registered role is unavailable, record the observed limitation instead "
+        "of substituting a generic agent. Your final response must deliver the useful continuation, not "
+        "only refer to the JSON file.")
+    setup = old["assignment"]["setup_template"]
+    setup = setup.replace("deliverables/continuation-2026-11-15c.md and the current state includes handoff_5.",
+                          "deliverables/continuation-2026-11-15e.md, which continues deliverables/continuation-2026-11-15d.md; the current state includes handoff_7.")
+    setup = setup.replace("CALLER-RESULT-ANSWER-STATE.json, prior caller comparisons", "CALLER-RESULT-ANSWER-STATE.json, CALLER-RESULT-PREREQUISITES.json, prior caller comparisons")
+    assignment["setup_template"] = setup
+    assignment["new_result_path"] = "CALLER-RESULT-PREREQUISITES-02.json"
+    assignment["native_visibility"] = old["assignment"]["native_visibility"].replace("65-file revision9", "106-file revision11")
+    protocol["assignment"] = assignment
+    protocol["scope"]["required_cases"] = ["retained-corrected-revision11-handoff"]
+    protocol["scope"]["minimum_useful_case"] = "One actual registered specialist saves a new current source-grounded handoff over the existing packet/tooling; its native caller independently verifies the consumed handoff and actual saved state. No new packet/fixture production, state revision, owner answer, art or adoption is required."
+    protocol["scope"]["continuation_identity"] = "Fresh caller and registered child continuing all106 retained output files from native01 revision11. Same-child correction is conditional within this new trial, not resumption of the first case's parent or child."
+    protocol["seed"] = {
+        "directory": "evidence/skill-handoff/production-prerequisites-20261115/seed-preflight-03/seed",
+        "manifest": ref(BASE / "seed-preflight-03/seed-manifest.json"),
+        "source_archive": ref(BASE / "native-01/project.zip"),
+        "preflight": ref(BASE / "seed-preflight-03/RESULT.json"),
+        "files": 106, "revision": 11, "state_sha256": seed["state_sha256"],
+        "input_rule": "All106 first-case output files are byte-identical at entry, including the faulty structured caller result and adopted comparison/notes, both packet versions, all histories and restored validation receipt. No evaluator finding, answer, expectation or corrected artifact is added.",
+        "prior_semantic_receipt": {**ref(BASE / "semantic-review-01.json"), "native_visibility": "evaluator-only"}}
+    protocol["criterion_applicability"]["new_handoff_scope"] = "The revision9 sample contract and revision10/11 packet/tooling are inherited work. Preserve and inspect them, but do not credit their creation as new operation evidence. PP1 requires a new useful durable handoff and actual current inspection; no additional packet, fixture or gratuitous state publication is needed. This scope was chosen before second-case inference."
+    protocol["semantic_interpretation"]["prior_native_reviews"] = "The exact106-file input intentionally preserves prior native-authored reports and comparisons, including incorrect conclusions, and both packet generations. They are history, not evaluator feedback or proof of current correctness."
+    protocol["instruction_identity"] = {
+        "expected_instruction_source_sha256": {name: sha(ROOT / name) for name in old["instruction_identity"]["expected_instruction_source_sha256"]},
+        "prelaunch_binding": "The second guide revision and exact full kit are declared before inference. Exact input archives, assignments, runtime and role identities must be retained. No evaluator verdict or defect list enters the native task.",
+        "loading": old["instruction_identity"]["loading"],
+        "frozen_kit_receipt": ref(BASE / "revision-02/RESULT.json"),
+        "bundle_manifest_sha256": kit["bundle_manifest_sha256"]}
+    protocol["predecessor_protocol"] = ref(BASE / "protocol.json")
+    protocol["revision_scope"] = {
+        "prospective_changes": ["Exact106-file revision11 input instead of65-file revision9 input, retaining all first-case outputs without evaluator repair.", "Handoff-only neutral assignment, new result filename and current entry pointer; no further packet/fixture production assigned.", "Declared second product-guide revision covering consistency of current handoff carriers."],
+        "unchanged": ["All34 original C/AS/CR/O/PP criterion texts", "Source authority, sample-only controlled input and saved-format/runtime semantics", "No new owner answer, provider/engine, human approval gate or maintainer defect feedback"],
+        "causal_limit": "This is an additive continuation and narrower prospective assignment, not a paired control. Differences cannot be attributed solely to guidance. First-case outcomes and failures are not rescored."}
+    for key in ("original_criteria", "answer_state_checks", "caller_workflow_checks", "separate_observation_checks", "production_prerequisite_checks"):
+        assert protocol[key] == old[key]
+    assert sha(ROOT / "plugins/pixl/bundle-manifest.json") == kit["bundle_manifest_sha256"]
+    with (BASE / "protocol-revision-02.json").open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(protocol, stream, indent=2, ensure_ascii=False)
+        stream.write("\n")
+    print(json.dumps({"protocol": ref(BASE / "protocol-revision-02.json"), "seed_files": 106,
+                      "preserved_criteria": 34, "kit": kit["bundle_manifest_sha256"]}))
+
+
+if __name__ == "__main__":
+    main()

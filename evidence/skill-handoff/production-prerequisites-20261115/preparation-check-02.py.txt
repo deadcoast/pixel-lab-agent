@@ -1,0 +1,89 @@
+"""Read-only prelaunch binding of the retained revision11 second assignment."""
+import argparse
+import ast
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import sys
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+from evaluations.cold_caller_review import _assignment
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load(path):
+    return json.loads(path.read_bytes())
+
+
+def files(root):
+    return {p.relative_to(root).as_posix(): sha(p) for p in root.rglob('*')
+            if p.is_file() and '__pycache__' not in p.parts}
+
+
+def archived(path):
+    with zipfile.ZipFile(path) as archive:
+        names = archive.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError('Duplicate archive entries')
+        return {name: hashlib.sha256(archive.read(name)).hexdigest() for name in names if not name.endswith('/')}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--protocol-sha256', required=True)
+    args = parser.parse_args()
+    trial = BASE / 'native-02'
+    identity, launch = (load(trial / name) for name in ('identity.json', 'launch.json'))
+    protocol_path = BASE / 'protocol-revision-02.json'
+    protocol = load(protocol_path)
+    revision = load(BASE / 'revision-02/RESULT.json')
+    seed = load(ROOT / protocol['seed']['manifest']['path'])
+    predecessor = archived(ROOT / protocol['seed']['source_archive']['path'])
+    consumer = Path(identity['consumer'])
+    python = Path(load(trial / 'runtime-environment.json')['executable'])
+    frozen = archived(BASE / 'revision-02/frozen-kit.zip')
+    instruction = protocol['instruction_identity']['expected_instruction_source_sha256']
+    checker = BASE / 'mechanical-check-03.py.txt'
+    support = BASE / 'mechanical-read-support.py.txt'
+    ast.parse(checker.read_text(encoding='utf-8'))
+    ast.parse(support.read_text(encoding='utf-8'))
+    checks = {
+        'protocol_frozen_identity': sha(protocol_path) == args.protocol_sha256,
+        'exact_expanded_assignment_only': (trial / 'prompt.txt').read_text(encoding='utf-8') == _assignment(protocol_path, None, consumer, python),
+        'all_106_predecessor_files_unchanged': identity['inputs'] == seed == predecessor and len(seed) == 106,
+        'exact_live_consumer_inputs': {name: digest for name, digest in files(consumer).items() if not name.startswith('pixl-kit/')} == seed,
+        'exact_input_snapshot_and_archive': files(trial / 'input-project') == archived(trial / 'input-project.zip') == seed,
+        'no_added_answer_or_evaluator_file': not (set(identity['inputs']) - set(predecessor)),
+        'inherited_controlled_answer_preserved': seed.get(protocol['controlled_input']['consumer_path']) == protocol['controlled_input']['sha256'],
+        'exact_current_frozen_kit': identity['package_files'] == frozen == revision['package_files'] == files(consumer / 'pixl-kit') and revision['status'] == 'pass',
+        'exact_guide_spec_registry_source_identities': all(sha(ROOT / name) == digest for name, digest in instruction.items()),
+        'runner_unchanged': identity['runner']['sha256'] == 'c43306d11b1b1a7dddfe48e41b5854c22042e2a99a24f1708f42c59201e41e11',
+        'fresh_result_preserves_three_retained_results': protocol['assignment']['new_result_path'] not in seed and all(name in seed for name in ('CALLER-RESULT.json','CALLER-RESULT-ANSWER-STATE.json','CALLER-RESULT-PREREQUISITES.json')),
+        'all_prepared_bindings_current': all(sha(Path(value['path'])) == value['sha256'] for value in identity['binding_files'].values()),
+        'registered_plugin_not_inline_role': '--plugin-dir' in launch['command'] and '--agents' not in launch['command'] and identity['target_role'] == 'pixl:pixl',
+        'no_inference_output_yet': not any((trial / name).exists() for name in ('stdout.jsonl','project','continuation.json')),
+    }
+    result = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass' if all(checks.values()) else 'fail',
+        'passed': sum(checks.values()), 'total': len(checks), 'checks': checks,
+        'session_id': launch['expected_session_id'], 'prompt_sha256': sha(trial / 'prompt.txt'),
+        'bundle_manifest_sha256': revision['bundle_manifest_sha256'], 'protocol_sha256': sha(protocol_path),
+        'mechanical_checker_sha256': sha(checker), 'source_delivery_support_sha256': sha(support),
+        'preparation_checker_sha256': sha(Path(__file__)), 'instruction_source_sha256': instruction,
+        'scope': 'Pre-inference exact106 retained-file consumer, no new answers/evaluator findings, frozen carrier-reconciliation guide revision and prospective mechanical checker. State publication is optional for this handoff-only assignment; useful new handoff and independent review remain semantic outcomes to observe.'}
+    with (BASE / 'preparation-02.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({key: result[key] for key in ('status','passed','total','session_id','mechanical_checker_sha256')}))
+    print(json.dumps([key for key, value in checks.items() if not value]))
+    raise SystemExit(0 if result['status'] == 'pass' else 1)
+
+
+if __name__ == '__main__':
+    main()

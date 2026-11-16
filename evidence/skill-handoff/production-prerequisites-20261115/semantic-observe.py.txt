@@ -1,0 +1,93 @@
+"""Independently inspect retained final state and replay read-only consumer checks."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+NATIVE = BASE / "native-01"
+PROJECT = NATIVE / "project"
+OUT = BASE / "semantic-observation-01"
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def snapshot():
+    return {p.relative_to(PROJECT).as_posix(): {"sha256": sha(p), "mtime_ns": p.stat().st_mtime_ns}
+            for p in PROJECT.rglob("*") if p.is_file()}
+
+
+def write(name, data):
+    with (OUT / name).open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(data, stream, indent=2)
+        stream.write("\n")
+
+
+def main():
+    OUT.mkdir(exist_ok=False)
+    before = snapshot()
+    write("before.json", before)
+    runner = ROOT / "plugins/pixl/scripts/pixl.py"
+    commands = {
+        "workflow": [str(runner), "workflow", str(PROJECT / "state.px/state.px"), "--root", str(PROJECT)],
+        "decode": [str(runner), "decode", str(PROJECT / "state.px/state.px")],
+        "criteria": [str(PROJECT / "deliverables/sample-request/validate_criteria_v2.py"),
+                     "--schema", str(ROOT / "plugins/pixl/runtime/pixl/asset-plan.schema.json")],
+    }
+    cases = {"reference": ("reference.png", 0, "pass", "pass"),
+             "reference-b": ("reference-b.png", 0, "pass", "pass"),
+             "size": ("work/sample-checks/fixture-33x33.png", 1, "fail", "pass"),
+             "palette": ("work/sample-checks/fixture-offpalette.png", 1, "pass", "fail"),
+             "alpha": ("work/sample-checks/fixture-fractional-alpha.png", 1, "fail", "pass")}
+    for name, (path, *_rest) in cases.items():
+        commands["harness-" + name] = [str(PROJECT / "work/sample-checks/check_sample_mechanical.py"), path]
+    results = {}
+    for name, args in commands.items():
+        command = [sys.executable, "-B", "-I", *args]
+        run = subprocess.run(command, cwd=PROJECT, capture_output=True)
+        (OUT / (name + ".stdout.json")).write_bytes(run.stdout)
+        (OUT / (name + ".stderr.txt")).write_bytes(run.stderr)
+        results[name] = {"command": command, "returncode": run.returncode, "output": json.loads(run.stdout)}
+    decoded = results["decode"]["output"]
+    records = {row["id"]: row for row in decoded["records"]}
+    initial = json.loads((BASE / "seed-preflight-02/decode.stdout.json").read_bytes())
+    previous = {row["id"]: row for row in initial["records"]}
+    workflow = results["workflow"]["output"]
+    criteria = json.loads((PROJECT / "deliverables/sample-request/sample-criteria.json").read_bytes())
+    mapped = {row["id"]: row for row in criteria["outputs"][0]["criteria"]}
+    changes = [id_ for id_, row in previous.items() if records.get(id_) != row]
+    checks = {"workflow_decode_and_criteria_commands_succeeded": all(results[name]["returncode"] == 0 for name in ("workflow", "decode", "criteria")),
+              "revision11_80_records": decoded["revision"] == 11 and len(records) == 80,
+              "all71_input_records_unchanged": len(previous) == 71 and not changes,
+              "only_nine_source_and_handoff_records_added": len(set(records) - set(previous)) == 9 and all(records[id_]["kind"] in {"S", "N"} for id_ in set(records) - set(previous)),
+              "sample_still_only_ready": workflow["ready"] == ["t_sample"],
+              "no_new_candidate_evidence_verdict_decision_job": all(records[id_]["kind"] not in {"X", "E", "V", "D", "J"} for id_ in set(records) - set(previous)),
+              "exact_five_current_criteria": set(mapped) == {ref["$ref"] for ref in records["f_sample"]["fields"]["rq"]} and all(row["check"] == records[id_]["fields"]["ck"] for id_, row in mapped.items()),
+              "criteria_structure_and18_bounds": results["criteria"]["output"]["schema_valid"] and results["criteria"]["output"]["all_line_bounds_inside_files"] and len(results["criteria"]["output"]["line_bounds"]) == 18}
+    for name, (path, code, canvas, palette) in cases.items():
+        result = results["harness-" + name]
+        checks["harness_" + name] = result["returncode"] == code and result["output"]["criteria"]["q_sample_canvas"]["result"] == canvas and result["output"]["criteria"]["q_sample_palette"]["result"] == palette and result["output"]["file"]["sha256"] == sha(PROJECT / path)
+    after = snapshot()
+    write("after.json", after)
+    checks["all_retained_project_bytes_and_mtimes_unchanged"] = before == after
+    runtime_files = {name: sha(ROOT / name) for name in ("plugins/pixl/scripts/pixl.py", "plugins/pixl/runtime/pixl/lifecycle.py", "plugins/pixl/runtime/pixl/codec.py", "plugins/pixl/runtime/pixl/asset-plan.schema.json")}
+    kit_files = json.loads((BASE / "revision-01/RESULT.json").read_bytes())["package_files"]
+    checks["inspected_runtime_matches_native_kit"] = all(digest == kit_files[name.removeprefix("plugins/pixl/")] for name, digest in runtime_files.items())
+    result = {"status": "pass" if all(checks.values()) else "fail", "passed": sum(checks.values()), "total": len(checks), "checks": checks,
+        "observed_at": datetime.now(UTC).isoformat(), "scope": "Read-only independent current-state and exact-criteria observation plus consumer validator/mechanical-harness replay. References and synthetic negative fixtures are not new art/candidates, acceptance or semantic authority.",
+        "state_sha256": sha(PROJECT / "state.px/state.px"), "revision": decoded["revision"],
+        "added_records": sorted(set(records) - set(previous)), "changed_input_records": changes,
+        "current_blockers": {task["id"]: task["blockers"] for task in workflow["tasks"]},
+        "commands": {name: {key: row[key] for key in ("command", "returncode")} for name, row in results.items()},
+        "runtime_files": runtime_files, "script_sha256": sha(Path(__file__))}
+    write("RESULT.json", result)
+    print(json.dumps({key: result[key] for key in ("status", "passed", "total", "state_sha256")}))
+
+
+if __name__ == "__main__":
+    main()

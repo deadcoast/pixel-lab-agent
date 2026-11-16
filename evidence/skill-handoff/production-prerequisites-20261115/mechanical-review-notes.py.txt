@@ -1,0 +1,114 @@
+"""Retain additive evaluator corrections and native chronology without rewriting receipts."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import runpy
+
+BASE = Path(__file__).parent
+ROOT = BASE.parents[2]
+U = runpy.run_path(str(BASE / 'mechanical-check-02.py.txt'), run_name='review_notes_support')
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def main():
+    attempt = BASE / 'native-01'
+    before, after = [json.loads((BASE / name).read_bytes()) for name in ('mechanical-01.json','mechanical-02.json')]
+    parent_path = attempt / 'native-transcripts/parent.jsonl'
+    child_path = attempt / ('native-transcripts/' + after['actual_child_id'] + '.jsonl')
+    parent = U['native_rows'](parent_path)
+    child = U['native_rows'](child_path)
+    pt = U['tools'](parent)
+    ct = U['tools'](child)
+    followup = after['same_child_correction_rounds'][0]
+    finals = U['finals'](parent, after['session_id'])
+    terminals = []
+    for number, event in enumerate(U['native_rows'](attempt / 'stdout.jsonl'), 1):
+        if event.get('type') == 'result' and event.get('session_id') == after['session_id']:
+            text = event.get('result', '')
+            terminals.append({'stream_line': number, 'uuid': event.get('uuid'), 'subtype': event.get('subtype'),
+                'duration_ms': event.get('duration_ms'), 'num_turns': event.get('num_turns'),
+                'result_sha256': hashlib.sha256(text.encode()).hexdigest(),
+                'matching_parent_final_lines': [row['line'] for row in finals if row['text'] == text],
+                'opening': text[:350]})
+    receipt = attempt / 'project/deliverables/sample-request/criteria-schema-validation.json'
+    entry_ref = [row for row in after['caller_file_references'] if row['verification_snapshot'] == 'input']
+    before_checks = {row['check']: row for row in before['checks']}
+    after_checks = {row['check']: row for row in after['checks']}
+    changed = [{'check': name, 'before': row['status'], 'after': after_checks[name]['status']}
+               for name, row in before_checks.items() if row['status'] != after_checks[name]['status']]
+    state_delta = after['retained_sample_and_handoff_effects']['record_changes']
+    protected_kinds = {'I','C','F','Q','T','X','E','V','D'}
+    mutated_existing = {name: row for name, row in state_delta.items() if row['before'] is not None}
+    protected_changes = {name: row for name, row in state_delta.items()
+                         if any(value and value.get('kind') in protected_kinds for value in (row['before'],row['after']))}
+    side_effect_calls = []
+    for ident, row in pt.items():
+        command = row['call'].get('input', {}).get('command', '')
+        if row['call']['name'] == 'Bash' and any(token in command for token in ('validate_criteria.py','caller-restore-validation.py','validate_criteria_v2.py')):
+            side_effect_calls.append({'tool_use_id': ident, 'call_line': row['call_line'], 'result_line': row.get('result_line'),
+                'command': command, 'result_payload': row.get('result', {}).get('content'), 'is_error': row.get('result', {}).get('is_error', False)})
+    result = {
+        'observed_at': datetime.now(UTC).isoformat(), 'status': 'partial',
+        'original_receipt': ref(BASE / 'mechanical-01.json'), 'additive_receipt': ref(BASE / 'mechanical-02.json'),
+        'original_checker': ref(BASE / 'mechanical-check.py.txt'), 'corrected_checker': ref(BASE / 'mechanical-check-02.py.txt'),
+        'prelaunch_checker_binding': ref(BASE / 'preparation-01.json'),
+        'changes_in_classification_only': changed,
+        'evaluator_corrections': [
+            {'issue': 'Explicit entry SESSION reference was compared with current SESSION bytes.',
+             'correction': 'Recognize the role phrase on entry and verify the retained input snapshot. The report separately binds the updated SESSION file. No native reference was edited.',
+             'verified_entry_references': entry_ref},
+            {'issue': 'Correction-purpose regex examined the message body using too few phrases and ignored the native summary.',
+             'correction': 'The actual summary says revision requested and body says two findings need a revision. Exact same-child delivery, subsequent authoring/publication and final delivery establish a real correction, not acknowledgement.',
+             'actual_followup': followup},
+        ],
+        'remaining_observation_gaps': [row for row in after['checks'] if row['status'] == 'not_observed'],
+        'equivalent_observation_limits': {
+            'observed': 'The caller reads full workflow for revision9 and revision10, then validates revision11 and reads current ready. It compares source/criterion/brief fields and rehashes existing records; unchanged original71 records are independently confirmed.',
+            'not_inferred': 'No post-revision11 full workflow, caller authoring-context endpoint, or complete literal current c_sample record delivery is invented. Equivalent source/record comparisons may support semantic conclusions separately from these strict mechanical conformance observations.',
+            'all_original_records_unchanged': not mutated_existing,
+            'no_choice_contract_task_candidate_acceptance_mutations': not protected_changes,
+            'state_delta': state_delta,
+        },
+        'native_chronology': {
+            'session_id': after['session_id'], 'actual_child_id': after['actual_child_id'], 'terminal_results': terminals,
+            'interpretation': 'The first success result is an interim parent final while its same child works on requested corrections. Only the later result matches the completed caller report and final native parent return. Exit0 or the first success record alone is not completion evidence.',
+            'parent_finals': after['parent_turn_finals'], 'child_finals': after['child_finals'],
+            'final_child_delivery': after['task_bearing_child_final_delivery'], 'publications': after['observed_publication_history'],
+        },
+        'retained_native_failure_and_recovery': {
+            'initial_receipt_write_defect': 'The specialist v1 criteria validator rewrote its retained receipt when the caller followed the documented reproduction command. The caller observed the changed timestamp/hash, restored the original bytes, and requested a successor validator read-only by default.',
+            'original_receipt_expected_sha256': '93643a34d32353b5471fd9943aed8bb3a0bf8cb48a94d8413c42635a1aaeb16a',
+            'restored_current_receipt': ref(receipt), 'restored_bytes_match_original': sha(receipt) == '93643a34d32353b5471fd9943aed8bb3a0bf8cb48a94d8413c42635a1aaeb16a',
+            'native_call_observations': side_effect_calls,
+            'scope': 'The initial defect and temporary mutation remain observed history. Final-byte preservation does not mean the receipt never changed. The v1 files and corrected v2 successors remain retained.',
+        },
+        'expected_negative_results': {
+            'request_review_refusal': ref(attempt / 'project/deliverables/sample-request/request-review-tool-refusal.json'),
+            'dry_run': ref(attempt / 'project/work/sample-checks/dry-run.json'),
+            'interpretation': 'Request-review exit2 for creative_brief and three synthetic checker exit1 results are declared expected negative cases, not provider failures. Raw receipts stay retained. No native tool wrapper is_error is observed; that is narrower than saying every nested command succeeded.',
+        },
+        'evidence': [ref(parent_path),ref(child_path),ref(attempt / 'stdout.jsonl'),ref(attempt / 'preservation.json'),ref(Path(__file__))],
+        'limits': ['Only evaluator receipts/helpers are written. Native artifacts, journals, original checker and failed mechanical01 are untouched.',
+                   'No maintainer findings were sent to native actors. The native caller wrote its own correction.',
+                   'Semantic authority, provider/art/engine/human acceptance remain separate.']}
+    assert len(changed) == 2
+    assert result['retained_native_failure_and_recovery']['restored_bytes_match_original']
+    assert len(terminals) == 2 and all(row['matching_parent_final_lines'] for row in terminals)
+    with (BASE / 'mechanical-review-notes-01.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'classification_changes': changed,
+        'strict_observation_gaps': len(result['remaining_observation_gaps']), 'terminal_results': len(terminals),
+        'original_records_unchanged': not mutated_existing, 'protected_changes': list(protected_changes)}))
+
+
+if __name__ == '__main__':
+    main()

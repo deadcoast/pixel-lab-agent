@@ -1,0 +1,111 @@
+"""Bind the second case's actual queued-message delivery and retained strict gaps."""
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import runpy
+import zipfile
+
+BASE = Path(__file__).parent
+ROOT = BASE.parents[2]
+U = runpy.run_path(str(BASE / 'mechanical-check-04.py.txt'), run_name='review_notes_support')
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref(path):
+    return {'path': path.relative_to(ROOT).as_posix(), 'sha256': sha(path)}
+
+
+def load(path):
+    return json.loads(path.read_bytes())
+
+
+def main():
+    attempt = BASE / 'native-02'
+    before, after = [load(BASE / name) for name in ('mechanical-03.json','mechanical-04.json')]
+    parent_path = attempt / 'native-transcripts/parent.jsonl'
+    child_path = attempt / ('native-transcripts/' + after['actual_child_id'] + '.jsonl')
+    parent, child = U['native_rows'](parent_path), U['native_rows'](child_path)
+    parent_tools = U['tools'](parent)
+    first_checks = {row['check']: row for row in before['checks']}
+    final_checks = {row['check']: row for row in after['checks']}
+    changes = [{'check': name, 'before': row['status'], 'after': final_checks[name]['status']}
+               for name, row in first_checks.items() if row['status'] != final_checks[name]['status']]
+    extension = after['same_child_followups'][1]
+    extension_text = parent_tools[extension['tool_use_id']]['call']['input']['message']
+    delivery = []
+    queued = []
+    for number, event in enumerate(child, 1):
+        if event.get('type') == 'attachment' and event.get('attachment', {}).get('prompt') == extension_text:
+            queued.append({'child_line': number, 'type': event['type'], 'attachment_type': event['attachment'].get('type'),
+                'prompt_sha256': hashlib.sha256(extension_text.encode()).hexdigest(), 'scope': 'Queued/rendered attachment alone is not the delivery proof.'})
+        if event.get('type') == 'api-request-blob' and event.get('message', {}).get('role') == 'user' and extension_text in U['content_text'](event):
+            delivery.append({'child_line': number, 'type': event['type'], 'role': 'user', 'api_blob_hash': event.get('hash'),
+                'exact_message_sha256': hashlib.sha256(extension_text.encode()).hexdigest(), 'actual_child': event.get('agent_id'),
+                'scope': 'Full exact coordinator message appears in the user text of the recorded native API request before subsequent authoring and final return.'})
+    with zipfile.ZipFile(BASE / 'revision-02/frozen-kit.zip') as archive:
+        text = archive.read('skills/pixl/references/delegation.md').decode('utf-8-sig').splitlines()
+    start = next(i for i, line in enumerate(text, 1) if line == '## Caller: review a cold continuation')
+    end = next(i for i, line in enumerate(text, 1) if i > start and line.startswith('## '))
+    coverage = set(after['parent_instruction_delivery']['coverage'].get('skills/pixl/references/delegation.md', []))
+    finals = U['finals'](parent, after['session_id'])
+    terminals = []
+    for number, event in enumerate(U['native_rows'](attempt / 'stdout.jsonl'), 1):
+        if event.get('type') == 'result' and event.get('session_id') == after['session_id']:
+            value = event.get('result', '')
+            terminals.append({'stream_line': number, 'uuid': event.get('uuid'), 'subtype': event.get('subtype'),
+                'duration_ms': event.get('duration_ms'), 'num_turns': event.get('num_turns'),
+                'result_sha256': hashlib.sha256(value.encode()).hexdigest(),
+                'matching_parent_final_lines': [row['line'] for row in finals if row['text'] == value], 'opening': value[:350]})
+    preservation = load(attempt / 'preservation.json')
+    delta = after['retained_sample_and_handoff_effects']['record_changes']
+    result = {
+        'observed_at': datetime.now(UTC).isoformat(), 'status': after['status'],
+        'original_receipt': ref(BASE / 'mechanical-03.json'), 'additive_receipt': ref(BASE / 'mechanical-04.json'),
+        'original_checker': ref(BASE / 'mechanical-check-03.py.txt'), 'corrected_checker': ref(BASE / 'mechanical-check-04.py.txt'),
+        'prelaunch_binding': ref(BASE / 'preparation-02.json'), 'classification_changes': changes,
+        'evaluator_correction': {'issue': 'The frozen parser recognized follow-up text only in type=user journal events, not a recorded API request user message.',
+            'correction': 'Also recognize type=api-request-blob with message.role=user and the exact full message text. Queue acknowledgements and attachments alone still do not prove consumption.',
+            'parent_extension': extension, 'queued_attachment': queued, 'actual_api_delivery': delivery},
+        'remaining_strict_observations': [row for row in after['checks'] if row['status'] != 'pass'],
+        'narrower_guidance_coverage': {
+            'source': 'skills/pixl/references/delegation.md', 'cold_review_section_lines': [start,end-1],
+            'all_relevant_cold_review_lines_delivered': set(range(start,end)).issubset(coverage),
+            'full_file_delivered': set(range(1,len(text)+1)).issubset(coverage), 'total_file_lines': len(text),
+            'covered_file_lines': sorted(coverage),
+            'scope': 'The cold-review section is completely delivered. The frozen check instead requires a complete delegation or request-review file; that full-file failure remains unchanged. Relevant-section evidence is not relabelled as full-file delivery.'},
+        'native_chronology': {'session_id': after['session_id'], 'actual_child_id': after['actual_child_id'],
+            'terminal_results': terminals, 'parent_finals': after['parent_turn_finals'], 'child_finals': after['child_finals'],
+            'final_child_delivery': after['task_bearing_child_final_delivery'],
+            'same_child_correction_rounds': after['same_child_correction_rounds'],
+            'same_child_followups': after['same_child_followups'],
+            'scope': 'First caller success is interim while correction is in progress. Second success matches actual final caller. Two messages address one correction round in the same child; the extension does not imply a second completed revision cycle.'},
+        'preservation': {'input_files': len(preservation['inputs']), 'output_files': len(preservation['outputs']),
+            'new_files': len(preservation['new']), 'changed': preservation['changed'], 'removed': preservation['removed'],
+            'all_entry_records_unchanged': all(row['before'] is None for row in delta.values()), 'record_delta': delta,
+            'caller_file_reference_occurrences': len(after['caller_file_references']),
+            'all_caller_references_match': all(row['matches_actual_bytes'] for row in after['caller_file_references'])},
+        'native_tool_wrapper_errors': {'parent': after['parent_tool_observations']['errors'], 'child': after['child_tool_observations']['errors']},
+        'observed_external_scratch_writes': after['external_scratch_writes'],
+        'evidence': [ref(parent_path),ref(child_path),ref(attempt / 'stdout.jsonl'),ref(attempt / 'preservation.json'),ref(Path(__file__))],
+        'limits': ['Only mechanical helper/receipt outputs change; native files, journals, guides and prior failed receipts remain untouched.',
+            'No fresh final full workflow, authoring-context endpoint or complete c_sample record delivery is inferred from current validate/ready or partial field comparisons.',
+            'Semantic source authority and model behavior remain separate from mechanical counts. No provider, new art, engine or human acceptance is established.']}
+    assert changes == [{'check':'same_child_followups_have_actual_reply','before':'fail','after':'pass'}]
+    assert delivery and all(row['actual_child'] == after['actual_child_id'] for row in delivery)
+    assert result['narrower_guidance_coverage']['all_relevant_cold_review_lines_delivered']
+    assert not result['narrower_guidance_coverage']['full_file_delivered']
+    assert len(terminals) == 2 and all(row['matching_parent_final_lines'] for row in terminals)
+    with (BASE / 'mechanical-review-notes-02.json').open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2, ensure_ascii=False)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'changed_classifications': changes,
+        'actual_extension_delivery_lines': [row['child_line'] for row in delivery],
+        'remaining_observations': len(result['remaining_strict_observations']), 'preserved_input_files': len(preservation['inputs'])}))
+
+
+if __name__ == '__main__':
+    main()

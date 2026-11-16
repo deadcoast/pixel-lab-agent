@@ -1,0 +1,22 @@
+"""Record the independent collaborator's read-only guide review and exact sources."""
+import hashlib
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+names = ['plugins/pixl/skills/pixl/references/delegation.md', 'plugins/pixl/skills/pixl/references/intake-sample.md', 'pixl/lifecycle.py', 'pixl/authoring_context.py', 'pixl/graph.py', 'pixl/families.py', 'spec/PIXL-2.md', 'pixl/registry-v2.json']
+result = {
+    'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass',
+    'reviewer': 'Independent /root/production_prerequisites explorer; root records its delivered read-only review.',
+    'source_hashes': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in names},
+    'findings': [],
+    'conclusion': 'Second guide iteration retains the verified operation trace and adds literal structured-field reconciliation across current notes, criteria and final response. Runtime-derived continuation remains unchanged. Source-permitted defaults and alternatives keep optional preferences optional; existing authorization carries forward. No new owner gate or saved-format semantic change. Historical version preservation remains required. This source review does not predict native effectiveness.',
+    'observed_runtime': {'state_sha256': 'fdf4ebfe7d2dc1565a9c003c28d61ecfa5b255ec19937198aa11d405c38b8ca1', 'ready': ['t_sample'], 'production_member_blockers': ['unfinished sample dependency', 'missing raster contract', 'missing adoption decision'], 'limitation': 'No current member output contract means its future linked-choice blockers cannot yet be enumerated from current workflow. Focused sample context has eight linked choices; member context retains other intake separately.'},
+    'scope': 'Independent source/runtime fidelity review and observed read-only public workflow/context. No native behavior, model-quality, provider, artwork or human acceptance is implied. The separate seed preflight retains the exact runtime read receipts.',
+}
+with (BASE / 'source-review-02.json').open('x', encoding='utf-8') as stream:
+    json.dump(result, stream, indent=2)
+    stream.write('\n')
+print(json.dumps({'status': result['status'], 'sources': len(names)}))

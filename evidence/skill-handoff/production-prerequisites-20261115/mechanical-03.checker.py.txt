@@ -1,0 +1,852 @@
+"""Read-only native caller/specialist mechanics; semantic authority review is separate."""
+
+from __future__ import annotations
+
+import argparse
+from datetime import datetime
+import hashlib
+import html
+import json
+import os
+from pathlib import Path
+import re
+import runpy
+import subprocess
+import sys
+import zipfile
+
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[2]
+SUPPORT = BASE / "mechanical-read-support.py.txt"
+UTIL = runpy.run_path(str(SUPPORT), run_name="mechanical_read_support")
+read, sha, inventory, archive, reference = (UTIL[key] for key in ("read", "sha", "inventory", "archive", "reference"))
+
+
+def content_text(event):
+    content = event.get("message", {}).get("content", [])
+    if isinstance(content, str):
+        return content
+    return "".join(block.get("text", "") for block in content if isinstance(block, dict) and block.get("type") == "text")
+
+
+def native_rows(path):
+    rows = UTIL["events"](path)
+    calls, results = set(), set()
+    normalized = []
+    for event in rows:
+        event = dict(event)
+        event["session_id"] = event.get("session_id", event.get("sessionId"))
+        event["agent_id"] = event.get("agent_id", event.get("agentId"))
+        if "toolUseResult" in event:
+            event["tool_use_result"] = event["toolUseResult"]
+        message = event.get("message", {})
+        if isinstance(message, dict) and isinstance(message.get("content"), list):
+            kept = []
+            for block in message["content"]:
+                if not isinstance(block, dict):
+                    kept.append(block)
+                    continue
+                ident = block.get("id") if block.get("type") == "tool_use" else block.get("tool_use_id")
+                if block.get("type") == "tool_use":
+                    if ident in calls:
+                        continue
+                    calls.add(ident)
+                elif block.get("type") == "tool_result":
+                    # Rehydrated journal mirrors omit native result metadata. Keep
+                    # the actual result, preserving the original journal line space.
+                    if ident in results and not event.get("tool_use_result"):
+                        continue
+                    if event.get("tool_use_result"):
+                        results.add(ident)
+                kept.append(block)
+            event["message"] = {**message, "content": kept}
+        normalized.append(event)
+    return normalized
+
+
+def tools(rows):
+    found = {}
+    for line, event in enumerate(rows, 1):
+        blocks = event.get("message", {}).get("content", [])
+        if not isinstance(blocks, list):
+            continue
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_use":
+                found[block["id"]] = {"call_line": line, "call": block,
+                                      "call_timestamp": event.get("timestamp")}
+            elif block.get("type") == "tool_result" and block.get("tool_use_id") in found:
+                found[block["tool_use_id"]].update(result_line=line, result=block,
+                    metadata=event.get("tool_use_result"), result_timestamp=event.get("timestamp"))
+    return found
+
+
+def finals(rows, session, child=None):
+    result, seen = [], set()
+    for line, event in enumerate(rows, 1):
+        if event.get("type") != "assistant" or event.get("session_id") != session:
+            continue
+        if child is not None and event.get("agent_id") != child:
+            continue
+        if child is None and (event.get("agent_id") or event.get("isSidechain")):
+            continue
+        message = event.get("message", {})
+        text = content_text(event)
+        if message.get("stop_reason") != "end_turn" or not text:
+            continue
+        key = (message.get("id"), text)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append({"line": line, "timestamp": event.get("timestamp"), "message_id": message.get("id"),
+                       "text": text, "sha256": hashlib.sha256(text.encode()).hexdigest()})
+    return result
+
+
+def strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings(item)
+
+
+def json_objects(value):
+    if isinstance(value, dict):
+        yield value
+        for item in value.values():
+            yield from json_objects(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from json_objects(item)
+    elif isinstance(value, str):
+        decoder, offset = json.JSONDecoder(), 0
+        while offset < len(value):
+            start = value.find("{", offset)
+            if start < 0:
+                break
+            try:
+                decoded, used = decoder.raw_decode(value[start:])
+            except ValueError:
+                offset = start + 1
+                continue
+            yield from json_objects(decoded)
+            offset = start + used
+
+
+def epoch(value):
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+    except (AttributeError, ValueError):
+        return None
+
+
+def source_observations(rows, consumer, package, frozen):
+    reads, nontext, _, _ = UTIL["source_reads"](rows, consumer, package, frozen)
+    retained_reads = []
+    observed_tools = tools(rows)
+    for row in reads:
+        item = observed_tools.get(row.get("tool_use_id"), {})
+        payload = item.get("result", {}).get("content")
+        if row.get("delivery_tool") == "Grep" and isinstance(payload, str) and payload.splitlines() and all(
+                re.fullmatch(r"\d+[:-]\[Omitted long (?:matching|context) line\]", part) for part in payload.splitlines()):
+            nontext.append({"source": row["source"], "call_line": row["call_line"], "result_line": row["result_line"],
+                "observation": "all_grep_matching_text_explicitly_omitted", "explicitly_omitted_lines": row.get("explicitly_omitted_lines", []),
+                "scope": "No literal source lines delivered; no source mismatch or instruction coverage is inferred."})
+        else:
+            retained_reads.append(row)
+    reads = retained_reads
+    # Claude's compacted child journal can retain the delivered numbered text
+    # but omit toolUseResult metadata. Verify those bytes directly against the
+    # frozen file; a Read call alone still establishes no delivery.
+    numbered_ids = set()
+    for ident, item in tools(rows).items():
+        call, result = item["call"], item.get("result", {})
+        if call["name"] != "Read" or item.get("metadata") or result.get("is_error"):
+            continue
+        supplied = call.get("input", {}).get("file_path")
+        if not isinstance(supplied, str):
+            continue
+        source_path = Path(supplied)
+        source_path = source_path.resolve() if source_path.is_absolute() else (consumer / source_path).resolve()
+        kit = consumer / "pixl-kit"
+        if not source_path.is_relative_to(kit):
+            continue
+        relative = source_path.relative_to(kit).as_posix()
+        payload = result.get("content")
+        if relative not in package or not isinstance(payload, str):
+            continue
+        delivered = []
+        for line in payload.replace("\r\n", "\n").splitlines():
+            matched = re.fullmatch(r"(\d+)\t(.*)", line)
+            if matched:
+                delivered.append((int(matched[1]), matched[2]))
+        if not delivered:
+            continue
+        canonical = frozen.read(relative).decode("utf-8-sig").replace("\r\n", "\n").split("\n")
+        matches = all(1 <= number <= len(canonical) and canonical[number - 1] == value for number, value in delivered)
+        reads.append({"source": relative, "tool_use_id": ident, "tool": "Read", "call_line": item["call_line"],
+                      "result_line": item["result_line"], "delivery_format": "numbered_text_without_metadata",
+                      "source_sha256": package[relative], "coverage_lines": [number for number, _ in delivered] if matches else [],
+                      "read_payload_matches_frozen_lines": matches,
+                      "omitted_unverified_payload_lines": [line for line in payload.replace("\r\n", "\n").splitlines()
+                                                          if not re.fullmatch(r"\d+\t.*", line)]})
+        numbered_ids.add((item["call_line"], item["result_line"]))
+    nontext = [row for row in nontext if (row["call_line"], row["result_line"]) not in numbered_ids]
+    body = frozen.read("skills/pixl/SKILL.md").decode("utf-8-sig").split("---", 2)[-1].strip().replace("\r\n", "\n")
+    body_lines = [line for line, event in enumerate(rows, 1) if event.get("type") == "user"
+                  and body in content_text(event).replace("\r\n", "\n")]
+    coverage = {}
+    for row in reads:
+        if row["read_payload_matches_frozen_lines"]:
+            coverage.setdefault(row["source"], set()).update(row["coverage_lines"])
+    return {"payloads": reads, "nontext_or_empty_observations": nontext,
+            "skill_body_delivery_lines": body_lines,
+            "coverage": {name: sorted(lines) for name, lines in coverage.items()}}
+
+
+def full_file(observed, relative, frozen):
+    count = len(frozen.read(relative).decode("utf-8-sig").splitlines())
+    return set(range(1, count + 1)).issubset(observed["coverage"].get(relative, []))
+
+
+def caller_file_refs(value, location="$", result=None):
+    result = [] if result is None else result
+    if isinstance(value, dict):
+        paths = [(key, item) for key, item in value.items() if key in {"path", "file", "uri", "relative_path"} and isinstance(item, str)]
+        hashes = [(key, item) for key, item in value.items() if key in {"sha256", "file_sha256", "hash", "state_hash", "canonical_state_hash", "canonical_sha256"}
+                  and isinstance(item, str) and re.fullmatch(r"[a-f0-9]{64}", item)]
+        for pk, path in paths:
+            for hk, digest in hashes:
+                result.append({"json_location": location, "path_key": pk, "hash_key": hk, "path": path, "sha256": digest,
+                               "declared_role": value.get("role")})
+        for key, item in value.items():
+            caller_file_refs(item, location + "." + key, result)
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            caller_file_refs(item, f"{location}[{index}]", result)
+    return result
+
+
+def tool_observations(rows):
+    errors, publications = [], []
+    for ident, item in tools(rows).items():
+        call = item["call"]
+        result = item.get("result", {})
+        if result.get("is_error"):
+            errors.append({"tool_use_id": ident, "tool": call["name"], "call_line": item["call_line"],
+                           "result_line": item.get("result_line"), "result": result.get("content")})
+        command = call.get("input", {}).get("command", "")
+        cli_commit = (call["name"] == "Bash" and re.search(r"pixl\.py[\"']?\s+commit(?:\s|$)", command)
+                      and not re.search(r"\bcommit\s+(?:--help|-h)(?:\s|$)", command))
+        if call["name"] != "mcp__pixl-local__pixl_commit" and not cli_commit:
+            continue
+        receipts = [value for value in json_objects([item.get("metadata"), result])
+                    if isinstance(value.get("revision"), int) and isinstance(value.get("hash"), str) and "state" in value]
+        publications.append({"tool_use_id": ident, "call_line": item["call_line"], "result_line": item.get("result_line"),
+                             "tool": call["name"], "arguments": call.get("input", {}), "is_error": bool(result.get("is_error")),
+                             "observed_success_receipts": receipts if not result.get("is_error") else []})
+    return {"errors": errors, "publication_attempts": publications}
+
+
+def project_read_payloads(rows, consumer):
+    """Record actual caller text delivery; do not infer it from read intentions."""
+    result = []
+    for ident, item in tools(rows).items():
+        if item["call"]["name"] != "Read" or item.get("result", {}).get("is_error"):
+            continue
+        metadata = item.get("metadata")
+        if not isinstance(metadata, dict) or metadata.get("type") != "text":
+            continue
+        observed = metadata.get("file", {})
+        path = Path(observed.get("filePath", ""))
+        if not path.is_file() or not path.is_relative_to(consumer) or path.is_relative_to(consumer / "pixl-kit"):
+            continue
+        try:
+            current = path.read_text(encoding="utf-8-sig").replace("\r\n", "\n").split("\n")
+        except UnicodeError:
+            continue
+        start, count = observed["startLine"], observed["numLines"]
+        delivered = observed["content"].replace("\r\n", "\n").split("\n")
+        result.append({"tool_use_id": ident, "call_line": item["call_line"], "result_line": item.get("result_line"),
+                       "result_timestamp": item.get("result_timestamp"), "path": path.relative_to(consumer).as_posix(),
+                       "current_file_sha256": sha(path), "start_line": start, "reported_lines": count,
+                       "delivered_payload_matches_current_range": delivered == current[start - 1:start - 1 + count]})
+    return result
+
+
+def external_read_attempts(rows, consumer):
+    observations = []
+    for ident, item in tools(rows).items():
+        call, metadata = item["call"], item.get("metadata")
+        if call["name"] not in {"Read", "Grep"}:
+            continue
+        arguments = call.get("input", {})
+        path = arguments.get("file_path", arguments.get("path"))
+        delivered = isinstance(metadata, dict) and isinstance(metadata.get("file"), dict)
+        if delivered:
+            path = metadata["file"].get("filePath", path)
+        if not isinstance(path, str):
+            continue
+        candidate = Path(path).expanduser()
+        resolved = candidate.resolve() if candidate.is_absolute() else (consumer / candidate).resolve()
+        if not resolved.is_relative_to(consumer):
+            observations.append({"tool_use_id": ident, "tool": call["name"], "call_line": item["call_line"],
+                                 "result_line": item.get("result_line"), "path": path,
+                                 "file_payload_observed": delivered, "is_error": bool(item.get("result", {}).get("is_error"))})
+    return observations
+
+
+def external_scratch_writes(rows, consumer):
+    """Expose explicit shell scratch redirects; this is not a full shell audit."""
+    observations = []
+    for ident, item in tools(rows).items():
+        if item["call"]["name"] != "Bash":
+            continue
+        command = item["call"].get("input", {}).get("command", "")
+        shell_prefix = command.split("<<", 1)[0]
+        for matched in re.finditer(r'''(?<![<>=])>{1,2}\s*(?:"([^"]+)"|'([^']+)'|([^\s;&]+))''', shell_prefix):
+            target = next(value for value in matched.groups() if value is not None)
+            if target == "/dev/null":
+                continue
+            native_path = target
+            if re.match(r"^/[A-Za-z]/", target):
+                target = target[1].upper() + ":/" + target[3:]
+            absolute = Path(target).is_absolute() or target.startswith("/")
+            if not absolute or (Path(target).is_absolute() and Path(target).resolve().is_relative_to(consumer)):
+                continue
+            payload = "\n".join(strings(item.get("result", {}).get("content")))
+            followup = shell_prefix[matched.end():]
+            file_data = bool(re.search(r"(?m)^(?:[<>] )?[a-f0-9]{64} ", payload))
+            read_after_write = native_path in followup and bool(re.search(r"\b(?:cat|diff)\b", followup))
+            observations.append({"tool_use_id": ident, "call_line": item["call_line"], "result_line": item.get("result_line"),
+                "native_path": native_path, "command": command, "is_error": bool(item.get("result", {}).get("is_error")),
+                "subsequent_file_read_in_command": read_after_write, "file_hash_data_returned": file_data,
+                "write_and_file_use_observed": read_after_write and file_data and not item.get("result", {}).get("is_error"),
+                "scope": "Explicit absolute redirect with subsequent file read/hash output; physical Windows backing path not inferred."})
+    return observations
+
+
+def record_changes(entry, current):
+    before = {row["id"]: row for row in entry.get("records", [])}
+    after = {row["id"]: row for row in current.get("records", [])}
+    return {ident: {"before": before.get(ident), "after": after.get(ident)}
+            for ident in sorted(set(before) | set(after)) if before.get(ident) != after.get(ident)}
+
+
+def record_effects(entry, current, state, consumer, parent, workflow, controlled, validation=None):
+    """Retain literal record effects and delivered bytes, without grading authority."""
+    after = {row["id"]: row for row in current.get("records", [])}
+    before = {row["id"]: row for row in entry.get("records", [])}
+    validation = validation or {}
+
+    def refs(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("$ref"), str):
+                yield value["$ref"]
+            for child in value.values():
+                yield from refs(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from refs(child)
+
+    controlled_sources = []
+    for row in after.values():
+        fields = row["fields"]
+        if row["kind"] != "S" or fields.get("dg") != controlled["sha256"]:
+            continue
+        path = (consumer / fields.get("ur", "")).resolve()
+        controlled_sources.append({"record": row, "actual_file_matches_controlled_input":
+            path.is_relative_to(consumer) and path.is_file() and sha(path) == controlled["sha256"]})
+    source_ids = {row["record"]["id"] for row in controlled_sources}
+    referencing = [row for row in after.values() if source_ids.intersection(refs(row["fields"]))]
+    samples, required = [], set()
+    for task in after.values():
+        if task["kind"] != "T" or task["fields"].get("ph", {}).get("$symbol") != "sample":
+            continue
+        for output_id in refs(task["fields"].get("op", [])):
+            output = after.get(output_id)
+            if not output or output["kind"] != "F":
+                continue
+            contract_ids = list(refs(output["fields"].get("ct")))
+            contracts = [after[ident] for ident in contract_ids if ident in after and after[ident]["kind"] == "C"]
+            requirement_ids = list(refs(output["fields"].get("rq", [])))
+            requirements = [after[ident] for ident in requirement_ids if ident in after]
+            samples.append({"task": task, "output": output, "contracts": contracts, "direct_requirements": requirements,
+                            "direct_requirement_ids": requirement_ids})
+            required.update(contract_ids)
+            required.update(requirement_ids)
+    state_lines = state.read_text(encoding="utf-8-sig").splitlines()
+    literal = {ident: next((line for line in state_lines if line.startswith("@" + ident + ":")), None) for ident in required}
+    delivery = {ident: {"record": after.get(ident), "observations": []} for ident in sorted(required)}
+    earlier_literal, current_hash_proofs = {}, {}
+    for tool_id, item in tools(parent).items():
+        call, result = item["call"], item.get("result", {})
+        name = call["name"]
+        read_surface = name in {"Read", "Grep", "Bash"} or name in {
+            "mcp__pixl-local__pixl_context", "mcp__pixl-local__pixl_decode", "mcp__pixl-local__pixl_workflow",
+            "mcp__pixl-local__pixl_validate"}
+        stamp = epoch(item.get("result_timestamp"))
+        if not read_surface or result.get("is_error") or stamp is None:
+            continue
+        payloads = list(strings(result.get("content")))
+        objects = list(json_objects(result.get("content")))
+        if stamp < state.stat().st_mtime:
+            for ident in required:
+                record = after.get(ident, {})
+                criterion = record.get("fields", {}).get("ck")
+                if record.get("kind") == "Q" and record == before.get(ident) and isinstance(criterion, str) and any(criterion in value for value in payloads):
+                    earlier_literal.setdefault(ident, []).append({"tool_use_id": tool_id, "tool": name,
+                        "call_line": item["call_line"], "result_line": item.get("result_line"),
+                        "result_timestamp": item.get("result_timestamp"),
+                        "literal_criterion_sha256": hashlib.sha256(criterion.encode()).hexdigest()})
+            continue
+        for ident in required:
+            expected_hash = validation.get("record_hashes", {}).get(ident)
+            if expected_hash and any(value.get("hash") == validation.get("hash")
+                    and value.get("record_hashes", {}).get(ident) == expected_hash for value in objects):
+                current_hash_proofs.setdefault(ident, []).append({"tool_use_id": tool_id, "call_line": item["call_line"],
+                    "result_line": item.get("result_line"), "record_sha256": expected_hash,
+                    "canonical_state_sha256": validation.get("hash")})
+            exact_line = bool(literal.get(ident)) and any(literal[ident] in value for value in payloads)
+            exact_object = any(value == after.get(ident) for value in objects)
+            if exact_line or exact_object:
+                delivery[ident]["observations"].append({"tool_use_id": tool_id, "tool": name,
+                    "call_line": item["call_line"], "result_line": item.get("result_line"),
+                    "result_timestamp": item.get("result_timestamp"), "exact_canonical_line": exact_line,
+                    "exact_decoded_record_object": exact_object})
+    for ident, row in delivery.items():
+        if not row["observations"] and earlier_literal.get(ident) and current_hash_proofs.get(ident) and before.get(ident) == after.get(ident):
+            row["observations"].append({"mode": "unchanged_literal_read_then_current_record_hash_verified",
+                "entry_and_final_records_identical": True, "earlier_literal_delivery": earlier_literal[ident],
+                "post_change_current_hash_checks": current_hash_proofs[ident],
+                "scope": "The unchanged literal was received before the change and its current identity independently verified afterwards; no fresh literal re-read is claimed."})
+    return {"entry_revision": entry.get("revision"), "final_revision": current.get("revision"),
+        "record_changes": record_changes(entry, current), "controlled_source_records": controlled_sources,
+        "records_referencing_controlled_source": referencing, "sample_outputs": samples,
+        "current_workflow_ready": workflow.get("ready"), "caller_current_record_delivery": delivery,
+        "scope": ["Literal field/record differences and actual tool payloads; no semantic authority grade.",
+            "Direct F.rq links are enumerated. Frozen runtime context receipts remain authoritative for any wider applicability.",
+            "No particular I/Q/C identifier or replacement criterion wording is required."]}
+
+
+def child_final_deliveries(parent, child_final, child_id, agent_calls):
+    final_delivery, final_delivery_details = [], []
+    if child_final:
+        text = child_final["text"]
+        bound_agent_calls = {item["tool_use_id"] for item in agent_calls if item["child_id"] == child_id}
+        for line, row in enumerate(parent, 1):
+            if row.get("type") != "user":
+                continue
+            for value in strings(row.get("message", {})):
+                if text in value:
+                    final_delivery.append(line)
+                    final_delivery_details.append({"parent_line": line, "encoding": "verbatim", "child_final_sha256": child_final["sha256"]})
+                    break
+                message_blocks = row.get("message", {}).get("content", [])
+                agent_results = {block.get("tool_use_id") for block in message_blocks if isinstance(block, dict)
+                                 and block.get("type") == "tool_result"} if isinstance(message_blocks, list) else set()
+                if agent_results.intersection(bound_agent_calls) and "[Subagent hand-back]" in value:
+                    unindented = "\n".join(part[2:] if part.startswith("  ") else part for part in value.splitlines())
+                    if text in unindented:
+                        final_delivery.append(line)
+                        final_delivery_details.append({"parent_line": line, "encoding": "foreground_agent_handback_two_space_indent",
+                            "bound_agent_tool_use_ids": sorted(agent_results.intersection(bound_agent_calls)),
+                            "encoded_handback_sha256": hashlib.sha256(value.encode()).hexdigest(),
+                            "child_final_sha256": child_final["sha256"]})
+                        break
+                if "<task-id>" + str(child_id) + "</task-id>" not in value:
+                    continue
+                wrapped = re.search(r"<result>([\s\S]*)</result>", value)
+                if wrapped and html.unescape(wrapped[1]) == text:
+                    final_delivery.append(line)
+                    final_delivery_details.append({"parent_line": line, "encoding": "xml_task_notification_entities",
+                        "task_id": child_id, "encoded_result_sha256": hashlib.sha256(wrapped[1].encode()).hexdigest(),
+                        "decoded_result_sha256": hashlib.sha256(html.unescape(wrapped[1]).encode()).hexdigest(),
+                        "child_final_sha256": child_final["sha256"]})
+                    break
+    return final_delivery_details
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--attempt", default="native-02")
+    parser.add_argument("--output", default="mechanical-03.json")
+    parser.add_argument("--checks-dir", default="mechanical-runtime-observations-03")
+    parser.add_argument("--frozen-kit", default="revision-02/frozen-kit.zip")
+    parser.add_argument("--seed-manifest", default="seed-preflight-03/seed-manifest.json")
+    parser.add_argument("--caller-report", default="CALLER-RESULT-PREREQUISITES-02.json")
+    parser.add_argument("--protocol", default="protocol-revision-02.json")
+    args = parser.parse_args()
+    attempt = (BASE / args.attempt).resolve()
+    output, check_dir = (BASE / args.output).resolve(), (BASE / args.checks_dir).resolve()
+    snapshot = output.with_name(output.stem + ".checker.py.txt")
+    if not output.is_relative_to(BASE) or not check_dir.is_relative_to(BASE):
+        raise RuntimeError("Review outputs must remain in the owned evidence directory")
+    if output.exists() or snapshot.exists() or check_dir.exists():
+        raise RuntimeError("Use a fresh result identity; preserved receipts cannot be overwritten")
+    continuation = read(attempt / "continuation.json")
+    if continuation["status"] == "running" or not (attempt / "preservation.json").exists():
+        raise RuntimeError("Native execution/output retention is not complete; no review written")
+    check_dir.mkdir()
+    snapshot.write_bytes(Path(__file__).read_bytes())
+    checks = []
+
+    def check(name, passed, detail=None, absent=False, applicable=True):
+        status = "not_applicable" if not applicable else "not_observed" if absent else "pass" if passed else "fail"
+        checks.append({"check": name, "status": status, "detail": detail})
+
+    launch, identity, saved = (read(attempt / name) for name in ("launch.json", "identity.json", "preservation.json"))
+    consumer, session = Path(launch["cwd"]), launch["expected_session_id"]
+    frozen_path = (BASE / args.frozen_kit).resolve()
+    frozen_files = archive(frozen_path)
+    expected_seed = read((BASE / args.seed_manifest).resolve())
+    stream = native_rows(attempt / "stdout.jsonl")
+    parent_path = attempt / "native-transcripts/parent.jsonl"
+    parent = native_rows(parent_path) if parent_path.exists() else []
+    parent_tools, parent_finals = tools(parent), finals(parent, session)
+    terminal = [row for row in stream if row.get("type") == "result" and not row.get("parent_tool_use_id")
+                and not row.get("agent_id") and row.get("session_id") == session]
+    final = terminal[-1] if terminal else {}
+    # A background child permits an earlier end_turn while the parent waits.
+    # The terminal proof is the last exact-session result matching the last
+    # native parent end_turn; retain every distinct earlier result separately.
+    check("native_parent_terminal_success", bool(terminal) and continuation["status"] == "finished"
+          and continuation.get("returncode") == 0 and final.get("subtype") == "success" and final.get("is_error") is False,
+          {"same_session_result_count": len(terminal), "result_uuids": [row.get("uuid") for row in terminal]})
+    check("actual_parent_final_matches_stream", bool(parent_finals) and parent_finals[-1]["text"] == final.get("result"), absent=not parent_finals)
+    check("fresh_native_session_not_resume", not any(arg in launch["command"] for arg in ("--resume", "--continue", "-r", "-c")) and continuation.get("session_id") == session)
+    check("retained_parent_journal_identity", parent_path.exists() and sha(parent_path) == continuation.get("transcripts", {}).get("parent", {}).get("sha256"))
+    check("explicit_registered_plugin_binding", "--plugin-dir" in launch["command"] and "--agents" not in launch["command"]
+          and identity.get("target_role") == "pixl:pixl" and identity["registered_agent"]["sha256"] == frozen_files["agents/pixl.md"])
+    check("exact_declared_seed_inputs", identity["inputs"] == expected_seed, {"files": len(expected_seed)})
+    check("input_snapshot_and_zip_preserved", inventory(attempt / "input-project") == expected_seed and archive(attempt / "input-project.zip") == expected_seed
+          and sha(attempt / "input-project.zip") == identity["input_archive"]["sha256"])
+    check("output_snapshot_and_zip_exact", inventory(attempt / "project", ("__pycache__",)) == saved["outputs"] and archive(attempt / "project.zip") == saved["outputs"]
+          and sha(attempt / "project.zip") == saved["output_archive"]["sha256"])
+    check("consumer_matches_retained_output", inventory(consumer, ("pixl-kit", "__pycache__")) == saved["outputs"])
+    check("installed_kit_matches_frozen_identity", inventory(consumer / "pixl-kit", ("__pycache__",)) == identity["package_files"] == frozen_files)
+    check("declared_static_inputs_unchanged", all(saved["outputs"].get(path) == digest for path, digest in identity["static_inputs"].items()))
+    protected_history = {path: digest for path, digest in expected_seed.items() if path.startswith(("sources/", "state.px/history/", "evidence/", "deliverables/", "review/")) or path.startswith("CALLER-RESULT")}
+    check("historical_sources_reports_and_history_unchanged", all(saved["outputs"].get(path) == digest for path, digest in protected_history.items()),
+          {"files": len(protected_history), "changed": [path for path, digest in protected_history.items() if saved["outputs"].get(path) != digest]})
+    for field in ("launch", "prompt", "mcp", "runtime_environment"):
+        check("prepared_" + field + "_unchanged", reference(Path(identity[field]["path"])) == identity[field])
+    check("protocol_and_amendment_bindings_unchanged", all(reference(Path(item["path"])) == item for item in identity["binding_files"].values()))
+    check("runner_source_snapshots_unchanged", all(reference(Path(item["snapshot"]["path"])) == item["snapshot"]
+          and item["source"]["sha256"] == item["snapshot"]["sha256"] for item in identity["source_files"]))
+
+    agent_calls, selected = [], set()
+    for ident, item in parent_tools.items():
+        call, metadata = item["call"], item.get("metadata") or {}
+        if call["name"] != "Agent":
+            continue
+        child = metadata.get("agentId")
+        if child is None:
+            match = re.search(r"agentId:\s*([A-Za-z0-9_-]+)", json.dumps(item.get("result", {})))
+            child = match[1] if match else None
+        row = {"tool_use_id": ident, "call_line": item["call_line"], "result_line": item.get("result_line"),
+               "role": call.get("input", {}).get("subagent_type"), "child_id": child,
+               "status": metadata.get("status"), "is_async": metadata.get("isAsync"),
+               "is_error": bool(item.get("result", {}).get("is_error"))}
+        agent_calls.append(row)
+        if row["role"] == "pixl:pixl" and child and not row["is_error"]:
+            selected.add(child)
+    check("one_actual_registered_pixl_child", len(selected) == 1 and all(row["role"] == "pixl:pixl" for row in agent_calls), agent_calls)
+    child_id = next(iter(selected)) if len(selected) == 1 else None
+    child_path = attempt / "native-transcripts" / (str(child_id) + ".jsonl")
+    child = native_rows(child_path) if child_id and child_path.exists() else []
+    child_finals = finals(child, session, child_id) if child_id else []
+    parent_tool_observations, child_tool_observations = tool_observations(parent), tool_observations(child)
+    check("child_journal_identity_and_session", bool(child) and all(row.get("session_id") == session and row.get("agent_id") == child_id
+          for row in child if row.get("agent_id")) and sha(child_path) == continuation.get("transcripts", {}).get("children", {}).get(child_id, {}).get("sha256"))
+    check("actual_specialist_final_observed", bool(child_finals), {"final_lines": [row["line"] for row in child_finals]}, absent=not child_finals)
+    final_delivery_details = child_final_deliveries(parent, child_finals[-1] if child_finals else None, child_id, agent_calls)
+    final_delivery = [row["parent_line"] for row in final_delivery_details]
+
+    followups = []
+    child_tools = tools(child)
+    for ident, item in parent_tools.items():
+        if item["call"]["name"] != "SendMessage":
+            continue
+        arguments, metadata = item["call"].get("input", {}), item.get("metadata") or {}
+        target = arguments.get("to", arguments.get("recipient"))
+        actual = metadata.get("resumedAgentId", metadata.get("revivedAgentId"))
+        message = arguments.get("message", arguments.get("content", ""))
+        lower = message.casefold() if isinstance(message, str) else ""
+        summary = arguments.get("summary", "")
+        summary_lower = summary.casefold() if isinstance(summary, str) else ""
+        no_revision = re.search(r"\bno revision (?:requested|required|needed)\b", lower)
+        no_change = re.search(r"\bdo not change any file or state\b", lower)
+        requested_revision = None if no_revision else re.search(r"\b(?:requested revision|revision requested|please revise|please correct|return a corrected|need a revision)\b", lower + "\n" + summary_lower)
+        purpose = "acknowledgement_only" if no_revision and no_change else "revision_requested" if requested_revision else "unclassified_followup"
+        delivered = [line for line, row in enumerate(child, 1) if row.get("type") == "user" and message
+                     and isinstance(message, str) and message in content_text(row)]
+        timestamp = epoch(item.get("call_timestamp"))
+        later_finals = [row["line"] for row in child_finals if timestamp is not None and epoch(row["timestamp"]) is not None and epoch(row["timestamp"]) >= timestamp]
+        later_calls = [{"tool_use_id": tool_id, "tool": value["call"]["name"], "call_line": value["call_line"],
+                        "result_line": value.get("result_line")} for tool_id, value in child_tools.items()
+                       if timestamp is not None and epoch(value.get("call_timestamp")) is not None
+                       and epoch(value["call_timestamp"]) >= timestamp]
+        later_ids = {value["tool_use_id"] for value in later_calls}
+        later_publications = [value for value in child_tool_observations["publication_attempts"]
+                              if value["tool_use_id"] in later_ids and value["observed_success_receipts"]]
+        followups.append({"tool_use_id": ident, "call_line": item["call_line"], "result_line": item.get("result_line"),
+                       "requested_child": target, "acknowledged_child": actual, "successful_ack": metadata.get("success") is True,
+                       "message_sha256": hashlib.sha256(message.encode()).hexdigest() if isinstance(message, str) else None,
+                       "summary": summary,
+                       "purpose": purpose, "purpose_basis": [match[0] for match in (no_revision, no_change, requested_revision) if match],
+                       "child_delivery_lines": delivered, "later_child_final_lines": later_finals,
+                       "later_child_tool_calls": later_calls, "later_child_publications": later_publications,
+                       "same_child_observed": bool(child_id) and target == child_id and (actual == child_id or bool(delivered))})
+    rounds = [row for row in followups if row["purpose"] == "revision_requested"]
+    check("corrections_continue_the_same_actual_child", all(row["same_child_observed"] and row["successful_ack"] and row["later_child_final_lines"] for row in rounds),
+          rounds, applicable=bool(rounds))
+    check("same_child_followups_have_actual_reply", all(row["same_child_observed"] and row["successful_ack"] and row["later_child_final_lines"] for row in followups),
+          followups, applicable=bool(followups))
+    acknowledgement_lines = {line for row in followups if row["purpose"] == "acknowledgement_only" and not row["later_child_tool_calls"]
+                             for line in row["later_child_final_lines"]}
+    acknowledgement_notifications = []
+    latest_is_acknowledgement = bool(child_finals) and child_finals[-1]["line"] in acknowledgement_lines
+    if latest_is_acknowledgement:
+        for line, event in enumerate(parent, 1):
+            if event.get("type") != "queue-operation" or event.get("operation") != "enqueue":
+                continue
+            value = event.get("content", "")
+            if not isinstance(value, str) or "<task-id>" + str(child_id) + "</task-id>" not in value:
+                continue
+            wrapped = re.search(r"<result>([\s\S]*)</result>", value)
+            if wrapped and html.unescape(wrapped[1]) == child_finals[-1]["text"]:
+                acknowledgement_notifications.append({"parent_line": line, "timestamp": event.get("timestamp"),
+                    "operation": "enqueue", "child_final_sha256": child_finals[-1]["sha256"],
+                    "scope": "Exact acknowledgement notification queued; queue presence is not proof of caller consumption."})
+    check("last_child_final_delivered_to_parent", bool(final_delivery),
+          {"parent_lines": final_delivery, "latest_is_acknowledgement_only": latest_is_acknowledgement,
+           "queued_acknowledgement_notifications": acknowledgement_notifications,
+           "scope": "Task-bearing final delivery is required below. A later no-change acknowledgement is recorded separately."},
+          absent=not final_delivery, applicable=not latest_is_acknowledgement)
+    work_finals = [row for row in child_finals if row["line"] not in acknowledgement_lines]
+    work_final = work_finals[-1] if work_finals else None
+    work_delivery = child_final_deliveries(parent, work_final, child_id, agent_calls)
+    check("task_bearing_child_final_delivered", bool(work_final) and bool(work_delivery),
+          {"child_final_line": work_final["line"] if work_final else None, "delivery": work_delivery},
+          absent=not work_final or not work_delivery)
+
+    with zipfile.ZipFile(frozen_path) as frozen:
+        parent_sources = source_observations(parent, consumer, frozen_files, frozen)
+        child_sources = source_observations(child, consumer, frozen_files, frozen)
+        check("actual_instruction_payloads_match_frozen_lines", all(row["read_payload_matches_frozen_lines"] for obs in (parent_sources, child_sources) for row in obs["payloads"]))
+        check("specialist_full_profile_delivered", full_file(child_sources, "resources/agent/PROFILE.md", frozen))
+        check("specialist_shared_skill_delivered", bool(child_sources["skill_body_delivery_lines"]) or full_file(child_sources, "skills/pixl/SKILL.md", frozen))
+        intake = "skills/pixl/references/intake-sample.md"
+        lines = frozen.read(intake).decode("utf-8-sig").splitlines()
+        start = next(index for index, line in enumerate(lines, 1) if line == "## Cold intake handoff")
+        end = next((index for index, line in enumerate(lines, 1) if index > start and line.startswith("## ")), len(lines) + 1)
+        check("specialist_cold_procedure_delivered", set(range(start, end)).issubset(child_sources["coverage"].get(intake, [])), {"required_lines": [start, end - 1]})
+        effect_start = next(index for index, line in enumerate(lines, 1) if line == "## Check what an answer enables")
+        effect_end = next((index for index, line in enumerate(lines, 1) if index > effect_start and line.startswith("## ")), len(lines) + 1)
+        check("specialist_operation_effect_procedure_delivered", set(range(effect_start, effect_end)).issubset(child_sources["coverage"].get(intake, [])), {"required_lines": [effect_start, effect_end - 1]})
+        delegation = "skills/pixl/references/delegation.md"
+        check("specialist_delegation_procedure_delivered", full_file(child_sources, delegation, frozen))
+        check("caller_review_guidance_delivered", full_file(parent_sources, delegation, frozen)
+              or full_file(parent_sources, "skills/pixl/references/request-review.md", frozen))
+
+    before = {path: {"sha256": digest, "mtime_ns": (consumer / path).stat().st_mtime_ns}
+              for path, digest in inventory(consumer, ("__pycache__",)).items()}
+    state = consumer / "state.px/state.px"
+    commands = []
+
+    def run(label, arguments):
+        command = [sys.executable, "-B", "-I", str(consumer / "pixl-kit/scripts/pixl.py"), *arguments]
+        result = subprocess.run(command, cwd=consumer, capture_output=True, timeout=60,
+                                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"})
+        out, err = check_dir / (label + ".stdout.txt"), check_dir / (label + ".stderr.txt")
+        out.write_bytes(result.stdout)
+        err.write_bytes(result.stderr)
+        commands.append({"command": command, "cwd": str(consumer), "returncode": result.returncode,
+                         "stdout": reference(out), "stderr": reference(err)})
+        check("independent_" + label, result.returncode == 0)
+        return json.loads(result.stdout) if result.returncode == 0 else {}
+
+    decoded = run("decode", ["decode", str(state)])
+    entry = run("decode-entry", ["decode", str(attempt / "input-project/state.px/state.px")])
+    publication_history = []
+    observed_hashes = set()
+    for actor_name, actor in (("parent", parent_tool_observations), ("child", child_tool_observations)):
+        for item in actor["publication_attempts"]:
+            for receipt in item["observed_success_receipts"]:
+                digest = receipt.get("hash", "")
+                if not re.fullmatch(r"[a-f0-9]{64}", digest) or digest in observed_hashes:
+                    continue
+                observed_hashes.add(digest)
+                historical = consumer / "state.px/history" / (digest + ".px")
+                preserved = historical.is_file() and sha(historical) == digest
+                check("published_history_" + digest[:12] + "_retained", preserved)
+                archived_state = (decoded if digest == sha(state) else run("decode-history-" + digest[:12],
+                    ["decode", str(historical)])) if preserved else {}
+                historical_validation = None
+                if preserved and digest != sha(state):
+                    historical_validation = run("validate-history-" + digest[:12],
+                        ["validate", str(historical), "--root", str(consumer)])
+                publication_history.append({"actor": actor_name, "tool_use_id": item["tool_use_id"],
+                    "call_line": item["call_line"], "result_line": item["result_line"], "receipt": receipt,
+                    "history_file": reference(historical) if preserved else None,
+                    "intermediate_validation_against_retained_sources": historical_validation,
+                    "input_to_published_record_delta": record_changes(entry, archived_state) if archived_state else None})
+    validation = run("validate", ["validate", str(state), "--root", str(consumer)])
+    workflow = run("workflow", ["workflow", str(state), "--root", str(consumer)])
+    run("jobs", ["jobs", str(state), "--root", str(consumer)])
+    run("family", ["family", str(state), "--root", str(consumer)])
+    # Read the actual sample and every declared production/delivery task rather
+    # than presuming a specific family name or a future linked contract.
+    for row in decoded.get("records", []):
+        if row["kind"] == "T" and row["fields"].get("ph", {}).get("$symbol") in {"sample", "production", "delivery"}:
+            run("authoring-" + row["id"], ["context", str(state), row["id"], "--view", "authoring", "--root", str(consumer)])
+    check("independent_reads_preserve_all_consumer_bytes_mtimes", before == {path: {"sha256": digest, "mtime_ns": (consumer / path).stat().st_mtime_ns}
+          for path, digest in inventory(consumer, ("__pycache__",)).items()})
+    current_hash, current_revision = validation.get("hash"), validation.get("revision")
+    observations = []
+    for ident, item in parent_tools.items():
+        name, arguments = item["call"]["name"], item["call"].get("input", {})
+        command = arguments.get("command", "")
+        operation = name.rsplit("__", 1)[-1].removeprefix("pixl_") if name.startswith("mcp__pixl-local__") else None
+        operations = [operation] if operation else []
+        if name == "Bash":
+            operations = [word for word in ("validate", "workflow", "context", "ready") if re.search(r"\b" + word + r"\b", command)]
+        values = list(json_objects([item.get("metadata"), item.get("result")]))
+        stamp = epoch(item.get("result_timestamp"))
+        shapes = {
+            "validate": lambda value: "valid" in value and "record_hashes" in value,
+            "workflow": lambda value: "intake" in value and "tasks" in value and "ready" in value,
+            "context": lambda value: value.get("view") == "authoring" and "contracts" in value and "choices" in value,
+            "ready": lambda value: "ready" in value,
+        }
+        for operation in operations:
+            if operation not in shapes:
+                continue
+            matched = [value for value in values if value.get("hash", value.get("state_hash")) == current_hash
+                       and current_hash and shapes[operation](value)]
+            if matched:
+                observations.append({"tool_use_id": ident, "operation": operation, "call_line": item["call_line"],
+                    "result_line": item.get("result_line"), "result_timestamp": item.get("result_timestamp"),
+                    "state_hash": current_hash, "authoring_focus": sorted({str(value.get("focus")) for value in matched}) if operation == "context" else None,
+                    "after_current_state_write": stamp is not None and stamp >= state.stat().st_mtime,
+                    "ready_matches_independent_workflow": any("ready" in value and value["ready"] == workflow.get("ready") for value in matched)})
+    check("caller_independently_consumed_current_state", any(row["after_current_state_write"] for row in observations), observations, absent=not observations)
+    current_workflow = any(row["operation"] == "workflow" and row["after_current_state_write"] for row in observations)
+    current_ready = any(row["operation"] == "ready" and row["after_current_state_write"] and row["ready_matches_independent_workflow"] for row in observations)
+    workflow_scope = {"full_workflow_endpoint_after_change": current_workflow,
+        "ready_endpoint_after_change_matches_independent_workflow": current_ready,
+        "interpretation": "Current readiness is a workflow observation; ready alone does not show that the caller retrieved the full workflow report. CR5 requires independent current verification, not a particular endpoint."}
+    check("caller_current_full_workflow_observed", current_workflow, workflow_scope,
+          absent=not any(row["operation"] == "workflow" for row in observations))
+    current_context = any(row["operation"] == "context" and row["after_current_state_write"] for row in observations)
+    check("caller_current_authoring_context_observed", current_context,
+          [row for row in observations if row["operation"] == "context"], absent=not current_context)
+    caller_path = consumer / args.caller_report
+    caller = read(caller_path) if caller_path.is_file() else {}
+    refs = caller_file_refs(caller)
+    for item in refs:
+        path = Path(item["path"])
+        resolved = (consumer / path).resolve()
+        item["confined_relative_path"] = not path.is_absolute() and resolved.is_relative_to(consumer)
+        # The neutral caller contract may explicitly cite replaced predecessor
+        # bytes. Compare those declarations with the preserved input snapshot,
+        # while current-artifact declarations still bind current consumer bytes.
+        historical = (item["json_location"].startswith("$.superseded_versions_retained[")
+                      or bool(re.search(r"\b(?:as read )?on entry\b", str(item.get("declared_role", "")).lower())))
+        item["verification_snapshot"] = "output"
+        if historical:
+            original = (attempt / "input-project" / path).resolve()
+            # A same-child correction can retain an earlier artifact produced
+            # during this very attempt. Such a historical reference is absent
+            # from the initial seed but remains verifiable in the output.
+            item["historical_snapshot_candidates"] = {
+                "input": sha(original) if item["confined_relative_path"] and original.is_file() else None,
+                "output": sha(resolved) if item["confined_relative_path"] and resolved.is_file() else None,
+            }
+            if item["historical_snapshot_candidates"]["input"] == item["sha256"]:
+                resolved = original
+                item["verification_snapshot"] = "input"
+        item["actual_sha256"] = sha(resolved) if item["confined_relative_path"] and resolved.is_file() else None
+        item["matches_actual_bytes"] = item["actual_sha256"] == item["sha256"]
+    check("caller_report_has_verifiable_file_references", bool(refs), {"count": len(refs)}, absent=not refs)
+    check("caller_report_file_references_match_actual_bytes", bool(refs) and all(item["matches_actual_bytes"] for item in refs), refs)
+    check("caller_report_binds_current_state_identity", any(item["path"].replace("\\", "/") == "state.px/state.px" and item["sha256"] == current_hash for item in refs))
+    check("caller_report_names_actual_native_child", bool(child_id) and child_id in set(strings(caller)))
+    check("new_caller_result_saved_without_replacing_input", args.caller_report not in expected_seed and caller_path.is_file())
+    check("caller_final_delivers_result_identity", bool(parent_finals) and caller_path.is_file()
+          and args.caller_report in parent_finals[-1]["text"] and sha(caller_path) in parent_finals[-1]["text"])
+    new_report_refs = sorted({item["path"] for item in refs if item["path"] in saved["new"]
+                              and item["path"] != args.caller_report and item["matches_actual_bytes"]})
+    check("new_retained_handoff_or_review_artifact_referenced", bool(new_report_refs),
+          {"paths": new_report_refs, "scope": "Actual new referenced artifacts; handoff/comparison usefulness is graded semantically, without prescribing an unassigned report folder or extension."}, absent=not new_report_refs)
+    controlled = read(BASE / args.protocol)["controlled_input"]
+    effects = record_effects(entry, decoded, state, consumer, parent, workflow, controlled, validation)
+    answer_path = consumer / controlled["consumer_path"]
+    check("controlled_input_bytes_retained", answer_path.is_file() and sha(answer_path) == controlled["sha256"])
+    check("controlled_input_bound_to_saved_source", bool(effects["controlled_source_records"])
+          and all(row["actual_file_matches_controlled_input"] for row in effects["controlled_source_records"]))
+    unchanged_state = state.read_bytes() == (attempt / "input-project/state.px/state.px").read_bytes()
+    witnessed_publication = isinstance(current_revision, int) and isinstance(entry.get("revision"), int) and current_revision > entry["revision"] and any(
+        receipt.get("revision") == current_revision and receipt.get("hash") == current_hash
+        for actor in (parent_tool_observations, child_tool_observations)
+        for item in actor["publication_attempts"] for receipt in item["observed_success_receipts"])
+    check("state_preserved_or_actual_publication_observed", unchanged_state or witnessed_publication,
+          {"unchanged_from_entry": unchanged_state, "new_publication_observed": witnessed_publication,
+           "scope": "This handoff assignment does not require gratuitous state authoring. If state changes, native publication and retained history must establish it."})
+    sample_contracts = [contract for sample in effects["sample_outputs"] for contract in sample["contracts"]]
+    entry_records = {row["id"]: row for row in entry.get("records", [])}
+    check("qualified_sample_contract_retained", bool(sample_contracts) and all(contract == entry_records.get(contract["id"]) for contract in sample_contracts),
+          {"contract_ids": [row["id"] for row in sample_contracts], "scope": "Literal preservation of the inherited qualified sample contract; semantic authority and any proposed new contract are reviewed separately."})
+    current_records = effects["caller_current_record_delivery"]
+    check("caller_received_current_sample_contract_and_literal_direct_criteria", bool(current_records)
+          and all(row["observations"] for row in current_records.values()),
+          {"record_ids": list(current_records), "not_observed": [ident for ident, row in current_records.items() if not row["observations"]]},
+          absent=not current_records or any(not row["observations"] for row in current_records.values()))
+    external_writes = {"parent": external_scratch_writes(parent, consumer), "child": external_scratch_writes(child, consumer)}
+    check("no_observed_external_scratch_writes", not any(row["write_and_file_use_observed"]
+          for actor in external_writes.values() for row in actor), external_writes)
+    result = {"status": "fail" if any(row["status"] == "fail" for row in checks) else "partial" if any(row["status"] == "not_observed" for row in checks) else "pass",
+        "passed": sum(row["status"] == "pass" for row in checks), "total": len(checks), "checks": checks,
+        "attempt": str(attempt), "session_id": session, "actual_child_id": child_id,
+        "parent_final": {key: value for key, value in parent_finals[-1].items() if key != "text"} if parent_finals else None,
+        "parent_turn_finals": [{key: value for key, value in row.items() if key != "text"} for row in parent_finals],
+        "parent_stream_results": [{"uuid": row.get("uuid"), "session_id": row.get("session_id"), "subtype": row.get("subtype"),
+            "result_sha256": hashlib.sha256(row.get("result", "").encode()).hexdigest()} for row in terminal],
+        "child_finals": [{key: value for key, value in row.items() if key != "text"} for row in child_finals],
+        "last_child_final_delivery": final_delivery_details,
+        "registered_agent_calls": agent_calls, "same_child_correction_rounds": rounds, "same_child_followups": followups,
+        "task_bearing_child_final": {key: value for key, value in work_final.items() if key != "text"} if work_final else None,
+        "task_bearing_child_final_delivery": work_delivery,
+        "acknowledgement_notifications": acknowledgement_notifications,
+        "parent_instruction_delivery": parent_sources, "child_instruction_delivery": child_sources,
+        "parent_tool_observations": parent_tool_observations, "child_tool_observations": child_tool_observations,
+        "caller_project_file_delivery": project_read_payloads(parent, consumer),
+        "external_read_attempts": {"parent": external_read_attempts(parent, consumer), "child": external_read_attempts(child, consumer)},
+        "external_scratch_writes": external_writes,
+        "current_state": {"path": "state.px/state.px", "hash": current_hash, "revision": current_revision},
+        "caller_state_consumption": observations, "caller_file_references": refs,
+        "caller_workflow_scope": workflow_scope,
+        "retained_sample_and_handoff_effects": effects,
+        "protocol": reference(BASE / args.protocol),
+        "observed_publication_history": publication_history,
+        "deltas": {key: saved[key] for key in ("new", "changed", "removed")},
+        "independent_commands": commands, "checker": reference(snapshot), "source_delivery_support": reference(SUPPORT),
+        "frozen_kit": reference(frozen_path), "native_parent": reference(parent_path) if parent_path.exists() else None,
+        "native_child": reference(child_path) if child_path.exists() else None,
+        "limits": ["Mechanical content delivery, identity, preservation and local runtime checks; semantic authority review is separate.",
+                   "Configured role identity does not itself prove instruction loading; actual delivered payload coverage is recorded separately.",
+                   "Async launch acknowledgements are not completed specialist finals.",
+                   "No provider/engine/human acceptance or general host reliability is established."]}
+    output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(json.dumps({"status": result["status"], "passed": result["passed"], "total": result["total"],
+                      "unmet": [row for row in checks if row["status"] in {"fail", "not_observed"}]}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -67,6 +67,67 @@ This operation ends with either a representative sample accepted against its act
 
 If the next dependent step needs a consequential user choice, the final response must contain the useful progress saved, a direct concise question for the smallest set of necessary answers, and what those answers unlock. Address that question to the caller: a list of decisions needed or next steps once answered does not itself ask for the choice. Carry a still-unanswered question into that final response even when it was asked earlier or saved in the handoff. Present genuine alternatives when helpful and keep suggested trials labeled as proposals. Reference dimensions remain observations until adopted for this project. Continue authorized work that is independent of the answer. When the necessary choices are already supplied, use them and report the next operation under the existing authorization.
 
+## Check what an answer enables
+
+Name the next operation, its task and phase before claiming what an answer
+unlocks. Read `workflow STATE --root ROOT` and
+`context STATE TASK --view authoring --root ROOT` (or `pixl_workflow` and
+`pixl_context` with that task as `focus` and `view="authoring"`). Keep the state
+identity with this check. The workflow describes the saved plan, not every
+possible future contract.
+
+Trace each planned output through **T.op → F.ct → C.ch → I**, reading the linked
+choices' actual status, value, source and scope. When an output has no contract,
+its current blockers cannot enumerate the choices a future contract would link.
+Identify the intended contract and its links, or mark that future operation
+conditional until they are selected. Inspect relevant `other_intake` entries;
+unlinked choices are not automatically irrelevant. Do not drop applicable choice
+links to make a readiness check pass.
+
+For production/delivery activation, account for completed task prerequisites,
+concrete raster contracts, confirmation of every choice in those output
+contracts, and the task's evidence-backed adoption decision. Check passing method
+proofs when the task links knowledge, and baseline/destination gates when its
+family plan declares them. Retrieve complete context when the authoring view
+omits proof receipts. Read the source and proof scope of an adoption decision;
+its existence does not confirm linked choices or establish its relevance to the
+proposed work. Report only applicable missing prerequisites, not every possible
+future gate or every intake choice in the project.
+
+In the saved decision table, project **only the supplied answer**: the exact
+choice/contract change it supports, its authority and scope, the operation that
+becomes available, and the prerequisites that remain. Keep other statuses and
+scope unchanged. Drafting a contract, activating a production task and accepting
+its artwork are different outcomes. A future projection is conditional reasoning,
+not a fresh readiness result; after authorized changes are actually saved, rerun
+workflow before claiming current readiness. Provider availability and required
+visual/engine acceptance remain separate.
+
+Derive authored structured handoff fields such as `question`, `necessary_for`,
+`unlocks`, `next` and `blocked_on` from that checked table. These fields are
+operational claims, not packaging for prose. Do not carry a predecessor's answer
+effects into a new result merely to reuse its format. Claim that an answer clears
+all production gates only when that exact answer, together with already
+established prerequisites, covers every applicable dependency of the identified
+plan. Otherwise name the narrower next step it enables and what remains; an
+undecided future contract keeps the effect conditional. Preserve runtime-derived
+continuation fields unchanged and put your authored explanation alongside them.
+
+Before publishing the current note and result, reconcile their literal conditions
+with the table, source criteria and intended final response. Preserve permitted
+defaults and alternatives: a preference question does not become a blocker when
+the source already allows an authorized fallback. If one current artifact says
+an answer is required and another says it is optional, resolve that conflict at
+its source and save a corrected version. A correct summary or general list of
+remaining gates does not cancel a contradictory structured effect or restrictive
+sentence elsewhere in the current handoff. Retain earlier versions as history.
+
+Use this check to ask only for information needed by the immediate dependent
+operation. Existing source-backed decisions and authorization still apply; later
+production requirements do not block an independently useful sample or local
+plan. Keep the detailed trace in the note and return the useful next action and
+its material remaining dependencies plainly.
+
 ## Cold intake handoff
 
 1. Read the complete production profile and this procedure. Start with the saved
@@ -84,11 +145,11 @@ If the next dependent step needs a consequential user choice, the final response
    unasked rows keep their status. A diagnostic can support a recommendation
    while the decision remains the owner's. Continue independent useful work.
 
-3. Check the next local operation against that table and the actual tools.
-   Preserve existing authorization. Keep later decision, provider-schema,
-   execution and engine prerequisites explicit. A local contract or output plan
-   can be useful while preparation of a real provider request is unavailable.
-   Do not describe every remaining dependency as solved by the next answer.
+3. Apply [the operation-effect check](#check-what-an-answer-enables) to the
+   next local operation and any later operation the handoff claims to unlock.
+   Trace the proposed contract's linked choices even when that contract is not
+   yet saved. Keep its remaining phase/adoption dependencies explicit; preserve
+   existing authorization and continue independent sample or planning work.
 
 4. Use the checked note to finish with saved progress, a direct concise question
    addressed to the caller, and the exact local operation its answer unlocks.

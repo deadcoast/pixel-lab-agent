@@ -93,16 +93,19 @@ inputs for this comparison; they do not establish that its conclusions follow.
    that alternative or the rule belongs to a narrower expert trial. Preserve
    required outcomes when correcting an unsupported recipe.
 
-3. For each requested answer, assume only that answer is supplied and trace
-   the exact state/contract changes and next available operation. Each other
-   choice keeps its status unless the answer explicitly adopts it or a cited
-   existing decision already establishes it. Compare every claimed effect in
-   the question, decision table and proposed operation; matching current values
-   does not prove that a proposed status change is authorized. Check actual
-   runtime/tool prerequisites and name the dependencies that remain. Scoped
-   expert proposals can support an authorized sample; do not turn every proposal
-   into a new owner-confirmation requirement or treat later production
-   prerequisites as blockers for independent local work.
+3. For each requested answer, independently apply the
+   [operation-effect check](intake-sample.md#check-what-an-answer-enables): trace
+   the named task/phase through its outputs, actual or intended contracts and
+   all linked choices, then its applicable dependency/adoption gates. A missing
+   contract makes the future choice check conditional; a short current blocker
+   list does not establish all prerequisites for the proposed operation. Assume
+   only that answer is supplied. Each other choice keeps its status and scope
+   unless the answer explicitly adopts it or a cited existing decision already
+   establishes it. Compare every claimed effect in the question, decision table,
+   saved note and final response. Matching values or adding an adoption decision
+   does not confirm other choices. Distinguish a usable contract draft
+   from task readiness and artwork acceptance. Name the dependencies that remain
+   without making later production requirements block authorized sample work.
 
 4. When this comparison finds a discrepancy, send your own precise finding and
    source evidence to the same native specialist. Ask for a corrected current
@@ -115,10 +118,18 @@ inputs for this comparison; they do not establish that its conclusions follow.
 5. After the last specialist change, reopen the actual final files and current
    state, verify their identities and applicable runtime checks, and recheck the
    affected claims against the sources. Bind your adoption finding to that final
-   version; a clean summary cannot override contradictory saved criteria or
-   continuation instructions. Finish with useful saved progress, any still
-   necessary direct question to the owner, and the concrete operation its answer
-   enables. Carry existing authorization and leave later prerequisites explicit.
+   version. Derive your own structured result's questions, prerequisites and
+   answer effects from the verified comparison; do not copy historical effects
+   forward as current findings. Reopen the saved result and compare its literal
+   fields with the current note, decision table, criteria and planned final
+   response. Reconcile required versus optional input, permitted alternatives,
+   defaults and conditional future plans across them. A correct summary or
+   separate gate list cannot override a contradictory `unlocks` or `blocked_on`
+   claim. Correct the current version and preserve its predecessor before
+   returning it. Finish with useful saved progress, any still necessary direct
+   question to the owner, and the precise operation its answer enables; claim
+   full clearance only if all applicable prerequisites are actually covered.
+   Carry existing authorization and leave later prerequisites explicit.
 
 ## Specialist → caller at completion
 

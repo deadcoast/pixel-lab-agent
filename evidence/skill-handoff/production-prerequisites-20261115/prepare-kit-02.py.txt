@@ -1,0 +1,71 @@
+"""Retain a guide-only revision, execute packaging checks, and freeze its native kit."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import zipfile
+from datetime import UTC, datetime
+
+ROOT = Path(__file__).resolve().parents[3]
+BASE = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def write(path, value):
+    with path.open('x', encoding='utf-8') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+def main():
+    out = BASE / 'revision-02'
+    out.mkdir()
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    with zipfile.ZipFile(BASE / 'revision-01/frozen-kit.zip') as archive:
+        old = {name: archive.read(name) for name in archive.namelist()}
+    with zipfile.ZipFile(out / 'previous-kit.zip', 'x', zipfile.ZIP_DEFLATED) as archive:
+        for name, data in sorted(old.items()):
+            archive.writestr(name, data)
+    write(out / 'previous-manifest.json', {name: sha(data) for name, data in sorted(old.items())})
+    env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'}
+    command = [sys.executable, '-B', '-m', 'unittest', 'tests.test_packaging', '-v']
+    run = subprocess.run(command, cwd=ROOT, env=env, capture_output=True)
+    (out / 'stdout.txt').write_bytes(run.stdout)
+    (out / 'stderr.txt').write_bytes(run.stderr)
+    from pixl.readiness import verify_manifest
+    current = {p.relative_to(ROOT / 'plugins/pixl').as_posix(): p.read_bytes() for p in (ROOT / 'plugins/pixl').rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    added, removed = sorted(set(current) - set(old)), sorted(set(old) - set(current))
+    changed = sorted(name for name in set(old) & set(current) if old[name] != current[name])
+    expected = ['bundle-manifest.json', 'skills/pixl/references/delegation.md', 'skills/pixl/references/intake-sample.md']
+    with zipfile.ZipFile(out / 'frozen-kit.zip', 'x', zipfile.ZIP_DEFLATED) as archive:
+        for name, data in sorted(current.items()):
+            archive.writestr(name, data)
+    source_names = ['.agents/PROFILE.md', 'plugins/pixl/skills/pixl/SKILL.md', 'plugins/pixl/skills/pixl/references/delegation.md', 'plugins/pixl/skills/pixl/references/intake-sample.md', 'spec/PIXL-2.md', 'pixl/registry-v2.json', 'evaluations/cold_caller_review.py', 'tests/test_packaging.py', 'scripts/build_plugin.py']
+    checked = json.loads((ROOT / 'evidence/verification-runs/20261115T163600.991198Z/result.json').read_bytes())['checked_input_hashes']
+    checks = {
+        'packaging_tests_pass': run.returncode == 0 and b'Ran 4 tests' in run.stderr and b'\nOK' in run.stderr,
+        'complete_manifest_verified': verify_manifest(ROOT / 'plugins/pixl')['status'] == 'verified',
+        'only_two_guides_and_manifest_change': not added and not removed and changed == expected,
+        'previous_full_checked_sources_unchanged': all(sha((ROOT / name).read_bytes()) == digest for name, digest in checked.items()),
+        'profile_and_main_skill_unchanged': all((ROOT / name).read_bytes() == subprocess.check_output(['git', 'show', head + ':' + name], cwd=ROOT) for name in source_names[:2]),
+    }
+    result = {'observed_at': datetime.now(UTC).isoformat(), 'status': 'pass' if all(checks.values()) else 'fail', 'baseline': head, 'previous_kit': 'revision-01/frozen-kit.zip',
+        'command': command, 'returncode': run.returncode, 'checks': checks,
+        'package_files': {name: sha(data) for name, data in sorted(current.items())}, 'changed': changed, 'added': added, 'removed': removed,
+        'bundle_manifest_sha256': sha(current['bundle-manifest.json']), 'frozen_archive_sha256': sha((out / 'frozen-kit.zip').read_bytes()),
+        'previous_archive_sha256': sha((out / 'previous-kit.zip').read_bytes()),
+        'source_hashes': {name: sha((ROOT / name).read_bytes()) for name in source_names},
+        'scope': 'Four existing packaging/discovery/copy tests on the revised two-guide kit. No fresh full suite, runtime change, native behavior, provider execution or human acceptance implied. Previous full checked source hashes are compared read-only; package applicability is a separate identity.'}
+    write(out / 'RESULT.json', result)
+    print(json.dumps({'status': result['status'], 'checks': checks, 'files': len(current), 'changed': changed, 'manifest': result['bundle_manifest_sha256']}))
+    raise SystemExit(0 if result['status'] == 'pass' else 1)
+
+
+if __name__ == '__main__':
+    main()
